@@ -2,201 +2,250 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Turn-Based Emoji RPG</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Mobile Emoji RPG</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
-        /* Custom styles for the game */
+        /* Custom styles for the mobile-first game */
+        :root {
+            --bg-color: #1a202c;
+            --container-bg: #2d3748;
+            --ui-bg: #4a5568;
+            --ui-border: #718096;
+            --text-light: #e2e8f0;
+            --text-medium: #a0aec0;
+            --accent-green: #48bb78;
+            --accent-red: #f56565;
+            --accent-blue: #63b3ed;
+            --accent-purple: #d53f8c;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
         body {
             font-family: 'Press Start 2P', cursive;
-            background-color: #1a202c;
-            color: #e2e8f0;
-            overflow: hidden;
+            background-color: var(--bg-color);
+            color: var(--text-light);
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
         }
+
         .game-container {
             width: 100%;
-            max-width: 1000px;
-            height: 100vh;
-            max-height: 700px;
-            background-color: #2d3748;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-            border: 4px solid #4a5568;
+            height: 100%;
+            background-color: var(--container-bg);
+            display: flex;
+            flex-direction: column;
             position: relative;
-            padding: 2rem;
-            display: flex;
-            flex-direction: column;
         }
-        .selection-corner {
-            position: absolute;
-            width: 150px;
-            height: 150px;
-            background-color: #4a5568;
-            border-radius: 15px;
-            border: 3px solid #718096;
+
+        /* Central game area */
+        .battle-area {
+            flex-grow: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
+            justify-content: space-around;
+            padding: 1rem;
         }
-        .selection-corner:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 20px rgba(198, 222, 255, 0.5);
-        }
-        .top-left { top: 2rem; left: 2rem; }
-        .top-right { top: 2rem; right: 2rem; }
-        .bottom-left { bottom: 2rem; left: 2rem; }
-        .bottom-right { bottom: 2rem; right: 2rem; }
-        .carousel {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
-            padding: 0 10px;
-        }
-        .carousel-btn {
-            background: none;
-            border: none;
-            color: #cbd5e0;
-            font-size: 2rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .carousel-btn:hover {
-            color: #fff;
-            transform: scale(1.2);
-        }
-        .selected-emoji {
-            font-size: 3.5rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        }
-        .category-title {
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            color: #a0aec0;
-            margin-bottom: 5px;
-        }
+
         .enemy {
             transition: all 0.3s ease;
             text-shadow: 3px 3px 6px rgba(0,0,0,0.7);
         }
+
         .enemy.attacked {
             animation: shake 0.5s;
         }
+
         @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
-            20%, 40%, 60%, 80% { transform: translateX(10px); }
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(-8px, 8px); }
+            50% { transform: translate(8px, -8px); }
+            75% { transform: translate(-8px, -8px); }
         }
+        
         .health-bar-container {
-            width: 80%;
-            height: 10px;
-            background-color: #718096;
-            border-radius: 5px;
+            width: 80px;
+            height: 8px;
+            background-color: var(--ui-border);
+            border-radius: 4px;
             overflow: hidden;
-            margin-top: 5px;
+            margin-top: 4px;
         }
         .health-bar {
             height: 100%;
-            background-color: #48bb78;
-            border-radius: 5px;
+            background-color: var(--accent-green);
+            border-radius: 4px;
             transition: width 0.5s ease;
         }
-        #message-log {
-            position: absolute;
-            bottom: 2rem;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 60%;
-            height: 100px;
-            background-color: rgba(0, 0, 0, 0.4);
-            border-radius: 10px;
-            padding: 10px;
-            font-size: 0.8rem;
-            overflow-y: auto;
-            border: 2px solid #4a5568;
+
+        /* Player UI */
+        #player-area {
+            position: relative;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding-bottom: 220px; /* Space for the action bar */
         }
+         #player-status {
+            width: 120px;
+         }
+         #player-health-bar {
+             background-color: var(--accent-blue);
+         }
+
+
+        /* Action Bar */
+        #action-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 250px;
+            background-color: var(--ui-bg);
+            border-top: 4px solid var(--ui-border);
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* Carousel */
+        .carousel-container {
+            height: 80px;
+            background-color: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+        .carousel-category-title {
+            position: absolute;
+            top: 5px;
+            left: 10px;
+            font-size: 0.6rem;
+            color: var(--text-medium);
+            z-index: 2;
+        }
+        .carousel-track {
+            display: flex;
+            height: 100%;
+            position: absolute;
+            left: 0;
+            transition: transform 0.3s ease-out;
+            touch-action: pan-y; /* Allow vertical scroll on page */
+        }
+        .carousel-item {
+            width: 80px;
+            height: 100%;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            opacity: 0.5;
+            transform: scale(0.8);
+            transition: all 0.3s ease-out;
+        }
+        .carousel-item.active {
+            opacity: 1;
+            transform: scale(1.1);
+            text-shadow: 0 0 15px white;
+        }
+        .carousel-center-marker {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            border-radius: 10px;
+            border: 2px solid var(--text-light);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Stats Display Area */
+        #stats-display {
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+            font-size: 0.6rem;
+            color: var(--text-medium);
+            padding: 0.5rem 0;
+        }
+
         #start-round-btn {
             transition: all 0.3s ease;
+            width: 100%;
+            height: 50px;
+            font-size: 1rem;
         }
-        #start-round-btn:disabled {
+         #start-round-btn:disabled {
             background-color: #718096;
             cursor: not-allowed;
+            opacity: 0.6;
         }
+
     </style>
 </head>
-<body class="bg-gray-900">
+<body>
 
-    <div id="game-container" class="game-container">
+    <div class="game-container">
 
-        <!-- Corner Selections -->
-        <div id="attack-selector" class="selection-corner top-left">
-            <div class="category-title">Attack</div>
-            <div class="carousel">
-                <button class="carousel-btn" onclick="cycleItem('attack', -1)">&lt;</button>
-                <div id="attack-emoji" class="selected-emoji">⚔️</div>
-                <button class="carousel-btn" onclick="cycleItem('attack', 1)">&gt;</button>
-            </div>
-        </div>
-
-        <div id="heal-selector" class="selection-corner top-right">
-            <div class="category-title">Healing</div>
-            <div class="carousel">
-                <button class="carousel-btn" onclick="cycleItem('heal', -1)">&lt;</button>
-                <div id="heal-emoji" class="selected-emoji">❤️</div>
-                <button class="carousel-btn" onclick="cycleItem('heal', 1)">&gt;</button>
-            </div>
-        </div>
-
-        <div id="defense-selector" class="selection-corner bottom-left">
-            <div class="category-title">Defense</div>
-            <div class="carousel">
-                <button class="carousel-btn" onclick="cycleItem('defense', -1)">&lt;</button>
-                <div id="defense-emoji" class="selected-emoji">🛡️</div>
-                <button class="carousel-btn" onclick="cycleItem('defense', 1)">&gt;</button>
-            </div>
-        </div>
-
-        <div id="magic-selector" class="selection-corner bottom-right">
-            <div class="category-title">Magic</div>
-            <div class="carousel">
-                <button class="carousel-btn" onclick="cycleItem('magic', -1)">&lt;</button>
-                <div id="magic-emoji" class="selected-emoji">✨</div>
-                <button class="carousel-btn" onclick="cycleItem('magic', 1)">&gt;</button>
-            </div>
-        </div>
-
-        <!-- Central Area -->
-        <div class="flex-grow flex flex-col items-center justify-center">
+        <div class="battle-area">
             <!-- Enemies -->
-            <div id="enemy-container" class="flex space-x-12 mb-8">
-                <!-- Enemies will be generated by JS -->
+            <div id="enemy-container" class="flex items-end space-x-6">
+                <!-- JS Generated -->
             </div>
-            
-             <!-- Player Status -->
+        </div>
+
+        <div id="player-area">
+            <!-- Player Status -->
             <div id="player-status" class="text-center">
                  <div class="text-5xl mb-2">🧑‍🚀</div>
-                 <div class="w-full bg-gray-600 rounded-full h-4 border-2 border-gray-500">
-                     <div id="player-health-bar" class="bg-blue-500 h-full rounded-full" style="width: 100%"></div>
+                 <div class="w-full bg-gray-600 rounded-full h-3 border-2 border-gray-500">
+                     <div id="player-health-bar" class="h-full rounded-full" style="width: 100%"></div>
                  </div>
-                 <div id="player-health-text" class="text-sm mt-1">100 / 100</div>
+                 <div id="player-health-text" class="text-xs mt-1">100 / 100</div>
              </div>
+        </div>
+
+
+        <div id="action-bar">
+            <!-- Stats Display -->
+            <div id="stats-display">
+                <div id="attack-stat">⚔️ 15</div>
+                <div id="heal-stat">❤️ 20</div>
+                <div id="defense-stat">🛡️ 50%</div>
+                <div id="magic-stat">✨ 18</div>
+            </div>
+
+             <!-- Carousels -->
+            <div class="carousel-container" id="attack-carousel-container">
+                 <div class="carousel-category-title">Attack</div>
+                 <div class="carousel-track" id="attack-track"></div>
+                 <div class="carousel-center-marker"></div>
+            </div>
 
             <!-- Start Button -->
-            <button id="start-round-btn" class="mt-8 px-8 py-4 bg-green-600 hover:bg-green-700 rounded-lg text-xl shadow-lg" onclick="startRound()">
+            <button id="start-round-btn" class="mt-4 px-6 py-3 bg-green-600 hover:bg-green-700 rounded-lg text-lg shadow-lg" onclick="startRound()">
                 Start Round
             </button>
         </div>
-
-        <!-- Message Log -->
-        <div id="message-log">
-            <p>Welcome! Choose your actions and start the battle!</p>
+        
+        <!-- Game Over Modal -->
+        <div id="game-over-modal" class="hidden absolute inset-0 bg-black bg-opacity-75 flex-col items-center justify-center text-center z-50">
+            <h2 id="game-over-text" class="text-4xl mb-4"></h2>
+            <button onclick="location.reload()" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-lg">Play Again</button>
         </div>
 
     </div>
@@ -206,203 +255,261 @@
         const items = {
             attack: [
                 { emoji: '⚔️', name: 'Sword', power: 15 },
-                { emoji: '🏹', name: 'Bow', power: 12 },
+                { emoji: '�', name: 'Bow', power: 12 },
                 { emoji: '💣', name: 'Bomb', power: 25 },
+                { emoji: '匕', name: 'Dagger', power: 10 },
             ],
             heal: [
                 { emoji: '❤️', name: 'Small Potion', power: 20 },
                 { emoji: '💖', name: 'Large Potion', power: 40 },
                 { emoji: '🥗', name: 'Salad', power: 15 },
+                { emoji: '🍖', name: 'Meat', power: 30 },
             ],
             defense: [
-                { emoji: '🛡️', name: 'Shield', power: 0.5 }, // Reduces incoming damage by 50%
-                { emoji: '🧱', name: 'Wall', power: 0.2 }, // Reduces incoming damage by 80%
-                { emoji: '💨', name: 'Dodge', power: 0.0 }, // 100% chance to dodge one attack
+                { emoji: '🛡️', name: 'Shield', power: 0.5, display: "50%" }, // display text
+                { emoji: '🧱', name: 'Wall', power: 0.2, display: "80%" },
+                { emoji: '💨', name: 'Dodge', power: 0.0, display: "100%" },
             ],
             magic: [
                 { emoji: '✨', name: 'Sparkle', power: 18 },
                 { emoji: '🔥', name: 'Fireball', power: 30 },
-                { emoji: '❄️', name: 'Freeze', power: 10 }, // Deals damage and may skip enemy turn
+                { emoji: '❄️', name: 'Freeze', power: 10 },
+                { emoji: '⚡', name: 'Lightning', power: 22 },
             ],
         };
 
         let enemies = [
             { id: 'enemy-1', emoji: '👹', name: 'Ogre', hp: 80, maxHp: 80, attack: 10 },
             { id: 'enemy-2', emoji: '👻', name: 'Ghost', hp: 60, maxHp: 60, attack: 15 },
-            { id: 'enemy-3', emoji: '🐲', name: 'Dragon', hp: 120, maxHp: 120, attack: 20 },
+            { emoji: '🐲', name: 'Dragon', hp: 120, maxHp: 120, attack: 20, id: 'enemy-3' },
         ];
         
-        let player = {
-            hp: 100,
-            maxHp: 100,
-            defenseModifier: 1.0 // No damage reduction initially
-        };
-
-        // --- STATE ---
-        const currentSelections = {
-            attack: 0,
-            heal: 0,
-            defense: 0,
-            magic: 0,
-        };
+        let player = { hp: 100, maxHp: 100, defenseModifier: 1.0 };
+        const currentSelections = { attack: 0, heal: 0, defense: 0, magic: 0 };
         let isRoundInProgress = false;
 
         // --- DOM ELEMENTS ---
         const enemyContainer = document.getElementById('enemy-container');
-        const messageLog = document.getElementById('message-log');
         const startRoundBtn = document.getElementById('start-round-btn');
         const playerHealthBar = document.getElementById('player-health-bar');
         const playerHealthText = document.getElementById('player-health-text');
+        const statsDisplay = {
+            attack: document.getElementById('attack-stat'),
+            heal: document.getElementById('heal-stat'),
+            defense: document.getElementById('defense-stat'),
+            magic: document.getElementById('magic-stat'),
+        };
 
+        // --- CAROUSEL LOGIC ---
+        function setupCarousels() {
+            // Replaced old corner selectors with a single dynamic one.
+            const actionBar = document.getElementById('action-bar');
+            const button = actionBar.querySelector('button');
+            actionBar.innerHTML = ''; // Clear old content
+             actionBar.appendChild(statsDisplay.attack.parentElement);
+            
+            Object.keys(items).forEach(category => {
+                const container = document.createElement('div');
+                container.className = 'carousel-container';
+                container.innerHTML = `
+                    <div class="carousel-category-title">${category}</div>
+                    <div class="carousel-track" id="${category}-track"></div>
+                    <div class="carousel-center-marker"></div>
+                `;
+                actionBar.appendChild(container);
 
-        // --- FUNCTIONS ---
+                const track = container.querySelector('.carousel-track');
+                items[category].forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'carousel-item';
+                    div.textContent = item.emoji;
+                    track.appendChild(div);
+                });
 
-        function logMessage(message, color = 'white') {
-            const p = document.createElement('p');
-            p.textContent = message;
-            p.style.color = color;
-            messageLog.appendChild(p);
-            messageLog.scrollTop = messageLog.scrollHeight; // Auto-scroll to bottom
+                setupCarouselEvents(container, track, category);
+                updateCarousel(track, category, 0);
+            });
+            actionBar.appendChild(button);
         }
 
-        function cycleItem(category, direction) {
-            if (isRoundInProgress) return;
-            let indices = currentSelections[category];
-            indices = (indices + direction + items[category].length) % items[category].length;
-            currentSelections[category] = indices;
-            document.getElementById(`${category}-emoji`).textContent = items[category][indices].emoji;
+        function setupCarouselEvents(container, track, category) {
+            let isDragging = false;
+            let startX, scrollLeft, velocity, startT;
+
+            const itemWidth = 80;
+            const centerOffset = (container.clientWidth / 2) - (itemWidth / 2);
+
+            function updatePosition(x) {
+                const dx = x - startX;
+                track.style.transition = 'none';
+                track.style.transform = `translateX(${scrollLeft + dx}px)`;
+            }
+            
+            function snapToItem() {
+                const currentTransform = new DOMMatrix(getComputedStyle(track).transform).e;
+                const closestIndex = Math.round((centerOffset - currentTransform) / itemWidth);
+                const finalIndex = Math.max(0, Math.min(items[category].length - 1, closestIndex));
+                
+                currentSelections[category] = finalIndex;
+                updateCarousel(track, category, finalIndex);
+            }
+            
+            track.addEventListener('touchstart', (e) => {
+                if (isRoundInProgress) return;
+                isDragging = true;
+                startX = e.touches[0].pageX;
+                const currentTransform = new DOMMatrix(getComputedStyle(track).transform).e;
+                scrollLeft = currentTransform;
+                track.style.transition = 'none';
+            });
+
+            track.addEventListener('touchmove', (e) => {
+                if (!isDragging) return;
+                e.preventDefault();
+                updatePosition(e.touches[0].pageX);
+            });
+
+            const endDrag = (e) => {
+                 if (!isDragging) return;
+                isDragging = false;
+                snapToItem();
+            };
+
+            track.addEventListener('touchend', endDrag);
+            track.addEventListener('touchcancel', endDrag);
         }
+        
+        function updateCarousel(track, category, newIndex) {
+            const itemWidth = 80;
+            const containerWidth = track.parentElement.clientWidth;
+            const centerOffset = (containerWidth / 2) - (itemWidth / 2);
+            const newTransform = centerOffset - (newIndex * itemWidth);
+            
+            track.style.transition = 'transform 0.3s ease-out';
+            track.style.transform = `translateX(${newTransform}px)`;
+
+            Array.from(track.children).forEach((item, index) => {
+                item.classList.toggle('active', index === newIndex);
+            });
+
+            updateStatsDisplay(category, newIndex);
+        }
+
+        function updateStatsDisplay(category, index) {
+            const item = items[category][index];
+            const statEl = statsDisplay[category];
+            if (!statEl) return;
+            const displayValue = item.display || item.power;
+            statEl.innerHTML = `${item.emoji} ${displayValue}`;
+        }
+
+
+        // --- GAME LOGIC ---
 
         function updateEnemyDisplay() {
             enemyContainer.innerHTML = '';
             enemies.forEach(enemy => {
-                if (enemy.hp > 0) {
-                    const enemyDiv = document.createElement('div');
-                    enemyDiv.id = enemy.id;
-                    enemyDiv.className = 'enemy text-center';
-                    enemyDiv.innerHTML = `
-                        <div class="text-6xl">${enemy.emoji}</div>
-                        <div class="health-bar-container">
-                            <div id="${enemy.id}-health" class="health-bar" style="width: ${ (enemy.hp / enemy.maxHp) * 100}%"></div>
-                        </div>
-                        <div class="text-xs mt-1">${enemy.name}</div>
-                    `;
-                    enemyContainer.appendChild(enemyDiv);
-                }
+                 if (enemy.hp <= 0) return;
+                 const enemyDiv = document.createElement('div');
+                 enemyDiv.id = enemy.id;
+                 enemyDiv.className = 'enemy text-center';
+                 enemyDiv.innerHTML = `
+                    <div class="text-6xl">${enemy.emoji}</div>
+                    <div class="health-bar-container">
+                        <div id="${enemy.id}-health" class="health-bar" style="width: ${(enemy.hp / enemy.maxHp) * 100}%"></div>
+                    </div>
+                    <div class="text-xs mt-1">${enemy.hp} / ${enemy.maxHp}</div>
+                `;
+                 enemyContainer.appendChild(enemyDiv);
             });
         }
         
         function updatePlayerDisplay() {
-            const healthPercentage = (player.hp / player.maxHp) * 100;
+            const healthPercentage = Math.max(0, (player.hp / player.maxHp) * 100);
             playerHealthBar.style.width = `${healthPercentage}%`;
-            playerHealthText.textContent = `${player.hp} / ${player.maxHp}`;
-             if (player.hp <= 0) {
-                logMessage("GAME OVER", "red");
-                startRoundBtn.disabled = true;
-                startRoundBtn.textContent = "Defeated";
-            }
+            playerHealthText.textContent = `${Math.max(0, player.hp)} / ${player.maxHp}`;
         }
-
 
         async function startRound() {
             if (isRoundInProgress || player.hp <= 0) return;
             isRoundInProgress = true;
             startRoundBtn.disabled = true;
-            startRoundBtn.textContent = "Round in Progress...";
-            messageLog.innerHTML = ''; // Clear log for new round
-            
-            // --- Player's Turn ---
-            logMessage("--- Player's Turn ---", "#63b3ed");
-            await sleep(500);
 
-            // 1. Defense
+            // --- Player's Turn ---
             const defenseItem = items.defense[currentSelections.defense];
             player.defenseModifier = defenseItem.power;
-            logMessage(`Player uses ${defenseItem.name} (${defenseItem.emoji}). Incoming damage reduced.`);
-            await sleep(1000);
             
-            // 2. Healing
             const healItem = items.heal[currentSelections.heal];
             player.hp = Math.min(player.maxHp, player.hp + healItem.power);
-            logMessage(`Player uses ${healItem.name} (${healItem.emoji}), recovering ${healItem.power} HP.`, '#48bb78');
             updatePlayerDisplay();
-            await sleep(1000);
+            await sleep(500);
 
-            // 3. Attack & Magic (target first living enemy)
             const attackItem = items.attack[currentSelections.attack];
             const magicItem = items.magic[currentSelections.magic];
             
             let targetEnemy = enemies.find(e => e.hp > 0);
             if (targetEnemy) {
-                // Attack
                 targetEnemy.hp -= attackItem.power;
-                logMessage(`Player attacks ${targetEnemy.name} with ${attackItem.name} (${attackItem.emoji}) for ${attackItem.power} damage!`, '#f56565');
-                document.getElementById(targetEnemy.id)?.classList.add('attacked');
-                await sleep(500);
-                document.getElementById(targetEnemy.id)?.classList.remove('attacked');
-                
-                // Magic
                 targetEnemy.hp -= magicItem.power;
-                logMessage(`Player casts ${magicItem.name} (${magicItem.emoji}) on ${targetEnemy.name} for ${magicItem.power} damage!`, '#d53f8c');
+                
                 document.getElementById(targetEnemy.id)?.classList.add('attacked');
                 updateEnemyDisplay();
                 await sleep(500);
                 document.getElementById(targetEnemy.id)?.classList.remove('attacked');
             } else {
-                 logMessage("All enemies defeated! YOU WIN!", "gold");
-                 isRoundInProgress = false;
-                 startRoundBtn.textContent = "Victory!";
-                 return; // End game
+                 showGameOver(true);
+                 return;
             }
-            
             updateEnemyDisplay();
-            await sleep(1000);
-            
-            // --- Enemies' Turn ---
-            logMessage("--- Enemies' Turn ---", "#f56565");
             await sleep(500);
+            
+            const livingEnemies = enemies.filter(e => e.hp > 0);
+            if(livingEnemies.length === 0){
+                showGameOver(true);
+                return;
+            }
 
-            for (const enemy of enemies) {
-                if (enemy.hp > 0) {
-                    const damage = Math.round(enemy.attack * player.defenseModifier);
-                    player.hp -= damage;
-                    player.hp = Math.max(0, player.hp);
-                    logMessage(`${enemy.name} ${enemy.emoji} attacks player for ${damage} damage.`);
-                    updatePlayerDisplay();
-                    if(player.hp <= 0) break; // Stop if player is defeated
-                    await sleep(1000);
+            // --- Enemies' Turn ---
+            for (const enemy of livingEnemies) {
+                const damage = Math.round(enemy.attack * player.defenseModifier);
+                player.hp -= damage;
+                updatePlayerDisplay();
+                if(player.hp <= 0) {
+                    showGameOver(false);
+                    return;
                 }
+                await sleep(500);
             }
             
-            // Reset for next round
-            player.defenseModifier = 1.0; // Reset defense
+            player.defenseModifier = 1.0;
             isRoundInProgress = false;
+            startRoundBtn.disabled = false;
+        }
 
-            if(player.hp > 0) {
-                const livingEnemies = enemies.filter(e => e.hp > 0).length;
-                if(livingEnemies > 0) {
-                    logMessage("Choose your next actions!", "lightblue");
-                    startRoundBtn.disabled = false;
-                    startRoundBtn.textContent = "Start Round";
-                } else {
-                    logMessage("All enemies defeated! YOU WIN!", "gold");
-                    startRoundBtn.textContent = "Victory!";
-                }
-            }
+        function showGameOver(isVictory) {
+            const modal = document.getElementById('game-over-modal');
+            const text = document.getElementById('game-over-text');
+            modal.style.display = 'flex';
+            text.textContent = isVictory ? "You Win!" : "Game Over";
+            text.style.color = isVictory ? 'gold' : 'red';
         }
 
         function sleep(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
         }
 
-        // --- INITIALIZE GAME ---
         function init() {
+            setupCarousels();
             updateEnemyDisplay();
             updatePlayerDisplay();
-            logMessage("A wild Ogre, Ghost, and Dragon appear!");
+             Object.keys(items).forEach(category => {
+                updateStatsDisplay(category, 0);
+            });
         }
 
         window.onload = init;
+
     </script>
 </body>
 </html>
+�
