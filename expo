@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turn-Based Emoji RPG</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles for the game */
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background-color: #1a202c;
+            color: #e2e8f0;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .game-container {
+            width: 100%;
+            max-width: 1000px;
+            height: 100vh;
+            max-height: 700px;
+            background-color: #2d3748;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            border: 4px solid #4a5568;
+            position: relative;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+        }
+        .selection-corner {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            background-color: #4a5568;
+            border-radius: 15px;
+            border: 3px solid #718096;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .selection-corner:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(198, 222, 255, 0.5);
+        }
+        .top-left { top: 2rem; left: 2rem; }
+        .top-right { top: 2rem; right: 2rem; }
+        .bottom-left { bottom: 2rem; left: 2rem; }
+        .bottom-right { bottom: 2rem; right: 2rem; }
+        .carousel {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 0 10px;
+        }
+        .carousel-btn {
+            background: none;
+            border: none;
+            color: #cbd5e0;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .carousel-btn:hover {
+            color: #fff;
+            transform: scale(1.2);
+        }
+        .selected-emoji {
+            font-size: 3.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        .category-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: #a0aec0;
+            margin-bottom: 5px;
+        }
+        .enemy {
+            transition: all 0.3s ease;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.7);
+        }
+        .enemy.attacked {
+            animation: shake 0.5s;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+            20%, 40%, 60%, 80% { transform: translateX(10px); }
+        }
+        .health-bar-container {
+            width: 80%;
+            height: 10px;
+            background-color: #718096;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        .health-bar {
+            height: 100%;
+            background-color: #48bb78;
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+        #message-log {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 100px;
+            background-color: rgba(0, 0, 0, 0.4);
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 0.8rem;
+            overflow-y: auto;
+            border: 2px solid #4a5568;
+        }
+        #start-round-btn {
+            transition: all 0.3s ease;
+        }
+        #start-round-btn:disabled {
+            background-color: #718096;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body class="bg-gray-900">
+
+    <div id="game-container" class="game-container">
+
+        <!-- Corner Selections -->
+        <div id="attack-selector" class="selection-corner top-left">
+            <div class="category-title">Attack</div>
+            <div class="carousel">
+                <button class="carousel-btn" onclick="cycleItem('attack', -1)">&lt;</button>
+                <div id="attack-emoji" class="selected-emoji">⚔️</div>
+                <button class="carousel-btn" onclick="cycleItem('attack', 1)">&gt;</button>
+            </div>
+        </div>
+
+        <div id="heal-selector" class="selection-corner top-right">
+            <div class="category-title">Healing</div>
+            <div class="carousel">
+                <button class="carousel-btn" onclick="cycleItem('heal', -1)">&lt;</button>
+                <div id="heal-emoji" class="selected-emoji">❤️</div>
+                <button class="carousel-btn" onclick="cycleItem('heal', 1)">&gt;</button>
+            </div>
+        </div>
+
+        <div id="defense-selector" class="selection-corner bottom-left">
+            <div class="category-title">Defense</div>
+            <div class="carousel">
+                <button class="carousel-btn" onclick="cycleItem('defense', -1)">&lt;</button>
+                <div id="defense-emoji" class="selected-emoji">🛡️</div>
+                <button class="carousel-btn" onclick="cycleItem('defense', 1)">&gt;</button>
+            </div>
+        </div>
+
+        <div id="magic-selector" class="selection-corner bottom-right">
+            <div class="category-title">Magic</div>
+            <div class="carousel">
+                <button class="carousel-btn" onclick="cycleItem('magic', -1)">&lt;</button>
+                <div id="magic-emoji" class="selected-emoji">✨</div>
+                <button class="carousel-btn" onclick="cycleItem('magic', 1)">&gt;</button>
+            </div>
+        </div>
+
+        <!-- Central Area -->
+        <div class="flex-grow flex flex-col items-center justify-center">
+            <!-- Enemies -->
+            <div id="enemy-container" class="flex space-x-12 mb-8">
+                <!-- Enemies will be generated by JS -->
+            </div>
+            
+             <!-- Player Status -->
+            <div id="player-status" class="text-center">
+                 <div class="text-5xl mb-2">🧑‍🚀</div>
+                 <div class="w-full bg-gray-600 rounded-full h-4 border-2 border-gray-500">
+                     <div id="player-health-bar" class="bg-blue-500 h-full rounded-full" style="width: 100%"></div>
+                 </div>
+                 <div id="player-health-text" class="text-sm mt-1">100 / 100</div>
+             </div>
+
+            <!-- Start Button -->
+            <button id="start-round-btn" class="mt-8 px-8 py-4 bg-green-600 hover:bg-green-700 rounded-lg text-xl shadow-lg" onclick="startRound()">
+                Start Round
+            </button>
+        </div>
+
+        <!-- Message Log -->
+        <div id="message-log">
+            <p>Welcome! Choose your actions and start the battle!</p>
+        </div>
+
+    </div>
+
+    <script>
+        // --- DATA ---
+        const items = {
+            attack: [
+                { emoji: '⚔️', name: 'Sword', power: 15 },
+                { emoji: '🏹', name: 'Bow', power: 12 },
+                { emoji: '💣', name: 'Bomb', power: 25 },
+            ],
+            heal: [
+                { emoji: '❤️', name: 'Small Potion', power: 20 },
+                { emoji: '💖', name: 'Large Potion', power: 40 },
+                { emoji: '🥗', name: 'Salad', power: 15 },
+            ],
+            defense: [
+                { emoji: '🛡️', name: 'Shield', power: 0.5 }, // Reduces incoming damage by 50%
+                { emoji: '🧱', name: 'Wall', power: 0.2 }, // Reduces incoming damage by 80%
+                { emoji: '💨', name: 'Dodge', power: 0.0 }, // 100% chance to dodge one attack
+            ],
+            magic: [
+                { emoji: '✨', name: 'Sparkle', power: 18 },
+                { emoji: '🔥', name: 'Fireball', power: 30 },
+                { emoji: '❄️', name: 'Freeze', power: 10 }, // Deals damage and may skip enemy turn
+            ],
+        };
+
+        let enemies = [
+            { id: 'enemy-1', emoji: '👹', name: 'Ogre', hp: 80, maxHp: 80, attack: 10 },
+            { id: 'enemy-2', emoji: '👻', name: 'Ghost', hp: 60, maxHp: 60, attack: 15 },
+            { id: 'enemy-3', emoji: '🐲', name: 'Dragon', hp: 120, maxHp: 120, attack: 20 },
+        ];
+        
+        let player = {
+            hp: 100,
+            maxHp: 100,
+            defenseModifier: 1.0 // No damage reduction initially
+        };
+
+        // --- STATE ---
+        const currentSelections = {
+            attack: 0,
+            heal: 0,
+            defense: 0,
+            magic: 0,
+        };
+        let isRoundInProgress = false;
+
+        // --- DOM ELEMENTS ---
+        const enemyContainer = document.getElementById('enemy-container');
+        const messageLog = document.getElementById('message-log');
+        const startRoundBtn = document.getElementById('start-round-btn');
+        const playerHealthBar = document.getElementById('player-health-bar');
+        const playerHealthText = document.getElementById('player-health-text');
+
+
+        // --- FUNCTIONS ---
+
+        function logMessage(message, color = 'white') {
+            const p = document.createElement('p');
+            p.textContent = message;
+            p.style.color = color;
+            messageLog.appendChild(p);
+            messageLog.scrollTop = messageLog.scrollHeight; // Auto-scroll to bottom
+        }
+
+        function cycleItem(category, direction) {
+            if (isRoundInProgress) return;
+            let indices = currentSelections[category];
+            indices = (indices + direction + items[category].length) % items[category].length;
+            currentSelections[category] = indices;
+            document.getElementById(`${category}-emoji`).textContent = items[category][indices].emoji;
+        }
+
+        function updateEnemyDisplay() {
+            enemyContainer.innerHTML = '';
+            enemies.forEach(enemy => {
+                if (enemy.hp > 0) {
+                    const enemyDiv = document.createElement('div');
+                    enemyDiv.id = enemy.id;
+                    enemyDiv.className = 'enemy text-center';
+                    enemyDiv.innerHTML = `
+                        <div class="text-6xl">${enemy.emoji}</div>
+                        <div class="health-bar-container">
+                            <div id="${enemy.id}-health" class="health-bar" style="width: ${ (enemy.hp / enemy.maxHp) * 100}%"></div>
+                        </div>
+                        <div class="text-xs mt-1">${enemy.name}</div>
+                    `;
+                    enemyContainer.appendChild(enemyDiv);
+                }
+            });
+        }
+        
+        function updatePlayerDisplay() {
+            const healthPercentage = (player.hp / player.maxHp) * 100;
+            playerHealthBar.style.width = `${healthPercentage}%`;
+            playerHealthText.textContent = `${player.hp} / ${player.maxHp}`;
+             if (player.hp <= 0) {
+                logMessage("GAME OVER", "red");
+                startRoundBtn.disabled = true;
+                startRoundBtn.textContent = "Defeated";
+            }
+        }
+
+
+        async function startRound() {
+            if (isRoundInProgress || player.hp <= 0) return;
+            isRoundInProgress = true;
+            startRoundBtn.disabled = true;
+            startRoundBtn.textContent = "Round in Progress...";
+            messageLog.innerHTML = ''; // Clear log for new round
+            
+            // --- Player's Turn ---
+            logMessage("--- Player's Turn ---", "#63b3ed");
+            await sleep(500);
+
+            // 1. Defense
+            const defenseItem = items.defense[currentSelections.defense];
+            player.defenseModifier = defenseItem.power;
+            logMessage(`Player uses ${defenseItem.name} (${defenseItem.emoji}). Incoming damage reduced.`);
+            await sleep(1000);
+            
+            // 2. Healing
+            const healItem = items.heal[currentSelections.heal];
+            player.hp = Math.min(player.maxHp, player.hp + healItem.power);
+            logMessage(`Player uses ${healItem.name} (${healItem.emoji}), recovering ${healItem.power} HP.`, '#48bb78');
+            updatePlayerDisplay();
+            await sleep(1000);
+
+            // 3. Attack & Magic (target first living enemy)
+            const attackItem = items.attack[currentSelections.attack];
+            const magicItem = items.magic[currentSelections.magic];
+            
+            let targetEnemy = enemies.find(e => e.hp > 0);
+            if (targetEnemy) {
+                // Attack
+                targetEnemy.hp -= attackItem.power;
+                logMessage(`Player attacks ${targetEnemy.name} with ${attackItem.name} (${attackItem.emoji}) for ${attackItem.power} damage!`, '#f56565');
+                document.getElementById(targetEnemy.id)?.classList.add('attacked');
+                await sleep(500);
+                document.getElementById(targetEnemy.id)?.classList.remove('attacked');
+                
+                // Magic
+                targetEnemy.hp -= magicItem.power;
+                logMessage(`Player casts ${magicItem.name} (${magicItem.emoji}) on ${targetEnemy.name} for ${magicItem.power} damage!`, '#d53f8c');
+                document.getElementById(targetEnemy.id)?.classList.add('attacked');
+                updateEnemyDisplay();
+                await sleep(500);
+                document.getElementById(targetEnemy.id)?.classList.remove('attacked');
+            } else {
+                 logMessage("All enemies defeated! YOU WIN!", "gold");
+                 isRoundInProgress = false;
+                 startRoundBtn.textContent = "Victory!";
+                 return; // End game
+            }
+            
+            updateEnemyDisplay();
+            await sleep(1000);
+            
+            // --- Enemies' Turn ---
+            logMessage("--- Enemies' Turn ---", "#f56565");
+            await sleep(500);
+
+            for (const enemy of enemies) {
+                if (enemy.hp > 0) {
+                    const damage = Math.round(enemy.attack * player.defenseModifier);
+                    player.hp -= damage;
+                    player.hp = Math.max(0, player.hp);
+                    logMessage(`${enemy.name} ${enemy.emoji} attacks player for ${damage} damage.`);
+                    updatePlayerDisplay();
+                    if(player.hp <= 0) break; // Stop if player is defeated
+                    await sleep(1000);
+                }
+            }
+            
+            // Reset for next round
+            player.defenseModifier = 1.0; // Reset defense
+            isRoundInProgress = false;
+
+            if(player.hp > 0) {
+                const livingEnemies = enemies.filter(e => e.hp > 0).length;
+                if(livingEnemies > 0) {
+                    logMessage("Choose your next actions!", "lightblue");
+                    startRoundBtn.disabled = false;
+                    startRoundBtn.textContent = "Start Round";
+                } else {
+                    logMessage("All enemies defeated! YOU WIN!", "gold");
+                    startRoundBtn.textContent = "Victory!";
+                }
+            }
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // --- INITIALIZE GAME ---
+        function init() {
+            updateEnemyDisplay();
+            updatePlayerDisplay();
+            logMessage("A wild Ogre, Ghost, and Dragon appear!");
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
