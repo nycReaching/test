@@ -7,6 +7,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
         body {
             font-family: 'Inter', sans-serif;
             touch-action: none; /* Prevents scrolling on mobile while dragging */
@@ -44,6 +48,7 @@
             font-weight: bold;
             font-size: 1.25rem;
             pointer-events: none;
+            z-index: 2000; /* Ensure it's on top */
         }
 
         @keyframes floatUp {
@@ -58,12 +63,12 @@
         }
     </style>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex flex-col items-center justify-center min-h-screen p-4 overflow-hidden">
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
 
-    <div id="game-container" class="w-full max-w-4xl h-[80vh] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl relative overflow-hidden flex flex-col">
+    <div id="game-container" class="w-full h-full bg-white dark:bg-gray-800 shadow-2xl relative flex flex-col">
 
         <!-- Top UI Bar -->
-        <div class="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700 z-10">
+        <div class="flex-shrink-0 flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700 z-10">
             <h1 class="text-xl md:text-2xl font-bold text-gray-800 dark:text-white">Emoji Trader</h1>
             <div class="flex space-x-4 md:space-x-6 text-center">
                 <div>
@@ -77,20 +82,23 @@
             </div>
         </div>
 
-        <!-- Game Area -->
-        <div id="game-area" class="flex-grow relative">
-            <!-- Emojis will be dynamically added here -->
-        </div>
-
-        <!-- Drop Zones -->
-        <div class="grid grid-cols-2 gap-0">
-            <div id="keep-zone" class="drop-zone bg-blue-400 dark:bg-blue-600 text-white text-center py-6">
-                <h2 class="text-2xl font-bold">KEEP</h2>
-                <p class="text-sm opacity-80">Drag practical items here</p>
+        <!-- Play Area, contains the emoji field and the drop zones -->
+        <div id="play-area" class="flex-grow flex flex-col relative">
+            <!-- Emoji Field: where emojis drift -->
+            <div id="emoji-field" class="flex-grow relative">
+                <!-- Emojis will be dynamically added here -->
             </div>
-            <div id="sell-zone" class="drop-zone bg-green-400 dark:bg-green-500 text-white text-center py-6">
-                <h2 class="text-2xl font-bold">SELL</h2>
-                <p class="text-sm opacity-80">Drag valuable items here</p>
+            
+            <!-- Drop Zones -->
+            <div class="grid grid-cols-2 gap-0">
+                <div id="keep-zone" class="drop-zone bg-blue-400 dark:bg-blue-600 text-white text-center py-6">
+                    <h2 class="text-2xl font-bold">KEEP</h2>
+                    <p class="text-sm opacity-80">Drag practical items here</p>
+                </div>
+                <div id="sell-zone" class="drop-zone bg-green-400 dark:bg-green-500 text-white text-center py-6">
+                    <h2 class="text-2xl font-bold">SELL</h2>
+                    <p class="text-sm opacity-80">Drag valuable items here</p>
+                </div>
             </div>
         </div>
     </div>
@@ -109,7 +117,9 @@
 
 
     <script>
-        const gameArea = document.getElementById('game-area');
+        // --- Element References ---
+        const playArea = document.getElementById('play-area');
+        const emojiField = document.getElementById('emoji-field');
         const scoreEl = document.getElementById('score');
         const emojiCounterEl = document.getElementById('emoji-counter');
         const keepZoneEl = document.getElementById('keep-zone');
@@ -124,36 +134,23 @@
 
         const EMOJIS = [
             // Practical (good for 'Keep')
-            { char: '🔨', type: 'practical', value: 10 },
-            { char: '🔧', type: 'practical', value: 10 },
-            { char: '🍎', type: 'practical', value: 8 },
-            { char: '🍞', type: 'practical', value: 8 },
-            { char: '👕', type: 'practical', value: 6 },
-            { char: '🪑', type: 'practical', value: 6 },
-            { char: '🚗', type: 'practical', value: 15 },
-            { char: '💻', type: 'practical', value: 15 },
-            { char: '📚', type: 'practical', value: 7 },
-            { char: '💡', type: 'practical', value: 9 },
+            { char: '🔨', type: 'practical', value: 10 }, { char: '🔧', type: 'practical', value: 10 },
+            { char: '�', type: 'practical', value: 8 }, { char: '🍞', type: 'practical', value: 8 },
+            { char: '👕', type: 'practical', value: 6 }, { char: '🪑', type: 'practical', value: 6 },
+            { char: '🚗', type: 'practical', value: 15 }, { char: '💻', type: 'practical', value: 15 },
+            { char: '📚', type: 'practical', value: 7 }, { char: '💡', type: 'practical', value: 9 },
 
             // Valuable (good for 'Sell')
-            { char: '💎', type: 'valuable', value: 20 },
-            { char: '💰', type: 'valuable', value: 18 },
-            { char: '👑', type: 'valuable', value: 16 },
-            { char: '💍', type: 'valuable', value: 14 },
-            { char: '🖼️', type: 'valuable', value: 12 },
-            { char: '🏺', type: 'valuable', value: 12 },
-            { char: '📈', type: 'valuable', value: 10 },
-            { char: '🏆', type: 'valuable', value: 15 },
-            { char: '🔑', type: 'valuable', value: 8 },
-            { char: '✨', type: 'valuable', value: 7 },
+            { char: '💎', type: 'valuable', value: 20 }, { char: '💰', type: 'valuable', value: 18 },
+            { char: '👑', type: 'valuable', value: 16 }, { char: '💍', type: 'valuable', value: 14 },
+            { char: '🖼️', type: 'valuable', value: 12 }, { char: '🏺', type: 'valuable', value: 12 },
+            { char: '📈', type: 'valuable', value: 10 }, { char: '🏆', type: 'valuable', value: 15 },
+            { char: '🔑', type: 'valuable', value: 8 }, { char: '✨', type: 'valuable', value: 7 },
             
             // Neutral
-            { char: '😊', type: 'neutral', value: 2 },
-            { char: '👍', type: 'neutral', value: 2 },
-            { char: '❤️', type: 'neutral', value: 2 },
-            { char: '🎈', type: 'neutral', value: 2 },
-            { char: '⭐', type: 'neutral', value: 2 },
-            { char: '❓', type: 'neutral', value: 1 },
+            { char: '😊', type: 'neutral', value: 2 }, { char: '👍', type: 'neutral', value: 2 },
+            { char: '❤️', type: 'neutral', value: 2 }, { char: '🎈', type: 'neutral', value: 2 },
+            { char: '⭐', type: 'neutral', value: 2 }, { char: '❓', type: 'neutral', value: 1 },
             { char: '🤔', type: 'neutral', value: 1 },
         ];
 
@@ -174,9 +171,13 @@
             score = 0;
             emojiCount = 0;
             activeEmojis = [];
-            gameArea.innerHTML = '';
+            emojiField.innerHTML = ''; // Clear only the emoji field
             updateUI();
             gameOverModal.classList.add('hidden');
+
+            // Clear any lingering intervals or animation frames
+            if (emojiSpawner) clearInterval(emojiSpawner);
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
 
             // Start spawning emojis
             emojiSpawner = setInterval(spawnEmoji, EMOJI_SPAWN_INTERVAL);
@@ -186,8 +187,9 @@
         }
 
         function spawnEmoji() {
-            if (emojiCount >= MAX_EMOJIS) {
-                endGame();
+            // Defensive check: if the game area isn't rendered, wait for the next tick.
+            const emojiFieldRect = emojiField.getBoundingClientRect();
+            if (emojiFieldRect.width === 0 || emojiFieldRect.height === 0) {
                 return;
             }
 
@@ -196,10 +198,9 @@
             emojiEl.classList.add('emoji');
             emojiEl.textContent = emojiData.char;
             
-            const gameAreaRect = gameArea.getBoundingClientRect();
-            // Start in the center
-            const x = gameAreaRect.width / 2;
-            const y = gameAreaRect.height / 2;
+            // Emojis spawn in the center of the emojiField
+            const x = emojiFieldRect.width / 2;
+            const y = emojiFieldRect.height / 2;
 
             const emojiState = {
                 el: emojiEl,
@@ -214,7 +215,7 @@
             emojiEl.style.top = `${y}px`;
 
             activeEmojis.push(emojiState);
-            gameArea.appendChild(emojiEl);
+            emojiField.appendChild(emojiEl);
             
             // Add drag listeners
             emojiEl.addEventListener('mousedown', startDrag);
@@ -222,16 +223,20 @@
         }
         
         function gameLoop() {
+            // End condition is checked here
             if (emojiCount >= MAX_EMOJIS && activeEmojis.length === 0) {
                  endGame();
-                 return;
+                 return; // Stop the loop
             }
 
-            const gameAreaRect = gameArea.getBoundingClientRect();
+            const emojiFieldRect = emojiField.getBoundingClientRect();
 
-            activeEmojis.forEach((emoji, index) => {
-                // Dont move if being dragged
-                if (emoji.el.classList.contains('dragging')) return;
+            // Use a reverse loop for safe removal during iteration
+            for (let i = activeEmojis.length - 1; i >= 0; i--) {
+                const emoji = activeEmojis[i];
+
+                // Don't move if being dragged
+                if (emoji.el.classList.contains('dragging')) continue;
 
                 emoji.x += emoji.dx;
                 emoji.y += emoji.dy;
@@ -239,16 +244,16 @@
                 emoji.el.style.left = `${emoji.x}px`;
                 emoji.el.style.top = `${emoji.y}px`;
 
-                // Check for collision with walls
-                if (emoji.x < 0 || emoji.x > gameAreaRect.width - emoji.el.offsetWidth ||
-                    emoji.y < 0 || emoji.y > gameAreaRect.height - emoji.el.offsetHeight) {
+                // Check for collision with the walls of the emojiField
+                if (emoji.x < 0 || emoji.x > emojiFieldRect.width - emoji.el.offsetWidth ||
+                    emoji.y < 0 || emoji.y > emojiFieldRect.height - emoji.el.offsetHeight) {
                     
                     // Remove emoji if it hits the edge
                     emoji.el.remove();
-                    activeEmojis.splice(index, 1);
+                    activeEmojis.splice(i, 1);
                     incrementEmojiCounter();
                 }
-            });
+            }
 
             animationFrameId = requestAnimationFrame(gameLoop);
         }
@@ -261,8 +266,8 @@
         function incrementEmojiCounter() {
             emojiCount++;
             updateUI();
+            // This is the main control to stop spawning new emojis
             if (emojiCount >= MAX_EMOJIS) {
-                 // The game will end naturally when the last emoji is sorted or disappears
                  clearInterval(emojiSpawner);
             }
         }
@@ -271,17 +276,18 @@
             score += points;
             updateUI();
 
-            // Create score popup animation
             const popup = document.createElement('div');
             popup.textContent = (points > 0 ? `+` : '') + points;
             popup.className = `score-popup ${points > 0 ? 'text-green-500' : 'text-red-500'}`;
+            // Position the popup relative to the play area for consistency
             popup.style.left = `${x}px`;
             popup.style.top = `${y}px`;
-            gameArea.appendChild(popup);
+            playArea.appendChild(popup);
             setTimeout(() => popup.remove(), 1500);
         }
 
         function endGame() {
+            // Ensure all timers are stopped
             clearInterval(emojiSpawner);
             cancelAnimationFrame(animationFrameId);
             finalScoreEl.textContent = score;
@@ -294,7 +300,6 @@
             e.preventDefault();
             const target = e.target;
             
-            // Find the corresponding emoji object
             draggedEmoji = activeEmojis.find(emoji => emoji.el === target);
             if (!draggedEmoji) return;
             
@@ -302,7 +307,6 @@
 
             const event = e.touches ? e.touches[0] : e;
             const rect = target.getBoundingClientRect();
-            const gameAreaRect = gameArea.getBoundingClientRect();
             
             offsetX = event.clientX - rect.left;
             offsetY = event.clientY - rect.top;
@@ -318,21 +322,21 @@
             e.preventDefault();
 
             const event = e.touches ? e.touches[0] : e;
-            const gameAreaRect = gameArea.getBoundingClientRect();
+            const playAreaRect = playArea.getBoundingClientRect();
 
-            let newX = event.clientX - gameAreaRect.left - offsetX;
-            let newY = event.clientY - gameAreaRect.top - offsetY;
+            // Calculate position relative to the playArea
+            let newX = event.clientX - playAreaRect.left - offsetX;
+            let newY = event.clientY - playAreaRect.top - offsetY;
 
-            // Constrain within game area
-            newX = Math.max(0, Math.min(newX, gameAreaRect.width - draggedEmoji.el.offsetWidth));
-            newY = Math.max(0, Math.min(newY, gameAreaRect.height - draggedEmoji.el.offsetHeight));
-
-            draggedEmoji.x = newX;
-            draggedEmoji.y = newY;
+            // Constrain movement to within the play area
+            newX = Math.max(0, Math.min(newX, playAreaRect.width - draggedEmoji.el.offsetWidth));
+            newY = Math.max(0, Math.min(newY, playAreaRect.height - draggedEmoji.el.offsetHeight));
+            
+            // The emoji element is a child of emojiField, but we set its position
+            // relative to the playArea while dragging to allow it to go over the drop zones.
             draggedEmoji.el.style.left = `${newX}px`;
             draggedEmoji.el.style.top = `${newY}px`;
             
-            // Highlight drop zones
             checkDropZoneHover(event.clientX, event.clientY);
         }
         
@@ -340,17 +344,8 @@
             const keepRect = keepZoneEl.getBoundingClientRect();
             const sellRect = sellZoneEl.getBoundingClientRect();
 
-            if (clientX > keepRect.left && clientX < keepRect.right && clientY > keepRect.top && clientY < keepRect.bottom) {
-                keepZoneEl.classList.add('over');
-            } else {
-                keepZoneEl.classList.remove('over');
-            }
-
-            if (clientX > sellRect.left && clientX < sellRect.right && clientY > sellRect.top && clientY < sellRect.bottom) {
-                sellZoneEl.classList.add('over');
-            } else {
-                sellZoneEl.classList.remove('over');
-            }
+            keepZoneEl.classList.toggle('over', clientX > keepRect.left && clientX < keepRect.right && clientY > keepRect.top && clientY < keepRect.bottom);
+            sellZoneEl.classList.toggle('over', clientX > sellRect.left && clientX < sellRect.right && clientY > sellRect.top && clientY < sellRect.bottom);
         }
 
 
@@ -358,7 +353,6 @@
             if (!draggedEmoji) return;
             
             const event = e.changedTouches ? e.changedTouches[0] : e;
-
             handleDrop(event.clientX, event.clientY);
 
             draggedEmoji.el.classList.remove('dragging');
@@ -383,27 +377,20 @@
             const droppedInSell = clientX > sellRect.left && clientX < sellRect.right && clientY > sellRect.top && clientY < sellRect.bottom;
 
             if (droppedInKeep) {
-                if (emojiData.type === 'practical') {
-                    points = emojiData.value; // Correct choice
-                } else if (emojiData.type === 'valuable') {
-                    points = -Math.round(emojiData.value / 2); // Wrong choice
-                } else {
-                    points = emojiData.value; // Neutral
-                }
+                points = (emojiData.type === 'practical') ? emojiData.value : -Math.round(emojiData.value / 2);
             } else if (droppedInSell) {
-                 if (emojiData.type === 'valuable') {
-                    points = emojiData.value; // Correct choice
-                } else if (emojiData.type === 'practical') {
-                    points = -Math.round(emojiData.value / 2); // Wrong choice
-                } else {
-                    points = emojiData.value; // Neutral
-                }
+                points = (emojiData.type === 'valuable') ? emojiData.value : -Math.round(emojiData.value / 2);
             } else {
-                return; // Not dropped in a valid zone
+                // *** BUG FIX ***
+                // Not dropped in a valid zone. Restore its state based on its current visual position.
+                // offsetLeft/Top are relative to the offsetParent (emojiField), which is what we need for the gameLoop physics.
+                draggedEmoji.x = draggedEmoji.el.offsetLeft;
+                draggedEmoji.y = draggedEmoji.el.offsetTop;
+                return; 
             }
 
             // If dropped in a zone, process it
-            addScore(points, draggedEmoji.x, draggedEmoji.y);
+            addScore(points, draggedEmoji.el.offsetLeft, draggedEmoji.el.offsetTop);
             
             // Remove the emoji from the game
             draggedEmoji.el.remove();
@@ -413,7 +400,6 @@
             }
             incrementEmojiCounter();
         }
-
 
         restartButton.addEventListener('click', startGame);
 
