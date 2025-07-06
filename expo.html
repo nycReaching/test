@@ -3,389 +3,831 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Emoji Trader</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Visual Novel / Roguelike RPG</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Uncial+Antiqua&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Caveat&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500&display=swap" rel="stylesheet">
     <style>
-        html, body {
-            height: 100%;
-            overflow: hidden;
+        /* --- Theme Color Definitions --- */
+        :root {
+            /* Default to Day Theme */
+            --background-color: #bbdefb;
+            --primary-text: #0d47a1;
+            --secondary-text: #1976d2;
+            --card-bg: #ffffff;
+            --grid-bg: #ffffff;
+            --card-border: #64b5f6;
+            --card-shadow: rgba(0, 0, 0, 0.15);
+            --health-bar-bg: #e0e0e0;
+            --health-bar-color: #f44336;
+            --current-city-emoji: '🏙️'; /* Default emoji for day theme */
         }
+
+        .theme-day {
+            --background-color: #bbdefb;
+            --primary-text: #0d47a1;
+            --secondary-text: #1976d2;
+            --card-bg: #ffffff;
+            --grid-bg: #ffffff;
+            --card-border: #64b5f6;
+            --card-shadow: rgba(0, 0, 0, 0.15);
+            --health-bar-bg: #e0e0e0;
+            --health-bar-color: #f44336;
+        }
+
+        .theme-sunset {
+            /* Updated sunset theme with dark purple and dark orange */
+            --background-color: #3b1f4a; /* Dark Purple */
+            --primary-text: #ffac4e;   /* Bright Orange */
+            --secondary-text: #e8b7e8; /* Light Purple */
+            --card-bg: #5a3d6b;       /* Lighter Purple */
+            --grid-bg: #5a3d6b;
+            --card-border: #c77725;   /* Dark Orange */
+            --card-shadow: rgba(0, 0, 0, 0.4);
+            --health-bar-bg: #6d5a91;
+            --health-bar-color: #ff8c00; /* Dark Orange */
+        }
+
+        .theme-night {
+            --background-color: #121212;
+            --primary-text: #e0e0e0;
+            --secondary-text: #a0a0a0;
+            --card-bg: #1e1e1e;
+            --grid-bg: #1e1e1e;
+            --card-border: #333;
+            --card-shadow: rgba(0, 0, 0, 0.5);
+            --health-bar-bg: #424242;
+            --health-bar-color: #f44336;
+        }
+
+        /* --- New Environment Themes --- */
+        
+        /* Pesha's Apartment Theme - Muted and soft */
+        .theme-pesha {
+            --background-color: #5D5C61; /* Muted grey-purple */
+            --primary-text: #B7B7A4;     /* Soft beige */
+            --secondary-text: #A5A58D;   /* Slightly darker beige */
+            --card-bg: #737877;          /* Muted teal-grey */
+            --grid-bg: #737877;
+            --card-border: #939393;      /* Light grey */
+            --card-shadow: rgba(0, 0, 0, 0.25);
+            --health-bar-bg: #8B8B83;
+            --health-bar-color: #D4D4CE;
+        }
+
+        /* Moro's Apartment Theme - Green glow */
+        .theme-moro {
+            --background-color: #1a2a22; /* Very dark green */
+            --primary-text: #69ffb2;   /* Bright glow green */
+            --secondary-text: #a0d6b4; /* Softer green */
+            --card-bg: #2a4a3a;       /* Dark green */
+            --grid-bg: #2a4a3a;
+            --card-border: #4caf50;   /* Standard green */
+            --card-shadow: rgba(76, 175, 80, 0.3);
+            --health-bar-bg: #3e5e4e;
+            --health-bar-color: #69ffb2;
+        }
+
+        /* Ritzi's Work Theme - Convenience Store (Pink) */
+        .theme-ritzi {
+            --background-color: #fce4ec; /* Light Pink */
+            --primary-text: #ad1457;     /* Dark Pink */
+            --secondary-text: #d81b60;   /* Medium Pink */
+            --card-bg: #ffffff;          /* White */
+            --grid-bg: #ffffff;
+            --card-border: #f8bbd0;      /* Lighter Pink */
+            --card-shadow: rgba(173, 20, 87, 0.15);
+            --health-bar-bg: #fce4ec;
+            --health-bar-color: #ec407a; /* Bright Pink */
+        }
+
+        /* Yoa's Fountain Plaza Theme - Lunar */
+        .theme-yoa {
+            --background-color: #0b192f; /* Deep space blue */
+            --primary-text: #f0f8ff;   /* Alice blue (off-white) */
+            --secondary-text: #b0c4de; /* Light steel blue */
+            --card-bg: #1f3a5f;       /* Darker blue */
+            --grid-bg: #1f3a5f;
+            --card-border: #7b94b8;   /* Muted blue-grey */
+            --card-shadow: rgba(255, 255, 255, 0.1);
+            --health-bar-bg: #4a6a8a;
+            --health-bar-color: #FFC107; /* Moon yellow */
+        }
+
+        /* Train Theme */
+        .theme-train {
+            --background-color: #616161; /* Medium Grey */
+            --primary-text: #ffeb3b;   /* Yellow */
+            --secondary-text: #e0e0e0; /* Light Grey */
+            --card-bg: #424242;       /* Dark Grey */
+            --grid-bg: #424242;
+            --card-border: #757575;   /* Grey */
+            --card-shadow: rgba(0, 0, 0, 0.4);
+            --health-bar-bg: #555;
+            --health-bar-color: #ffeb3b;
+        }
+
+        /* Hospital Theme */
+        .theme-hospital {
+            --background-color: #e3f2fd; /* Very Light Blue */
+            --primary-text: #01579b;   /* Dark Blue */
+            --secondary-text: #29b6f6; /* Light Blue */
+            --card-bg: #ffffff;       /* White */
+            --grid-bg: #ffffff;
+            --card-border: #81d4fa;   /* Lighter Blue */
+            --card-shadow: rgba(0, 0, 0, 0.1);
+            --health-bar-bg: #e0e0e0;
+            --health-bar-color: #ef5350; /* Red */
+        }
+
+        /* Old Factory Theme */
+        .theme-factory {
+            --background-color: #3e2723; /* Dark Brown */
+            --primary-text: #ffab40;   /* Orange Accent */
+            --secondary-text: #a1887f; /* Brown-Grey */
+            --card-bg: #4e342e;       /* Darker Brown */
+            --grid-bg: #4e342e;
+            --card-border: #bf360c;   /* Deep Orange (Rust) */
+            --card-shadow: rgba(0, 0, 0, 0.5);
+            --health-bar-bg: #6d4c41;
+            --health-bar-color: #ffab40;
+        }
+
+        /* Corporate Offices Theme */
+        .theme-corporate {
+            --background-color: #263238; /* Blue Grey */
+            --primary-text: #eceff1;   /* Light Grey */
+            --secondary-text: #90a4ae; /* Grey */
+            --card-bg: #37474f;       /* Darker Blue Grey */
+            --grid-bg: #37474f;
+            --card-border: #546e7a;   /* Grey */
+            --card-shadow: rgba(0, 0, 0, 0.3);
+            --health-bar-bg: #455a64;
+            --health-bar-color: #40c4ff; /* Light Blue Accent */
+        }
+
+        /* --- Basic Setup --- */
         body {
             font-family: 'Inter', sans-serif;
-            touch-action: none; /* Prevents scrolling on mobile while dragging */
+            background-color: var(--background-color);
+            color: var(--primary-text);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            transition: background-color 0.5s ease, color 0.5s ease;
         }
-        .emoji {
+
+        /* --- Main Game Container --- */
+        #game-container {
+            width: 100%;
+            max-width: 1400px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* --- Home Grid Area --- */
+        #home-grid-area {
+            flex-grow: 1;
+            background-color: var(--grid-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            padding: 20px;
+            display: grid;
+            /* Changed to 2 columns */
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            box-shadow: 0 4px 15px var(--card-shadow);
+            transition: background-color 0.5s ease, border-color 0.5s ease;
+        }
+        
+        .grid-item {
+            background-color: var(--background-color);
+            border-radius: 8px;
+            border: 1px solid var(--card-border);
+            min-height: 100px;
+            transition: background-color 0.5s ease, border-color 0.5s ease;
+            position: relative; /* Needed for absolute positioning of children */
+            overflow: hidden; /* Hide overflowing animation emojis */
+            z-index: 1; /* Ensure grid items are above the background emoji */
+        }
+
+        /* Style for the video container to make the iframe responsive */
+        #video-container {
+            padding: 0; /* Remove padding for the video container */
+        }
+
+        #video-container iframe {
+            width: 100%;
+            height: 100%;
+            border: 0;
+            border-radius: 8px; /* Match parent's border radius */
+        }
+
+        /* Background city emoji for the crowd container */
+        #crowd-container::after {
+            content: var(--current-city-emoji);
             position: absolute;
-            font-size: 2.5rem; /* 40px */
-            cursor: grab;
-            user-select: none;
-            text-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: transform 0.1s ease-out;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 12rem;
+            opacity: 0.1;
+            z-index: 0;
+            pointer-events: none; /* Make sure it doesn't interfere with clicks */
         }
-        .emoji.dragging {
-            cursor: grabbing;
+        
+        /* Styles for the floating crowd icons */
+        .crowd-icon {
+            position: absolute;
+            font-size: 1.8rem;
+            user-select: none; /* Prevent text selection */
+            opacity: 0.7;
+        }
+
+
+        /* --- Events Row --- */
+        #events-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: var(--grid-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px var(--card-shadow);
+            transition: background-color 0.5s ease, border-color 0.5s ease;
+        }
+
+        .event-emoji {
+            font-size: 2.5rem;
+            cursor: pointer;
+            transition: transform 0.2s ease, filter 0.3s ease;
+        }
+
+        .event-emoji:hover {
             transform: scale(1.2);
-            z-index: 1000;
-        }
-        .drop-zone {
-            transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
-        }
-        .drop-zone.over {
-            transform: scale(1.05);
-        }
-        #keep-zone.over {
-            background-color: #3b82f6; /* blue-500 */
-        }
-        #sell-zone.over {
-             background-color: #22c55e; /* green-500 */
-        }
-        #keep-zone.danger-over, #sell-zone.danger-over {
-            background-color: #ef4444; /* red-500 */
         }
 
-        /* Score animation */
-        .score-popup {
+        .event-emoji.locked {
+            filter: grayscale(100%) opacity(0.5);
+            cursor: not-allowed;
+        }
+        
+        .event-emoji.locked:hover {
+            transform: none;
+        }
+
+        /* --- Character Cards Area --- */
+        #character-cards-area {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+        
+        /* --- Card Flip Mechanics --- */
+        .character-card {
+            background-color: transparent;
+            aspect-ratio: 1 / 1.2; /* Adjusted ratio for more space */
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s, box-shadow 0.3s ease;
+            transform-style: preserve-3d;
+            box-shadow: 0 4px 15px var(--card-shadow);
+            border-radius: 12px;
+        }
+        
+        .character-card:hover .card-inner {
+             box-shadow: 0 8px 25px var(--card-shadow);
+        }
+
+        .card-inner.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
             position: absolute;
-            animation: floatUp 1.5s ease-out forwards;
-            font-weight: bold;
-            font-size: 1.25rem;
-            pointer-events: none;
-            z-index: 2000; /* Ensure it's on top */
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 15px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.5s ease, border-color 0.5s ease;
+        }
+        
+        .card-back {
+            transform: rotateY(180deg);
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--secondary-text);
         }
 
-        @keyframes floatUp {
-            from {
-                opacity: 1;
-                transform: translateY(0);
-            }
-            to {
-                opacity: 0;
-                transform: translateY(-60px);
-            }
+        /* --- Card Content Styling --- */
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .card-header .emoji {
+            font-size: 2rem;
+        }
+
+        .card-description {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--secondary-text);
+            flex-grow: 1;
+            margin: 10px 0;
+            transition: color 0.5s ease;
+        }
+
+        .card-description .highlight {
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
+        }
+        
+        .card-description .green { color: #4caf50; }
+        .card-description .black { color: #212121; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6), 0 0 5px #fff; }
+        .card-description .phone { color: #9c27b0; }
+        .card-description .moon { color: #FFC107; }
+
+        /* --- Character Actions --- */
+        .action-area {
+            margin-bottom: 10px;
+            padding: 8px;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            min-height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap; /* Allow items to wrap */
+        }
+        
+        /* Moro's Slot Machine */
+        .slot-reel {
+            font-size: 1.8rem;
+            background: var(--background-color);
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--card-border);
+        }
+        .spin-button {
+            font-size: 1.8rem; /* Increased size */
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.1s;
+        }
+        .spin-button:active {
+            transform: scale(0.9);
+        }
+
+        /* Pesha's Slider */
+        .action-slider {
+            width: 80%;
+            cursor: pointer;
+        }
+
+        /* Ritzi's Dice */
+        .die {
+            font-size: 2rem;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.2s ease;
+        }
+        .die:hover {
+            transform: rotate(15deg) scale(1.1);
+        }
+
+
+        /* --- Unique Items --- */
+        .unique-items {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .item-slot {
+            flex: 1;
+            height: 35px;
+            background-color: var(--background-color);
+            border: 1px dashed var(--card-border);
+            border-radius: 6px;
+            transition: background-color 0.5s ease, border-color 0.5s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+        }
+
+        /* --- Stats --- */
+        .health-stat {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .health-bar-container {
+            background-color: var(--health-bar-bg);
+            border-radius: 5px;
+            height: 10px;
+            flex-grow: 1;
+            overflow: hidden;
+            border: 1px solid var(--card-border);
+            transition: background-color 0.5s ease, border-color 0.5s ease;
+        }
+        
+        .health-bar {
+            background-color: var(--health-bar-color);
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease-in-out, background-color 0.5s ease;
+        }
+
+        .card-stats {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid var(--card-border);
+            padding-top: 10px;
+            transition: border-color 0.5s ease;
+        }
+
+        .stat {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .money-box {
+            background-color: #006400; /* Dark Green */
+            color: #ffffff;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .stat-depth {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .stat-hope {
+            font-family: 'Caveat', cursive;
+            font-size: 1.2rem;
+            font-weight: 700;
         }
     </style>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+<body class="theme-day"> 
+    <div id="game-container">
 
-    <div id="game-container" class="w-full h-full bg-white dark:bg-gray-800 shadow-2xl relative flex flex-col">
-
-        <!-- Top UI Bar -->
-        <div class="flex-shrink-0 flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700 z-10">
-            <h1 class="text-xl md:text-2xl font-bold text-gray-800 dark:text-white">Emoji Trader</h1>
-            <div class="flex space-x-4 md:space-x-6 text-center">
-                <div>
-                    <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">Score</span>
-                    <p id="score" class="text-lg md:text-2xl font-bold text-blue-600 dark:text-blue-400">0</p>
-                </div>
-                <div>
-                    <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">Emojis</span>
-                    <p id="emoji-counter" class="text-lg md:text-2xl font-bold text-gray-700 dark:text-gray-300">0 / 100</p>
-                </div>
+        <div id="home-grid-area">
+            <div id="crowd-container" class="grid-item"></div>
+            <div id="video-container" class="grid-item">
+                <iframe width="560" height="315" src="" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
             </div>
         </div>
 
-        <!-- Play Area, contains the emoji field and the drop zones -->
-        <div id="play-area" class="flex-grow flex flex-col relative">
-            <!-- Emoji Field: where emojis drift -->
-            <div id="emoji-field" class="flex-grow relative">
-                <!-- Emojis will be dynamically added here -->
-            </div>
-            
-            <!-- Drop Zones -->
-            <div class="grid grid-cols-2 gap-0">
-                <div id="keep-zone" class="drop-zone bg-blue-400 dark:bg-blue-600 text-white text-center py-6">
-                    <h2 class="text-2xl font-bold">KEEP</h2>
-                    <p class="text-sm opacity-80">Drag practical items here</p>
+        <div id="events-row">
+            <div class="event-emoji" id="theme-day-btn" title="City (day)">🏙️</div>
+            <div class="event-emoji" id="theme-sunset-btn" title="City (sunset)">🌇</div>
+            <div class="event-emoji" id="theme-night-btn" title="City (night)">🌃</div>
+            <div class="event-emoji" id="theme-pesha-btn" title="Pesha’s Apartment">🛋️</div>
+            <div class="event-emoji" id="theme-moro-btn" title="Moro’s Apartment">🪑</div>
+            <div class="event-emoji" id="theme-ritzi-btn" title="Ritzi’s Work">🏪</div>
+            <div class="event-emoji" id="theme-yoa-btn" title="Fountain Plaza (Yoa)">⛲</div>
+            <div class="event-emoji" id="theme-train-btn" title="Train (riding)">🚆</div>
+            <div class="event-emoji" id="theme-hospital-btn" title="Hospital">🏥</div>
+            <div class="event-emoji" id="theme-factory-btn" title="Old Factory">🏭</div>
+            <div class="event-emoji" id="theme-corporate-btn" title="Corporate Offices">🏢</div>
+        </div>
+
+        <div id="character-cards-area">
+            <div class="character-card" data-character="moro">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <div class="card-header"><span class="emoji">👨🏼‍🦱</span><span>Moro</span></div>
+                        <p class="card-description"><span class="highlight green">🟢 Moro’s head disappears into a field of green light,</span> shifting his awareness away from his mind and into the glow.</p>
+                        <div class="action-area" id="moro-action">
+                            <div class="slot-reel">❌</div>
+                            <div class="slot-reel">⭕</div>
+                            <div class="slot-reel">❌</div>
+                            <div class="spin-button" title="Spin">🟢</div>
+                        </div>
+                        <div class="unique-items">
+                            <div class="item-slot"></div>
+                            <div class="item-slot"></div>
+                            <div class="item-slot"></div>
+                        </div>
+                        <div class="health-stat"><span class="stat">(35/35)</span><div class="health-bar-container"><div class="health-bar" style="width: 100%;"></div></div></div>
+                        <div class="card-stats">
+                            <div class="stat"><span class="money-box">$20</span></div>
+                            <div class="stat stat-depth">Depth: 3</div>
+                            <div class="stat stat-hope">Hope: 4</div>
+                        </div>
+                    </div>
+                    <div class="card-back">More Info</div>
                 </div>
-                <div id="sell-zone" class="drop-zone bg-green-400 dark:bg-green-500 text-white text-center py-6">
-                    <h2 class="text-2xl font-bold">SELL</h2>
-                    <p class="text-sm opacity-80">Drag valuable items here</p>
+            </div>
+
+            <div class="character-card" data-character="pesha">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <div class="card-header"><span class="emoji">👩🏻‍🦱</span><span>Pesha</span></div>
+                        <p class="card-description"><span class="highlight black">⬛ Pesha is very hard to notice,</span> it’s something like a curse.</p>
+                        <div class="action-area" id="pesha-action">
+                           <input type="range" min="1" max="100" value="50" class="action-slider">
+                        </div>
+                        <div class="unique-items">
+                            <div class="item-slot"></div>
+                            <div class="item-slot"></div>
+                            <div class="item-slot"></div>
+                        </div>
+                        <div class="health-stat"><span class="stat">(42/42)</span><div class="health-bar-container"><div class="health-bar" style="width: 100%;"></div></div></div>
+                        <div class="card-stats">
+                            <div class="stat"><span class="money-box">$35</span></div>
+                            <div class="stat stat-depth">Depth: 5</div>
+                            <div class="stat stat-hope">Hope: 4</div>
+                        </div>
+                    </div>
+                    <div class="card-back">More Info</div>
+                </div>
+            </div>
+
+            <div class="character-card" data-character="ritzi">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <div class="card-header"><span class="emoji">👩🏻‍🦰</span><span>Ritzi</span></div>
+                        <p class="card-description"><span class="highlight phone">📱 Ritzi must stay on the phone with her “twin” or she’ll die,</span> but two minds are better than one.</p>
+                        <div class="action-area" id="ritzi-action">
+                            <div class="die">🎲</div>
+                            <div class="die">🎲</div>
+                            <div class="die">🎲</div>
+                            <div class="die">🎲</div>
+                            <div class="die">🎲</div>
+                        </div>
+                        <div class="unique-items"><div class="item-slot"></div><div class="item-slot"></div><div class="item-slot"></div></div>
+                        <div class="health-stat"><span class="stat">(40/40)</span><div class="health-bar-container"><div class="health-bar" style="width: 100%;"></div></div></div>
+                        <div class="card-stats">
+                            <div class="stat"><span class="money-box">$75</span></div>
+                            <div class="stat stat-depth">Depth: 3</div>
+                            <div class="stat stat-hope">Hope: 10</div>
+                        </div>
+                    </div>
+                    <div class="card-back">More Info</div>
+                </div>
+            </div>
+
+            <div class="character-card" data-character="yoa">
+                <div class="card-inner">
+                    <div class="card-front">
+                        <div class="card-header"><span class="emoji">🧑🏽‍🦰</span><span>Yoa</span></div>
+                        <p class="card-description"><span class="highlight moon">  Yoa’s only threat is having the moon slowly crush someone,</span> but only from their perspective.</p>
+                        <div class="action-area"></div>
+                        <div class="unique-items"><div class="item-slot"></div><div class="item-slot"></div><div class="item-slot"></div></div>
+                        <div class="health-stat"><span class="stat">(17/17)</span><div class="health-bar-container"><div class="health-bar" style="width: 100%;"></div></div></div>
+                        <div class="card-stats">
+                            <div class="stat"><span class="money-box">$0</span></div>
+                            <div class="stat stat-depth">Depth: ⛬</div>
+                            <div class="stat stat-hope">⛚</div>
+                        </div>
+                    </div>
+                    <div class="card-back">More Info</div>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Game Over Modal -->
-    <div id="game-over-modal" class="hidden absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center z-20">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 text-center max-w-sm w-full">
-            <h2 class="text-3xl font-bold mb-2 text-gray-800 dark:text-white">Game Over!</h2>
-            <p class="text-gray-600 dark:text-gray-300 mb-4">You finished with a final score of:</p>
-            <p id="final-score" class="text-5xl font-bold text-blue-600 dark:text-blue-400 mb-6">0</p>
-            <button id="restart-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg w-full text-lg transition-transform transform hover:scale-105">
-                Play Again
-            </button>
-        </div>
-    </div>
-
 
     <script>
-        // --- Element References ---
-        const playArea = document.getElementById('play-area');
-        const emojiField = document.getElementById('emoji-field');
-        const scoreEl = document.getElementById('score');
-        const emojiCounterEl = document.getElementById('emoji-counter');
-        const keepZoneEl = document.getElementById('keep-zone');
-        const sellZoneEl = document.getElementById('sell-zone');
-        const gameOverModal = document.getElementById('game-over-modal');
-        const finalScoreEl = document.getElementById('final-score');
-        const restartButton = document.getElementById('restart-button');
-
-        // --- Game Configuration ---
-        const MAX_EMOJIS = 100;
-        const EMOJI_SPAWN_INTERVAL = 800; // ms, faster spawning
-
-        const EMOJI_CATEGORIES = {
-            practical: ['🔨','🔧','🪓','⛏️','🔩','⚙️','🧱','👕','👖','🧦','👟','🥾','🧤','👓','🍎','🍞','🥕','🌽','🥛','☕','💧','🪑','🛋️','🛏️','🚪','💡','💻','📱','⌚','🚗','🚲','🚚','📦','📎','✂️','📝','📚','📖','🧼','🧽','🪣','🔑','🗺️','🧭','🔋'],
-            valuable: ['💎','💰','👑','💍','🏆','🥇','🖼️','🏺','🗿','🏰','🏯','🏛️','📈','🚀','🚁','🛥️','🏎️','🎻','🎷','🎺','🎹','🎨','🎬','🎩','✨','🌟','💫','🌍','🍇','🍣','🍱','🍷','🥂','🎁','🎉','🎊','🧧','📜','🖋️','🔭','🔬','🧬','🤖','👾','⚜️'],
-            dangerous: ['💣','🧨','🔫','🔪','☠️','☣️','☢️','🦂','🐍','🔥']
-        };
-
-        // --- Game State ---
-        let score = 0;
-        let resolvedEmojiCount = 0;
-        let activeEmojis = [];
-        let shuffledEmojis = [];
-        let emojiSpawner;
-        let animationFrameId;
-
-        // --- Dragging State ---
-        let draggedEmoji = null;
-        let offsetX = 0;
-        let offsetY = 0;
-
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
-        }
-
-        function startGame() {
-            // Reset state
-            score = 0;
-            resolvedEmojiCount = 0;
-            activeEmojis = [];
-            emojiField.innerHTML = '';
-            updateUI();
-            gameOverModal.classList.add('hidden');
-
-            // Prepare the emojis for the new game
-            const practicalItems = EMOJI_CATEGORIES.practical.map(char => ({ char, type: 'practical', value: 10 }));
-            const valuableItems = EMOJI_CATEGORIES.valuable.map(char => ({ char, type: 'valuable', value: 25 }));
-            const dangerousItems = EMOJI_CATEGORIES.dangerous.map(char => ({ char, type: 'dangerous', value: -50 }));
-            let allEmojis = [...practicalItems, ...valuableItems, ...dangerousItems];
-            shuffledEmojis = shuffleArray(allEmojis);
-
-            // Clear any lingering intervals or animation frames
-            if (emojiSpawner) clearInterval(emojiSpawner);
-            if (animationFrameId) cancelAnimationFrame(animationFrameId);
-
-            // Start spawning emojis from the shuffled list
-            emojiSpawner = setInterval(spawnEmoji, EMOJI_SPAWN_INTERVAL);
+        document.addEventListener('DOMContentLoaded', () => {
+            const root = document.documentElement;
             
-            animationFrameId = requestAnimationFrame(gameLoop);
-        }
+            // --- Card Flip Functionality ---
+            const cards = document.querySelectorAll('.character-card');
+            cards.forEach(card => {
+                card.addEventListener('click', (e) => {
+                    // Prevent card flip if an action element was clicked
+                    if (e.target.closest('.action-area')) {
+                        return;
+                    }
+                    card.querySelector('.card-inner').classList.toggle('flipped');
+                });
+            });
 
-        function spawnEmoji() {
-            if (shuffledEmojis.length === 0) {
-                clearInterval(emojiSpawner);
-                return;
-            }
+            // --- Theme & Video Switching Functionality ---
+            const body = document.body;
+            const crowdContainer = document.getElementById('crowd-container');
+            const videoFrame = document.querySelector('#video-container iframe');
 
-            const emojiData = shuffledEmojis.pop();
-            
-            const emojiFieldRect = emojiField.getBoundingClientRect();
-            if (emojiFieldRect.width === 0 || emojiFieldRect.height === 0) return;
-            
-            const x = emojiFieldRect.width / 2;
-            const y = emojiFieldRect.height / 2;
-
-            const emojiEl = document.createElement('div');
-            emojiEl.classList.add('emoji');
-            emojiEl.textContent = emojiData.char;
-
-            const emojiState = {
-                el: emojiEl,
-                data: emojiData,
-                x: x,
-                y: y,
-                dx: (Math.random() - 0.5) * 2.5, // Slightly faster drift
-                dy: (Math.random() - 0.5) * 2.5
+            const themeVideos = {
+                'theme-day': '4',
+                'theme-sunset': '5',
+                'theme-night': '6',
+                'theme-pesha': '7',
+                'theme-moro': '8',
+                'theme-ritzi': '9',
+                'theme-yoa': '10',
+                'theme-train': '11',
+                'theme-hospital': '12',
+                'theme-factory': '13',
+                'theme-corporate': '14'
             };
-            
-            emojiEl.style.left = `${x}px`;
-            emojiEl.style.top = `${y}px`;
 
-            activeEmojis.push(emojiState);
-            emojiField.appendChild(emojiEl);
-            
-            emojiEl.addEventListener('mousedown', startDrag);
-            emojiEl.addEventListener('touchstart', startDrag, { passive: false });
-        }
-        
-        function gameLoop() {
-            // End condition: all 100 emojis resolved
-            if (resolvedEmojiCount >= MAX_EMOJIS && activeEmojis.length === 0) {
-                 endGame();
-                 return;
-            }
+            // Event Buttons
+            const dayBtn = document.getElementById('theme-day-btn');
+            const sunsetBtn = document.getElementById('theme-sunset-btn');
+            const nightBtn = document.getElementById('theme-night-btn');
+            const peshaBtn = document.getElementById('theme-pesha-btn');
+            const moroBtn = document.getElementById('theme-moro-btn');
+            const ritziBtn = document.getElementById('theme-ritzi-btn');
+            const yoaBtn = document.getElementById('theme-yoa-btn');
+            const trainBtn = document.getElementById('theme-train-btn');
+            const hospitalBtn = document.getElementById('theme-hospital-btn');
+            const factoryBtn = document.getElementById('theme-factory-btn');
+            const corporateBtn = document.getElementById('theme-corporate-btn');
 
-            const emojiFieldRect = emojiField.getBoundingClientRect();
-
-            for (let i = activeEmojis.length - 1; i >= 0; i--) {
-                const emoji = activeEmojis[i];
-                if (emoji.el.classList.contains('dragging')) continue;
-
-                emoji.x += emoji.dx;
-                emoji.y += emoji.dy;
-                emoji.el.style.left = `${emoji.x}px`;
-                emoji.el.style.top = `${emoji.y}px`;
-
-                if (emoji.x < 0 || emoji.x > emojiFieldRect.width - emoji.el.offsetWidth ||
-                    emoji.y < 0 || emoji.y > emojiFieldRect.height - emoji.el.offsetHeight) {
-                    emoji.el.remove();
-                    activeEmojis.splice(i, 1);
-                    incrementResolvedCounter();
+            const clearCrowd = () => {
+                // Stop any animation frame requests
+                if (window.crowdAnimationId) {
+                    cancelAnimationFrame(window.crowdAnimationId);
+                    window.crowdAnimationId = null;
                 }
-            }
-            animationFrameId = requestAnimationFrame(gameLoop);
-        }
-
-        function updateUI() {
-            scoreEl.textContent = score;
-            emojiCounterEl.textContent = `${Math.min(resolvedEmojiCount, MAX_EMOJIS)} / ${MAX_EMOJIS}`;
-        }
-
-        function incrementResolvedCounter() {
-            resolvedEmojiCount++;
-            updateUI();
-        }
-        
-        function addScore(points, x, y) {
-            score += points;
-            updateUI();
-
-            const popup = document.createElement('div');
-            popup.textContent = (points > 0 ? `+` : '') + points;
-            popup.className = `score-popup ${points > 0 ? 'text-green-500' : 'text-red-500'}`;
-            popup.style.left = `${x}px`;
-            popup.style.top = `${y}px`;
-            playArea.appendChild(popup);
-            setTimeout(() => popup.remove(), 1500);
-        }
-
-        function endGame() {
-            clearInterval(emojiSpawner);
-            cancelAnimationFrame(animationFrameId);
-            finalScoreEl.textContent = score;
-            gameOverModal.style.display = 'flex';
-        }
-
-        // --- Drag and Drop Logic ---
-
-        function startDrag(e) {
-            e.preventDefault();
-            draggedEmoji = activeEmojis.find(emoji => emoji.el === e.target);
-            if (!draggedEmoji) return;
-            
-            draggedEmoji.el.classList.add('dragging');
-            const event = e.touches ? e.touches[0] : e;
-            const rect = e.target.getBoundingClientRect();
-            offsetX = event.clientX - rect.left;
-            offsetY = event.clientY - rect.top;
-
-            document.addEventListener('mousemove', onDrag);
-            document.addEventListener('touchmove', onDrag, { passive: false });
-            document.addEventListener('mouseup', endDrag);
-            document.addEventListener('touchend', endDrag);
-        }
-
-        function onDrag(e) {
-            if (!draggedEmoji) return;
-            e.preventDefault();
-
-            const event = e.touches ? e.touches[0] : e;
-            const playAreaRect = playArea.getBoundingClientRect();
-            let newX = event.clientX - playAreaRect.left - offsetX;
-            let newY = event.clientY - playAreaRect.top - offsetY;
-
-            newX = Math.max(0, Math.min(newX, playAreaRect.width - draggedEmoji.el.offsetWidth));
-            newY = Math.max(0, Math.min(newY, playAreaRect.height - draggedEmoji.el.offsetHeight));
-            
-            draggedEmoji.el.style.left = `${newX}px`;
-            draggedEmoji.el.style.top = `${newY}px`;
-            
-            checkDropZoneHover(event.clientX, event.clientY);
-        }
-        
-        function checkDropZoneHover(clientX, clientY) {
-            const keepRect = keepZoneEl.getBoundingClientRect();
-            const sellRect = sellZoneEl.getBoundingClientRect();
-            const isDangerous = draggedEmoji && draggedEmoji.data.type === 'dangerous';
-
-            const overKeep = clientX > keepRect.left && clientX < keepRect.right && clientY > keepRect.top && clientY < keepRect.bottom;
-            const overSell = clientX > sellRect.left && clientX < sellRect.right && clientY > sellRect.top && clientY < sellRect.bottom;
-
-            keepZoneEl.classList.toggle('over', overKeep && !isDangerous);
-            sellZoneEl.classList.toggle('over', overSell && !isDangerous);
-
-            keepZoneEl.classList.toggle('danger-over', overKeep && isDangerous);
-            sellZoneEl.classList.toggle('danger-over', overSell && isDangerous);
-        }
-
-        function endDrag(e) {
-            if (!draggedEmoji) return;
-            
-            const event = e.changedTouches ? e.changedTouches[0] : e;
-            handleDrop(event.clientX, event.clientY);
-
-            draggedEmoji.el.classList.remove('dragging');
-            draggedEmoji = null;
-
-            keepZoneEl.classList.remove('over', 'danger-over');
-            sellZoneEl.classList.remove('over', 'danger-over');
-
-            document.removeEventListener('mousemove', onDrag);
-            document.removeEventListener('touchmove', onDrag);
-            document.removeEventListener('mouseup', endDrag);
-            document.removeEventListener('touchend', endDrag);
-        }
-        
-        function handleDrop(clientX, clientY) {
-            const keepRect = keepZoneEl.getBoundingClientRect();
-            const sellRect = sellZoneEl.getBoundingClientRect();
-            const emojiData = draggedEmoji.data;
-            let points = 0;
-            
-            const droppedInKeep = clientX > keepRect.left && clientX < keepRect.right && clientY > keepRect.top && clientY < keepRect.bottom;
-            const droppedInSell = clientX > sellRect.left && clientX < sellRect.right && clientY > sellRect.top && clientY < sellRect.bottom;
-
-            if (droppedInKeep || droppedInSell) {
-                if (emojiData.type === 'dangerous') {
-                    points = emojiData.value; // Heavy penalty
-                } else if (droppedInKeep) {
-                    points = (emojiData.type === 'practical') ? emojiData.value : -Math.round(emojiData.value / 2);
-                } else if (droppedInSell) {
-                    points = (emojiData.type === 'valuable') ? emojiData.value : -Math.round(emojiData.value / 2);
+                // Remove existing crowd icons
+                if (crowdContainer) {
+                    const existingIcons = crowdContainer.querySelectorAll('.crowd-icon');
+                    existingIcons.forEach(icon => icon.remove());
                 }
+            };
+
+            const setTheme = (themeName, emoji) => {
+                body.className = ''; // Clear all classes
+                body.classList.add(themeName);
                 
-                addScore(points, draggedEmoji.el.offsetLeft, draggedEmoji.el.offsetTop);
-                draggedEmoji.el.remove();
-                const index = activeEmojis.findIndex(emoji => emoji.el === draggedEmoji.el);
-                if (index > -1) activeEmojis.splice(index, 1);
-                incrementResolvedCounter();
+                // Update the background emoji
+                root.style.setProperty('--current-city-emoji', `'${emoji}'`);
 
-            } else {
-                draggedEmoji.x = draggedEmoji.el.offsetLeft;
-                draggedEmoji.y = draggedEmoji.el.offsetTop;
+                // Update the video
+                const videoId = themeVideos[themeName];
+                if (videoId && videoFrame) {
+                    // Parameters: autoplay, mute (required for autoplay), loop, playlist (required for loop), no controls for clean look
+                    videoFrame.src = `https://www.youtube.com/watch?v=...8`;
+                }
+
+                // Clear existing crowd before deciding to animate or not
+                clearCrowd();
+
+                // Only run crowd animation for city themes
+                if (['theme-day', 'theme-sunset', 'theme-night'].includes(themeName)) {
+                    animateCrowd();
+                }
+            };
+
+            dayBtn.addEventListener('click', () => setTheme('theme-day', '🏙️'));
+            sunsetBtn.addEventListener('click', () => setTheme('theme-sunset', '🌇'));
+            nightBtn.addEventListener('click', () => setTheme('theme-night', '🌃'));
+            peshaBtn.addEventListener('click', () => setTheme('theme-pesha', '🛋️'));
+            moroBtn.addEventListener('click', () => setTheme('theme-moro', '🪑'));
+            ritziBtn.addEventListener('click', () => setTheme('theme-ritzi', '🏪'));
+            yoaBtn.addEventListener('click', () => setTheme('theme-yoa', '⛲'));
+            trainBtn.addEventListener('click', () => setTheme('theme-train', '🚆'));
+            hospitalBtn.addEventListener('click', () => setTheme('theme-hospital', '🏥'));
+            factoryBtn.addEventListener('click', () => setTheme('theme-factory', '🏭'));
+            corporateBtn.addEventListener('click', () => setTheme('theme-corporate', '🏢'));
+            
+            // --- Crowd Animation ---
+            function animateCrowd() {
+                const container = document.getElementById('crowd-container');
+                if (!container) return;
+
+                const icons = ['🗣️', '👤', '👥'];
+                const crowd = [];
+                const iconCount = 4;
+
+                // Create icons
+                icons.forEach(icon => {
+                    for (let i = 0; i < iconCount; i++) {
+                        const el = document.createElement('div');
+                        el.classList.add('crowd-icon');
+                        el.textContent = icon;
+                        container.appendChild(el);
+
+                        crowd.push({
+                            el: el,
+                            x: Math.random() * container.clientWidth,
+                            y: Math.random() * container.clientHeight,
+                            vx: (Math.random() - 0.5) * 2, // -1 to 1
+                            vy: (Math.random() - 0.5) * 2, // -1 to 1
+                        });
+                    }
+                });
+
+                function update() {
+                    if (!container) return;
+                    const { clientWidth, clientHeight } = container;
+
+                    crowd.forEach(p => {
+                        // Move particle
+                        p.x += p.vx;
+                        p.y += p.vy;
+
+                        // Bounce off edges and clamp position to prevent glitches
+                        if (p.x <= 0) {
+                            p.vx *= -1;
+                            p.x = 0;
+                        } else if (p.x + p.el.clientWidth >= clientWidth) {
+                            p.vx *= -1;
+                            p.x = clientWidth - p.el.clientWidth;
+                        }
+
+                        if (p.y <= 0) {
+                            p.vy *= -1;
+                            p.y = 0;
+                        } else if (p.y + p.el.clientHeight >= clientHeight) {
+                            p.vy *= -1;
+                            p.y = clientHeight - p.el.clientHeight;
+                        }
+                        
+                        // Apply position
+                        p.el.style.transform = `translate(${p.x}px, ${p.y}px)`;
+                    });
+
+                    window.crowdAnimationId = requestAnimationFrame(update);
+                }
+                update();
             }
-        }
 
-        restartButton.addEventListener('click', startGame);
+            // --- Character Action Mechanics ---
+            
+            // Moro's Slot Machine
+            const moroAction = document.getElementById('moro-action');
+            if (moroAction) {
+                const reels = moroAction.querySelectorAll('.slot-reel');
+                const spinButton = moroAction.querySelector('.spin-button');
+                const symbols = ['❌', '⭕'];
 
-        window.onload = startGame;
+                spinButton.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent card from flipping
+                    reels.forEach(reel => {
+                        const randomSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+                        reel.textContent = randomSymbol;
+                    });
+                });
+            }
+
+            // Pesha's Slider
+            const peshaAction = document.getElementById('pesha-action');
+            if(peshaAction) {
+                peshaAction.addEventListener('click', e => e.stopPropagation());
+            }
+
+            // Ritzi's Dice
+            const ritziAction = document.getElementById('ritzi-action');
+            if (ritziAction) {
+                const dice = ritziAction.querySelectorAll('.die');
+                const dieFaces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+
+                dice.forEach(die => {
+                    die.addEventListener('click', (e) => {
+                        e.stopPropagation(); // Prevent card from flipping
+                        const randomFace = dieFaces[Math.floor(Math.random() * dieFaces.length)];
+                        die.textContent = randomFace;
+                    });
+                });
+            }
+
+            // Set the initial theme and video on page load
+            setTheme('theme-day', '🏙️');
+        });
     </script>
+
 </body>
 </html>
