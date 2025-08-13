@@ -1,1 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emoji Slot Machine</title>
+    <style>
+        /* --- Core Layout & Typography --- */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
 
+        :root {
+            --bg-color: #1a1a2e;
+            --machine-color: #16213e;
+            --window-bg: #0f3460;
+            --text-color: #e94560;
+            --highlight-color: #e94560;
+            --button-bg: #533483;
+            --button-text: #ffffff;
+            --font-family: 'Poppins', sans-serif;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Prevents scrollbars during animations */
+        }
+
+        body {
+            background-color: var(--bg-color);
+            font-family: var(--font-family);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--button-text);
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 15px;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 20px;
+            border: 2px solid var(--highlight-color);
+            box-shadow: 0 0 30px rgba(233, 69, 96, 0.5);
+            width: 100%;
+            max-width: 480px;
+            box-sizing: border-box;
+        }
+        
+        /* --- Info Bars --- */
+        .top-bar-container, .bottom-bar-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            width: 100%;
+        }
+
+        .info-box {
+            padding: 8px 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            font-size: clamp(14px, 4vw, 18px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            min-height: 38px; /* Ensure consistent height */
+        }
+
+        #coins-display {
+            background-color: #ffd700; /* Gold */
+            color: #333;
+            border: 2px solid #e0bd00;
+        }
+
+        #price-display {
+            background-color: #e94560; /* Red */
+            color: #fff;
+            border: 2px solid #c83a50;
+        }
+
+        #clown-display {
+            background-color: #2b8de2; /* Blue */
+            color: #fff;
+            border: 2px solid #226fbb;
+        }
+        
+        .bottom-box-1 { background-color: #8a2be2; border: 2px solid #7022b6; } /* Purple */
+        .bottom-box-2 { background-color: #32cd32; border: 2px solid #28a428; } /* Green */
+        #link-button { 
+            background-color: #ff69b4; 
+            border: 2px solid #d8589a; /* Pink */
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        #link-button:hover:not(:disabled) {
+            background-color: #ff85c1;
+            transform: translateY(-2px);
+        }
+        #link-button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+
+        .machine, .controls {
+            background-color: var(--machine-color);
+            padding: 15px;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            border: 2px solid #0f3460;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .slot-windows {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            width: 100%;
+            background-color: #000;
+            padding: 10px;
+            border-radius: 10px;
+            border: 3px solid #4a4a4a;
+            box-sizing: border-box;
+        }
+
+        .reel-window {
+            aspect-ratio: 1 / 1; 
+            width: 100%;
+            background-color: var(--window-bg);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: clamp(24px, 10vw, 60px);
+            overflow: hidden; 
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+            border: 3px solid transparent;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease-out;
+        }
+        
+        .reel-window.selected {
+            border-color: var(--highlight-color);
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 0 10px var(--highlight-color);
+        }
+        
+        #spin-button {
+            padding: 15px 30px;
+            font-size: clamp(18px, 5vw, 24px);
+            font-weight: 700;
+            background-color: var(--highlight-color);
+            color: var(--button-text);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.2s, background-color 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            width: 100%;
+        }
+
+        #spin-button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: scale(1);
+        }
+
+        .reel-inventories {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .inventory {
+            width: 100%;
+            padding: 2px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            font-size: clamp(10px, 3vw, 16px);
+            min-height: 50px;
+            box-sizing: border-box;
+        }
+
+        .inventory-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2px;
+            width: 100%;
+            border-radius: 6px;
+            border: 2px solid transparent;
+            transition: border-color 0.1s ease, box-shadow 0.1s ease;
+        }
+
+        .inventory .symbol-display {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 20px;
+        }
+        
+        .inventory-row.pre-link-animation {
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .inventory-row.linked-symbol-row {
+            border-color: #ffffff;
+            box-shadow: 0 0 8px 2px #ffffff;
+        }
+        
+        .controls {
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+
+        .control-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            width: 100%;
+        }
+        
+        .btn {
+            padding: 12px 5px;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            font-size: clamp(14px, 4vw, 18px);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover:not(:disabled) {
+            background-color: #6d44a6;
+            transform: translateY(-2px);
+        }
+        
+        .btn:active:not(:disabled) {
+            transform: translateY(0px) scale(0.95);
+        }
+
+        .reel-select-btn.selected {
+            border-color: var(--highlight-color);
+            box-shadow: 0 0 10px var(--highlight-color);
+            background-color: #6d44a6;
+        }
+
+        .symbol-btn {
+            font-size: clamp(20px, 6vw, 28px);
+        }
+        
+        .spinning {
+            filter: blur(4px);
+        }
+
+        @keyframes win-pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); text-shadow: 0 0 25px #fffc79; }
+            100% { transform: scale(1); }
+        }
+
+        .win-animation {
+            animation: win-pulse 0.8s ease-in-out 3;
+        }
+
+        /* Message Box */
+        #message-box {
+            position: fixed;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--highlight-color);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: top 0.5s ease-in-out;
+            z-index: 1000;
+            font-weight: 600;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <!-- Top Info Bar -->
+        <div class="top-bar-container">
+            <div id="coins-display" class="info-box">💰 100</div>
+            <div id="price-display" class="info-box">🪙 5</div>
+            <div id="clown-display" class="info-box">🤡 0</div>
+        </div>
+
+        <!-- Top Section: Slot Machine -->
+        <div class="machine">
+            <div class="slot-windows">
+                <div class="reel-window" data-reel-window="0"><div class="reel-display">✖️</div></div>
+                <div class="reel-window" data-reel-window="1"><div class="reel-display">✖️</div></div>
+                <div class="reel-window" data-reel-window="2"><div class="reel-display">✖️</div></div>
+                <div class="reel-window" data-reel-window="3"><div class="reel-display">✖️</div></div>
+            </div>
+            <div class="reel-inventories">
+                <div class="inventory" id="inventory-0"></div>
+                <div class="inventory" id="inventory-1"></div>
+                <div class="inventory" id="inventory-2"></div>
+                <div class="inventory" id="inventory-3"></div>
+            </div>
+            <button id="spin-button">Spin</button>
+        </div>
+
+        <!-- Middle Section: Controls -->
+        <div class="controls">
+            <div class="control-grid reel-selectors">
+                <button class="btn reel-select-btn" data-reel="0">Reel 1</button>
+                <button class="btn reel-select-btn" data-reel="1">Reel 2</button>
+                <button class="btn reel-select-btn" data-reel="2">Reel 3</button>
+                <button class="btn reel-select-btn" data-reel="3">Reel 4</button>
+            </div>
+            <div class="control-grid symbol-buttons">
+                <button class="btn symbol-btn">🍒</button>
+                <button class="btn symbol-btn">🍊</button>
+                <button class="btn symbol-btn">🍌</button>
+                <button class="btn symbol-btn">🍋‍🟩</button>
+                <button class="btn symbol-btn">🔔</button>
+                <button class="btn symbol-btn">💎</button>
+                <button class="btn symbol-btn">🤡</button>
+                <button class="btn symbol-btn">✖️</button>
+            </div>
+        </div>
+        
+        <!-- Bottom Info Bar -->
+        <div class="bottom-bar-container">
+            <div class="info-box bottom-box-1"></div>
+            <div class="info-box bottom-box-2"></div>
+            <div id="link-button" class="info-box">⬜ Link</div>
+        </div>
+
+        <div id="message-box"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Game Constants & State ---
+            const BLANK_SYMBOL = '✖️';
+            const REEL_COUNT = 4;
+            const SYMBOLS_PER_REEL = 8;
+            const ROWS_PER_REEL = 4;
+
+            let totalCoins = 100;
+            let spinPrice = 5;
+            let selectedReel = 0;
+            const reels = Array(REEL_COUNT).fill(0).map(() => Array(SYMBOLS_PER_REEL).fill(BLANK_SYMBOL));
+            let linkedSymbols = {}; // Stores the linked row index for each reel, e.g., { 0: 2, 1: 3 }
+
+            // --- DOM Elements ---
+            const reelSelectButtons = document.querySelectorAll('.reel-select-btn');
+            const symbolButtonsContainer = document.querySelector('.symbol-buttons');
+            const spinButton = document.getElementById('spin-button');
+            const inventoryDisplays = Array(REEL_COUNT).fill(0).map((_, i) => document.getElementById(`inventory-${i}`));
+            const reelWindowElements = document.querySelectorAll('.reel-window');
+            const reelDisplayElements = Array.from(reelWindowElements).map(w => w.querySelector('.reel-display'));
+            const coinsDisplay = document.getElementById('coins-display');
+            const priceDisplay = document.getElementById('price-display');
+            const clownDisplay = document.getElementById('clown-display');
+            const messageBox = document.getElementById('message-box');
+            const linkButton = document.getElementById('link-button');
+
+            // --- UI Update Functions ---
+
+            /**
+             * Shows a message to the user (e.g., for wins or errors).
+             * @param {string} text - The message to display.
+             * @param {number} duration - How long to show the message in milliseconds.
+             */
+            const showMessage = (text, duration = 2000) => {
+                messageBox.textContent = text;
+                messageBox.style.top = '20px';
+                setTimeout(() => {
+                    messageBox.style.top = '-100px';
+                }, duration);
+            };
+
+            /**
+             * Updates the top info bar with current game state.
+             */
+            const updateTopBar = () => {
+                const clownCount = reels.flat().filter(s => s === '🤡').length;
+                coinsDisplay.innerHTML = `💰 ${totalCoins}`;
+                priceDisplay.innerHTML = `🪙 ${spinPrice}`;
+                clownDisplay.innerHTML = `🤡 ${clownCount}`;
+            };
+
+            /**
+             * Highlights the currently selected reel button and window.
+             */
+            const updateSelectedReelUI = () => {
+                reelSelectButtons.forEach(button => {
+                    button.classList.toggle('selected', parseInt(button.dataset.reel) === selectedReel);
+                });
+                reelWindowElements.forEach((window, index) => {
+                    window.classList.toggle('selected', index === selectedReel);
+                });
+            };
+            
+            /**
+             * Renders the symbols for all reel inventories, applying link styles where necessary.
+             */
+            const renderInventories = () => {
+                reels.forEach((reel, reelIndex) => {
+                    const inventory = inventoryDisplays[reelIndex];
+                    inventory.innerHTML = '';
+                    const linkedRow = linkedSymbols[reelIndex];
+
+                    for (let i = 0; i < ROWS_PER_REEL; i++) {
+                        const rowEl = document.createElement('div');
+                        rowEl.className = 'inventory-row';
+                        if (i === linkedRow) {
+                            rowEl.classList.add('linked-symbol-row');
+                        }
+
+                        // Get the two symbols for the current row
+                        const symbol1 = reel[i * 2];
+                        const symbol2 = reel[i * 2 + 1];
+                        
+                        const symbolEl1 = document.createElement('div');
+                        symbolEl1.className = 'symbol-display';
+                        symbolEl1.textContent = symbol1;
+                        
+                        const symbolEl2 = document.createElement('div');
+                        symbolEl2.className = 'symbol-display';
+                        symbolEl2.textContent = symbol2;
+
+                        rowEl.appendChild(symbolEl1);
+                        rowEl.appendChild(symbolEl2);
+                        inventory.appendChild(rowEl);
+                    }
+                });
+            };
+
+            // --- Event Handlers ---
+
+            /**
+             * Handles clicking a reel selection button.
+             */
+            const handleReelSelect = (event) => {
+                const button = event.target.closest('.reel-select-btn');
+                if (button) {
+                    selectedReel = parseInt(button.dataset.reel);
+                    updateSelectedReelUI();
+                }
+            };
+            
+            /**
+             * Handles adding a symbol to the selected reel.
+             */
+            const handleSymbolAdd = (event) => {
+                const button = event.target.closest('.symbol-btn');
+                if (button) {
+                    const symbol = button.textContent;
+                    const reel = reels[selectedReel];
+                    const blankIndex = reel.indexOf(BLANK_SYMBOL);
+                    
+                    if (blankIndex !== -1) {
+                        reel[blankIndex] = symbol;
+                    } else {
+                        showMessage(`Reel ${selectedReel + 1} is full!`);
+                    }
+                    renderInventories();
+                    updateTopBar(); // Update clown count
+                }
+            };
+
+            /**
+             * Handles clicking the link button, triggering the selection animation.
+             */
+            const handleLink = () => {
+                linkButton.disabled = true;
+                const inventory = inventoryDisplays[selectedReel];
+                const rows = inventory.querySelectorAll('.inventory-row');
+                
+                let currentHighlight = 0;
+                const animDuration = 1000; // total animation time
+                const animInterval = 75; // time between each highlight
+                let cycles = 0;
+
+                const anim = setInterval(() => {
+                    rows.forEach(row => row.classList.remove('pre-link-animation'));
+                    rows[currentHighlight].classList.add('pre-link-animation');
+                    
+                    currentHighlight = (currentHighlight + 1) % ROWS_PER_REEL;
+                    cycles += animInterval;
+
+                    if (cycles >= animDuration) {
+                        clearInterval(anim);
+                        rows.forEach(row => row.classList.remove('pre-link-animation'));
+                        
+                        // Choose a final random row
+                        const finalRow = Math.floor(Math.random() * ROWS_PER_REEL);
+                        linkedSymbols[selectedReel] = finalRow;
+                        
+                        renderInventories(); // Re-render to apply the final solid border
+                        linkButton.disabled = false;
+                    }
+                }, animInterval);
+            };
+            
+            /**
+             * The main spin logic.
+             */
+            const handleSpin = async () => {
+                if (totalCoins < spinPrice) {
+                    showMessage("Not enough coins!");
+                    return;
+                }
+
+                totalCoins -= spinPrice;
+                updateTopBar();
+                spinButton.disabled = true;
+                reelWindowElements.forEach(rw => rw.classList.remove('win-animation', 'selected'));
+
+                const results = [];
+                // Sequentially spin each reel
+                for (let i = 0; i < REEL_COUNT; i++) {
+                    const finalSymbol = await spinReel(i);
+                    results.push(finalSymbol);
+                }
+
+                checkForWin(results);
+            };
+
+            /**
+             * Animates a single reel spinning and reveals its result.
+             * @param {number} reelIndex - The index of the reel to spin.
+             * @returns {Promise<string>} A promise that resolves with the final symbol.
+             */
+            const spinReel = (reelIndex) => {
+                return new Promise(resolve => {
+                    const reel = reels[reelIndex];
+                    const display = reelDisplayElements[reelIndex];
+                    const windowEl = reelWindowElements[reelIndex];
+                    
+                    // The reel array itself represents the "bag" of all 8 symbols.
+                    // We do not filter out blanks to maintain the correct probabilities.
+                    windowEl.classList.add('spinning'); // Apply blur
+
+                    const spinAnimDuration = 1000; // Total animation time
+                    const flickerInterval = 50;   // How often to change symbol
+
+                    const flicker = setInterval(() => {
+                        // Pick a random symbol from the entire reel for the flicker effect.
+                        const randomSymbol = reel[Math.floor(Math.random() * reel.length)];
+                        display.textContent = randomSymbol;
+                    }, flickerInterval);
+
+                    // After the animation duration, stop flickering and reveal the final result.
+                    setTimeout(() => {
+                        clearInterval(flicker);
+                        // Pick the final random symbol from the entire reel.
+                        const finalSymbol = reel[Math.floor(Math.random() * reel.length)];
+                        display.textContent = finalSymbol;
+                        windowEl.classList.remove('spinning'); // Remove blur
+                        resolve(finalSymbol);
+                    }, spinAnimDuration);
+                });
+            };
+
+            /**
+             * Checks if the spin resulted in a win and handles the outcome.
+             * @param {string[]} results - An array of the final symbols from the spin.
+             */
+            const checkForWin = (results) => {
+                const isWin = results.length === REEL_COUNT && results.every(symbol => symbol !== BLANK_SYMBOL && symbol === results[0]);
+
+                if (isWin) {
+                    const symbol = results[0];
+                    let payoutMultiplier = 10; // Default win
+                    if (symbol === '💎') payoutMultiplier = 50;
+                    if (symbol === '🤡') payoutMultiplier = 25;
+                    if (symbol === '🔔') payoutMultiplier = 15;
+                    
+                    const winnings = spinPrice * payoutMultiplier;
+                    totalCoins += winnings;
+                    
+                    showMessage(`You won ${winnings} coins!`);
+                    
+                    // Apply win animation to all windows
+                    reelWindowElements.forEach(rw => rw.classList.add('win-animation'));
+                    
+                    // Update coins display after a short delay to sync with message
+                    setTimeout(updateTopBar, 500);
+                }
+                
+                spinButton.disabled = false;
+                updateSelectedReelUI();
+            };
+
+            // --- Event Listeners & Initial Setup ---
+            document.querySelector('.reel-selectors').addEventListener('click', handleReelSelect);
+            symbolButtonsContainer.addEventListener('click', handleSymbolAdd);
+            spinButton.addEventListener('click', handleSpin);
+            linkButton.addEventListener('click', handleLink);
+
+            updateSelectedReelUI();
+            renderInventories();
+            updateTopBar();
+        });
+    </script>
+</body>
+</html>
