@@ -53,6 +53,13 @@
             box-sizing: border-box;
             max-height: 100vh;
             overflow-y: auto;
+            transition: border-color 0.5s ease, box-shadow 0.5s ease; /* Smooth transition for theme change */
+        }
+
+        /* NEW: Class to switch game border to teal theme */
+        .game-container.line-active-theme {
+            --highlight-color: #00CED1; /* darkturquoise */
+            --glow-color: rgba(0, 206, 209, 0.7);
         }
         
         /* --- Info Bars --- */
@@ -78,7 +85,7 @@
             gap: 8px;
             min-height: 54px; 
             box-sizing: border-box; 
-            transition: background-color 0.3s ease, filter 0.3s ease, transform 0.2s ease;
+            transition: background-color 0.3s ease, filter 0.3s ease, transform 0.2s ease, background-image 0.3s ease, border-color 0.3s ease;
             text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.6);
             position: relative;
         }
@@ -94,7 +101,7 @@
         #coins-display { 
             position: relative;
             transform-style: preserve-3d;
-            transition: transform 0.6s;
+            transition: transform 0.6s, background-color 0.3s;
             cursor: pointer;
             background-color: #ffd700; 
             border: 2px solid #e0bd00;
@@ -121,8 +128,34 @@
             color: #ffffff;
             font-size: clamp(28px, 8vw, 36px);
             text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+            transition: color 0.3s ease, text-shadow 0.3s ease;
         }
-        .card-back { transform: rotateY(180deg); font-size: 2em; }
+        
+        .card-back { 
+            transform: rotateY(180deg); 
+            flex-direction: column;
+            position: relative;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+        .bomb-icon {
+            font-size: 1.6em;
+            line-height: 1;
+        }
+        
+        .bomb-mode-coin-count {
+            position: absolute;
+            bottom: 2px;
+            right: 5px;
+            font-size: clamp(14px, 4vw, 18px);
+            color: white;
+            background-color: transparent;
+            padding: 1px 4px;
+            border-radius: 4px;
+            font-family: var(--font-family);
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+        }
+
 
         #price-display { 
             background-color: #2E8B57; 
@@ -135,7 +168,6 @@
             background-size: 20px 20px;
         }
 
-        /* MODIFIED: New selector display styles */
         #selector-display { 
             background: repeating-linear-gradient(45deg, #2b8de2, #2b8de2 10px, #ff69b4 10px, #ff69b4 20px); 
             border: 2px solid #ff69b4;
@@ -152,6 +184,27 @@
             filter: grayscale(100%) opacity(0.5);
             transform: scale(0.9);
         }
+
+        .locked-feature {
+            filter: grayscale(100%);
+            pointer-events: none;
+            opacity: 0.7;
+        }
+        .lock-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: clamp(32px, 9vw, 44px);
+            color: white;
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.8);
+            z-index: 10;
+            display: none;
+        }
+        .locked-feature .lock-icon {
+            display: block;
+        }
+
 
         #gamble-button { 
             background-color: #98FB98; 
@@ -174,14 +227,10 @@
             padding: 0 10px;
         }
         
-        /* MODIFIED: Slider container layout adjustments */
         .slider-container {
-            padding-left: 0;
-            padding-right: 0;
             display: flex;
             align-items: center;
-            gap: 5px;
-            padding: 0 10px;
+            padding: 0;
         }
         .slider-control-group {
             display: flex;
@@ -200,19 +249,39 @@
             text-shadow: 1px 1px 2px #000;
         }
 
+        .left-buttons-container {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .left-buttons-container .info-box {
+            flex: 1 1 0;
+            width: 0;
+            font-size: 20px;
+        }
+        
+        #tokens-button {
+            background-color: #007bff;
+            border: 4px solid #0056b3;
+            color: white;
+            cursor: pointer;
+        }
+
         .right-buttons-container {
             display: flex;
             gap: 5px;
         }
 
         #link-button, #help-button { 
-            flex: 1; 
+            flex: 1 1 0;
+            width: 0;
+            font-size: 20px;
         }
 
         #link-button {
             background-color: #ffffff;
             color: #1a1a2e;
-            border: 2px solid #a0a0a0;
+            border: 4px solid #a0a0a0;
             cursor: pointer;
             transition: all 0.2s ease;
         }
@@ -229,9 +298,8 @@
         #help-button {
             background-color: #FFA500;
             color: #ffffff;
-            border: 2px solid #cc8400;
+            border: 4px solid #cc8400;
             cursor: pointer;
-            font-size: 20px;
             transition: all 0.2s ease;
         }
 
@@ -314,7 +382,26 @@
             overflow: hidden; 
             box-shadow: 3px 3px 8px rgba(0,0,0,0.5), inset 1px 1px 2px rgba(255,255,255,0.2), 0 0 10px rgba(42, 75, 124, 0.5);
             border: 2px solid #0a2444;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease-out;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease-out, background 0.3s ease;
+            position: relative;
+        }
+        
+        .reel-window.bombed {
+            background: radial-gradient(circle, #555, #222);
+        }
+
+        .bomb-counter {
+            position: absolute;
+            bottom: 5px;
+            right: 8px;
+            font-size: clamp(14px, 4vw, 18px);
+            color: white;
+            background-color: rgba(0, 0, 0, 0.6);
+            padding: 2px 6px;
+            border-radius: 5px;
+            font-family: sans-serif;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px #000;
         }
         
         #spin-button {
@@ -326,7 +413,7 @@
             box-shadow: inset 0 -3px 0 rgba(0,0,0,0.3), 0 0 20px rgba(230, 0, 35, 0.5);
             border-radius: 10px;
             cursor: pointer;
-            transition: transform 0.1s, box-shadow 0.2s, background-color 0.2s;
+            transition: transform 0.1s, box-shadow 0.2s, background-color 0.2s, background-image 0.2s, border-color 0.2s, color 0.2s;
             text-transform: uppercase;
             letter-spacing: 2px;
             width: 100%;
@@ -421,8 +508,32 @@
             height: 100%;
             background: rgba(255, 255, 255, 0.25);
             pointer-events: none;
+            border-radius: 6px;
         }
         
+        /* UPDATED: More subtle highlight for potential lines */
+        .inventory-row.line-possible::after {
+            background: rgba(0, 206, 209, 0.35) !important; /* Lighter teal */
+            box-shadow: inset 0 0 6px rgba(0, 206, 209, 0.5);
+        }
+
+        /* NEW: Stronger glow animation for completed lines */
+        @keyframes teal-glow-pulse {
+            0%, 100% {
+                background: rgba(0, 206, 209, 0.6);
+                box-shadow: inset 0 0 10px #00CED1;
+            }
+            50% {
+                background: rgba(64, 224, 208, 0.7); /* turquoise */
+                box-shadow: inset 0 0 18px #40E0D0;
+            }
+        }
+
+        .inventory-row.line-connected::after {
+            animation: teal-glow-pulse 1.5s infinite ease-in-out;
+        }
+
+
         .control-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -494,6 +605,24 @@
             animation: shake 0.5s;
         }
         
+        @keyframes inventory-shake {
+          0% { transform: translate(1px, 1px) rotate(0deg); }
+          10% { transform: translate(-2px, -3px) rotate(-2deg); }
+          20% { transform: translate(-4px, 0px) rotate(2deg); }
+          30% { transform: translate(4px, 3px) rotate(0deg); }
+          40% { transform: translate(2px, -2px) rotate(2deg); }
+          50% { transform: translate(-2px, 3px) rotate(-2deg); }
+          60% { transform: translate(-4px, 2px) rotate(0deg); }
+          70% { transform: translate(4px, 2px) rotate(-2deg); }
+          80% { transform: translate(-2px, -2px) rotate(2deg); }
+          90% { transform: translate(2px, 3px) rotate(0deg); }
+          100% { transform: translate(2px, -3px) rotate(-2deg); }
+        }
+
+        .inventory-shake-animation {
+            animation: inventory-shake 0.5s;
+        }
+
         @keyframes lime-shake {
             0%, 100% { transform: translate(0, 0) rotate(0); }
             10%, 30%, 50%, 70%, 90% { transform: translate(-3px, 0) rotate(-2deg); }
@@ -509,6 +638,14 @@
         }
         .clover {
             animation: clover-glow 1.5s infinite ease-in-out;
+        }
+
+        @keyframes bomb-glow {
+            0%, 100% { text-shadow: 0 0 8px #ff0000, 0 0 12px #ff4500, 0 0 16px #ff0000; }
+            50% { text-shadow: 0 0 16px #ff4500, 0 0 20px #ff0000, 0 0 24px #ff4500; }
+        }
+        .bomb-symbol-glow {
+            animation: bomb-glow 1.2s infinite ease-in-out;
         }
 
         @keyframes bonus-glow {
@@ -634,17 +771,156 @@
             max-height: 80vh;
             overflow-y: auto;
         }
+
+        #help-modal .modal-content {
+            background-color: #0f3460; /* Dark blue base */
+            background-image: repeating-linear-gradient(
+                -45deg,
+                rgba(255, 0, 0, 0.7),      /* Red */
+                rgba(255, 0, 0, 0.7) 20px,
+                rgba(255, 165, 0, 0.7) 20px, /* Orange */
+                rgba(255, 165, 0, 0.7) 40px,
+                rgba(255, 255, 0, 0.7) 40px, /* Yellow */
+                rgba(255, 255, 0, 0.7) 60px,
+                rgba(0, 128, 0, 0.7) 60px,  /* Green */
+                rgba(0, 128, 0, 0.7) 80px,
+                rgba(0, 0, 255, 0.7) 80px,  /* Blue */
+                rgba(0, 0, 255, 0.7) 100px,
+                rgba(138, 43, 226, 0.7) 100px, /* Violet */
+                rgba(138, 43, 226, 0.7) 120px
+            );
+            background-attachment: scroll;
+            border-color: #2b8de2;
+            box-shadow: 0 0 25px rgba(43, 141, 226, 0.4);
+        }
+        
+        #tokens-modal .modal-content {
+            background-color: #8B4513; /* SaddleBrown */
+            background-image: 
+                linear-gradient(45deg, #D4AF37 25%, transparent 25%), 
+                linear-gradient(-45deg, #D4AF37 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #D4AF37 75%),
+                linear-gradient(-45deg, transparent 75%, #D4AF37 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            border-color: #D4AF37;
+        }
+        
         .modal-content h2, .modal-content h3 {
             color: var(--highlight-color);
             text-align: center;
             margin-top: 10px;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            position: relative; 
+            z-index: 2;
         }
+
+        #help-modal .modal-content h2, #help-modal .modal-content h3 {
+             color: #ffffff;
+             text-shadow: 0 0 10px #2b8de2;
+        }
+
+        .modal-content h3 {
+            margin-top: 25px;
+            margin-bottom: 5px;
+            border-bottom: 1px solid var(--highlight-color);
+            padding-bottom: 5px;
+        }
+
+        #help-modal .modal-content h3 {
+            border-bottom: 1px solid #2b8de2;
+        }
+
+        #tokens-modal h2 {
+            color: #fff;
+        }
+
+        .modal-content p, .modal-content ul {
+            position: relative; 
+            z-index: 2;
+        }
+
         .modal-content p {
             line-height: 1.6;
             margin-bottom: 1em;
+            text-align: center;
         }
-        .modal-content strong {
-            color: #FFA500;
+        .modal-content ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .modal-content li {
+            margin: 10px 0;
+            letter-spacing: 1px;
+            text-align: left;
+            background-color: #1a253c;
+            padding: 8px;
+            border-radius: 5px;
+        }
+        
+        #help-modal #core-gameplay-list strong { color: #c398fb; } /* Purple */
+        #help-modal #costs-list strong { color: #98fb98; } /* Green */
+        #help-modal #special-mechanics-list strong { color: #e94560; } /* Red */
+        #help-modal #payouts-list strong { color: #f9d423; } /* Yellow */
+        #help-modal #unlocks-list strong { color: #00bfff; } /* Blue */
+
+        .modal-content .symbol {
+            font-size: 1.2em;
+            display: inline-block;
+            width: 25px;
+            text-align: center;
+        }
+        
+        .token-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .token-option {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-image: linear-gradient(to bottom, #16213e, #0f3460);
+            padding: 10px 15px;
+            border-radius: 8px;
+            border-width: 2px;
+            border-style: solid;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: var(--font-family);
+            color: var(--button-text);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        #unlock-lime-btn { border-color: #32cd32; }
+        #unlock-selector-btn { border-color: #e60023; }
+        #reset-links-btn { border-color: #cccccc; }
+
+        .token-option:not(:disabled):hover {
+            transform: scale(1.03);
+            box-shadow: 0 0 15px rgba(255,255,255,0.2);
+        }
+        .token-option:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-image: none;
+            background-color: #333;
+            color: #888;
+            border-color: #555;
+        }
+        .token-icon {
+            font-size: 2em;
+        }
+        .token-description {
+            flex-grow: 1;
+            text-align: center;
+            letter-spacing: 1.5px;
+            font-size: clamp(16px, 4vw, 20px);
+        }
+        .token-cost {
+            font-weight: bold;
+            font-size: clamp(16px, 4vw, 20px);
         }
 
         .close-button {
@@ -654,6 +930,7 @@
             position: absolute;
             top: 5px;
             right: 15px;
+            z-index: 5; /* Ensure close button is on top */
         }
 
         .close-button:hover,
@@ -672,14 +949,20 @@
             <div class="info-box-container">
                 <div id="coins-display" class="info-box">
                     <div class="card-face card-front">100</div>
-                    <div class="card-face card-back">🏦</div>
+                    <div class="card-face card-back">
+                        <span class="bomb-icon">💣</span>
+                        <span class="bomb-mode-coin-count"></span>
+                    </div>
                 </div>
             </div>
-            <div id="price-display" class="info-box">🍋‍🟩</div>
-            <!-- MODIFIED: Replaced clown display with new selector -->
+            <div id="price-display" class="info-box">
+                🍋‍🟩
+                <div class="lock-icon">🔒</div>
+            </div>
             <div id="selector-display" class="info-box">
                 <span class="selector-option" data-choice="balloon">🎈</span>
                 <span class="selector-option" data-choice="flower">🌼</span>
+                <div class="lock-icon">🔒</div>
             </div>
         </div>
 
@@ -713,14 +996,12 @@
         </div>
         
         <div class="bottom-bar-container">
-            <div id="gamble-button" class="info-box">🍀 Clover</div>
-            <!-- MODIFIED: Added container for clown icon and counter -->
+            <div class="left-buttons-container">
+                <div id="tokens-button" class="info-box">🔒</div>
+                <div id="gamble-button" class="info-box">🍀</div>
+            </div>
             <div class="info-box bottom-box-2 slider-container">
-                <div class="slider-control-group">
-                    <span class="slider-label">🤡</span>
-                    <span id="clown-counter">0</span>
-                </div>
-                <input type="range" min="0" max="9" value="0" step="1" class="custom-slider">
+                <input type="range" min="0" max="4" value="0" step="1" class="custom-slider">
             </div>
             <div class="right-buttons-container">
                 <div id="link-button" class="info-box">⬜ Link</div>
@@ -729,16 +1010,101 @@
         </div>
     </div>
 
+    <!-- Help Modal -->
     <div id="help-modal" class="modal">
         <div class="modal-content">
-            <span class="close-button">&times;</span>
+            <span class="close-button" data-modal="help-modal">&times;</span>
+            <h2>How to Play</h2>
+            <p>Strategically add symbols to the four inventories, then spin to win!</p>
+
+            <h3>Core Gameplay</h3>
+            <ul id="core-gameplay-list">
+                <li><strong>Select an Inventory:</strong> Tap one of the four inventory boxes below the slot windows to select it.</li>
+                <li><strong>Add Symbols:</strong> Pay coins to add symbols to the 8 slots in the selected inventory. Each symbol can only be added once per inventory.</li>
+                <li><strong>Spin:</strong> Pay the spin cost to draw one random symbol from each of the four inventories.</li>
+            </ul>
+
+            <h3>Costs</h3>
+            <ul id="costs-list">
+                <li><strong>Spin:</strong> Starts at <strong>5 🪙</strong>. Increases by 1 for each symbol that appears 4 or more times in a single inventory.</li>
+                <li><strong>Add Symbol:</strong> <strong>2 🪙</strong> per symbol.</li>
+                <li><strong>Reset Inventory (🗑️):</strong> <strong>50 🪙</strong> to clear all symbols from the selected inventory.</li>
+            </ul>
+
+            <h3>Special Mechanics</h3>
+            <ul id="special-mechanics-list">
+                <li><strong>Bomb Mode (💣):</strong> Click the coin display to toggle. Spins are <strong>FREE</strong>, but have a 15% chance to add a 💣 to a random inventory slot. If the 💣 is drawn on a spin, that reel is disabled for 10 spins.</li>
+                <li><strong>Clover Mode (🍀):</strong> Costs <strong>2 🪙</strong> to activate. When adding a symbol, there's a 50% chance it becomes a 🍀. If it fails, the original symbol is permanently removed from that inventory's options.</li>
+                <li><strong>Link (⬜):</strong> Costs <strong>5 🪙</strong>. Links two symbols in a random row on the selected inventory, creating a new symbol.
+                    <ul>
+                        <li><span class="symbol">🍒</span> + <span class="symbol">🍊</span> (any two fruits) → <span class="symbol">🍬</span> (Candy)</li>
+                        <li><span class="symbol">🔔</span> + <span class="symbol">💎</span> → <span class="symbol">💍</span> (Ring)</li>
+                    </ul>
+                </li>
+                <li>
+                    <strong>Clown Rotation (🤡):</strong> Use the slider to rotate the Clown. The more it's rotated, the higher the risk and reward!
+                    <ul>
+                        <li><strong>Upright:</strong> 100% Wild, no bonus.</li>
+                        <li><strong>Slight Tilt:</strong> 85% Wild, +25 coin bonus on wins.</li>
+                        <li><strong>Sideways:</strong> 75% Wild, +50 coin bonus on wins.</li>
+                        <li><strong>Mostly Flipped:</strong> 65% Wild, 2x multiplier on wins.</li>
+                        <li><strong>Upside Down:</strong> 15% Wild, 5x multiplier on wins.</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h3>Symbol Payouts</h3>
+            <p>Match 3 or 4 symbols across the reels to win. The <strong>Clown (🤡)</strong> is WILD and substitutes for any symbol below (if it doesn't fail!).</p>
+            <ul id="payouts-list">
+                <li><strong><span class="symbol">🍬</span> (Candy):</strong> <strong>50 🪙</strong> for each that appears.</li>
+                <li><strong><span class="symbol">💍</span> (Ring):</strong> <strong>75 🪙</strong> for each that appears.</li>
+                <li><strong><span class="symbol">🍒</span><span class="symbol">🍊</span><span class="symbol">🍇</span><span class="symbol">🍋‍🟩</span>:</strong> 3-of-a-kind: <strong>50 🪙</strong> / 4-of-a-kind: <strong>100 🪙</strong></li>
+                <li><strong><span class="symbol">🔔</span>:</strong> 3-of-a-kind: <strong>75 🪙</strong> / 4-of-a-kind: <strong>150 🪙</strong></li>
+                <li><strong><span class="symbol">💎</span>:</strong> 3-of-a-kind: <strong>100 🪙</strong> / 4-of-a-kind: <strong>200 🪙</strong></li>
+                <li><strong><span class="symbol">🍀</span>:</strong> 3-of-a-kind: <strong>250 🪙</strong> / 4-of-a-kind: <strong>500 🪙</strong></li>
+            </ul>
+
+            <h3>Unlockables (via Tokens 🔒)</h3>
+            <ul id="unlocks-list">
+                <li><strong>Unlock Lime Removal (1 🪙):</strong> Unlocks the 🍋‍🟩 button, which removes all limes from all inventories when clicked.</li>
+                <li><strong>Unlock Selector (1 🪙):</strong> Unlocks the 🎈/🌼 button. (Functionality not yet implemented).</li>
+                <li><strong>Reset Links (1 🪙):</strong> Resets all used Links, allowing you to use the Link button again on every inventory.</li>
+            </ul>
         </div>
     </div>
+    
+    <div id="tokens-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" data-modal="tokens-modal">&times;</span>
+            <h2>Tokens</h2>
+            <div class="token-options">
+                <button class="token-option" id="unlock-lime-btn">
+                    <span class="token-icon">🟢</span>
+                    <span class="token-description">Unlock Lime Removal</span>
+                    <span class="token-cost">1 🪙</span>
+                </button>
+                <button class="token-option" id="unlock-selector-btn">
+                    <span class="token-icon">🔴</span>
+                    <span class="token-description">Unlock Selector</span>
+                    <span class="token-cost">1 🪙</span>
+                </button>
+                <button class="token-option" id="reset-links-btn">
+                    <span class="token-icon">⚪</span>
+                    <span class="token-description">Reset Links</span>
+                    <span class="token-cost">1 🪙</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const BLANK_SYMBOL = '❌';
             const ELIMINATED_SLOT = 'REMOVED'; 
+            const BOMB_SYMBOL = '💣';
+            const BOMB_EXPLOSION_SYMBOL = '💥';
+            const BOMB_DURATION = 10;
             const LUCKY_SYMBOL = '🍀';
             const CANDY_SYMBOL = '🍬'; 
             const RING_SYMBOL = '💍'; 
@@ -756,17 +1122,25 @@
             let selectedReel = 0;
             const reels = Array(REEL_COUNT).fill(0).map(() => Array(SYMBOLS_PER_REEL).fill(BLANK_SYMBOL));
             let gambleModeActive = false;
+            let riskModeActive = false;
             let isAnimating = false;
             let currentClownRotation = 0;
+            let clownRiskLevel = 0; 
             const usedSymbols = {};
             
             let symbolsAddedCounter = 0;
             let bonusSymbol = null;
-            let activeSelection = 'balloon'; // NEW: Tracks the selected side
+            let activeSelection = 'balloon';
 
-            const linkedReels = new Set();
-            const linkedRowState = {};
+            let isLimeUnlocked = false;
+            let isSelectorUnlocked = false;
 
+            let bombCounters = [0, 0, 0, 0];
+
+            let linkedReels = new Set();
+            let linkedRowState = {};
+
+            const gameContainer = document.querySelector('.game-container');
             const reelInventoriesContainer = document.querySelector('.reel-inventories');
             const symbolButtonsContainer = document.querySelector('.symbol-buttons');
             const spinButton = document.getElementById('spin-button');
@@ -775,23 +1149,93 @@
             const reelDisplayElements = Array.from(reelWindowElements).map(w => w.querySelector('.reel-display'));
             const coinsDisplay = document.getElementById('coins-display');
             const priceDisplay = document.getElementById('price-display');
-            // MODIFIED: Get new elements
             const selectorDisplay = document.getElementById('selector-display');
-            const clownCounter = document.getElementById('clown-counter');
             const messageBox = document.getElementById('message-box');
             const linkButton = document.getElementById('link-button');
             const gambleButton = document.getElementById('gamble-button');
             const helpButton = document.getElementById('help-button');
             const helpModal = document.getElementById('help-modal');
-            const closeButton = document.querySelector('.close-button');
             const resetButton = document.getElementById('reset-symbols-btn');
             const clownSlider = document.querySelector('.custom-slider');
+            
+            const tokensButton = document.getElementById('tokens-button');
+            const tokensModal = document.getElementById('tokens-modal');
+            const closeButtons = document.querySelectorAll('.close-button');
+
+            const unlockLimeBtn = document.getElementById('unlock-lime-btn');
+            const unlockSelectorBtn = document.getElementById('unlock-selector-btn');
+            const resetLinksBtn = document.getElementById('reset-links-btn');
+
+            /**
+             * UPDATED: Checks for and highlights potential and completed lines with more flexible logic.
+             * A line is valid if each adjacent linked reel is at most 1 row away from the previous one.
+             */
+            const checkAndHighlightLines = () => {
+                // Clear all previous line highlights and the theme
+                document.querySelectorAll('.inventory-row.line-connected, .inventory-row.line-possible').forEach(row => {
+                    row.classList.remove('line-connected', 'line-possible');
+                });
+                gameContainer.classList.remove('line-active-theme');
+
+                const linked = Object.entries(linkedRowState)
+                    .map(([k, v]) => [parseInt(k), v])
+                    .sort((a, b) => a[0] - b[0]);
+
+                if (linked.length < 1) return;
+
+                const allValidPaths = [];
+                let currentPath = [linked[0]];
+
+                // Iterate through linked reels to find all valid *contiguous* paths
+                for (let i = 1; i < linked.length; i++) {
+                    const prevReel = linked[i - 1];
+                    const currentReel = linked[i];
+
+                    const isAdjacent = currentReel[0] === prevReel[0] + 1;
+                    const isCloseEnough = Math.abs(currentReel[1] - prevReel[1]) <= 1;
+
+                    if (isAdjacent && isCloseEnough) {
+                        currentPath.push(currentReel);
+                    } else {
+                        if (currentPath.length >= 2) {
+                            allValidPaths.push([...currentPath]);
+                        }
+                        currentPath = [currentReel];
+                    }
+                }
+                
+                // Add the last processed path
+                if (currentPath.length >= 2) {
+                    allValidPaths.push([...currentPath]);
+                }
+
+                let isFullLine = false;
+                // Apply highlights to all found valid paths
+                allValidPaths.forEach(path => {
+                    if (path.length === REEL_COUNT) {
+                        isFullLine = true;
+                    }
+                    const highlightClass = path.length === REEL_COUNT ? 'line-connected' : 'line-possible';
+                    path.forEach(([index, row]) => {
+                        const inventory = inventoryDisplays[index];
+                        const rowToHighlight = inventory.children[row];
+                        if (rowToHighlight) {
+                            rowToHighlight.classList.add(highlightClass);
+                        }
+                    });
+                });
+
+                // If a full line exists, apply the theme to the game container
+                if (isFullLine) {
+                    gameContainer.classList.add('line-active-theme');
+                }
+            };
 
             const applyClownRotation = () => {
                 const clownSymbol = '🤡';
                 const rotationStyle = `rotate(${currentClownRotation}deg)`;
 
-                document.querySelectorAll('.clown-icon, .slider-label').forEach(icon => {
+                document.querySelectorAll('.clown-icon').forEach(icon => {
                     icon.style.transform = rotationStyle;
                     icon.style.display = 'inline-block';
                 });
@@ -820,7 +1264,7 @@
             };
 
             const showWinMessage = (text, duration = 1000) => {
-                messageBox.textContent = text;
+                messageBox.innerHTML = text; // Use innerHTML to support <br>
                 messageBox.classList.add('show');
                 setTimeout(() => {
                     messageBox.classList.remove('show');
@@ -846,17 +1290,50 @@
             };
 
             const updateTopBar = () => {
-                const clownCount = reels.flat().filter(s => s === '🤡').length;
                 const priceModifier = calculatePriceModifier();
                 spinPrice = BASE_SPIN_PRICE + priceModifier;
-                coinsDisplay.querySelector('.card-front').textContent = totalCoins;
-                spinButton.innerHTML = `🪙 ${spinPrice} &nbsp; Spin`;
-                // MODIFIED: Update the new clown counter
-                clownCounter.textContent = clownCount;
+                const coinsDisplayFront = coinsDisplay.querySelector('.card-front');
+                coinsDisplayFront.textContent = totalCoins;
+
+                const coinsDisplayBackCounter = coinsDisplay.querySelector('.bomb-mode-coin-count');
+                if (coinsDisplayBackCounter) {
+                    coinsDisplayBackCounter.textContent = totalCoins;
+                }
+                
+                const riskPolkaDotBg = 'radial-gradient(rgba(0,0,0,0.25) 45%, transparent 46%)';
+
+                if (riskModeActive) {
+                    spinButton.innerHTML = `💣 Spin`;
+                    spinButton.style.backgroundImage = riskPolkaDotBg;
+                    spinButton.style.backgroundSize = '12px 12px';
+                    spinButton.style.backgroundColor = '#e60023';
+                    spinButton.style.borderColor = '#ff4500';
+                    spinButton.style.color = '#ffffff';
+                    spinButton.style.textShadow = '2px 2px 4px rgba(0,0,0,0.7)';
+                    
+                    coinsDisplay.style.backgroundImage = riskPolkaDotBg;
+                    coinsDisplay.style.backgroundSize = '12px 12px';
+                    coinsDisplay.style.backgroundColor = '#e60023';
+                    coinsDisplay.style.borderColor = '#ff4500';
+
+                } else {
+                    spinButton.innerHTML = `🪙 ${spinPrice} &nbsp; Spin`;
+                    spinButton.style.backgroundImage = '';
+                    spinButton.style.backgroundSize = '';
+                    spinButton.style.backgroundColor = '#e60023';
+                    spinButton.style.borderColor = '#990017';
+                    spinButton.style.color = 'var(--button-text)';
+                    spinButton.style.textShadow = '2px 2px 5px rgba(0, 0, 0, 0.5)';
+
+                    coinsDisplay.style.backgroundImage = 'radial-gradient(#a17d00 45%, transparent 46%)';
+                    coinsDisplay.style.backgroundSize = '10px 10px';
+                    coinsDisplay.style.backgroundColor = '#ffd700';
+                    coinsDisplay.style.borderColor = '#e0bd00';
+                }
+                
                 applyClownRotation();
             };
             
-            // NEW: Function to update the selector UI
             const updateSelectorUI = () => {
                 document.querySelectorAll('.selector-option').forEach(opt => {
                     if (opt.dataset.choice === activeSelection) {
@@ -865,6 +1342,14 @@
                         opt.classList.add('deselected');
                     }
                 });
+            };
+
+            const updateLockedFeaturesUI = () => {
+                priceDisplay.classList.toggle('locked-feature', !isLimeUnlocked);
+                selectorDisplay.classList.toggle('locked-feature', !isSelectorUnlocked);
+                
+                unlockLimeBtn.disabled = isLimeUnlocked;
+                unlockSelectorBtn.disabled = isSelectorUnlocked;
             };
 
             const updateLinkButtonUI = () => {
@@ -922,6 +1407,7 @@
                         const rowEl = document.createElement('div');
                         rowEl.className = 'inventory-row';
 
+                        // Add the base 'linked' class if this row is the linked one for its reel
                         if (linkedRowState[reelIndex] === i) {
                             rowEl.classList.add('linked');
                         }
@@ -945,11 +1431,13 @@
                             symbolEl1.className = 'symbol-display';
                             symbolEl1.textContent = symbol1;
                             if (symbol1 === LUCKY_SYMBOL) symbolEl1.classList.add('clover');
+                            if (symbol1 === BOMB_SYMBOL) symbolEl1.classList.add('bomb-symbol-glow');
                             
                             const symbolEl2 = document.createElement('div');
                             symbolEl2.className = 'symbol-display';
                             symbolEl2.textContent = symbol2;
                             if (symbol2 === LUCKY_SYMBOL) symbolEl2.classList.add('clover');
+                            if (symbol2 === BOMB_SYMBOL) symbolEl2.classList.add('bomb-symbol-glow');
 
                             rowEl.appendChild(symbolEl1);
                             rowEl.appendChild(symbolEl2);
@@ -971,6 +1459,7 @@
                 delete linkedRowState[selectedReel];
 
                 renderInventories();
+                checkAndHighlightLines(); // Check if a line was broken
                 updateTopBar();
                 updateSymbolButtonsUI();
                 updateLinkButtonUI(); 
@@ -1044,7 +1533,7 @@
             };
             
             const handleLimeClick = () => {
-                if (isAnimating) return;
+                if (isAnimating || !isLimeUnlocked) return;
                 const LIME_SYMBOL = '🍋‍🟩';
                 const limeElements = [];
                 document.querySelectorAll('.inventory .symbol-display').forEach(el => {
@@ -1082,20 +1571,8 @@
                 if (isAnimating || linkedReels.has(selectedReel)) {
                     return;
                 }
-                if (totalCoins < 5) return;
-                
-                const reel = reels[selectedReel];
-                const linkableRows = [];
-                for (let i = 0; i < ROWS_PER_REEL; i++) {
-                    const symbol1 = reel[i * 2];
-                    const symbol2 = reel[i * 2 + 1];
-                    if (symbol1 !== BLANK_SYMBOL && symbol1 !== ELIMINATED_SLOT && symbol2 !== ELIMINATED_SLOT) {
-                        linkableRows.push(i);
-                    }
-                }
-
-                if (linkableRows.length === 0) {
-                    showWinMessage("No linkable rows!", 800);
+                if (totalCoins < 5) {
+                    showWinMessage("Not enough coins!", 800);
                     return;
                 }
 
@@ -1114,7 +1591,7 @@
                 const totalDuration = 2000;
                 const minDuration = 1500;
                 
-                const finalRow = linkableRows[Math.floor(Math.random() * linkableRows.length)];
+                const finalRow = Math.floor(Math.random() * ROWS_PER_REEL);
 
                 const runAnimation = () => {
                     rows.forEach(row => row.classList.remove('link-highlight'));
@@ -1126,34 +1603,26 @@
                         setTimeout(() => {
                             rows.forEach(row => row.classList.remove('link-highlight'));
                             
-                            let effectApplied = false;
+                            linkedReels.add(selectedReel);
+                            linkedRowState[selectedReel] = finalRow;
+                            
+                            const reel = reels[selectedReel];
                             const symbol1 = reel[finalRow * 2];
                             const symbol2 = reel[finalRow * 2 + 1];
 
-                            if (symbol1 === symbol2 && !SPECIAL_SYMBOLS.includes(symbol1)) {
-                                reel[finalRow * 2] = ELIMINATED_SLOT;
-                                reel[finalRow * 2 + 1] = ELIMINATED_SLOT;
-                                effectApplied = true;
-                            } 
-                            else if (symbol1 !== symbol2 && !SPECIAL_SYMBOLS.includes(symbol1) && !SPECIAL_SYMBOLS.includes(symbol2)) {
+                            if (symbol1 !== symbol2 && !SPECIAL_SYMBOLS.includes(symbol1) && !SPECIAL_SYMBOLS.includes(symbol2)) {
                                 if (FRUITS.includes(symbol1) && FRUITS.includes(symbol2)) {
                                     reel[finalRow * 2] = CANDY_SYMBOL;
                                     reel[finalRow * 2 + 1] = ELIMINATED_SLOT;
-                                    effectApplied = true;
                                 }
                                 else if ((symbol1 === '🔔' && symbol2 === '💎') || (symbol1 === '💎' && symbol2 === '🔔')) {
                                     reel[finalRow * 2] = RING_SYMBOL;
                                     reel[finalRow * 2 + 1] = ELIMINATED_SLOT;
-                                    effectApplied = true;
                                 }
                             }
                             
-                            if (effectApplied) {
-                                linkedReels.add(selectedReel);
-                                linkedRowState[selectedReel] = finalRow;
-                            }
-
                             renderInventories(); 
+                            checkAndHighlightLines(); // Check for new or potential lines
                             updateTopBar();
                             updateLinkButtonUI(); 
                             isAnimating = false;
@@ -1171,13 +1640,54 @@
             };
             
             const handleSpin = async () => {
-                if (isAnimating || totalCoins < spinPrice) return;
+                if (isAnimating) return;
+                if (!riskModeActive && totalCoins < spinPrice) return;
 
-                totalCoins -= spinPrice;
+                bombCounters = bombCounters.map(c => Math.max(0, c - 1));
+                bombCounters.forEach((counter, index) => {
+                    const reelWindow = reelWindowElements[index];
+                    const counterEl = reelWindow.querySelector('.bomb-counter');
+                    if (counter > 0 && counterEl) {
+                        counterEl.textContent = counter;
+                    } else if (counter === 0 && counterEl) {
+                        reelWindow.classList.remove('bombed');
+                        counterEl.remove();
+                    }
+                });
+
+                if (!riskModeActive) {
+                    totalCoins -= spinPrice;
+                }
+                
                 updateTopBar();
                 spinButton.disabled = true;
                 isAnimating = true;
                 reelWindowElements.forEach(rw => rw.classList.remove('win-animation'));
+
+                if (riskModeActive && Math.random() < 0.15) {
+                    const validSlots = [];
+                    reels.forEach((reel, reelIndex) => {
+                        reel.forEach((symbol, symbolIndex) => {
+                            if (symbol !== ELIMINATED_SLOT) {
+                                validSlots.push({ reelIndex, symbolIndex });
+                            }
+                        });
+                    });
+
+                    if (validSlots.length > 0) {
+                        const randomSlot = validSlots[Math.floor(Math.random() * validSlots.length)];
+                        reels[randomSlot.reelIndex][randomSlot.symbolIndex] = BOMB_SYMBOL;
+                        renderInventories();
+                        
+                        const bombedInventory = document.getElementById(`inventory-${randomSlot.reelIndex}`);
+                        if (bombedInventory) {
+                            bombedInventory.classList.add('inventory-shake-animation');
+                            setTimeout(() => {
+                                bombedInventory.classList.remove('inventory-shake-animation');
+                            }, 500);
+                        }
+                    }
+                }
 
                 const results = [];
                 for (let i = 0; i < REEL_COUNT; i++) {
@@ -1185,12 +1695,44 @@
                     results.push(finalSymbol);
                 }
 
+                for (let i = 0; i < REEL_COUNT; i++) {
+                    if (results[i] === BOMB_SYMBOL) {
+                        const reelWindow = reelWindowElements[i];
+                        
+                        reelWindow.classList.add('shake-animation');
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                        reelWindow.classList.remove('shake-animation');
+                        
+                        reelDisplayElements[i].textContent = BOMB_EXPLOSION_SYMBOL;
+                        bombCounters[i] = BOMB_DURATION;
+
+                        reelWindow.classList.add('bombed');
+                        const counterEl = document.createElement('div');
+                        counterEl.className = 'bomb-counter';
+                        counterEl.textContent = bombCounters[i];
+                        reelWindow.appendChild(counterEl);
+
+                        const reel = reels[i];
+                        const bombIndex = reel.indexOf(BOMB_SYMBOL);
+                        if (bombIndex !== -1) {
+                            reel[bombIndex] = BLANK_SYMBOL;
+                        }
+                    }
+                }
+                renderInventories();
+
                 checkForWin(results);
                 isAnimating = false;
             };
 
             const spinReel = (reelIndex) => {
                 return new Promise(resolve => {
+                    if (bombCounters[reelIndex] > 0) {
+                        reelDisplayElements[reelIndex].textContent = BOMB_EXPLOSION_SYMBOL;
+                        resolve(BOMB_EXPLOSION_SYMBOL);
+                        return;
+                    }
+                    
                     const reel = reels[reelIndex];
                     const spinnableSymbols = reel.filter(s => s !== ELIMINATED_SLOT);
 
@@ -1224,11 +1766,17 @@
             };
 
             const checkForWin = (results) => {
-                if (results.includes(BLANK_SYMBOL)) {
+                if (results.includes(BLANK_SYMBOL) || results.includes(BOMB_EXPLOSION_SYMBOL)) {
                     spinButton.disabled = false;
                     return;
                 }
-                
+
+                let baseWinnings = 0;
+                results.forEach(symbol => {
+                    if (symbol === CANDY_SYMBOL) baseWinnings += 50;
+                    else if (symbol === RING_SYMBOL) baseWinnings += 75;
+                });
+
                 const payoutTable = {
                     '🍒': { 3: 50, 4: 100 }, '🍊': { 3: 50, 4: 100 },
                     '🍇': { 3: 50, 4: 100 }, '🍋‍🟩': { 3: 50, 4: 100 },
@@ -1236,52 +1784,118 @@
                     '🍀': { 3: 250, 4: 500 }
                 };
 
-                const wildCount = results.filter(s => s === '🤡').length;
-                const symbolCounts = results.reduce((acc, symbol) => {
-                    if (symbol !== '🤡') acc[symbol] = (acc[symbol] || 0) + 1;
+                const rawWildCount = results.filter(s => s === '🤡').length;
+                const nonSpecialResults = results.filter(s => s !== CANDY_SYMBOL && s !== RING_SYMBOL && s !== '🤡');
+                const symbolCounts = nonSpecialResults.reduce((acc, symbol) => {
+                    acc[symbol] = (acc[symbol] || 0) + 1;
                     return acc;
                 }, {});
 
-                let winnings = 0;
+                let isWinPossibleWithClown = false;
+                if (rawWildCount > 0) {
+                    for (const symbol in symbolCounts) {
+                        if (payoutTable[symbol] && (symbolCounts[symbol] + rawWildCount >= 3)) {
+                            isWinPossibleWithClown = true;
+                            break;
+                        }
+                    }
+                }
+
+                const clownRiskTiers = [
+                    { wildChance: 1.00, bonusCoins: 0, bonusMultiplier: 1 },
+                    { wildChance: 0.85, bonusCoins: 25, bonusMultiplier: 1 },
+                    { wildChance: 0.75, bonusCoins: 50, bonusMultiplier: 1 },
+                    { wildChance: 0.65, bonusCoins: 0, bonusMultiplier: 2 },
+                    { wildChance: 0.15, bonusCoins: 0, bonusMultiplier: 5 }
+                ];
+                const currentTier = clownRiskTiers[clownRiskLevel];
+                
+                let effectiveWildCount = 0;
+                let clownFailed = false;
+
+                if (rawWildCount > 0) {
+                    if (clownRiskLevel === 0 || Math.random() < currentTier.wildChance) {
+                        effectiveWildCount = rawWildCount;
+                    } else {
+                        clownFailed = true;
+                    }
+                }
+
+                let matchWinnings = 0;
                 let winTypeFound = 0;
 
                 for (const symbol in symbolCounts) {
-                    if (payoutTable[symbol] && symbolCounts[symbol] + wildCount === 4) {
-                        winnings = payoutTable[symbol][4];
+                    if (payoutTable[symbol] && symbolCounts[symbol] + effectiveWildCount === 4) {
+                        matchWinnings += payoutTable[symbol][4];
                         winTypeFound = 4;
                         break;
                     }
                 }
                 if (!winTypeFound) {
                     for (const symbol in symbolCounts) {
-                        if (payoutTable[symbol] && symbolCounts[symbol] + wildCount === 3) {
-                            winnings = payoutTable[symbol][3];
+                        if (payoutTable[symbol] && symbolCounts[symbol] + effectiveWildCount === 3) {
+                            matchWinnings += payoutTable[symbol][3];
                             winTypeFound = 3;
                             break;
                         }
                     }
                 }
 
-                if (winnings > 0) {
-                    totalCoins += winnings;
-                    showWinMessage(`You won ${winnings} coins!`, 1000);
+                const totalWinnings = baseWinnings + matchWinnings;
+
+                if (totalWinnings > 0) {
+                    let finalWinnings = totalWinnings;
+                    let clownMessage = '';
+
+                    if (rawWildCount > 0 && !clownFailed && clownRiskLevel > 0 && matchWinnings > 0) {
+                        finalWinnings = (totalWinnings * currentTier.bonusMultiplier) + currentTier.bonusCoins;
+                        let bonusText = '';
+                        if (currentTier.bonusCoins > 0) bonusText = `+${currentTier.bonusCoins} Coins`;
+                        else if (currentTier.bonusMultiplier > 1) bonusText = `${currentTier.bonusMultiplier}x Win`;
+                        clownMessage = `🤡 Extra ${bonusText}! 🎉<br>`;
+                    }
+                    
+                    const mainMessage = `Win ${finalWinnings}!`;
+                    
+                    totalCoins += finalWinnings;
+                    showWinMessage(clownMessage + mainMessage, 2000);
                     reelWindowElements.forEach(rw => rw.classList.add('win-animation'));
                     
                     setTimeout(() => {
                         reelWindowElements.forEach(rw => rw.classList.remove('win-animation'));
                         updateTopBar();
                         spinButton.disabled = false;
-                    }, 1000);
+                    }, 2000);
+
+                } else if (clownFailed && isWinPossibleWithClown) {
+                    showWinMessage("🤡 Oops.", 1000);
+                    spinButton.disabled = false;
                 } else {
                     spinButton.disabled = false;
                 }
             };
 
-            const showModal = () => {
-                helpModal.style.display = 'flex';
+            const handleResetLinks = () => {
+                if (totalCoins >= 1) {
+                    totalCoins -= 1;
+                    linkedReels.clear();
+                    Object.keys(linkedRowState).forEach(key => delete linkedRowState[key]);
+                    
+                    updateTopBar();
+                    renderInventories();
+                    checkAndHighlightLines(); // Clear all line highlights
+                    updateLinkButtonUI();
+                    hideModal(tokensModal);
+                } else {
+                    showWinMessage("Not enough coins!", 800);
+                }
             };
-            const hideModal = () => {
-                helpModal.style.display = 'none';
+
+            const showModal = (modalElement) => {
+                modalElement.style.display = 'flex';
+            };
+            const hideModal = (modalElement) => {
+                modalElement.style.display = 'none';
             };
             
             const applySymbolButtonBorders = () => {
@@ -1314,13 +1928,26 @@
             linkButton.addEventListener('click', handleLink);
             gambleButton.addEventListener('click', handleGambleClick);
             priceDisplay.addEventListener('click', handleLimeClick); 
+            
             coinsDisplay.addEventListener('click', () => {
                 coinsDisplay.classList.toggle('is-flipped');
+                riskModeActive = coinsDisplay.classList.contains('is-flipped');
+                updateTopBar();
             });
-            helpButton.addEventListener('click', showModal);
-            closeButton.addEventListener('click', hideModal);
-            // NEW: Event listener for the new selector display
+            
+            helpButton.addEventListener('click', () => showModal(helpModal));
+            tokensButton.addEventListener('click', () => showModal(tokensModal));
+            
+            closeButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const modalId = button.dataset.modal;
+                    const modalToClose = document.getElementById(modalId);
+                    if(modalToClose) hideModal(modalToClose);
+                });
+            });
+
             selectorDisplay.addEventListener('click', (event) => {
+                if (!isSelectorUnlocked) return;
                 const choice = event.target.dataset.choice;
                 if (choice && choice !== activeSelection) {
                     activeSelection = choice;
@@ -1328,15 +1955,45 @@
                 }
             });
 
+            unlockLimeBtn.addEventListener('click', () => {
+                if (totalCoins >= 1) {
+                    totalCoins -= 1;
+                    isLimeUnlocked = true;
+                    updateTopBar();
+                    updateLockedFeaturesUI();
+                    hideModal(tokensModal);
+                } else {
+                    showWinMessage("Not enough coins!", 800);
+                }
+            });
+
+            unlockSelectorBtn.addEventListener('click', () => {
+                if (totalCoins >= 1) {
+                    totalCoins -= 1;
+                    isSelectorUnlocked = true;
+                    updateTopBar();
+                    updateLockedFeaturesUI();
+                    hideModal(tokensModal);
+                } else {
+                    showWinMessage("Not enough coins!", 800);
+                }
+            });
+
+            resetLinksBtn.addEventListener('click', handleResetLinks);
+
             clownSlider.addEventListener('input', (event) => {
-                const sliderValue = event.target.value;
-                currentClownRotation = sliderValue * 20;
+                const sliderValue = parseInt(event.target.value, 10);
+                clownRiskLevel = sliderValue;
+                currentClownRotation = sliderValue * 45;
                 applyClownRotation();
             });
 
             window.addEventListener('click', (event) => {
                 if (event.target == helpModal) {
-                    hideModal();
+                    hideModal(helpModal);
+                }
+                if (event.target == tokensModal) {
+                    hideModal(tokensModal);
                 }
             });
             
@@ -1347,7 +2004,8 @@
             renderInventories();
             updateTopBar();
             updateSymbolButtonsUI();
-            updateSelectorUI(); // Set initial selector state
+            updateSelectorUI();
+            updateLockedFeaturesUI();
         });
     </script>
 </body>
