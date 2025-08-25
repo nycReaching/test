@@ -648,9 +648,16 @@
             animation: bomb-glow 1.2s infinite ease-in-out;
         }
 
+        /* UPDATED: Bonus glow now uses box-shadow and a CSS variable for color */
         @keyframes bonus-glow {
-            0%, 100% { text-shadow: 0 0 8px #fff, 0 0 12px #fff, 0 0 16px #fff; }
-            50% { text-shadow: 0 0 16px #eee, 0 0 20px #eee, 0 0 24px #eee; }
+            0%, 100% {
+                box-shadow: 0 0 10px 3px var(--glow-color, transparent);
+                text-shadow: none;
+            }
+            50% {
+                box-shadow: 0 0 20px 6px var(--glow-color, transparent);
+                text-shadow: none;
+            }
         }
         .bonus-symbol {
             animation: bonus-glow 1.5s infinite ease-in-out;
@@ -771,9 +778,31 @@
             max-height: 80vh;
             overflow-y: auto;
         }
-
+        
         #help-modal .modal-content {
-            background-color: #0f3460; /* Dark blue base */
+            background-color: #0f3460;
+            border-color: #2b8de2;
+            box-shadow: 0 0 25px rgba(43, 141, 226, 0.4);
+            position: relative;
+            overflow: hidden;
+            padding: 0;
+        }
+
+        /* UPDATED: Added box-sizing to fix scrolling cutoff */
+        .modal-scroll-wrapper {
+            height: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 20px 30px;
+            position: relative;
+            z-index: 2;
+            box-sizing: border-box;
+        }
+
+        #help-modal .modal-content::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
             background-image: repeating-linear-gradient(
                 -45deg,
                 rgba(255, 0, 0, 0.7),      /* Red */
@@ -790,12 +819,13 @@
                 rgba(138, 43, 226, 0.7) 120px
             );
             background-attachment: scroll;
-            border-color: #2b8de2;
-            box-shadow: 0 0 25px rgba(43, 141, 226, 0.4);
+            filter: blur(3px);
+            z-index: 1;
+            margin: -10px;
         }
         
         #tokens-modal .modal-content {
-            background-color: #8B4513; /* SaddleBrown */
+            background-color: #8B4513;
             background-image: 
                 linear-gradient(45deg, #D4AF37 25%, transparent 25%), 
                 linear-gradient(-45deg, #D4AF37 25%, transparent 25%),
@@ -815,10 +845,16 @@
             position: relative; 
             z-index: 2;
         }
-
-        #help-modal .modal-content h2, #help-modal .modal-content h3 {
+        
+        /* UPDATED: Removed glow effect, leaving only drop shadow */
+        #help-modal .modal-content h2, 
+        #help-modal .modal-content h3 {
              color: #ffffff;
-             text-shadow: 0 0 10px #2b8de2;
+             text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        #help-modal .modal-content p {
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
         }
 
         .modal-content h3 {
@@ -846,24 +882,26 @@
             margin-bottom: 1em;
             text-align: center;
         }
+
         .modal-content ul {
             list-style-type: none;
             padding: 0;
         }
+
         .modal-content li {
             margin: 10px 0;
             letter-spacing: 1px;
             text-align: left;
-            background-color: #1a253c;
+            background-color: rgba(26, 37, 60, 0.75);
             padding: 8px;
             border-radius: 5px;
         }
         
-        #help-modal #core-gameplay-list strong { color: #c398fb; } /* Purple */
-        #help-modal #costs-list strong { color: #98fb98; } /* Green */
-        #help-modal #special-mechanics-list strong { color: #e94560; } /* Red */
-        #help-modal #payouts-list strong { color: #f9d423; } /* Yellow */
-        #help-modal #unlocks-list strong { color: #00bfff; } /* Blue */
+        #help-modal #core-gameplay-list strong { color: #c398fb; }
+        #help-modal #costs-list strong { color: #98fb98; }
+        #help-modal #special-mechanics-list strong { color: #e94560; }
+        #help-modal #payouts-list strong { color: #f9d423; }
+        #help-modal #unlocks-list strong { color: #00bfff; }
 
         .modal-content .symbol {
             font-size: 1.2em;
@@ -930,7 +968,7 @@
             position: absolute;
             top: 5px;
             right: 15px;
-            z-index: 5; /* Ensure close button is on top */
+            z-index: 5;
         }
 
         .close-button:hover,
@@ -1013,63 +1051,65 @@
     <!-- Help Modal -->
     <div id="help-modal" class="modal">
         <div class="modal-content">
-            <span class="close-button" data-modal="help-modal">&times;</span>
-            <h2>How to Play</h2>
-            <p>Strategically add symbols to the four inventories, then spin to win!</p>
+            <div class="modal-scroll-wrapper">
+                <span class="close-button" data-modal="help-modal">&times;</span>
+                <h2>How to Play</h2>
+                <p>Strategically add symbols to the four inventories, then spin to win!</p>
 
-            <h3>Core Gameplay</h3>
-            <ul id="core-gameplay-list">
-                <li><strong>Select an Inventory:</strong> Tap one of the four inventory boxes below the slot windows to select it.</li>
-                <li><strong>Add Symbols:</strong> Pay coins to add symbols to the 8 slots in the selected inventory. Each symbol can only be added once per inventory.</li>
-                <li><strong>Spin:</strong> Pay the spin cost to draw one random symbol from each of the four inventories.</li>
-            </ul>
+                <h3>Core Gameplay</h3>
+                <ul id="core-gameplay-list">
+                    <li><strong>Select an Inventory:</strong> Tap one of the four inventory boxes below the slot windows to select it.</li>
+                    <li><strong>Add Symbols:</strong> Pay coins to add symbols to the 8 slots in the selected inventory. Each symbol can only be added once per inventory.</li>
+                    <li><strong>Spin:</strong> Pay the spin cost to draw one random symbol from each of the four inventories.</li>
+                </ul>
 
-            <h3>Costs</h3>
-            <ul id="costs-list">
-                <li><strong>Spin:</strong> Starts at <strong>5 🪙</strong>. Increases by 1 for each symbol that appears 4 or more times in a single inventory.</li>
-                <li><strong>Add Symbol:</strong> <strong>2 🪙</strong> per symbol.</li>
-                <li><strong>Reset Inventory (🗑️):</strong> <strong>50 🪙</strong> to clear all symbols from the selected inventory.</li>
-            </ul>
+                <h3>Costs</h3>
+                <ul id="costs-list">
+                    <li><strong>Spin:</strong> Starts at <strong>5 🪙</strong>. Increases by 1 for each symbol that appears 4 or more times in a single inventory.</li>
+                    <li><strong>Add Symbol:</strong> <strong>3 🪙</strong> per symbol.</li>
+                    <li><strong>Reset Inventory (🗑️):</strong> <strong>50 🪙</strong> to clear all symbols from the selected inventory.</li>
+                </ul>
 
-            <h3>Special Mechanics</h3>
-            <ul id="special-mechanics-list">
-                <li><strong>Bomb Mode (💣):</strong> Click the coin display to toggle. Spins are <strong>FREE</strong>, but have a 15% chance to add a 💣 to a random inventory slot. If the 💣 is drawn on a spin, that reel is disabled for 10 spins.</li>
-                <li><strong>Clover Mode (🍀):</strong> Costs <strong>2 🪙</strong> to activate. When adding a symbol, there's a 50% chance it becomes a 🍀. If it fails, the original symbol is permanently removed from that inventory's options.</li>
-                <li><strong>Link (⬜):</strong> Costs <strong>5 🪙</strong>. Links two symbols in a random row on the selected inventory, creating a new symbol.
-                    <ul>
-                        <li><span class="symbol">🍒</span> + <span class="symbol">🍊</span> (any two fruits) → <span class="symbol">🍬</span> (Candy)</li>
-                        <li><span class="symbol">🔔</span> + <span class="symbol">💎</span> → <span class="symbol">💍</span> (Ring)</li>
-                    </ul>
-                </li>
-                <li>
-                    <strong>Clown Rotation (🤡):</strong> Use the slider to rotate the Clown. The more it's rotated, the higher the risk and reward!
-                    <ul>
-                        <li><strong>Upright:</strong> 100% Wild, no bonus.</li>
-                        <li><strong>Slight Tilt:</strong> 85% Wild, +25 coin bonus on wins.</li>
-                        <li><strong>Sideways:</strong> 75% Wild, +50 coin bonus on wins.</li>
-                        <li><strong>Mostly Flipped:</strong> 65% Wild, 2x multiplier on wins.</li>
-                        <li><strong>Upside Down:</strong> 15% Wild, 5x multiplier on wins.</li>
-                    </ul>
-                </li>
-            </ul>
+                <h3>Special Mechanics</h3>
+                <ul id="special-mechanics-list">
+                    <li><strong>Bomb Mode (💣):</strong> Click the coin display to toggle. Spins are <strong>FREE</strong>, but have a 15% chance to add a 💣 to a random inventory slot. If the 💣 is drawn on a spin, that reel is disabled for 10 spins.</li>
+                    <li><strong>Clover Mode (🍀):</strong> Costs <strong>2 🪙</strong> to activate. When adding a symbol, there's a 50% chance it becomes a 🍀. If it fails, the original symbol is permanently removed from that inventory's options.</li>
+                    <li><strong>Link (⬜):</strong> Costs <strong>5 🪙</strong>. Links two symbols in a random row on the selected inventory, creating a new symbol.
+                        <ul>
+                            <li><span class="symbol">🍒</span> + <span class="symbol">🍊</span> (any two fruits) → <span class="symbol">🍬</span> (Candy)</li>
+                            <li><span class="symbol">🔔</span> + <span class="symbol">💎</span> → <span class="symbol">💍</span> (Ring)</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong>Clown Rotation (🤡):</strong> Use the slider to rotate the Clown. The more it's rotated, the higher the risk and reward!
+                        <ul>
+                            <li><strong>Upright:</strong> 100% Wild, no bonus.</li>
+                            <li><strong>Slight Tilt:</strong> 85% Wild, +25 coin bonus on wins.</li>
+                            <li><strong>Sideways:</strong> 75% Wild, +50 coin bonus on wins.</li>
+                            <li><strong>Mostly Flipped:</strong> 65% Wild, 2x multiplier on wins.</li>
+                            <li><strong>Upside Down:</strong> 15% Wild, 5x multiplier on wins.</li>
+                        </ul>
+                    </li>
+                </ul>
 
-            <h3>Symbol Payouts</h3>
-            <p>Match 3 or 4 symbols across the reels to win. The <strong>Clown (🤡)</strong> is WILD and substitutes for any symbol below (if it doesn't fail!).</p>
-            <ul id="payouts-list">
-                <li><strong><span class="symbol">🍬</span> (Candy):</strong> <strong>50 🪙</strong> for each that appears.</li>
-                <li><strong><span class="symbol">💍</span> (Ring):</strong> <strong>75 🪙</strong> for each that appears.</li>
-                <li><strong><span class="symbol">🍒</span><span class="symbol">🍊</span><span class="symbol">🍇</span><span class="symbol">🍋‍🟩</span>:</strong> 3-of-a-kind: <strong>50 🪙</strong> / 4-of-a-kind: <strong>100 🪙</strong></li>
-                <li><strong><span class="symbol">🔔</span>:</strong> 3-of-a-kind: <strong>75 🪙</strong> / 4-of-a-kind: <strong>150 🪙</strong></li>
-                <li><strong><span class="symbol">💎</span>:</strong> 3-of-a-kind: <strong>100 🪙</strong> / 4-of-a-kind: <strong>200 🪙</strong></li>
-                <li><strong><span class="symbol">🍀</span>:</strong> 3-of-a-kind: <strong>250 🪙</strong> / 4-of-a-kind: <strong>500 🪙</strong></li>
-            </ul>
+                <h3>Symbol Payouts</h3>
+                <p>Match 3 or 4 symbols across the reels to win. The <strong>Clown (🤡)</strong> is WILD and substitutes for any symbol below (if it doesn't fail!).</p>
+                <ul id="payouts-list">
+                    <li><strong><span class="symbol">🍬</span> (Candy):</strong> <strong>50 🪙</strong> for each that appears.</li>
+                    <li><strong><span class="symbol">💍</span> (Ring):</strong> <strong>75 🪙</strong> for each that appears.</li>
+                    <li><strong><span class="symbol">🍒</span><span class="symbol">🍊</span><span class="symbol">🍇</span><span class="symbol">🍋‍🟩</span>:</strong> 3-of-a-kind: <strong>50 🪙</strong> / 4-of-a-kind: <strong>100 🪙</strong></li>
+                    <li><strong><span class="symbol">🔔</span>:</strong> 3-of-a-kind: <strong>75 🪙</strong> / 4-of-a-kind: <strong>150 🪙</strong></li>
+                    <li><strong><span class="symbol">💎</span>:</strong> 3-of-a-kind: <strong>100 🪙</strong> / 4-of-a-kind: <strong>200 🪙</strong></li>
+                    <li><strong><span class="symbol">🍀</span>:</strong> 3-of-a-kind: <strong>250 🪙</strong> / 4-of-a-kind: <strong>500 🪙</strong></li>
+                </ul>
 
-            <h3>Unlockables (via Tokens 🔒)</h3>
-            <ul id="unlocks-list">
-                <li><strong>Unlock Lime Removal (1 🪙):</strong> Unlocks the 🍋‍🟩 button, which removes all limes from all inventories when clicked.</li>
-                <li><strong>Unlock Selector (1 🪙):</strong> Unlocks the 🎈/🌼 button. (Functionality not yet implemented).</li>
-                <li><strong>Reset Links (1 🪙):</strong> Resets all used Links, allowing you to use the Link button again on every inventory.</li>
-            </ul>
+                <h3>Unlockables (via Tokens 🔒)</h3>
+                <ul id="unlocks-list">
+                    <li><strong>Unlock Lime Removal (1 🪙):</strong> Unlocks the 🍋‍🟩 button, which removes all limes from all inventories when clicked.</li>
+                    <li><strong>Unlock Selector (1 🪙):</strong> Unlocks the 🎈/🌼 button. (Functionality not yet implemented).</li>
+                    <li><strong>Reset Links (1 🪙):</strong> Resets all used Links, allowing you to use the Link button again on every inventory.</li>
+                </ul>
+            </div>
         </div>
     </div>
     
@@ -1115,7 +1155,7 @@
             const SYMBOLS_PER_REEL = 8;
             const ROWS_PER_REEL = 4;
             const BASE_SPIN_PRICE = 5;
-            const SYMBOL_ADD_COST = 2;
+            const SYMBOL_ADD_COST = 3;
 
             let totalCoins = 100;
             let spinPrice = BASE_SPIN_PRICE;
@@ -1166,12 +1206,8 @@
             const unlockSelectorBtn = document.getElementById('unlock-selector-btn');
             const resetLinksBtn = document.getElementById('reset-links-btn');
 
-            /**
-             * UPDATED: Checks for and highlights potential and completed lines with more flexible logic.
-             * A line is valid if each adjacent linked reel is at most 1 row away from the previous one.
-             */
             const checkAndHighlightLines = () => {
-                // Clear all previous line highlights and the theme
+                // --- 1. Clear previous highlights ---
                 document.querySelectorAll('.inventory-row.line-connected, .inventory-row.line-possible').forEach(row => {
                     row.classList.remove('line-connected', 'line-possible');
                 });
@@ -1183,49 +1219,68 @@
 
                 if (linked.length < 1) return;
 
-                const allValidPaths = [];
-                let currentPath = [linked[0]];
-
-                // Iterate through linked reels to find all valid *contiguous* paths
-                for (let i = 1; i < linked.length; i++) {
-                    const prevReel = linked[i - 1];
-                    const currentReel = linked[i];
-
-                    const isAdjacent = currentReel[0] === prevReel[0] + 1;
-                    const isCloseEnough = Math.abs(currentReel[1] - prevReel[1]) <= 1;
-
-                    if (isAdjacent && isCloseEnough) {
-                        currentPath.push(currentReel);
-                    } else {
-                        if (currentPath.length >= 2) {
-                            allValidPaths.push([...currentPath]);
+                // --- 2. [FIX] Global impossibility check ---
+                // A line is impossible if the vertical distance between any two linked points
+                // is greater than their horizontal distance.
+                let lineIsImpossible = false;
+                if (linked.length >= 2) {
+                    for (let i = 0; i < linked.length; i++) {
+                        for (let j = i + 1; j < linked.length; j++) {
+                            const [reelA, rowA] = linked[i];
+                            const [reelB, rowB] = linked[j];
+                            if (Math.abs(rowA - rowB) > Math.abs(reelA - reelB)) {
+                                lineIsImpossible = true;
+                                break;
+                            }
                         }
-                        currentPath = [currentReel];
+                        if (lineIsImpossible) break;
+                    }
+                }
+
+                // --- 3. Find all contiguous paths (original logic) ---
+                const allValidPaths = [];
+                if (linked.length > 0) {
+                    let currentPath = [linked[0]];
+                    for (let i = 1; i < linked.length; i++) {
+                        const prevReel = linked[i - 1];
+                        const currentReel = linked[i];
+
+                        const isAdjacent = currentReel[0] === prevReel[0] + 1;
+                        const isCloseEnough = Math.abs(currentReel[1] - prevReel[1]) <= 1;
+
+                        if (isAdjacent && isCloseEnough) {
+                            currentPath.push(currentReel);
+                        } else {
+                            if (currentPath.length >= 2) {
+                                allValidPaths.push([...currentPath]);
+                            }
+                            currentPath = [currentReel];
+                        }
+                    }
+                    if (currentPath.length >= 2) {
+                        allValidPaths.push([...currentPath]);
                     }
                 }
                 
-                // Add the last processed path
-                if (currentPath.length >= 2) {
-                    allValidPaths.push([...currentPath]);
-                }
-
+                // --- 4. Apply highlights based on checks ---
                 let isFullLine = false;
-                // Apply highlights to all found valid paths
                 allValidPaths.forEach(path => {
                     if (path.length === REEL_COUNT) {
                         isFullLine = true;
+                        // Always highlight a fully connected line
+                        path.forEach(([index, row]) => {
+                            const rowToHighlight = inventoryDisplays[index].children[row];
+                            if (rowToHighlight) rowToHighlight.classList.add('line-connected');
+                        });
+                    } else if (!lineIsImpossible) {
+                        // [FIX] Only highlight "possible" lines if a full line is not impossible
+                         path.forEach(([index, row]) => {
+                            const rowToHighlight = inventoryDisplays[index].children[row];
+                            if (rowToHighlight) rowToHighlight.classList.add('line-possible');
+                        });
                     }
-                    const highlightClass = path.length === REEL_COUNT ? 'line-connected' : 'line-possible';
-                    path.forEach(([index, row]) => {
-                        const inventory = inventoryDisplays[index];
-                        const rowToHighlight = inventory.children[row];
-                        if (rowToHighlight) {
-                            rowToHighlight.classList.add(highlightClass);
-                        }
-                    });
                 });
 
-                // If a full line exists, apply the theme to the game container
                 if (isFullLine) {
                     gameContainer.classList.add('line-active-theme');
                 }
@@ -1252,6 +1307,7 @@
             };
 
             const initializeGame = () => {
+                const NON_FRUITS = ['🔔', '🤡', '💎'];
                 for (let i = 0; i < REEL_COUNT; i++) {
                     const availableFruits = [...FRUITS];
                     const firstFruitIndex = Math.floor(Math.random() * availableFruits.length);
@@ -1260,11 +1316,14 @@
                     const secondFruitIndex = Math.floor(Math.random() * availableFruits.length);
                     const secondFruit = availableFruits[secondFruitIndex];
                     reels[i][1] = secondFruit;
+
+                    const randomNonFruit = NON_FRUITS[Math.floor(Math.random() * NON_FRUITS.length)];
+                    reels[i][2] = randomNonFruit;
                 }
             };
 
             const showWinMessage = (text, duration = 1000) => {
-                messageBox.innerHTML = text; // Use innerHTML to support <br>
+                messageBox.innerHTML = text;
                 messageBox.classList.add('show');
                 setTimeout(() => {
                     messageBox.classList.remove('show');
@@ -1368,8 +1427,12 @@
             const updateBonusSymbolUI = () => {
                 document.querySelectorAll('.symbol-btn').forEach(btn => {
                     btn.classList.remove('bonus-symbol');
+                    btn.style.setProperty('--glow-color', 'transparent');
+
                     if (bonusSymbol && btn.textContent.includes(bonusSymbol)) {
                         btn.classList.add('bonus-symbol');
+                        const borderColor = btn.style.borderColor;
+                        btn.style.setProperty('--glow-color', borderColor);
                     }
                 });
             };
@@ -1407,7 +1470,6 @@
                         const rowEl = document.createElement('div');
                         rowEl.className = 'inventory-row';
 
-                        // Add the base 'linked' class if this row is the linked one for its reel
                         if (linkedRowState[reelIndex] === i) {
                             rowEl.classList.add('linked');
                         }
@@ -1459,7 +1521,7 @@
                 delete linkedRowState[selectedReel];
 
                 renderInventories();
-                checkAndHighlightLines(); // Check if a line was broken
+                checkAndHighlightLines();
                 updateTopBar();
                 updateSymbolButtonsUI();
                 updateLinkButtonUI(); 
@@ -1622,7 +1684,7 @@
                             }
                             
                             renderInventories(); 
-                            checkAndHighlightLines(); // Check for new or potential lines
+                            checkAndHighlightLines();
                             updateTopBar();
                             updateLinkButtonUI(); 
                             isAnimating = false;
@@ -1766,16 +1828,15 @@
             };
 
             const checkForWin = (results) => {
-                if (results.includes(BLANK_SYMBOL) || results.includes(BOMB_EXPLOSION_SYMBOL)) {
-                    spinButton.disabled = false;
-                    return;
-                }
-
+                // 1. Calculate base winnings for special symbols first.
                 let baseWinnings = 0;
                 results.forEach(symbol => {
                     if (symbol === CANDY_SYMBOL) baseWinnings += 50;
                     else if (symbol === RING_SYMBOL) baseWinnings += 75;
                 });
+
+                // 2. [FIX] Filter out non-paying symbols (blanks, bombs) before checking for matches.
+                const validSymbolsForMatch = results.filter(s => s !== BLANK_SYMBOL && s !== BOMB_EXPLOSION_SYMBOL);
 
                 const payoutTable = {
                     '🍒': { 3: 50, 4: 100 }, '🍊': { 3: 50, 4: 100 },
@@ -1784,9 +1845,10 @@
                     '🍀': { 3: 250, 4: 500 }
                 };
 
-                const rawWildCount = results.filter(s => s === '🤡').length;
-                const nonSpecialResults = results.filter(s => s !== CANDY_SYMBOL && s !== RING_SYMBOL && s !== '🤡');
-                const symbolCounts = nonSpecialResults.reduce((acc, symbol) => {
+                // 3. Count symbols from the valid list.
+                const rawWildCount = validSymbolsForMatch.filter(s => s === '🤡').length;
+                const symbolsToCount = validSymbolsForMatch.filter(s => s !== CANDY_SYMBOL && s !== RING_SYMBOL && s !== '🤡');
+                const symbolCounts = symbolsToCount.reduce((acc, symbol) => {
                     acc[symbol] = (acc[symbol] || 0) + 1;
                     return acc;
                 }, {});
@@ -1800,7 +1862,7 @@
                         }
                     }
                 }
-
+                
                 const clownRiskTiers = [
                     { wildChance: 1.00, bonusCoins: 0, bonusMultiplier: 1 },
                     { wildChance: 0.85, bonusCoins: 25, bonusMultiplier: 1 },
@@ -1841,24 +1903,15 @@
                     }
                 }
 
+                if (rawWildCount > 0 && !clownFailed && clownRiskLevel > 0 && matchWinnings > 0) {
+                    matchWinnings = (matchWinnings * currentTier.bonusMultiplier) + currentTier.bonusCoins;
+                }
+                
                 const totalWinnings = baseWinnings + matchWinnings;
 
                 if (totalWinnings > 0) {
-                    let finalWinnings = totalWinnings;
-                    let clownMessage = '';
-
-                    if (rawWildCount > 0 && !clownFailed && clownRiskLevel > 0 && matchWinnings > 0) {
-                        finalWinnings = (totalWinnings * currentTier.bonusMultiplier) + currentTier.bonusCoins;
-                        let bonusText = '';
-                        if (currentTier.bonusCoins > 0) bonusText = `+${currentTier.bonusCoins} Coins`;
-                        else if (currentTier.bonusMultiplier > 1) bonusText = `${currentTier.bonusMultiplier}x Win`;
-                        clownMessage = `🤡 Extra ${bonusText}! 🎉<br>`;
-                    }
-                    
-                    const mainMessage = `Win ${finalWinnings}!`;
-                    
-                    totalCoins += finalWinnings;
-                    showWinMessage(clownMessage + mainMessage, 2000);
+                    totalCoins += totalWinnings;
+                    showWinMessage(`Win ${totalWinnings}!`, 2000);
                     reelWindowElements.forEach(rw => rw.classList.add('win-animation'));
                     
                     setTimeout(() => {
@@ -1883,7 +1936,7 @@
                     
                     updateTopBar();
                     renderInventories();
-                    checkAndHighlightLines(); // Clear all line highlights
+                    checkAndHighlightLines();
                     updateLinkButtonUI();
                     hideModal(tokensModal);
                 } else {
