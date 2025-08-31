@@ -2,2064 +2,1841 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Emoji Slot Machine</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPG Game Layout</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        /* --- Core Layout & Typography --- */
-        @import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
-
-        :root {
-            --bg-color: #1a1a2e;
-            --machine-color: #16213e;
-            --window-bg: #0f3460;
-            --text-color: #e94560;
-            --highlight-color: #e94560;
-            --button-bg: #3e236d; 
-            --button-text: #ffffff;
-            --font-family: 'Anton', sans-serif;
-            --glow-color: rgba(233, 69, 96, 0.7);
-        }
-
-        html {
-            height: -webkit-fill-available;
-        }
-        
         body {
-            background-color: var(--bg-color);
-            font-family: var(--font-family);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: var(--button-text);
-            padding: clamp(5px, 2vw, 10px);
-            box-sizing: border-box;
-            margin: 0;
+            font-family: 'Anton', sans-serif;
+            background-color: #0c0a09;
+            background-image: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+            color: #e2e8f0;
+            letter-spacing: 0.05em;
             min-height: 100vh;
-            min-height: -webkit-fill-available;
-            letter-spacing: 1.5px; 
         }
-
-        .game-container {
+        .game-window {
+            background-color: rgba(17, 24, 39, 0.8);
+            border: 1px solid #4a5568;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(8px);
+        }
+        .window-title {
+            background: linear-gradient(to bottom, #4a5568, #2d3748);
+            border-top-left-radius: 0.5rem;
+            border-top-right-radius: 0.5rem;
+            padding: 0.25rem 1rem; /* Reduced padding */
+            border-bottom: 1px solid #718096;
+            font-family: 'Anton', sans-serif;
+            color: #f7fafc;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
             display: flex;
-            flex-direction: column;
-            gap: clamp(10px, 2vh, 15px);
-            padding: clamp(10px, 2vw, 15px);
-            background-color: rgba(0, 0, 0, 0.2);
-            border-radius: 20px;
-            border: 2px solid var(--highlight-color);
-            box-shadow: 0 0 30px var(--glow-color), inset 0 0 10px rgba(255,255,255,0.1);
-            width: 100%;
-            max-width: 480px;
-            box-sizing: border-box;
-            max-height: 100vh;
-            overflow-y: auto;
-            transition: border-color 0.5s ease, box-shadow 0.5s ease; /* Smooth transition for theme change */
-        }
-
-        /* NEW: Class to switch game border to teal theme */
-        .game-container.line-active-theme {
-            --highlight-color: #00CED1; /* darkturquoise */
-            --glow-color: rgba(0, 206, 209, 0.7);
-        }
-        
-        /* --- Info Bars --- */
-        .top-bar-container, .bottom-bar-container {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: clamp(5px, 2vw, 10px);
-            width: 100%;
-        }
-        
-        .bottom-bar-container {
-            grid-template-columns: 1.5fr 2fr 1.5fr;
-        }
-
-        .info-box {
-            padding: 8px 12px;
-            border-radius: 8px;
-            text-align: center;
-            font-size: clamp(18px, 5vw, 24px);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            min-height: 54px; 
-            box-sizing: border-box; 
-            transition: background-color 0.3s ease, filter 0.3s ease, transform 0.2s ease, background-image 0.3s ease, border-color 0.3s ease;
-            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.6);
-            position: relative;
-        }
-        .info-box:active {
-            transform: scale(0.97);
-        }
-        
-        /* --- Flippable Coin Display --- */
-        .info-box-container { 
-            perspective: 1000px; 
-            height: 100%;
-        }
-        #coins-display { 
-            position: relative;
-            transform-style: preserve-3d;
-            transition: transform 0.6s, background-color 0.3s;
-            cursor: pointer;
-            background-color: #ffd700; 
-            border: 2px solid #e0bd00;
-            width: 100%;
-            height: 100%;
-            background-image: radial-gradient(#a17d00 45%, transparent 46%);
-            background-size: 10px 10px;
-        }
-        #coins-display.is-flipped { transform: rotateY(180deg); }
-        .card-face {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            -webkit-backface-visibility: hidden;
-            backface-visibility: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: #333;
-        }
-        #coins-display .card-front {
-            color: #ffffff;
-            font-size: clamp(28px, 8vw, 36px);
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
-            transition: color 0.3s ease, text-shadow 0.3s ease;
-        }
-        
-        .card-back { 
-            transform: rotateY(180deg); 
-            flex-direction: column;
-            position: relative;
-            padding: 5px;
-            box-sizing: border-box;
-        }
-        .bomb-icon {
-            font-size: 1.6em;
-            line-height: 1;
-        }
-        
-        .bomb-mode-coin-count {
-            position: absolute;
-            bottom: 2px;
-            right: 5px;
-            font-size: clamp(14px, 4vw, 18px);
-            color: white;
-            background-color: transparent;
-            padding: 1px 4px;
-            border-radius: 4px;
-            font-family: var(--font-family);
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
-        }
-
-
-        #price-display { 
-            background-color: #2E8B57; 
-            color: #fff; 
-            border: 2px solid #A4DE02; 
-            font-size: clamp(32px, 9vw, 44px);
-            cursor: pointer; 
-            transition: all 0.2s ease; 
-            background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 20 Q 10 10, 20 20 T 40 20' stroke='%23006400' fill='none' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E");
-            background-size: 20px 20px;
-        }
-
-        #selector-display { 
-            background: repeating-linear-gradient(45deg, #2b8de2, #2b8de2 10px, #ff69b4 10px, #ff69b4 20px); 
-            border: 2px solid #ff69b4;
-            justify-content: space-around;
-            padding: 0;
-        }
-        .selector-option {
-            font-size: clamp(28px, 8vw, 38px);
-            cursor: pointer;
-            transition: transform 0.2s ease, filter 0.2s ease;
-            padding: 5px;
-        }
-        .selector-option.deselected {
-            filter: grayscale(100%) opacity(0.5);
-            transform: scale(0.9);
-        }
-
-        .locked-feature {
-            filter: grayscale(100%);
-            pointer-events: none;
-            opacity: 0.7;
-        }
-        .lock-icon {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: clamp(32px, 9vw, 44px);
-            color: white;
-            text-shadow: 2px 2px 5px rgba(0,0,0,0.8);
-            z-index: 10;
-            display: none;
-        }
-        .locked-feature .lock-icon {
-            display: block;
-        }
-
-
-        #gamble-button { 
-            background-color: #98FB98; 
-            color: #006400; 
-            border: 4px solid #006400; 
-            cursor: pointer; 
-            transition: all 0.2s ease; 
-        }
-        
-        .bottom-box-2 {
-            background-color: #000000;
-            background-image: 
-                linear-gradient(45deg, #4B0082 25%, transparent 25%), 
-                linear-gradient(-45deg, #4B0082 25%, transparent 25%),
-                linear-gradient(45deg, transparent 75%, #4B0082 75%),
-                linear-gradient(-45deg, transparent 75%, #4B0082 75%);
-            background-size: 20px 20px;
-            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
-            border: 2px solid #4B0082;
-            padding: 0 10px;
-        }
-        
-        .slider-container {
-            display: flex;
-            align-items: center;
-            padding: 0;
-        }
-        .slider-control-group {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-        .slider-label {
-            font-size: clamp(24px, 7vw, 30px);
-        }
-        #clown-counter {
-            font-size: clamp(14px, 4vw, 18px);
-            line-height: 1;
-            margin-top: -5px;
-            color: #ff69b4;
-            text-shadow: 1px 1px 2px #000;
-        }
-
-        .left-buttons-container {
-            display: flex;
-            gap: 5px;
-        }
-        
-        .left-buttons-container .info-box {
-            flex: 1 1 0;
-            width: 0;
-            font-size: 20px;
-        }
-        
-        #tokens-button {
-            background-color: #007bff;
-            border: 4px solid #0056b3;
-            color: white;
-            cursor: pointer;
-        }
-
-        .right-buttons-container {
-            display: flex;
-            gap: 5px;
-        }
-
-        #link-button, #help-button { 
-            flex: 1 1 0;
-            width: 0;
-            font-size: 20px;
-        }
-
-        #link-button {
-            background-color: #ffffff;
-            color: #1a1a2e;
-            border: 4px solid #a0a0a0;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        #link-button.link-used {
-            background-color: #4a4a4a;
-            color: #888;
-            border-color: #333;
-            cursor: not-allowed;
-            filter: grayscale(80%);
-        }
-        #link-button:disabled { background-color: #555; cursor: not-allowed; color: #888; }
-
-        #help-button {
-            background-color: #FFA500;
-            color: #ffffff;
-            border: 4px solid #cc8400;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        @keyframes green-glow-button {
-            0%, 100% {
-                box-shadow: 0 0 10px 2px #32cd32, 0 0 5px 0px #adff2f inset;
-                background-color: #32cd32;
-            }
-            50% {
-                box-shadow: 0 0 20px 5px #adff2f, 0 0 10px 2px #32cd32 inset;
-                background-color: #55ff55;
-            }
-        }
-
-        #gamble-button.gamble-active {
-            color: #fff;
-            border-color: #fff;
-            transform: scale(1.05);
-            animation: green-glow-button 1.5s infinite ease-in-out;
-        }
-
-        .machine {
-            background-color: #000000;
-            background-image: 
-                linear-gradient(45deg, #4B0082 25%, transparent 25%), 
-                linear-gradient(-45deg, #4B0082 25%, transparent 25%),
-                linear-gradient(45deg, transparent 75%, #4B0082 75%),
-                linear-gradient(-45deg, transparent 75%, #4B0082 75%);
-            background-size: 20px 20px;
-            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
-            padding: clamp(10px, 3vw, 15px);
-            border-radius: 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: clamp(10px, 3vw, 15px);
-            border: 2px solid #4B0082;
-            width: 100%;
-            box-sizing: border-box;
-            position: relative;
-            box-shadow: inset 0 0 15px rgba(75, 0, 130, 0.6);
-        }
-        
-        .controls {
-            background-image: linear-gradient(to bottom, #16213e, #0f3460);
-            padding: clamp(10px, 3vw, 15px);
-            border-radius: 15px;
-            display: flex;
-            flex-direction: row;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: clamp(10px, 3vw, 15px);
-            border: 2px solid #0f3460;
-            width: 100%;
-            box-sizing: border-box;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
-        }
-
-        .slot-windows {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: clamp(5px, 2vw, 10px);
-            width: 100%;
-            background-color: #000;
-            padding: clamp(5px, 2vw, 10px);
-            border-radius: 10px;
-            border: 2px solid #0a2444;
-            box-sizing: border-box;
-        }
-
-        .reel-window {
-            aspect-ratio: 1 / 1; 
-            width: 100%;
-            background: radial-gradient(circle at 70% 30%, #2a4b7c, var(--window-bg) 70%);
-            border-radius: 15px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: clamp(24px, 10vw, 50px);
-            overflow: hidden; 
-            box-shadow: 3px 3px 8px rgba(0,0,0,0.5), inset 1px 1px 2px rgba(255,255,255,0.2), 0 0 10px rgba(42, 75, 124, 0.5);
-            border: 2px solid #0a2444;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease-out, background 0.3s ease;
-            position: relative;
-        }
-        
-        .reel-window.bombed {
-            background: radial-gradient(circle, #555, #222);
-        }
-
-        .bomb-counter {
-            position: absolute;
-            bottom: 5px;
-            right: 8px;
-            font-size: clamp(14px, 4vw, 18px);
-            color: white;
-            background-color: rgba(0, 0, 0, 0.6);
-            padding: 2px 6px;
-            border-radius: 5px;
-            font-family: sans-serif;
-            font-weight: bold;
-            text-shadow: 1px 1px 2px #000;
-        }
-        
-        #spin-button {
-            padding: 15px 20px;
-            font-size: clamp(22px, 6vw, 30px);
-            background-color: #e60023;
-            color: var(--button-text);
-            border: 2px solid #990017;
-            box-shadow: inset 0 -3px 0 rgba(0,0,0,0.3), 0 0 20px rgba(230, 0, 35, 0.5);
-            border-radius: 10px;
-            cursor: pointer;
-            transition: transform 0.1s, box-shadow 0.2s, background-color 0.2s, background-image 0.2s, border-color 0.2s, color 0.2s;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            width: 100%;
-            font-family: var(--font-family);
-            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
-        }
-
-        #spin-button:active:not(:disabled) {
-            transform: translateY(2px) scale(0.98);
-            box-shadow: inset 0 -1px 0 rgba(0,0,0,0.3);
-        }
-
-        #spin-button:disabled {
-            background-color: #555;
-            cursor: not-allowed;
-            box-shadow: none;
-            transform: scale(1);
-            border-color: #333;
-        }
-
-        .reel-inventories {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: clamp(5px, 2vw, 10px);
-            width: 100%;
-            box-sizing: border-box;
-            padding: 0 clamp(5px, 2vw, 10px);
-        }
-
-        .inventory {
-            width: 100%;
-            padding: 2px;
-            background: rgba(0,0,0,0.5);
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            font-size: clamp(10px, 3vw, 14px);
-            min-height: 50px;
-            box-sizing: border-box;
-            border: 2px solid transparent;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
-            cursor: pointer;
-        }
-        .inventory:active {
-            transform: scale(0.97);
-        }
-
-        .inventory.selected {
-            border-color: gold;
-            box-shadow: 0 0 10px gold, inset 0 0 5px rgba(255, 215, 0, 0.3);
-        }
-
-        .inventory-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2px;
-            width: 100%;
-            border-radius: 6px;
-            position: relative; 
-            transition: all 0.2s ease;
-        }
-        
-        .inventory-row.blacked-out {
-            background-color: #111;
-            border-color: #333;
-        }
-        .inventory-row.blacked-out .symbol-display {
-            opacity: 0.1;
-        }
-        
-        .inventory-row.merged-row {
-            grid-template-columns: 1fr;
-            text-align: center;
-        }
-
-        .inventory .symbol-display {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 20px;
-            font-size: clamp(14px, 4vw, 18px);
-        }
-        
-        .inventory-row.link-highlight::after, .inventory-row.linked::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -2px; 
-            width: calc(100% + 4px); 
-            height: 100%;
-            background: rgba(255, 255, 255, 0.25);
-            pointer-events: none;
-            border-radius: 6px;
-        }
-        
-        /* UPDATED: More subtle highlight for potential lines */
-        .inventory-row.line-possible::after {
-            background: rgba(0, 206, 209, 0.35) !important; /* Lighter teal */
-            box-shadow: inset 0 0 6px rgba(0, 206, 209, 0.5);
-        }
-
-        /* NEW: Stronger glow animation for completed lines */
-        @keyframes teal-glow-pulse {
-            0%, 100% {
-                background: rgba(0, 206, 209, 0.6);
-                box-shadow: inset 0 0 10px #00CED1;
-            }
-            50% {
-                background: rgba(64, 224, 208, 0.7); /* turquoise */
-                box-shadow: inset 0 0 18px #40E0D0;
-            }
-        }
-
-        .inventory-row.line-connected::after {
-            animation: teal-glow-pulse 1.5s infinite ease-in-out;
-        }
-
-
-        .control-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: clamp(5px, 2vw, 10px);
-            width: 100%;
-        }
-        
-        .btn {
-            padding: 12px 5px;
-            border-radius: 8px;
-            border: 2px solid transparent;
-            background-color: var(--button-bg);
-            color: var(--button-text);
-            font-size: clamp(14px, 4vw, 16px);
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-family: var(--font-family);
-            letter-spacing: 1.5px;
-        }
-        
-        .btn:active:not(:disabled) { transform: translateY(0px) scale(0.95); }
-        
-        .symbol-btn { 
-            font-size: clamp(20px, 7vw, 30px);
-            padding: 15px 5px;
-            border-width: 2px;
-            border-style: solid;
-            background-color: #000000;
-            letter-spacing: 0;
-            position: relative;
-        }
-        
-        #reset-symbols-btn {
-            background-color: #000000;
-            border-color: #999999;
-        }
-
-        .symbol-btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            background-color: #2a2a2a;
-            transform: none;
-        }
-        .spinning { filter: blur(4px); }
-
-        @keyframes win-pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.15); text-shadow: 0 0 25px #fffc79; }
-            100% { transform: scale(1); }
-        }
-
-        .win-animation { animation: win-pulse 1s ease-in-out; }
-
-        @keyframes shake {
-          0% { transform: translate(1px, 1px) rotate(0deg); }
-          10% { transform: translate(-1px, -2px) rotate(-1deg); }
-          20% { transform: translate(-3px, 0px) rotate(1deg); }
-          30% { transform: translate(3px, 2px) rotate(0deg); }
-          40% { transform: translate(1px, -1px) rotate(1deg); }
-          50% { transform: translate(-1px, 2px) rotate(-1deg); }
-          60% { transform: translate(-3px, 1px) rotate(0deg); }
-          70% { transform: translate(3px, 1px) rotate(-1deg); }
-          80% { transform: translate(-1px, -1px) rotate(1deg); }
-          90% { transform: translate(1px, 2px) rotate(0deg); }
-          100% { transform: translate(1px, -2px) rotate(-1deg); }
-        }
-
-        .shake-animation {
-            animation: shake 0.5s;
-        }
-        
-        @keyframes inventory-shake {
-          0% { transform: translate(1px, 1px) rotate(0deg); }
-          10% { transform: translate(-2px, -3px) rotate(-2deg); }
-          20% { transform: translate(-4px, 0px) rotate(2deg); }
-          30% { transform: translate(4px, 3px) rotate(0deg); }
-          40% { transform: translate(2px, -2px) rotate(2deg); }
-          50% { transform: translate(-2px, 3px) rotate(-2deg); }
-          60% { transform: translate(-4px, 2px) rotate(0deg); }
-          70% { transform: translate(4px, 2px) rotate(-2deg); }
-          80% { transform: translate(-2px, -2px) rotate(2deg); }
-          90% { transform: translate(2px, 3px) rotate(0deg); }
-          100% { transform: translate(2px, -3px) rotate(-2deg); }
-        }
-
-        .inventory-shake-animation {
-            animation: inventory-shake 0.5s;
-        }
-
-        @keyframes lime-shake {
-            0%, 100% { transform: translate(0, 0) rotate(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translate(-3px, 0) rotate(-2deg); }
-            20%, 40%, 60%, 80% { transform: translate(3px, 0) rotate(2deg); }
-        }
-        .lime-shake-animation {
-            animation: lime-shake 1.5s ease-in-out;
-        }
-
-        @keyframes clover-glow {
-            0%, 100% { text-shadow: 0 0 5px #32cd32, 0 0 10px #32cd32; }
-            50% { text-shadow: 0 0 15px #adff2f, 0 0 20px #adff2f; }
-        }
-        .clover {
-            animation: clover-glow 1.5s infinite ease-in-out;
-        }
-
-        @keyframes bomb-glow {
-            0%, 100% { text-shadow: 0 0 8px #ff0000, 0 0 12px #ff4500, 0 0 16px #ff0000; }
-            50% { text-shadow: 0 0 16px #ff4500, 0 0 20px #ff0000, 0 0 24px #ff4500; }
-        }
-        .bomb-symbol-glow {
-            animation: bomb-glow 1.2s infinite ease-in-out;
-        }
-
-        /* UPDATED: Bonus glow now uses box-shadow and a CSS variable for color */
-        @keyframes bonus-glow {
-            0%, 100% {
-                box-shadow: 0 0 10px 3px var(--glow-color, transparent);
-                text-shadow: none;
-            }
-            50% {
-                box-shadow: 0 0 20px 6px var(--glow-color, transparent);
-                text-shadow: none;
-            }
-        }
-        .bonus-symbol {
-            animation: bonus-glow 1.5s infinite ease-in-out;
-        }
-        .bonus-indicator {
-            position: absolute;
-            top: 2px;
-            right: 2px;
-            font-size: 16px;
-            color: #FFD700;
-            background-color: transparent;
-            width: 24px;
-            height: 24px;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            font-family: sans-serif;
-            font-weight: bold;
-            text-shadow: 0 0 3px black, 0 0 5px black;
-        }
-        .bonus-symbol .bonus-indicator {
-            display: flex;
-        }
-
-
-        #message-box {
-            position: absolute;
-            top: 40%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(0.8);
-            background: radial-gradient(circle, rgba(255, 223, 0, 0.95), rgba(255, 215, 0, 0.85));
-            color: #4a2c00;
-            padding: 10px 20px;
-            border-radius: 10px;
-            border: 2px solid #fff3a8;
-            box-shadow: 0 0 15px 5px rgba(255, 215, 0, 0.5);
-            font-size: clamp(18px, 5vw, 24px);
-            text-align: center;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
-            z-index: 1000;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
-        }
-
-        #message-box.show {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1);
-            pointer-events: auto;
-        }
-        
-        .custom-slider {
-            -webkit-appearance: none;
-            width: 100%;
-            height: 10px;
-            border-radius: 5px;
-            background: repeating-linear-gradient(
-                45deg,
-                #2b8de2,
-                #2b8de2 10px,
-                #ff69b4 10px,
-                #ff69b4 20px
-            );
-            outline: none;
-            opacity: 0.9;
-            transition: opacity .2s;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-
-        .custom-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 24px;
-            height: 24px;
-            background: #ff69b4;
-            border: 2px solid #333;
-            border-radius: 50%;
-            cursor: pointer;
-            margin-top: -7px;
-            box-shadow: 0 0 5px rgba(0,0,0,0.5);
-        }
-        .custom-slider::-moz-range-thumb {
-            width: 24px;
-            height: 24px;
-            background: #ff69b4;
-            border: 2px solid #333;
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 0 5px rgba(0,0,0,0.5);
-        }
-        
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 2000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.6);
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background-color: #2c2c3e;
-            color: #f0f0f0;
-            margin: auto;
-            padding: 20px 30px;
-            border: 2px solid var(--highlight-color);
-            width: 90%;
-            max-width: 500px;
-            border-radius: 10px;
-            position: relative;
-            font-family: var(--font-family);
-            box-shadow: 0 0 25px rgba(233, 69, 96, 0.4);
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        
-        #help-modal .modal-content {
-            background-color: #0f3460;
-            border-color: #2b8de2;
-            box-shadow: 0 0 25px rgba(43, 141, 226, 0.4);
-            position: relative;
-            overflow: hidden;
-            padding: 0;
-        }
-
-        /* UPDATED: Added box-sizing to fix scrolling cutoff */
-        .modal-scroll-wrapper {
-            height: 100%;
-            max-height: 80vh;
-            overflow-y: auto;
-            padding: 20px 30px;
-            position: relative;
-            z-index: 2;
-            box-sizing: border-box;
-        }
-
-        #help-modal .modal-content::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-image: repeating-linear-gradient(
-                -45deg,
-                rgba(255, 0, 0, 0.7),      /* Red */
-                rgba(255, 0, 0, 0.7) 20px,
-                rgba(255, 165, 0, 0.7) 20px, /* Orange */
-                rgba(255, 165, 0, 0.7) 40px,
-                rgba(255, 255, 0, 0.7) 40px, /* Yellow */
-                rgba(255, 255, 0, 0.7) 60px,
-                rgba(0, 128, 0, 0.7) 60px,  /* Green */
-                rgba(0, 128, 0, 0.7) 80px,
-                rgba(0, 0, 255, 0.7) 80px,  /* Blue */
-                rgba(0, 0, 255, 0.7) 100px,
-                rgba(138, 43, 226, 0.7) 100px, /* Violet */
-                rgba(138, 43, 226, 0.7) 120px
-            );
-            background-attachment: scroll;
-            filter: blur(3px);
-            z-index: 1;
-            margin: -10px;
-        }
-        
-        #tokens-modal .modal-content {
-            background-color: #8B4513;
-            background-image: 
-                linear-gradient(45deg, #D4AF37 25%, transparent 25%), 
-                linear-gradient(-45deg, #D4AF37 25%, transparent 25%),
-                linear-gradient(45deg, transparent 75%, #D4AF37 75%),
-                linear-gradient(-45deg, transparent 75%, #D4AF37 75%);
-            background-size: 20px 20px;
-            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
-            border-color: #D4AF37;
-        }
-        
-        .modal-content h2, .modal-content h3 {
-            color: var(--highlight-color);
-            text-align: center;
-            margin-top: 10px;
-            letter-spacing: 2px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-            position: relative; 
-            z-index: 2;
-        }
-        
-        /* UPDATED: Removed glow effect, leaving only drop shadow */
-        #help-modal .modal-content h2, 
-        #help-modal .modal-content h3 {
-             color: #ffffff;
-             text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-        }
-
-        #help-modal .modal-content p {
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-        }
-
-        .modal-content h3 {
-            margin-top: 25px;
-            margin-bottom: 5px;
-            border-bottom: 1px solid var(--highlight-color);
-            padding-bottom: 5px;
-        }
-
-        #help-modal .modal-content h3 {
-            border-bottom: 1px solid #2b8de2;
-        }
-
-        #tokens-modal h2 {
-            color: #fff;
-        }
-
-        .modal-content p, .modal-content ul {
-            position: relative; 
-            z-index: 2;
-        }
-
-        .modal-content p {
-            line-height: 1.6;
-            margin-bottom: 1em;
-            text-align: center;
-        }
-
-        .modal-content ul {
-            list-style-type: none;
-            padding: 0;
-        }
-
-        .modal-content li {
-            margin: 10px 0;
-            letter-spacing: 1px;
-            text-align: left;
-            background-color: rgba(26, 37, 60, 0.75);
-            padding: 8px;
-            border-radius: 5px;
-        }
-        
-        #help-modal #core-gameplay-list strong { color: #c398fb; }
-        #help-modal #costs-list strong { color: #98fb98; }
-        #help-modal #special-mechanics-list strong { color: #e94560; }
-        #help-modal #payouts-list strong { color: #f9d423; }
-        #help-modal #unlocks-list strong { color: #00bfff; }
-
-        .modal-content .symbol {
-            font-size: 1.2em;
-            display: inline-block;
-            width: 25px;
-            text-align: center;
-        }
-        
-        .token-options {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-top: 20px;
-        }
-        .token-option {
-            display: flex;
-            align-items: center;
             justify-content: space-between;
-            background-image: linear-gradient(to bottom, #16213e, #0f3460);
-            padding: 10px 15px;
-            border-radius: 8px;
-            border-width: 2px;
-            border-style: solid;
+            align-items: center;
+            text-transform: uppercase; /* Added for all caps */
+        }
+        .readable-text {
+            font-family: 'Inter', sans-serif;
+            letter-spacing: normal;
+        }
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.5rem; /* Reduced gap */
+        }
+        .item-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.25rem 0.5rem; /* Reduced padding */
+            border-bottom: 1px solid #4a5568;
+            transition: background-color: 0.2s;
+        }
+        .item-list.interactive li:hover {
+            background-color: rgba(255, 255, 255, 0.1);
             cursor: pointer;
-            transition: all 0.2s;
-            font-family: var(--font-family);
-            color: var(--button-text);
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
         }
-        #unlock-lime-btn { border-color: #32cd32; }
-        #unlock-selector-btn { border-color: #e60023; }
-        #reset-links-btn { border-color: #cccccc; }
-
-        .token-option:not(:disabled):hover {
-            transform: scale(1.03);
-            box-shadow: 0 0 15px rgba(255,255,255,0.2);
+        .item-list li:last-child {
+            border-bottom: none;
         }
-        .token-option:disabled {
+        
+        /* Sacrifice Window Styles */
+        #sacrifice-window {
+            background-color: rgba(0,0,0,0.8);
+        }
+        .sacrifice-options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem; /* Reduced gap */
+            height: 100%;
+            justify-content: center;
+            padding: 0.75rem; /* Reduced padding */
+        }
+        .sacrifice-button {
+            padding: 1rem; /* Reduced padding */
+            border: 2px solid #4a5568;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            list-style: none;
+        }
+        .sacrifice-button:hover:not(.disabled) {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-color: #718096;
+        }
+        .sacrifice-button.selected {
+            background-color: rgba(245, 158, 11, 0.2) !important;
+            border-color: #f59e0b !important;
+        }
+         .sacrifice-button.disabled {
             opacity: 0.5;
             cursor: not-allowed;
-            background-image: none;
-            background-color: #333;
-            color: #888;
-            border-color: #555;
+            background-color: transparent;
+            border-color: #4a5568;
         }
-        .token-icon {
-            font-size: 2em;
+
+        .battle-area {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            min-height: 110px; /* Reduced height */
+            gap: 1rem;
         }
-        .token-description {
-            flex-grow: 1;
+        .enemy-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .character-battle-display, .enemy-battle-display {
+            padding: 0.5rem 1rem; /* Reduced padding */
+            border-radius: 0.5rem;
             text-align: center;
-            letter-spacing: 1.5px;
-            font-size: clamp(16px, 4vw, 20px);
-        }
-        .token-cost {
-            font-weight: bold;
-            font-size: clamp(16px, 4vw, 20px);
-        }
-
-        .close-button {
-            color: #aaa;
-            float: right;
-            font-size: 32px;
-            position: absolute;
-            top: 5px;
-            right: 15px;
-            z-index: 5;
-        }
-
-        .close-button:hover,
-        .close-button:focus {
-            color: #fff;
-            text-decoration: none;
+            background-color: rgba(0,0,0,0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
             cursor: pointer;
         }
+        .character-battle-display {
+            font-size: 6xl; /* 4.5rem */
+        }
+        .enemy-battle-display {
+            font-size: 4.5rem; /* Character emoji size - INCREASED */
+            line-height: 1;
+        }
+        .enemy-battle-display:hover {
+            transform: scale(1.05);
+        }
+        .enemy-battle-display.targeted {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.7);
+        }
 
+        .inventory-slot {
+            background-color: #1a202c;
+            border-radius: 0.25rem;
+            padding: 0.5rem;
+            margin-top: 0.25rem;
+            color: #718096;
+            font-style: italic;
+            border: 1px solid #2d3748;
+            box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.5);
+        }
+        .inventory-slot.clickable {
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        .inventory-slot.clickable:hover {
+            background-color: #2d3748;
+            border-color: #4a5568;
+        }
+        .action-button {
+            border: none; color: white; padding: 0.5rem 1rem; text-align: center; /* Reduced padding */
+            font-size: 1rem; margin: 4px 2px; transition: all 0.3s ease; cursor: pointer;
+            border-radius: 0.375rem; box-shadow: 0 4px 6px rgba(0,0,0,0.4); text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+            font-family: 'Anton', sans-serif; /* Ensuring Anton font */
+            text-transform: uppercase; /* Ensuring uppercase */
+        }
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+        }
+        .action-button:disabled {
+            filter: grayscale(80%);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.4);
+        }
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0,0,0,0.75);
+            backdrop-filter: blur(4px);
+            z-index: 50;
+            display: none; /* Initially hidden */
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-window {
+            width: 90%;
+            max-width: 500px;
+        }
+        .close-button {
+            background: none; border: none; font-size: 1.75rem; color: #cbd5e1;
+            cursor: pointer; transition: color 0.2s; line-height: 1;
+        }
+        .close-button:hover { color: white; }
+
+        /* Level Up Modal Styles */
+        .levelup-choice-group {
+            margin-bottom: 1rem;
+        }
+        .levelup-choice {
+            padding: 0.75rem;
+            border: 2px solid #4a5568;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .levelup-choice:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .levelup-choice.selected {
+            border-color: #14b8a6;
+            background-color: rgba(20, 184, 166, 0.2);
+        }
+        
+        /* Stone styles */
+        .stone-circle-container {
+            display: flex;
+            justify-content: space-around;
+            padding: 0.25rem 0; /* Reduced padding */
+            align-items: center;
+        }
+        .stone-circle {
+            width: 32px; height: 32px; border-radius: 50%;
+            cursor: pointer; transition: all 0.2s;
+            filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4)); /* Simple drop shadow added */
+        }
+        .stone-circle:hover, .stone-circle.active {
+            transform: scale(1.1);
+            filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.5)); /* Enhanced drop shadow */
+        }
+        .stone-description {
+            min-height: 40px; /* Reduced height */
+            background-color: rgba(0,0,0,0.2);
+            border-radius: 0.25rem;
+            padding: 0.5rem;
+            margin-top: 0.5rem; /* Reduced margin */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #a0aec0;
+            transition: all 0.3s;
+        }
+        /* HP/MP Bar Styles */
+        .stat-bar-container {
+            height: 10px;
+            background-color: #2d3748;
+            border-radius: 9999px;
+            overflow: hidden;
+            margin-top: 4px;
+            width: 100%;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+        }
+        .stat-bar {
+            height: 100%;
+            transition: width 0.5s ease-out;
+            border-radius: 9999px;
+        }
+        .hp-bar { background-color: #22c55e; } /* green-500 */
+        .mp-bar { background-color: #14b8a6; } /* teal-500 */
+        .enemy-hp-bar { background-color: #ef4444; } /* red-500 */
+
+        .enemy-stats-text {
+            /* This class is a container, font is set by readable-text now */
+        }
+        
+        #player-status-effects, [id^="enemy-status-"] {
+            display: inline-flex;
+            align-items: center;
+            vertical-align: middle;
+            gap: 0.5rem;
+        }
     </style>
 </head>
-<body>
+<body class="p-2 md:p-4">
 
-    <div class="game-container">
-        <div class="top-bar-container">
-            <div class="info-box-container">
-                <div id="coins-display" class="info-box">
-                    <div class="card-face card-front">100</div>
-                    <div class="card-face card-back">
-                        <span class="bomb-icon">💣</span>
-                        <span class="bomb-mode-coin-count"></span>
+    <main class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+        <!-- Left Column -->
+        <div class="col-span-1 flex flex-col justify-between">
+            <div class="flex flex-col gap-4">
+                <div class="game-window">
+                    <h2 class="window-title">Character</h2>
+                    <div class="p-3 flex flex-col items-center">
+                        <div class="flex items-center justify-center gap-2">
+                            <div class="character-battle-display text-6xl">🧑🏼‍🦱</div>
+                            <span id="player-status-effects"></span>
+                        </div>
+                    </div>
+                    <div class="p-3 pt-1 text-lg stat-grid">
+                        <div class="col-span-2">
+                            <div class="flex justify-between items-baseline"><span class="font-bold">❤️ HP:</span> <span id="stat-hp" class="ml-2 font-bold readable-text">10 / 10</span></div>
+                            <div class="stat-bar-container"><div id="hp-bar" class="stat-bar hp-bar" style="width: 100%;"></div></div>
+                        </div>
+                        <div class="col-span-2">
+                            <div class="flex justify-between items-baseline"><span class="font-bold">✨ MP:</span> <span id="stat-mp" class="ml-2 font-bold readable-text">10 / 10</span></div>
+                            <div class="stat-bar-container"><div id="mp-bar" class="stat-bar mp-bar" style="width: 100%;"></div></div>
+                        </div>
+                        <div><span class="text-red-400 font-bold">⚔️ ATK:</span> <span id="stat-atk" class="ml-2 font-bold text-slate-200 readable-text">1</span></div>
+                        <div><span class="text-blue-500 font-bold">🛡️ DEF:</span> <span id="stat-def" class="ml-2 font-bold text-slate-200 readable-text">1</span></div>
+                        <div><span class="text-yellow-400 font-bold">👢 SPD:</span> <span id="stat-spd" class="ml-2 font-bold text-slate-200 readable-text">10</span></div>
+                        <div><span class="text-orange-400 font-bold">❤️‍🔥 SPRT:</span> <span id="stat-sprt" class="ml-2 font-bold text-slate-200 readable-text">10</span></div>
+                    </div>
+                    <div class="p-3 border-t border-gray-700 text-lg space-y-1">
+                        <div class="flex justify-between">
+                            <span>📈 LVL: <span id="stat-lvl" class="ml-2 font-bold readable-text">1</span></span>
+                            <span>⭐ EXP: <span id="stat-exp" class="ml-2 font-bold readable-text">0 / 10</span></span>
+                        </div>
+                        <div class="pt-1 border-t border-gray-700 flex justify-between items-center">
+                            <span>💰 GOLD: <span id="gold-display" class="ml-2 font-bold text-yellow-400 readable-text">15</span></span>
+                            <div class="flex items-center gap-2">
+                                <span>FORTUNES:</span>
+                                <button id="view-fortunes-button" class="action-button !py-1 !px-3 !m-0" style="background: linear-gradient(to top, #2d3748, #6b7280);"><span class="text-xl">🔮</span></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="game-window">
+                    <h2 class="window-title">Equipment</h2>
+                    <div class="p-3 space-y-2 readable-text">
+                        <div>
+                            <p class="font-semibold text-gray-300">STONES</p>
+                            <div class="flex items-center gap-2 mt-1">
+                                <div id="stone-slot-1-circle" class="w-4 h-4 rounded-full bg-black border border-gray-600 shadow-inner"></div>
+                                <div id="stone-slot-1" class="inventory-slot clickable flex-grow !mt-0 readable-text">Slot 1: Empty</div>
+                            </div>
+                            <div class="flex items-center gap-2 mt-1">
+                                <div id="stone-slot-2-circle" class="w-4 h-4 rounded-full bg-black border border-gray-600 shadow-inner"></div>
+                                <div id="stone-slot-2" class="inventory-slot clickable flex-grow !mt-0 readable-text">Slot 2: Empty</div>
+                            </div>
+                            <div class="flex items-center gap-2 mt-1">
+                                <div id="stone-slot-3-circle" class="w-4 h-4 rounded-full bg-black border border-gray-600 shadow-inner"></div>
+                                <div id="stone-slot-3" class="inventory-slot clickable flex-grow !mt-0 readable-text">Slot 3: Empty</div>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-gray-300">WEAPON</p>
+                            <div id="weapon-slot" class="inventory-slot clickable">Empty (View Collection)</div>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-gray-300">ARMOR</p>
+                            <div id="armor-slot" class="inventory-slot clickable">Empty (View Collection)</div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div id="price-display" class="info-box">
-                🍋‍🟩
-                <div class="lock-icon">🔒</div>
-            </div>
-            <div id="selector-display" class="info-box">
-                <span class="selector-option" data-choice="balloon">🎈</span>
-                <span class="selector-option" data-choice="flower">🌼</span>
-                <div class="lock-icon">🔒</div>
-            </div>
+            
+            <button id="quick-tutorial-button" class="action-button w-full" style="background: linear-gradient(to top, #374151, #6b7280);">QUICK TUTORIAL</button>
         </div>
 
-        <div class="machine">
-            <div id="message-box"></div>
-            <div class="slot-windows">
-                <div class="reel-window" data-reel-window="0"><div class="reel-display">❌</div></div>
-                <div class="reel-window" data-reel-window="1"><div class="reel-display">❌</div></div>
-                <div class="reel-window" data-reel-window="2"><div class="reel-display">❌</div></div>
-                <div class="reel-window" data-reel-window="3"><div class="reel-display">❌</div></div>
-            </div>
-            <div class="reel-inventories">
-                <div class="inventory" id="inventory-0" data-reel="0"></div>
-                <div class="inventory" id="inventory-1" data-reel="1"></div>
-                <div class="inventory" id="inventory-2" data-reel="2"></div>
-                <div class="inventory" id="inventory-3" data-reel="3"></div>
-            </div>
-            <div class="controls">
-                <div class="control-grid symbol-buttons">
-                    <button class="btn symbol-btn">🍒<span class="bonus-indicator">+1</span></button>
-                    <button class="btn symbol-btn">🍊<span class="bonus-indicator">+1</span></button>
-                    <button class="btn symbol-btn">🍇<span class="bonus-indicator">+1</span></button>
-                    <button class="btn symbol-btn">🍋‍🟩<span class="bonus-indicator">+1</span></button>
-                    <button class="btn symbol-btn">🔔<span class="bonus-indicator">+1</span></button>
-                    <button class="btn symbol-btn">💎<span class="bonus-indicator">+1</span></button>
-                    <button class="btn symbol-btn"><span class="clown-icon">🤡</span><span class="bonus-indicator">+1</span></button>
-                    <button class="btn symbol-btn" id="reset-symbols-btn">🗑️</button>
+        <!-- Right Column -->
+        <div class="col-span-1 lg:col-span-2 flex flex-col gap-4">
+
+            <div class="game-window flex flex-col">
+                <h2 class="window-title">Battle</h2>
+                <div id="battle-area-content" class="p-3 flex flex-col justify-center">
+                     <!-- Enemies will be dynamically inserted here -->
+                </div>
+                <div id="battle-log" class="p-2 text-center readable-text text-gray-400 border-t border-b border-gray-700 h-10 flex items-center justify-center">New battle started!</div>
+                <div class="p-3 grid grid-cols-3 gap-2">
+                    <button id="attack-button" class="action-button" style="background: linear-gradient(to top, #991b1b, #ef4444);">ATTACK</button>
+                    <button id="spells-button" class="action-button" style="background: linear-gradient(to top, #0f766e, #14b8a6);">SPELLS</button>
+                    <button id="items-button" class="action-button" style="background: linear-gradient(to top, #b45309, #f59e0b);">ITEMS</button>
                 </div>
             </div>
-            <button id="spin-button"></button>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div id="sacrifice-window-container" class="game-window flex flex-col">
+                    <h2 class="window-title">MAKE A SACRIFICE</h2>
+                    <div class="flex-grow">
+                        <ul id="fortunes-list" class="sacrifice-options">
+                            <!-- Sacrifice options will be dynamically inserted here -->
+                        </ul>
+                    </div>
+                    <div class="p-3 border-t border-gray-700">
+                        <button id="renegotiate-sacrifices-button" class="action-button w-full" style="background: linear-gradient(to top, #450a0a, #7f1d1d);">RENEGOTIATE SACRIFICE</button>
+                        <button id="reveal-fortunes-button" class="action-button w-full hidden" style="background: linear-gradient(to top, #2d3748, #6b7280);" disabled>REVEAL FORTUNES</button>
+                    </div>
+                </div>
+                <div class="game-window flex flex-col">
+                    <h2 class="window-title">Shop</h2>
+                     <div class="flex-grow">
+                        <ul class="item-list p-3">
+                            <li>
+                                <div class="readable-text">
+                                    <p class="font-bold text-lg">🍶 TONIC</p>
+                                    <p class="text-sm text-gray-400">Restore 6 HP</p>
+                                </div>
+                                <button class="shop-buy-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 py-1 px-3 rounded transition-colors readable-text" data-cost="5" data-name="TONIC" data-emoji="🍶" data-description="Restore 6 HP">🪙 5</button>
+                            </li>
+                            <li>
+                                <div class="readable-text">
+                                    <p class="font-bold text-lg">💎 GEM</p>
+                                    <p class="text-sm text-gray-400">Random buff & debuff</p>
+                                </div>
+                                <button class="shop-buy-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 py-1 px-3 rounded transition-colors readable-text" data-cost="25" data-name="GEM" data-emoji="💎" data-description="Random buff & debuff">🪙 25</button>
+                            </li>
+                            <li>
+                                <div class="readable-text">
+                                    <p class="font-bold text-lg">✝️ CROSS</p>
+                                    <p class="text-sm text-gray-400">+5 SPRT & cure curse</p>
+                                </div>
+                                <button class="shop-buy-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 py-1 px-3 rounded transition-colors readable-text" data-cost="10" data-name="CROSS" data-emoji="✝️" data-description="+5 SPRT & cure curse">🪙 10</button>
+                            </li>
+                             <li>
+                                <div class="readable-text">
+                                    <p class="font-bold text-lg">🧚🏼 FAIRY</p>
+                                    <p class="text-sm text-gray-400">Restore 5 MP & gain +1 max MP</p>
+                                </div>
+                                <button class="shop-buy-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 py-1 px-3 rounded transition-colors readable-text" data-cost="15" data-name="FAIRY" data-emoji="🧚🏼" data-description="Restore 5 MP and gain +1 max MP">🪙 15</button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+             <!-- Stones Codex -->
+            <div class="game-window">
+                <h2 class="window-title">Stones Codex</h2>
+                <div class="p-3">
+                    <div class="stone-circle-container">
+                        <!-- Debuffs -->
+                        <div class="stone-circle" data-name="Poison" data-emoji="☠️" data-info='<div class="flex items-center justify-center gap-x-3"><span class="text-2xl">☠️</span><span>Poison: 1 dmg per turn (ignores DEF)</span></div>' style="background-color: #a855f7;"></div>
+                        <div class="stone-circle" data-name="Curse" data-emoji="🕯️" data-info='<div class="flex items-center justify-center gap-x-3 text-center"><span class="text-2xl">🕯️</span><span>Curse: -2 ATK &amp; -2 DEF for 4 turns</span></div>' style="background-color: #374151;"></div>
+                        <div class="stone-circle" data-name="Slow" data-emoji="🐌" data-info='<div class="flex items-center justify-center gap-x-3 text-center"><span class="text-2xl">🐌</span><span>Slow: Lose next action &amp; sets SPD to 0 for 3 turns</span></div>' style="background-color: #a16207;"></div>
+                        
+                        <div class="h-8 w-px bg-gray-600 mx-2"></div> <!-- Separator -->
+
+                        <!-- Buffs -->
+                        <div class="stone-circle" data-name="Regen" data-emoji="❇️" data-info='<div class="flex items-center justify-center gap-x-3"><span class="text-2xl">❇️</span><span>Regen: Heal 1 HP per turn</span></div>' style="background-color: #22c55e;"></div>
+                        <div class="stone-circle" data-name="Blessing" data-emoji="🌟" data-info='<div class="flex items-center justify-center gap-x-3 text-center"><span class="text-2xl">🌟</span><span>Blessing: Heal 4 HP &amp; +5 SPRT for 4 turns</span></div>' style="background-color: #e5e7eb;"></div>
+                        <div class="stone-circle" data-name="Rush" data-emoji="⚡" data-info='<div class="flex items-center justify-center gap-x-3 text-center"><span class="text-2xl">⚡</span><span>Rush: Double next action &amp; +25 SPD for 3 turns</span></div>' style="background-color: #eab308;"></div>
+                    </div>
+                    <div id="stone-description-box" class="stone-description readable-text">
+                        <span class="text-gray-400">Click a stone to see its effect.</span>
+                    </div>
+                    <button id="equip-stone-button" class="action-button w-full mt-2 invisible" style="background: linear-gradient(to top, #581c87, #9333ea);">EQUIP STONE</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Area -->
+    <div id="modal-overlay" class="modal-overlay">
+        
+        <!-- Spells Modal -->
+        <div id="spells-modal" class="game-window modal-window hidden">
+            <h2 class="window-title"><span>Spells</span> <button class="close-button">&times;</button></h2>
+            <ul id="spells-list" class="item-list p-3 interactive">
+                <!-- Spells will be dynamically added here -->
+            </ul>
         </div>
         
-        <div class="bottom-bar-container">
-            <div class="left-buttons-container">
-                <div id="tokens-button" class="info-box">🔒</div>
-                <div id="gamble-button" class="info-box">🍀</div>
-            </div>
-            <div class="info-box bottom-box-2 slider-container">
-                <input type="range" min="0" max="4" value="0" step="1" class="custom-slider">
-            </div>
-            <div class="right-buttons-container">
-                <div id="link-button" class="info-box">⬜ Link</div>
-                <div id="help-button" class="info-box">❔</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Help Modal -->
-    <div id="help-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-scroll-wrapper">
-                <span class="close-button" data-modal="help-modal">&times;</span>
-                <h2>How to Play</h2>
-                <p>Strategically add symbols to the four inventories, then spin to win!</p>
-
-                <h3>Core Gameplay</h3>
-                <ul id="core-gameplay-list">
-                    <li><strong>Select an Inventory:</strong> Tap one of the four inventory boxes below the slot windows to select it.</li>
-                    <li><strong>Add Symbols:</strong> Pay coins to add symbols to the 8 slots in the selected inventory. Each symbol can only be added once per inventory.</li>
-                    <li><strong>Spin:</strong> Pay the spin cost to draw one random symbol from each of the four inventories.</li>
-                </ul>
-
-                <h3>Costs</h3>
-                <ul id="costs-list">
-                    <li><strong>Spin:</strong> Starts at <strong>5 🪙</strong>. Increases by 1 for each symbol that appears 4 or more times in a single inventory.</li>
-                    <li><strong>Add Symbol:</strong> <strong>3 🪙</strong> per symbol.</li>
-                    <li><strong>Reset Inventory (🗑️):</strong> <strong>50 🪙</strong> to clear all symbols from the selected inventory.</li>
-                </ul>
-
-                <h3>Special Mechanics</h3>
-                <ul id="special-mechanics-list">
-                    <li><strong>Bomb Mode (💣):</strong> Click the coin display to toggle. Spins are <strong>FREE</strong>, but have a 15% chance to add a 💣 to a random inventory slot. If the 💣 is drawn on a spin, that reel is disabled for 10 spins.</li>
-                    <li><strong>Clover Mode (🍀):</strong> Costs <strong>2 🪙</strong> to activate. When adding a symbol, there's a 50% chance it becomes a 🍀. If it fails, the original symbol is permanently removed from that inventory's options.</li>
-                    <li><strong>Link (⬜):</strong> Costs <strong>5 🪙</strong>. Links two symbols in a random row on the selected inventory, creating a new symbol.
-                        <ul>
-                            <li><span class="symbol">🍒</span> + <span class="symbol">🍊</span> (any two fruits) → <span class="symbol">🍬</span> (Candy)</li>
-                            <li><span class="symbol">🔔</span> + <span class="symbol">💎</span> → <span class="symbol">💍</span> (Ring)</li>
-                        </ul>
-                    </li>
-                    <li>
-                        <strong>Clown Rotation (🤡):</strong> Use the slider to rotate the Clown. The more it's rotated, the higher the risk and reward!
-                        <ul>
-                            <li><strong>Upright:</strong> 100% Wild, no bonus.</li>
-                            <li><strong>Slight Tilt:</strong> 85% Wild, +25 coin bonus on wins.</li>
-                            <li><strong>Sideways:</strong> 75% Wild, +50 coin bonus on wins.</li>
-                            <li><strong>Mostly Flipped:</strong> 65% Wild, 2x multiplier on wins.</li>
-                            <li><strong>Upside Down:</strong> 15% Wild, 5x multiplier on wins.</li>
-                        </ul>
-                    </li>
-                </ul>
-
-                <h3>Symbol Payouts</h3>
-                <p>Match 3 or 4 symbols across the reels to win. The <strong>Clown (🤡)</strong> is WILD and substitutes for any symbol below (if it doesn't fail!).</p>
-                <ul id="payouts-list">
-                    <li><strong><span class="symbol">🍬</span> (Candy):</strong> <strong>50 🪙</strong> for each that appears.</li>
-                    <li><strong><span class="symbol">💍</span> (Ring):</strong> <strong>75 🪙</strong> for each that appears.</li>
-                    <li><strong><span class="symbol">🍒</span><span class="symbol">🍊</span><span class="symbol">🍇</span><span class="symbol">🍋‍🟩</span>:</strong> 3-of-a-kind: <strong>50 🪙</strong> / 4-of-a-kind: <strong>100 🪙</strong></li>
-                    <li><strong><span class="symbol">🔔</span>:</strong> 3-of-a-kind: <strong>75 🪙</strong> / 4-of-a-kind: <strong>150 🪙</strong></li>
-                    <li><strong><span class="symbol">💎</span>:</strong> 3-of-a-kind: <strong>100 🪙</strong> / 4-of-a-kind: <strong>200 🪙</strong></li>
-                    <li><strong><span class="symbol">🍀</span>:</strong> 3-of-a-kind: <strong>250 🪙</strong> / 4-of-a-kind: <strong>500 🪙</strong></li>
-                </ul>
-
-                <h3>Unlockables (via Tokens 🔒)</h3>
-                <ul id="unlocks-list">
-                    <li><strong>Unlock Lime Removal (1 🪙):</strong> Unlocks the 🍋‍🟩 button, which removes all limes from all inventories when clicked.</li>
-                    <li><strong>Unlock Selector (1 🪙):</strong> Unlocks the 🎈/🌼 button. (Functionality not yet implemented).</li>
-                    <li><strong>Reset Links (1 🪙):</strong> Resets all used Links, allowing you to use the Link button again on every inventory.</li>
+        <!-- Weapons Modal -->
+        <div id="weapons-modal" class="game-window modal-window hidden">
+            <h2 class="window-title"><span>Weapon Collection</span> <button class="close-button">&times;</button></h2>
+            <div class="p-3">
+                 <ul class="item-list bg-gray-900/50 rounded-md readable-text interactive">
+                    <li data-name="Bow" data-stat="ATK" data-value="1" data-emoji="🏹"><span>🏹 Bow</span> <span class="readable-text">ATK +1</span></li>
+                    <li data-name="Dagger" data-stat="ATK" data-value="1" data-emoji="🗡️"><span>🗡️ Dagger</span> <span class="readable-text">ATK +1</span></li>
+                    <li data-name="Hammer" data-stat="ATK" data-value="3" data-emoji="🔨"><span>🔨 Hammer</span> <span class="readable-text">ATK +3</span></li>
                 </ul>
             </div>
         </div>
-    </div>
-    
-    <div id="tokens-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-button" data-modal="tokens-modal">&times;</span>
-            <h2>Tokens</h2>
-            <div class="token-options">
-                <button class="token-option" id="unlock-lime-btn">
-                    <span class="token-icon">🟢</span>
-                    <span class="token-description">Unlock Lime Removal</span>
-                    <span class="token-cost">1 🪙</span>
-                </button>
-                <button class="token-option" id="unlock-selector-btn">
-                    <span class="token-icon">🔴</span>
-                    <span class="token-description">Unlock Selector</span>
-                    <span class="token-cost">1 🪙</span>
-                </button>
-                <button class="token-option" id="reset-links-btn">
-                    <span class="token-icon">⚪</span>
-                    <span class="token-description">Reset Links</span>
-                    <span class="token-cost">1 🪙</span>
-                </button>
+        
+        <!-- Armor Modal -->
+        <div id="armor-modal" class="game-window modal-window hidden">
+            <h2 class="window-title"><span>Armor Collection</span> <button class="close-button">&times;</button></h2>
+            <div class="p-3">
+                 <ul class="item-list bg-gray-900/50 rounded-md readable-text interactive">
+                    <li data-name="Leather Gear" data-stat="DEF" data-value="1" data-emoji="🧥"><span>🧥 Leather Gear</span> <span class="readable-text">DEF +1</span></li>
+                    <li data-name="Stone Bracer" data-stat="DEF" data-value="2" data-emoji="🪨"><span>🪨 Stone Bracer</span> <span class="readable-text">DEF +2</span></li>
+                    <li data-name="Cloak" data-stat="SPRT" data-value="15" data-emoji="🕸️"><span>🕸️ Cloak</span> <span class="readable-text">SPRT +15</span></li>
+                </ul>
             </div>
         </div>
-    </div>
 
+        <!-- Items Modal -->
+        <div id="items-modal" class="game-window modal-window hidden">
+            <h2 class="window-title"><span>Items</span> <button class="close-button">&times;</button></h2>
+            <ul class="item-list p-3">
+                <li class="readable-text text-gray-400 justify-center">Purchased items will appear here.</li>
+            </ul>
+        </div>
+        
+        <!-- Fortunes Modal -->
+        <div id="fortunes-modal" class="game-window modal-window hidden">
+            <h2 class="window-title"><span>My Fortunes 🔮</span> <button class="close-button">&times;</button></h2>
+            <ul id="player-fortunes-list" class="item-list p-3">
+                <!-- Player's fortunes will be dynamically added here -->
+            </ul>
+        </div>
+
+        <!-- Tutorial Modal -->
+        <div id="tutorial-modal" class="game-window modal-window hidden">
+            <h2 class="window-title"><span>Quick Tutorial</span> <button class="close-button">&times;</button></h2>
+            <div class="p-4 readable-text space-y-4 text-lg">
+                <div>
+                    <h3 class="text-xl font-bold mb-3 text-gray-300 uppercase tracking-wider">Base Stats</h3>
+                    <p><span class="font-bold text-red-400">⚔️ ATK</span> = Total attack damage.</p>
+                    <p><span class="font-bold text-blue-500">🛡️ DEF</span> = Total damage reduction.</p>
+                    <p><span class="font-bold text-yellow-400">👢 SPD</span> = Determines turn order and % bonus turn.</p>
+                    <p><span class="font-bold text-orange-400">❤️‍🔥 SPRT</span> = % chance to double the effect of spells & items.</p>
+                </div>
+                <div class="pt-4 border-t border-gray-700">
+                    <h3 class="text-xl font-bold mb-3 text-gray-300 uppercase tracking-wider">Status Effects</h3>
+                    <p class="text-sm italic text-gray-400 -mt-2 mb-4">Note: All buffs and debuffs are cleared at the end of battle.</p>
+                    
+                    <h4 class="text-lg font-bold mb-2 text-red-400 uppercase tracking-wider">Debuffs</h4>
+                    <div class="space-y-2 text-base pl-4">
+                        <p><span class="font-bold">☠️ Poison</span> → 1 dmg per turn (ignores DEF).</p>
+                        <p><span class="font-bold">🕯️ Curse</span> → -2 ATK &amp; -2 DEF for 4 turns.</p>
+                        <p><span class="font-bold">🐌 Slow</span> → Lose next action &amp; sets SPD to 0 for 3 turns.</p>
+                    </div>
+
+                    <h4 class="text-lg font-bold mt-4 mb-2 text-green-400 uppercase tracking-wider">Buffs</h4>
+                    <div class="space-y-2 text-base pl-4">
+                        <p><span class="font-bold">❇️ Regen</span> → Heal 1 HP per turn.</p>
+                        <p><span class="font-bold">🌟 Blessing</span> → Heal 4 HP &amp; +5 SPRT for 4 turns.</p>
+                        <p><span class="font-bold">⚡ Rush</span> → Double next action &amp; +25 SPD for 3 turns.</p>
+                        <p><span class="font-bold">🛡️ Barrier</span> → +4 DEF for 4 turns.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Level Up Modal -->
+        <div id="levelup-modal" class="game-window modal-window hidden">
+            <h2 class="window-title"><span>LEVEL UP!</span></h2>
+            <div class="p-4 readable-text">
+                <p class="text-center text-lg mb-6">Allocate your stat points.</p>
+                
+                <div class="levelup-choice-group" id="levelup-vitality">
+                    <p class="text-center font-bold text-gray-400 mb-2">2 POINTS</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="levelup-choice text-center" data-stat="HP" data-value="2">❤️ +2 Max HP</div>
+                        <div class="levelup-choice text-center" data-stat="MP" data-value="2">✨ +2 Max MP</div>
+                    </div>
+                </div>
+
+                <div class="levelup-choice-group" id="levelup-strength">
+                     <p class="text-center font-bold text-gray-400 mb-2">1 POINT</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="levelup-choice text-center" data-stat="ATK" data-value="1">⚔️ +1 ATK</div>
+                        <div class="levelup-choice text-center" data-stat="DEF" data-value="1">🛡️ +1 DEF</div>
+                    </div>
+                </div>
+
+                <div class="levelup-choice-group" id="levelup-agility">
+                     <p class="text-center font-bold text-gray-400 mb-2">2 POINTS</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="levelup-choice text-center" data-stat="SPD" data-value="2">👢 +2 SPD</div>
+                        <div class="levelup-choice text-center" data-stat="SPRT" data-value="2">❤️‍🔥 +2 SPRT</div>
+                    </div>
+                </div>
+
+                <button id="confirm-levelup-button" class="action-button w-full mt-6" style="background: linear-gradient(to top, #0f766e, #14b8a6);" disabled>CONFIRM</button>
+            </div>
+        </div>
+
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const BLANK_SYMBOL = '❌';
-            const ELIMINATED_SLOT = 'REMOVED'; 
-            const BOMB_SYMBOL = '💣';
-            const BOMB_EXPLOSION_SYMBOL = '💥';
-            const BOMB_DURATION = 10;
-            const LUCKY_SYMBOL = '🍀';
-            const CANDY_SYMBOL = '🍬'; 
-            const RING_SYMBOL = '💍'; 
-            const FRUITS = ['🍒', '🍊', '🍇', '🍋‍🟩']; 
-            const SPECIAL_SYMBOLS = ['🤡', '🍀']; 
-            
-            const REEL_COUNT = 4;
-            const SYMBOLS_PER_REEL = 8;
-            const ROWS_PER_REEL = 4;
-            const BASE_SPIN_PRICE = 5;
-            const SYMBOL_ADD_COST = 3;
+            const modalOverlay = document.getElementById('modal-overlay');
+            const modals = {
+                spells: document.getElementById('spells-modal'),
+                weapons: document.getElementById('weapons-modal'),
+                armor: document.getElementById('armor-modal'),
+                items: document.getElementById('items-modal'),
+                tutorial: document.getElementById('tutorial-modal'),
+                levelup: document.getElementById('levelup-modal'),
+                fortunes: document.getElementById('fortunes-modal'),
+            };
 
-            let totalCoins = 100;
-            let spinPrice = BASE_SPIN_PRICE;
-            let selectedReel = 0;
-            const reels = Array(REEL_COUNT).fill(0).map(() => Array(SYMBOLS_PER_REEL).fill(BLANK_SYMBOL));
-            let gambleModeActive = false;
-            let riskModeActive = false;
-            let isAnimating = false;
-            let currentClownRotation = 0;
-            let clownRiskLevel = 0; 
-            const usedSymbols = {};
-            
-            let symbolsAddedCounter = 0;
-            let bonusSymbol = null;
-            let activeSelection = 'balloon';
+            const openButtons = {
+                spells: document.getElementById('spells-button'),
+                weapons: document.getElementById('weapon-slot'),
+                armor: document.getElementById('armor-slot'),
+                items: document.getElementById('items-button'),
+                tutorial: document.getElementById('quick-tutorial-button'),
+                fortunes: document.getElementById('view-fortunes-button'),
+            };
 
-            let isLimeUnlocked = false;
-            let isSelectorUnlocked = false;
-
-            let bombCounters = [0, 0, 0, 0];
-
-            let linkedReels = new Set();
-            let linkedRowState = {};
-
-            const gameContainer = document.querySelector('.game-container');
-            const reelInventoriesContainer = document.querySelector('.reel-inventories');
-            const symbolButtonsContainer = document.querySelector('.symbol-buttons');
-            const spinButton = document.getElementById('spin-button');
-            const inventoryDisplays = Array(REEL_COUNT).fill(0).map((_, i) => document.getElementById(`inventory-${i}`));
-            const reelWindowElements = document.querySelectorAll('.reel-window');
-            const reelDisplayElements = Array.from(reelWindowElements).map(w => w.querySelector('.reel-display'));
-            const coinsDisplay = document.getElementById('coins-display');
-            const priceDisplay = document.getElementById('price-display');
-            const selectorDisplay = document.getElementById('selector-display');
-            const messageBox = document.getElementById('message-box');
-            const linkButton = document.getElementById('link-button');
-            const gambleButton = document.getElementById('gamble-button');
-            const helpButton = document.getElementById('help-button');
-            const helpModal = document.getElementById('help-modal');
-            const resetButton = document.getElementById('reset-symbols-btn');
-            const clownSlider = document.querySelector('.custom-slider');
-            
-            const tokensButton = document.getElementById('tokens-button');
-            const tokensModal = document.getElementById('tokens-modal');
             const closeButtons = document.querySelectorAll('.close-button');
 
-            const unlockLimeBtn = document.getElementById('unlock-lime-btn');
-            const unlockSelectorBtn = document.getElementById('unlock-selector-btn');
-            const resetLinksBtn = document.getElementById('reset-links-btn');
+            let currentModal = null;
 
-            const checkAndHighlightLines = () => {
-                // --- 1. Clear previous highlights ---
-                document.querySelectorAll('.inventory-row.line-connected, .inventory-row.line-possible').forEach(row => {
-                    row.classList.remove('line-connected', 'line-possible');
-                });
-                gameContainer.classList.remove('line-active-theme');
-
-                const linked = Object.entries(linkedRowState)
-                    .map(([k, v]) => [parseInt(k), v])
-                    .sort((a, b) => a[0] - b[0]);
-
-                if (linked.length < 1) return;
-
-                // --- 2. [FIX] Global impossibility check ---
-                // A line is impossible if the vertical distance between any two linked points
-                // is greater than their horizontal distance.
-                let lineIsImpossible = false;
-                if (linked.length >= 2) {
-                    for (let i = 0; i < linked.length; i++) {
-                        for (let j = i + 1; j < linked.length; j++) {
-                            const [reelA, rowA] = linked[i];
-                            const [reelB, rowB] = linked[j];
-                            if (Math.abs(rowA - rowB) > Math.abs(reelA - reelB)) {
-                                lineIsImpossible = true;
-                                break;
-                            }
-                        }
-                        if (lineIsImpossible) break;
-                    }
-                }
-
-                // --- 3. Find all contiguous paths (original logic) ---
-                const allValidPaths = [];
-                if (linked.length > 0) {
-                    let currentPath = [linked[0]];
-                    for (let i = 1; i < linked.length; i++) {
-                        const prevReel = linked[i - 1];
-                        const currentReel = linked[i];
-
-                        const isAdjacent = currentReel[0] === prevReel[0] + 1;
-                        const isCloseEnough = Math.abs(currentReel[1] - prevReel[1]) <= 1;
-
-                        if (isAdjacent && isCloseEnough) {
-                            currentPath.push(currentReel);
-                        } else {
-                            if (currentPath.length >= 2) {
-                                allValidPaths.push([...currentPath]);
-                            }
-                            currentPath = [currentReel];
-                        }
-                    }
-                    if (currentPath.length >= 2) {
-                        allValidPaths.push([...currentPath]);
-                    }
-                }
-                
-                // --- 4. Apply highlights based on checks ---
-                let isFullLine = false;
-                allValidPaths.forEach(path => {
-                    if (path.length === REEL_COUNT) {
-                        isFullLine = true;
-                        // Always highlight a fully connected line
-                        path.forEach(([index, row]) => {
-                            const rowToHighlight = inventoryDisplays[index].children[row];
-                            if (rowToHighlight) rowToHighlight.classList.add('line-connected');
-                        });
-                    } else if (!lineIsImpossible) {
-                        // [FIX] Only highlight "possible" lines if a full line is not impossible
-                         path.forEach(([index, row]) => {
-                            const rowToHighlight = inventoryDisplays[index].children[row];
-                            if (rowToHighlight) rowToHighlight.classList.add('line-possible');
-                        });
-                    }
-                });
-
-                if (isFullLine) {
-                    gameContainer.classList.add('line-active-theme');
-                }
-            };
-
-            const applyClownRotation = () => {
-                const clownSymbol = '🤡';
-                const rotationStyle = `rotate(${currentClownRotation}deg)`;
-
-                document.querySelectorAll('.clown-icon').forEach(icon => {
-                    icon.style.transform = rotationStyle;
-                    icon.style.display = 'inline-block';
-                });
-
-                document.querySelectorAll('.reel-display, .inventory .symbol-display').forEach(el => {
-                    if (el.textContent.includes(clownSymbol)) {
-                        if (el.textContent.trim() === clownSymbol) {
-                            el.style.transform = rotationStyle;
-                        }
-                    } else {
-                        el.style.transform = 'none';
-                    }
-                });
-            };
-
-            const initializeGame = () => {
-                const NON_FRUITS = ['🔔', '🤡', '💎'];
-                for (let i = 0; i < REEL_COUNT; i++) {
-                    const availableFruits = [...FRUITS];
-                    const firstFruitIndex = Math.floor(Math.random() * availableFruits.length);
-                    const firstFruit = availableFruits.splice(firstFruitIndex, 1)[0];
-                    reels[i][0] = firstFruit;
-                    const secondFruitIndex = Math.floor(Math.random() * availableFruits.length);
-                    const secondFruit = availableFruits[secondFruitIndex];
-                    reels[i][1] = secondFruit;
-
-                    const randomNonFruit = NON_FRUITS[Math.floor(Math.random() * NON_FRUITS.length)];
-                    reels[i][2] = randomNonFruit;
-                }
-            };
-
-            const showWinMessage = (text, duration = 1000) => {
-                messageBox.innerHTML = text;
-                messageBox.classList.add('show');
-                setTimeout(() => {
-                    messageBox.classList.remove('show');
-                }, duration);
-            };
-
-            const calculatePriceModifier = () => {
-                let modifier = 0;
-                reels.forEach(reel => {
-                    const counts = reel.reduce((acc, symbol) => {
-                        if (symbol !== BLANK_SYMBOL && symbol !== ELIMINATED_SLOT) {
-                            acc[symbol] = (acc[symbol] || 0) + 1;
-                        }
-                        return acc;
-                    }, {});
-                    Object.values(counts).forEach(count => {
-                        if (count >= 4) {
-                            modifier++;
-                        }
-                    });
-                });
-                return modifier;
-            };
-
-            const updateTopBar = () => {
-                const priceModifier = calculatePriceModifier();
-                spinPrice = BASE_SPIN_PRICE + priceModifier;
-                const coinsDisplayFront = coinsDisplay.querySelector('.card-front');
-                coinsDisplayFront.textContent = totalCoins;
-
-                const coinsDisplayBackCounter = coinsDisplay.querySelector('.bomb-mode-coin-count');
-                if (coinsDisplayBackCounter) {
-                    coinsDisplayBackCounter.textContent = totalCoins;
-                }
-                
-                const riskPolkaDotBg = 'radial-gradient(rgba(0,0,0,0.25) 45%, transparent 46%)';
-
-                if (riskModeActive) {
-                    spinButton.innerHTML = `💣 Spin`;
-                    spinButton.style.backgroundImage = riskPolkaDotBg;
-                    spinButton.style.backgroundSize = '12px 12px';
-                    spinButton.style.backgroundColor = '#e60023';
-                    spinButton.style.borderColor = '#ff4500';
-                    spinButton.style.color = '#ffffff';
-                    spinButton.style.textShadow = '2px 2px 4px rgba(0,0,0,0.7)';
-                    
-                    coinsDisplay.style.backgroundImage = riskPolkaDotBg;
-                    coinsDisplay.style.backgroundSize = '12px 12px';
-                    coinsDisplay.style.backgroundColor = '#e60023';
-                    coinsDisplay.style.borderColor = '#ff4500';
-
-                } else {
-                    spinButton.innerHTML = `🪙 ${spinPrice} &nbsp; Spin`;
-                    spinButton.style.backgroundImage = '';
-                    spinButton.style.backgroundSize = '';
-                    spinButton.style.backgroundColor = '#e60023';
-                    spinButton.style.borderColor = '#990017';
-                    spinButton.style.color = 'var(--button-text)';
-                    spinButton.style.textShadow = '2px 2px 5px rgba(0, 0, 0, 0.5)';
-
-                    coinsDisplay.style.backgroundImage = 'radial-gradient(#a17d00 45%, transparent 46%)';
-                    coinsDisplay.style.backgroundSize = '10px 10px';
-                    coinsDisplay.style.backgroundColor = '#ffd700';
-                    coinsDisplay.style.borderColor = '#e0bd00';
-                }
-                
-                applyClownRotation();
+            // --- Game Data ---
+            const player = {
+                name: 'Jules',
+                isPlayer: true,
+                level: 1,
+                baseStats: { HP: 10, MP: 10, ATK: 1, DEF: 1, SPD: 10, SPRT: 10 },
+                currentHP: 10,
+                currentMP: 10,
+                statusEffects: [],
+                equippedWeapon: null,
+                equippedArmor: null,
             };
             
-            const updateSelectorUI = () => {
-                document.querySelectorAll('.selector-option').forEach(opt => {
-                    if (opt.dataset.choice === activeSelection) {
-                        opt.classList.remove('deselected');
-                    } else {
-                        opt.classList.add('deselected');
-                    }
-                });
-            };
+            let gold = 15;
+            let exp = 0;
+            let playerInventory = [];
+            let playerFortunes = [];
+            let equippedStones = [null, null, null];
+            let brokenStoneSlots = [false, false, false];
+            let selectedStone = null;
+            let fortuneChosenThisBattle = false;
+            let battleSequenceIndex = 0;
 
-            const updateLockedFeaturesUI = () => {
-                priceDisplay.classList.toggle('locked-feature', !isLimeUnlocked);
-                selectorDisplay.classList.toggle('locked-feature', !isSelectorUnlocked);
-                
-                unlockLimeBtn.disabled = isLimeUnlocked;
-                unlockSelectorBtn.disabled = isSelectorUnlocked;
-            };
-
-            const updateLinkButtonUI = () => {
-                const hasLink = linkedReels.has(selectedReel);
-                linkButton.disabled = hasLink;
-                linkButton.classList.toggle('link-used', hasLink);
-            };
-
-            const updateSelectedReelUI = () => {
-                inventoryDisplays.forEach((inventory, index) => {
-                    inventory.classList.toggle('selected', index === selectedReel);
-                });
-                updateLinkButtonUI(); 
-            };
+            // --- Helper function to check for fortunes ---
+            function playerHasFortune(fortuneName) {
+                return playerFortunes.some(f => f.name === fortuneName);
+            }
             
-            const updateBonusSymbolUI = () => {
-                document.querySelectorAll('.symbol-btn').forEach(btn => {
-                    btn.classList.remove('bonus-symbol');
-                    btn.style.setProperty('--glow-color', 'transparent');
-
-                    if (bonusSymbol && btn.textContent.includes(bonusSymbol)) {
-                        btn.classList.add('bonus-symbol');
-                        const borderColor = btn.style.borderColor;
-                        btn.style.setProperty('--glow-color', borderColor);
-                    }
-                });
+            const enemies = {
+                darkWolf: { name: 'Dark Wolf', maxHp: 5, attack: 4, def: 0, spd: 5, emoji: '🐺', exp: 5, gold: 5 },
+                poisonFrog: { name: 'Poisonous Frog', maxHp: 5, attack: 4, def: 0, spd: 5, emoji: '🐸', exp: 5, gold: 5, debuffs: [{ name: 'Poison', emoji: '☠️', chance: 50 }] },
+                golem: { name: 'Golem', maxHp: 30, attack: 6, def: 4, spd: 5, emoji: '🗿', exp: 15, gold: 20 },
+                cursemancer: { name: 'Cursemancer', maxHp: 14, attack: 0, def: 0, spd: 0, emoji: '🧙🏽‍♂️', exp: 10, gold: 15, debuffs: [{ name: 'Curse', emoji: '🕯️', chance: 50 }] },
+                spider: { name: 'Spider', maxHp: 9, attack: 7, def: 3, spd: 25, emoji: '🕷️', exp: 8, gold: 10 },
             };
-
-            const triggerBonusSymbol = () => {
-                const availableButtons = [...document.querySelectorAll('.symbol-btn')]
-                    .filter(btn => !SPECIAL_SYMBOLS.includes(btn.textContent[0]) && btn.id !== 'reset-symbols-btn');
-                
-                if (availableButtons.length > 0) {
-                    const randomButton = availableButtons[Math.floor(Math.random() * availableButtons.length)];
-                    bonusSymbol = randomButton.textContent.replace(/\+1/g, '').trim();
-                    updateBonusSymbolUI();
-                }
-            };
-
-
-            const updateSymbolButtonsUI = () => {
-                const disabledForThisReel = usedSymbols[selectedReel] || [];
-                document.querySelectorAll('.symbol-btn').forEach(btn => {
-                    const symbol = btn.textContent.replace(/\+1/g, '').trim();
-                    if (symbol === BLANK_SYMBOL || btn.id === 'reset-symbols-btn') {
-                        btn.disabled = false;
-                        return;
-                    }
-                    btn.disabled = disabledForThisReel.includes(symbol);
-                });
-            };
+            const battleSequence = [
+                ['darkWolf', 'poisonFrog'],
+                ['golem'],
+                ['cursemancer', 'spider'],
+            ];
+            let activeEnemies = [];
+            let currentTarget = null;
             
-            const renderInventories = () => {
-                reels.forEach((reel, reelIndex) => {
-                    const inventory = inventoryDisplays[reelIndex];
-                    inventory.innerHTML = '';
+            const spells = [
+                { name: 'FIRE', emoji: '🔥', cost: 4, damage: 6, description: 'Deal 6 dmg' },
+                { name: 'ICE', emoji: '❄️', cost: 4, damage: 2, effect: 'Slow', description: 'Deal 2 dmg + inflict 🐌 Slow' },
+                { name: 'BARRIER', emoji: '🛡️', cost: 5, effect: 'Barrier', description: '+4 DEF for 4 turns' }
+            ];
 
-                    for (let i = 0; i < ROWS_PER_REEL; i++) {
-                        const rowEl = document.createElement('div');
-                        rowEl.className = 'inventory-row';
+            // --- Battle Turn Management ---
+            let turnQueue = [];
+            let currentTurnIndex = 0;
+            let isBattleActive = false;
 
-                        if (linkedRowState[reelIndex] === i) {
-                            rowEl.classList.add('linked');
-                        }
+            // --- UI Elements ---
+            const statElements = {
+                HP: document.getElementById('stat-hp'),
+                MP: document.getElementById('stat-mp'),
+                ATK: document.getElementById('stat-atk'),
+                DEF: document.getElementById('stat-def'),
+                SPD: document.getElementById('stat-spd'),
+                SPRT: document.getElementById('stat-sprt'),
+                LVL: document.getElementById('stat-lvl'),
+                EXP: document.getElementById('stat-exp'),
+            };
+            const playerStatusEffectsEl = document.getElementById('player-status-effects');
+            const hpBar = document.getElementById('hp-bar');
+            const mpBar = document.getElementById('mp-bar');
+            const goldElement = document.getElementById('gold-display');
+            const itemsModalList = document.querySelector('#items-modal .item-list');
+            const weaponSlot = document.getElementById('weapon-slot');
+            const armorSlot = document.getElementById('armor-slot');
+            const stoneSlots = [
+                document.getElementById('stone-slot-1'),
+                document.getElementById('stone-slot-2'),
+                document.getElementById('stone-slot-3'),
+            ];
+            const stoneSlotCircles = [
+                document.getElementById('stone-slot-1-circle'),
+                document.getElementById('stone-slot-2-circle'),
+                document.getElementById('stone-slot-3-circle'),
+            ];
+            const attackButton = document.getElementById('attack-button');
+            const spellsButton = document.getElementById('spells-button');
+            const itemsButton = document.getElementById('items-button');
+            const battleAreaContent = document.getElementById('battle-area-content');
+            const battleLog = document.getElementById('battle-log');
+            const fortunesList = document.getElementById('fortunes-list');
+            const spellsList = document.getElementById('spells-list');
+            const revealFortunesButton = document.getElementById('reveal-fortunes-button');
+            const renegotiateButton = document.getElementById('renegotiate-sacrifices-button');
+            
+            // --- Game Logic Functions ---
+            function calculateTotalStats(character) {
+                const total = { ...character.baseStats };
+                
+                if (character.isPlayer) {
+                    if (player.equippedWeapon) total.ATK += player.equippedWeapon.value;
+                    if (player.equippedArmor) {
+                        if (player.equippedArmor.stat === 'DEF') total.DEF += player.equippedArmor.value;
+                        if (player.equippedArmor.stat === 'SPRT') total.SPRT += player.equippedArmor.value;
+                    }
+                }
 
-                        const symbol1 = reel[i * 2];
-                        const symbol2 = reel[i * 2 + 1];
-
-                        if (symbol1 === ELIMINATED_SLOT && symbol2 === ELIMINATED_SLOT) {
-                            rowEl.classList.add('blacked-out');
-                            rowEl.innerHTML = `<div class="symbol-display">❌</div><div class="symbol-display">❌</div>`;
-                        } 
-                        else if ([CANDY_SYMBOL, RING_SYMBOL].includes(symbol1) && symbol2 === ELIMINATED_SLOT) {
-                            rowEl.classList.add('merged-row');
-                            const symbolEl1 = document.createElement('div');
-                            symbolEl1.className = 'symbol-display';
-                            symbolEl1.textContent = symbol1;
-                            rowEl.appendChild(symbolEl1);
-                        }
-                        else {
-                            const symbolEl1 = document.createElement('div');
-                            symbolEl1.className = 'symbol-display';
-                            symbolEl1.textContent = symbol1;
-                            if (symbol1 === LUCKY_SYMBOL) symbolEl1.classList.add('clover');
-                            if (symbol1 === BOMB_SYMBOL) symbolEl1.classList.add('bomb-symbol-glow');
-                            
-                            const symbolEl2 = document.createElement('div');
-                            symbolEl2.className = 'symbol-display';
-                            symbolEl2.textContent = symbol2;
-                            if (symbol2 === LUCKY_SYMBOL) symbolEl2.classList.add('clover');
-                            if (symbol2 === BOMB_SYMBOL) symbolEl2.classList.add('bomb-symbol-glow');
-
-                            rowEl.appendChild(symbolEl1);
-                            rowEl.appendChild(symbolEl2);
-                        }
-                        inventory.appendChild(rowEl);
+                character.statusEffects.forEach(effect => {
+                    if(effect.statMods) {
+                        total.ATK += effect.statMods.ATK || 0;
+                        total.DEF += effect.statMods.DEF || 0;
+                        total.SPD += effect.statMods.SPD || 0;
+                        total.SPRT += effect.statMods.SPRT || 0;
                     }
                 });
-                applyClownRotation();
-            };
-
-            const handleResetReel = () => {
-                if (totalCoins < 50) return;
-                totalCoins -= 50;
-
-                reels[selectedReel] = Array(SYMBOLS_PER_REEL).fill(BLANK_SYMBOL);
-                delete usedSymbols[selectedReel];
                 
-                linkedReels.delete(selectedReel);
-                delete linkedRowState[selectedReel];
-
-                renderInventories();
-                checkAndHighlightLines();
-                updateTopBar();
-                updateSymbolButtonsUI();
-                updateLinkButtonUI(); 
-            };
-            
-            const handleGambleClick = () => {
-                if (!gambleModeActive) {
-                    if (totalCoins < 2) return;
-                    totalCoins -= 2;
-                    updateTopBar();
-                }
-                gambleModeActive = !gambleModeActive;
-                gambleButton.classList.toggle('gamble-active', gambleModeActive);
-            };
-
-            const handleSymbolAdd = async (event) => {
-                const button = event.target.closest('.symbol-btn');
-                if (!button || button.disabled || button.id === 'reset-symbols-btn') return;
-
-                const symbol = button.textContent.replace(/\+1/g, '').trim();
-                const reel = reels[selectedReel];
-                const blankIndex = reel.indexOf(BLANK_SYMBOL);
-                
-                if (blankIndex === -1) return;
-                
-                const isBonus = symbol === bonusSymbol;
-                if (isBonus) {
-                    totalCoins += 1;
-                    bonusSymbol = null;
-                    updateBonusSymbolUI();
-                } else {
-                    if (totalCoins < SYMBOL_ADD_COST) return;
-                    totalCoins -= SYMBOL_ADD_COST;
-                    symbolsAddedCounter++;
-                }
-
-                updateTopBar();
-
-                if (gambleModeActive && symbol !== BLANK_SYMBOL) {
-                    button.classList.add('shake-animation');
-                    symbolButtonsContainer.querySelectorAll('.btn').forEach(b => b.disabled = true);
-                    await new Promise(resolve => setTimeout(resolve, 500)); 
-                    button.classList.remove('shake-animation');
-                    
-                    const gambleWin = Math.random() < 0.5;
-                    
-                    if (gambleWin) {
-                        reel[blankIndex] = LUCKY_SYMBOL;
-                    } else {
-                        reel[blankIndex] = symbol;
-                        if (!usedSymbols[selectedReel]) usedSymbols[selectedReel] = [];
-                        usedSymbols[selectedReel].push(symbol);
+                // FORTUNE: Battle Grace
+                if (character.isPlayer && playerHasFortune('Battle Grace')) {
+                    const buffNames = ['Regen', 'Blessing', 'Rush', 'Barrier'];
+                    const buffCount = character.statusEffects.filter(e => buffNames.includes(e.name)).length;
+                    if (buffCount >= 2) {
+                        total.DEF += 1;
                     }
-                    
-                    gambleModeActive = false;
-                    gambleButton.classList.remove('gamble-active');
-                    symbolButtonsContainer.querySelectorAll('.btn').forEach(b => b.disabled = false);
-                    updateSymbolButtonsUI();
-                } else {
-                    reel[blankIndex] = symbol;
                 }
+
+                total.ATK = Math.max(0, total.ATK);
+                total.DEF = Math.max(0, total.DEF);
+                total.SPD = Math.max(0, total.SPD);
+                total.SPRT = Math.max(0, total.SPRT);
                 
-                renderInventories();
-                updateTopBar();
-                updateSymbolButtonsUI();
-
-                if (!isBonus && symbolsAddedCounter >= 4 && bonusSymbol === null) {
-                    symbolsAddedCounter = 0;
-                    triggerBonusSymbol();
+                // Last check for effects that set stats to 0
+                if (character.statusEffects.some(e => e.setsSPDToZero)) {
+                    total.SPD = 0;
                 }
-            };
-            
-            const handleLimeClick = () => {
-                if (isAnimating || !isLimeUnlocked) return;
-                const LIME_SYMBOL = '🍋‍🟩';
-                const limeElements = [];
-                document.querySelectorAll('.inventory .symbol-display').forEach(el => {
-                    if (el.textContent === LIME_SYMBOL) {
-                        limeElements.push(el);
-                    }
-                });
 
-                if (limeElements.length > 0) {
-                    isAnimating = true;
-                    priceDisplay.classList.add('lime-shake-animation');
-                    limeElements.forEach(el => el.classList.add('lime-shake-animation'));
+                return total;
+            }
 
-                    setTimeout(() => {
-                        priceDisplay.classList.remove('lime-shake-animation');
-                        limeElements.forEach(el => el.classList.remove('lime-shake-animation'));
+            function updateGoldUI() {
+                goldElement.textContent = gold;
+            }
 
-                        reels.forEach(reel => {
-                            for (let i = 0; i < reel.length; i++) {
-                                if (reel[i] === LIME_SYMBOL) {
-                                    reel[i] = BLANK_SYMBOL;
-                                }
-                            }
-                        });
-
-                        renderInventories();
-                        updateTopBar(); 
-                        updateSymbolButtonsUI();
-                        isAnimating = false;
-                    }, 1500);
-                }
-            };
-
-            const handleLink = () => {
-                if (isAnimating || linkedReels.has(selectedReel)) {
+            function updateItemsModalUI() {
+                itemsModalList.innerHTML = '';
+                if (playerInventory.length === 0) {
+                    itemsModalList.innerHTML = '<li class="readable-text text-gray-400 justify-center">Purchased items will appear here.</li>';
                     return;
                 }
-                if (totalCoins < 5) {
-                    showWinMessage("Not enough coins!", 800);
+                playerInventory.forEach((item, index) => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <div class="readable-text">
+                            <p class="font-bold text-lg">${item.emoji} ${item.name}</p>
+                            <p class="text-sm text-gray-400">${item.description}</p>
+                        </div>
+                        <button class="use-item-button bg-green-600 hover:bg-green-700 text-white py-1 px-3 rounded-sm text-sm readable-text">USE</button>
+                    `;
+                    li.querySelector('.use-item-button').addEventListener('click', () => useItem(item, index));
+                    itemsModalList.appendChild(li);
+                });
+            }
+
+            function formatStatDisplay(base, total) {
+                const change = total - base;
+                if (change === 0) {
+                    return total;
+                }
+                const sign = change >= 0 ? '+' : '';
+                return `${base}${sign}${change}(${total})`;
+            }
+
+            function updateStatsUI() {
+                const totalStats = calculateTotalStats(player);
+                
+                player.currentHP = Math.min(player.currentHP, player.baseStats.HP);
+                player.currentMP = Math.min(player.currentMP, player.baseStats.MP);
+
+                statElements.HP.textContent = `${player.currentHP} / ${player.baseStats.HP}`;
+                statElements.MP.textContent = `${player.currentMP} / ${player.baseStats.MP}`;
+                
+                statElements.ATK.textContent = formatStatDisplay(player.baseStats.ATK, totalStats.ATK);
+                statElements.DEF.textContent = formatStatDisplay(player.baseStats.DEF, totalStats.DEF);
+                statElements.SPRT.textContent = formatStatDisplay(player.baseStats.SPRT, totalStats.SPRT);
+                statElements.SPD.textContent = formatStatDisplay(player.baseStats.SPD, totalStats.SPD);
+
+                statElements.LVL.textContent = player.level;
+                statElements.EXP.textContent = `${exp} / 10`;
+
+                const hpPercent = (player.currentHP / player.baseStats.HP) * 100;
+                const mpPercent = (player.currentMP / player.baseStats.MP) * 100;
+                hpBar.style.width = `${hpPercent}%`;
+                mpBar.style.width = `${mpPercent}%`;
+                
+                updateStatusEffectsUI(player, playerStatusEffectsEl);
+            }
+
+            function updateStatusEffectsUI(character, element) {
+                 element.innerHTML = character.statusEffects.map(effect => {
+                    if (effect.name === 'Poison') {
+                        return `<div class="inline-flex items-center text-lg gap-1">${effect.emoji}<span class="text-sm font-bold text-purple-400 readable-text">${effect.currentDamage}</span></div>`;
+                    }
+                    if (effect.name === 'Regen') {
+                        return `<div class="inline-flex items-center text-lg gap-1">${effect.emoji}<span class="text-sm font-bold text-green-400 readable-text">1</span></div>`;
+                    }
+                    // Default case for effects with duration
+                    const durationDisplay = `<span class="absolute -top-1 -right-1.5 text-xs font-bold text-white bg-black/60 rounded-full h-4 w-4 flex items-center justify-center pointer-events-none readable-text">${effect.duration}</span>`;
+                    return `<div class="relative inline-block text-lg">${effect.emoji}${durationDisplay}</div>`;
+                }).join('');
+            }
+            
+            function updateBattleLog(message) {
+                battleLog.textContent = message;
+            }
+
+            function spawnBattle(enemyKeys) {
+                // Reset fortune choice for the new battle
+                fortuneChosenThisBattle = false;
+                setupSacrificeOptions();
+
+                activeEnemies = [];
+                currentTarget = null;
+                battleAreaContent.innerHTML = ''; 
+
+                const battleArea = document.createElement('div');
+                battleArea.className = 'battle-area';
+
+                enemyKeys.forEach((key, index) => {
+                    if (enemies[key]) {
+                        const enemyData = { 
+                            ...enemies[key], 
+                            hp: enemies[key].maxHp, 
+                            currentHP: enemies[key].maxHp,
+                            index,
+                            statusEffects: [],
+                            baseStats: { ATK: enemies[key].attack, DEF: enemies[key].def, SPD: enemies[key].spd, SPRT: 0 }
+                        };
+                        activeEnemies.push(enemyData);
+
+                        const enemyWrapper = document.createElement('div');
+                        enemyWrapper.className = 'flex items-center gap-4';
+
+                        const statsContainer = document.createElement('div');
+                        statsContainer.id = `enemy-stats-${index}`;
+                        statsContainer.className = 'enemy-stats-text text-right w-24 font-bold readable-text';
+                        
+                        const container = document.createElement('div');
+                        container.className = 'enemy-container text-center';
+                        container.id = `enemy-container-${index}`;
+
+                        const nameEl = document.createElement('h3');
+                        nameEl.className = 'text-lg';
+                        nameEl.innerHTML = `${enemyData.name.toUpperCase()} <span id="enemy-status-${index}" class="ml-1"></span>`;
+
+                        const hpContainer = document.createElement('div');
+                        hpContainer.className = 'w-full mt-2 text-center';
+                        hpContainer.innerHTML = `
+                            <p id="enemy-hp-${index}" class="text-lg font-bold readable-text text-slate-200">HP: ${enemyData.currentHP} / ${enemyData.maxHp}</p>
+                            <div class="stat-bar-container mt-1"><div id="enemy-hp-bar-${index}" class="stat-bar enemy-hp-bar" style="width: 100%;"></div></div>
+                        `;
+                        
+                        const displayEl = document.createElement('div');
+                        displayEl.id = `enemy-display-${index}`;
+                        displayEl.className = 'enemy-battle-display mt-2';
+                        displayEl.textContent = enemyData.emoji;
+                        
+                        displayEl.addEventListener('click', () => {
+                            if (enemyData.currentHP <= 0) return; 
+                            document.querySelectorAll('.enemy-battle-display').forEach(el => el.classList.remove('targeted'));
+                            displayEl.classList.add('targeted');
+                            currentTarget = enemyData;
+                        });
+
+                        container.appendChild(nameEl);
+                        container.appendChild(displayEl);
+                        container.appendChild(hpContainer);
+
+                        enemyWrapper.appendChild(statsContainer);
+                        enemyWrapper.appendChild(container);
+
+                        battleArea.appendChild(enemyWrapper);
+                    }
+                });
+                
+                battleAreaContent.appendChild(battleArea);
+                
+                activeEnemies.forEach(enemy => updateEnemyStatsUI(enemy));
+
+                const firstLivingEnemy = activeEnemies.find(e => e.currentHP > 0);
+                if(firstLivingEnemy) {
+                    document.getElementById(`enemy-display-${firstLivingEnemy.index}`).click();
+                }
+                
+                isBattleActive = true;
+                startNewRound();
+            }
+
+            function updateEnemyStatsUI(enemy) {
+                 const totalStats = calculateTotalStats(enemy);
+                 const statsContainer = document.getElementById(`enemy-stats-${enemy.index}`);
+                 if (statsContainer) {
+                    let debuffHtml = '';
+                    if (enemy.debuffs && enemy.debuffs.length > 0) {
+                        const debuffString = enemy.debuffs.map(d => `${d.emoji}: ${d.chance}%`).join(' ');
+                        debuffHtml = `<p class="text-purple-400 mt-1">${debuffString}</p>`;
+                    }
+                    statsContainer.innerHTML = `
+                        <p class="text-red-400">ATK: <span class="text-white">${totalStats.ATK}</span></p>
+                        <p class="text-blue-500">DEF: <span class="text-white">${totalStats.DEF}</span></p>
+                        <p class="text-yellow-400">SPD: <span class="text-white">${totalStats.SPD}</span></p>
+                        ${debuffHtml}
+                     `;
+                 }
+            }
+            
+            function toggleActionButtons(disabled) {
+                attackButton.disabled = disabled;
+                spellsButton.disabled = disabled;
+                itemsButton.disabled = disabled;
+            }
+
+            const openModal = (modalId) => {
+                if (modalId === 'spells') updateSpellsUI();
+                if (modalId === 'items') updateItemsModalUI();
+                if (modalId === 'fortunes') updatePlayerFortunesUI();
+
+                if (currentModal) {
+                    currentModal.classList.add('hidden');
+                }
+                currentModal = modals[modalId];
+                if (currentModal) {
+                    modalOverlay.style.display = 'flex';
+                    currentModal.classList.remove('hidden');
+                }
+            };
+
+            const closeModal = () => {
+                modalOverlay.style.display = 'none';
+                if (currentModal) {
+                    currentModal.classList.add('hidden');
+                    currentModal = null;
+                }
+            };
+
+            Object.keys(openButtons).forEach(key => {
+                if (openButtons[key]) {
+                    openButtons[key].addEventListener('click', () => openModal(key));
+                }
+            });
+
+            closeButtons.forEach(button => button.addEventListener('click', closeModal));
+            modalOverlay.addEventListener('click', (e) => {
+                // Do not close levelup modal by clicking outside
+                if (e.target === modalOverlay && currentModal !== modals.levelup) {
+                    closeModal();
+                }
+            });
+            
+            document.querySelectorAll('.shop-buy-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    let cost = parseInt(button.dataset.cost, 10);
+                    const itemName = button.dataset.name;
+                    const itemEmoji = button.dataset.emoji;
+                    const itemDescription = button.dataset.description;
+
+                    // FORTUNE: Bartering Edge
+                    if (playerHasFortune('Bartering Edge')) {
+                        cost = Math.max(0, cost - 2);
+                    }
+
+                    if (gold >= cost) {
+                        gold -= cost;
+                        playerInventory.push({ name: itemName, emoji: itemEmoji, description: itemDescription });
+                        updateGoldUI();
+                        updateItemsModalUI();
+                        updateBattleLog(`You purchased a ${itemName}!`);
+                    } else {
+                        updateBattleLog("You don't have enough gold!");
+                    }
+                });
+            });
+
+            document.querySelectorAll('#weapons-modal .item-list li').forEach(item => {
+                item.addEventListener('click', () => {
+                    player.equippedWeapon = { 
+                        name: item.dataset.name, 
+                        stat: item.dataset.stat, 
+                        value: parseInt(item.dataset.value, 10),
+                        emoji: item.dataset.emoji
+                    };
+                    weaponSlot.textContent = `${player.equippedWeapon.emoji} ${player.equippedWeapon.name}`;
+                    weaponSlot.classList.remove('italic', 'text-gray-500');
+                    weaponSlot.style.color = '#e2e8f0';
+                    updateStatsUI();
+                    closeModal();
+                });
+            });
+
+            document.querySelectorAll('#armor-modal .item-list li').forEach(item => {
+                item.addEventListener('click', () => {
+                    player.equippedArmor = { 
+                        name: item.dataset.name, 
+                        stat: item.dataset.stat, 
+                        value: parseInt(item.dataset.value, 10),
+                        emoji: item.dataset.emoji
+                    };
+                    armorSlot.textContent = `${player.equippedArmor.emoji} ${player.equippedArmor.name}`;
+                    armorSlot.classList.remove('italic', 'text-gray-500');
+                    armorSlot.style.color = '#e2e8f0';
+                    updateStatsUI();
+                    closeModal();
+                });
+            });
+
+            const stoneCircles = document.querySelectorAll('.stone-circle');
+            const stoneDescriptionBox = document.getElementById('stone-description-box');
+            const equipStoneButton = document.getElementById('equip-stone-button');
+            
+            stoneCircles.forEach(circle => {
+                circle.addEventListener('click', () => {
+                    stoneCircles.forEach(c => c.classList.remove('active'));
+                    circle.classList.add('active');
+                    stoneDescriptionBox.innerHTML = circle.dataset.info;
+                    selectedStone = {
+                        name: circle.dataset.name,
+                        emoji: circle.dataset.emoji,
+                        color: circle.style.backgroundColor
+                    };
+                    const stoneColor = circle.style.backgroundColor;
+                    equipStoneButton.style.background = stoneColor;
+                    equipStoneButton.classList.remove('invisible');
+                });
+            });
+
+            equipStoneButton.addEventListener('click', () => {
+                if (!selectedStone) return;
+
+                const emptySlotIndex = equippedStones.findIndex((slot, index) => slot === null && !brokenStoneSlots[index]);
+
+                if (emptySlotIndex !== -1) {
+                    // FORTUNE: Durable Stones
+                    const initialUses = playerHasFortune('Durable Stones') ? 3 : 2;
+                    equippedStones[emptySlotIndex] = { ...selectedStone, uses: initialUses };
+                    const stone = equippedStones[emptySlotIndex];
+                    const slotElement = stoneSlots[emptySlotIndex];
+                    const slotCircle = stoneSlotCircles[emptySlotIndex];
+
+                    slotElement.textContent = `${stone.emoji} ${stone.name} (${stone.uses})`;
+                    slotElement.classList.remove('italic');
+                    slotElement.style.color = '#e2e8f0';
+                    
+                    slotCircle.style.backgroundColor = stone.color;
+                    slotCircle.classList.remove('bg-black');
+                    
+                    updateBattleLog(`Equipped ${stone.name} stone.`);
+                } else {
+                    updateBattleLog("All stone slots are full or broken!");
+                }
+            });
+            
+            function useStone(slotIndex) {
+                const stone = equippedStones[slotIndex];
+                if (!stone || attackButton.disabled) return;
+
+                const buffNames = ['Regen', 'Blessing', 'Rush'];
+                const isBuff = buffNames.includes(stone.name);
+                let target = isBuff ? player : currentTarget;
+
+                if (!isBuff && (!currentTarget || currentTarget.currentHP <= 0)) {
+                    updateBattleLog('You must select a valid enemy to use that on!');
+                    return;
+                }
+                
+                toggleActionButtons(true);
+                stone.uses--;
+                
+                const sprtTriggered = checkSPRT();
+                if(sprtTriggered) {
+                    updateBattleLog("❤️‍🔥 SPRT triggered! Stone's effect doubled!");
+                }
+                
+                if (stone.name === 'Blessing') {
+                    let healAmount = 4;
+                    if (sprtTriggered) healAmount *= 2;
+                    target.currentHP = Math.min(target.baseStats.HP || target.maxHp, target.currentHP + healAmount);
+                }
+
+                applyStatusEffect(target, stone.name, sprtTriggered, 'player');
+
+                const slotElement = stoneSlots[slotIndex];
+                if (stone.uses > 0) {
+                    slotElement.textContent = `${stone.emoji} ${stone.name} (${stone.uses})`;
+                } else {
+                    const slotCircle = stoneSlotCircles[slotIndex];
+                    equippedStones[slotIndex] = null;
+                    brokenStoneSlots[slotIndex] = true;
+
+                    slotElement.textContent = `Slot ${slotIndex + 1}: Broken`;
+                    slotElement.classList.add('italic');
+                    slotElement.classList.remove('clickable');
+                    slotElement.style.color = '#718096';
+                    slotCircle.style.backgroundColor = '';
+                    slotCircle.classList.add('bg-black');
+                }
+                
+                updateStatsUI();
+                activeEnemies.forEach(updateEnemyStatsUI);
+                
+                endPlayerTurn();
+            }
+
+            stoneSlots.forEach((slot, index) => {
+                slot.addEventListener('click', () => useStone(index));
+            });
+
+            // --- Fortunes Logic ---
+            const allFortunes = [
+                { name: 'Durable Stones', description: '+1 stone durability.', rarity: 'Common' },
+                { name: 'Efficient Magic', description: '-1 MP cost for all spells.', rarity: 'Common' },
+                { name: 'Bartering Edge', description: '-2 Gold discount on items.', rarity: 'Common' },
+                { name: 'Archer\'s Edge', description: 'Attacks all enemies when 🏹 Bow is equipped.', rarity: 'Special' },
+                { name: 'Enchantment', description: 'Using 🧚🏼 Fairy gives ❇️ Regen.', rarity: 'Special' },
+                { name: 'Battle Grace', description: 'When player has any 2 active buffs, gain +1 DEF.', rarity: 'Special' },
+                { name: 'Prolonged Torment', description: 'Debuff durations are doubled.', rarity: 'Rare' },
+                { name: 'Thief Strike', description: 'Attacking with 🗡️ Dagger equipped also steals 3 gold.', rarity: 'Rare' },
+                { name: 'Toxic Decay', description: '☠️ deals +1 damage every turn (10 max).', rarity: 'Rare' },
+            ];
+
+            const allSacrifices = [
+                [ // Set 1
+                    { name: '🩸 Blood Pact', type: 'HP', value: -2, text: '-2 Max HP', style: 'text-red-400' },
+                    { name: '🦶🏼 Broken Ankle', type: 'SPD', value: -5, text: '-5 SPD', style: 'text-yellow-400' }
+                ],
+                [ // Set 2
+                    { name: '💔 Heartbreak', type: 'SPRT', value: -10, text: '-10 SPRT', style: 'text-orange-400' },
+                    { name: '📜 Gambling Debt', type: 'GOLD', value: -25, text: '-25 Gold', style: 'text-yellow-400' }
+                ]
+            ];
+            let selectedSacrifice = null;
+            let currentlyOfferedSacrifices = [];
+
+            function updatePlayerFortunesUI() {
+                const listEl = document.getElementById('player-fortunes-list');
+                listEl.innerHTML = '';
+
+                if (playerFortunes.length === 0) {
+                    listEl.innerHTML = '<li class="readable-text text-gray-400 justify-center">No fortunes collected yet.</li>';
                     return;
                 }
 
-                totalCoins -= 5;
-                updateTopBar();
-                
-                isAnimating = true;
-                linkButton.disabled = true;
-                
-                const inventory = inventoryDisplays[selectedReel];
-                const rows = inventory.querySelectorAll('.inventory-row');
-                
-                let currentHighlight = 0;
-                let interval = 70;
-                let elapsed = 0;
-                const totalDuration = 2000;
-                const minDuration = 1500;
-                
-                const finalRow = Math.floor(Math.random() * ROWS_PER_REEL);
+                const rarityStyles = {
+                    'Common': { text: 'text-blue-400', border: 'border-blue-600' },
+                    'Special': { text: 'text-yellow-400', border: 'border-yellow-600' },
+                    'Rare': { text: 'text-pink-400', border: 'border-pink-600' },
+                };
 
-                const runAnimation = () => {
-                    rows.forEach(row => row.classList.remove('link-highlight'));
-                    if (rows[currentHighlight]) {
-                       rows[currentHighlight].classList.add('link-highlight');
-                    }
+                playerFortunes.forEach(fortune => {
+                    const styles = rarityStyles[fortune.rarity];
+                    const li = document.createElement('li');
+                    li.className = `!border-l-4 ${styles.border} !items-start`;
+                    li.innerHTML = `
+                        <div class="readable-text">
+                            <p class="font-bold text-lg ${styles.text}">${fortune.name}</p>
+                            <p class="text-sm text-gray-300">${fortune.description}</p>
+                        </div>
+                        <span class="readable-text text-sm ${styles.text}">(${fortune.rarity})</span>
+                    `;
+                    listEl.appendChild(li);
+                });
+            }
 
-                    if (elapsed >= minDuration && currentHighlight === finalRow) {
-                        setTimeout(() => {
-                            rows.forEach(row => row.classList.remove('link-highlight'));
-                            
-                            linkedReels.add(selectedReel);
-                            linkedRowState[selectedReel] = finalRow;
-                            
-                            const reel = reels[selectedReel];
-                            const symbol1 = reel[finalRow * 2];
-                            const symbol2 = reel[finalRow * 2 + 1];
+            function setupSacrificeOptions(exclude = []) {
+                const fortuneWindow = fortunesList.closest('.game-window');
+                fortuneWindow.querySelector('.window-title').textContent = "MAKE A SACRIFICE";
 
-                            if (symbol1 !== symbol2 && !SPECIAL_SYMBOLS.includes(symbol1) && !SPECIAL_SYMBOLS.includes(symbol2)) {
-                                if (FRUITS.includes(symbol1) && FRUITS.includes(symbol2)) {
-                                    reel[finalRow * 2] = CANDY_SYMBOL;
-                                    reel[finalRow * 2 + 1] = ELIMINATED_SLOT;
-                                }
-                                else if ((symbol1 === '🔔' && symbol2 === '💎') || (symbol1 === '💎' && symbol2 === '🔔')) {
-                                    reel[finalRow * 2] = RING_SYMBOL;
-                                    reel[finalRow * 2 + 1] = ELIMINATED_SLOT;
-                                }
-                            }
+                if (fortuneChosenThisBattle) {
+                    fortunesList.className = 'sacrifice-options';
+                    fortunesList.innerHTML = `<li class="sacrifice-button !cursor-default !border-gray-800"><span class="readable-text text-lg text-center text-gray-500 w-full">A new choice awaits after the next battle.</span></li>`;
+                    renegotiateButton.classList.add('hidden');
+                    revealFortunesButton.classList.add('hidden');
+                    return;
+                }
+
+                fortunesList.className = 'sacrifice-options';
+                fortunesList.innerHTML = '';
+                selectedSacrifice = null;
+
+                revealFortunesButton.classList.add('hidden');
+                renegotiateButton.classList.remove('hidden');
+                renegotiateButton.disabled = false;
+                revealFortunesButton.disabled = true;
+
+                const sacrificePool = allSacrifices.flat();
+                let availableSacrifices = sacrificePool.filter(sac => 
+                    !exclude.some(ex => ex.name === sac.name)
+                );
+
+                if (availableSacrifices.length < 2) {
+                    availableSacrifices = sacrificePool;
+                }
+
+                const shuffled = [...availableSacrifices].sort(() => 0.5 - Math.random());
+                const selectedOptions = shuffled.slice(0, 2);
+                currentlyOfferedSacrifices = selectedOptions;
+
+                selectedOptions.forEach(sac => {
+                    const li = document.createElement('li');
+                    li.className = 'sacrifice-button';
+                    
+                    let canAfford = true;
+                    if (sac.type === 'HP' && player.baseStats.HP + sac.value <= 0) canAfford = false;
+                    if (sac.type === 'SPRT' && player.baseStats.SPRT + sac.value < 0) canAfford = false;
+                    if (sac.type === 'GOLD' && gold + sac.value < 0) canAfford = false;
+
+                    li.innerHTML = `
+                        <span class="readable-text text-lg">${sac.name}</span>
+                        <span class="readable-text ${sac.style} font-bold">${sac.text}</span>
+                    `;
+
+                    if (canAfford) {
+                        li.addEventListener('click', () => {
+                            document.querySelectorAll('#fortunes-list .sacrifice-button').forEach(o => o.classList.remove('selected'));
+                            li.classList.add('selected');
+                            selectedSacrifice = sac;
                             
-                            renderInventories(); 
-                            checkAndHighlightLines();
-                            updateTopBar();
-                            updateLinkButtonUI(); 
-                            isAnimating = false;
-                        }, 200);
+                            renegotiateButton.classList.add('hidden');
+                            revealFortunesButton.classList.remove('hidden');
+                            revealFortunesButton.disabled = false;
+                        });
                     } else {
-                        currentHighlight = (currentHighlight + 1) % ROWS_PER_REEL;
-                        elapsed += interval;
-                        if (elapsed > totalDuration * 0.8) interval = 350;
-                        else if (elapsed > totalDuration * 0.5) interval = 180;
-                        setTimeout(runAnimation, interval);
+                         li.classList.add('disabled');
+                         li.title = "You cannot afford this sacrifice.";
                     }
+                    fortunesList.appendChild(li);
+                });
+            }
+            
+            renegotiateButton.addEventListener('click', () => {
+                if (player.currentHP <= 1 || player.currentMP < 1) {
+                    updateBattleLog("Not enough HP/MP to renegotiate!");
+                    return;
+                }
+                player.currentHP -= 1;
+                player.currentMP -= 1;
+                updateStatsUI();
+                updateBattleLog("You renegotiate, losing 1 HP and 1 MP.");
+                setupSacrificeOptions(currentlyOfferedSacrifices);
+            });
+
+            revealFortunesButton.addEventListener('click', () => {
+                if (!selectedSacrifice) return;
+
+                // Apply sacrifice
+                if (selectedSacrifice.type === 'HP') {
+                    player.baseStats.HP += selectedSacrifice.value;
+                    player.currentHP = Math.min(player.currentHP, player.baseStats.HP);
+                } else if (selectedSacrifice.type === 'SPD') {
+                    player.baseStats.SPD += selectedSacrifice.value;
+                } else if (selectedSacrifice.type === 'SPRT') {
+                    player.baseStats.SPRT += selectedSacrifice.value;
+                } else if (selectedSacrifice.type === 'GOLD') {
+                    gold += selectedSacrifice.value;
+                    updateGoldUI();
+                }
+                updateBattleLog(`Sacrifice made: ${selectedSacrifice.name}.`);
+                updateStatsUI();
+
+                // Get fortunes the player doesn't have yet
+                const availableFortunes = allFortunes.filter(fortune => 
+                    !playerFortunes.some(playerFortune => playerFortune.name === fortune.name)
+                );
+                const shuffled = [...availableFortunes].sort(() => 0.5 - Math.random());
+                const selectedFortunes = shuffled.slice(0, 3);
+                
+                // Update UI to show fortunes as cards, preventing window resize
+                const fortuneWindow = fortunesList.closest('.game-window');
+                fortuneWindow.querySelector('.window-title').textContent = "CHOOSE YOUR FATE";
+                fortunesList.className = 'p-3 grid grid-cols-1 sm:grid-cols-3 gap-3 h-full items-stretch'; 
+                fortunesList.innerHTML = ''; 
+
+                const rarityStyles = {
+                    'Common': { text: 'text-blue-400', border: 'hover:border-blue-400' },
+                    'Special': { text: 'text-yellow-400', border: 'hover:border-yellow-400' },
+                    'Rare': { text: 'text-pink-400', border: 'hover:border-pink-400' },
                 };
                 
-                runAnimation();
-            };
-            
-            const handleSpin = async () => {
-                if (isAnimating) return;
-                if (!riskModeActive && totalCoins < spinPrice) return;
-
-                bombCounters = bombCounters.map(c => Math.max(0, c - 1));
-                bombCounters.forEach((counter, index) => {
-                    const reelWindow = reelWindowElements[index];
-                    const counterEl = reelWindow.querySelector('.bomb-counter');
-                    if (counter > 0 && counterEl) {
-                        counterEl.textContent = counter;
-                    } else if (counter === 0 && counterEl) {
-                        reelWindow.classList.remove('bombed');
-                        counterEl.remove();
-                    }
-                });
-
-                if (!riskModeActive) {
-                    totalCoins -= spinPrice;
-                }
-                
-                updateTopBar();
-                spinButton.disabled = true;
-                isAnimating = true;
-                reelWindowElements.forEach(rw => rw.classList.remove('win-animation'));
-
-                if (riskModeActive && Math.random() < 0.15) {
-                    const validSlots = [];
-                    reels.forEach((reel, reelIndex) => {
-                        reel.forEach((symbol, symbolIndex) => {
-                            if (symbol !== ELIMINATED_SLOT) {
-                                validSlots.push({ reelIndex, symbolIndex });
-                            }
-                        });
+                selectedFortunes.forEach(fortune => {
+                    const styles = rarityStyles[fortune.rarity];
+                    const li = document.createElement('li');
+                    li.className = `list-none border-2 border-gray-700 rounded-lg p-3 flex flex-col justify-between cursor-pointer transition-all ${styles.border} bg-gray-900/50`;
+                    
+                    li.innerHTML = `
+                        <div class="readable-text">
+                            <p class="font-bold ${styles.text}">${fortune.name}</p>
+                            <p class="text-sm text-gray-300 mt-1">${fortune.description}</p>
+                        </div>
+                        <p class="readable-text text-right text-sm ${styles.text} mt-2">(${fortune.rarity})</p>
+                    `;
+                    
+                    li.addEventListener('click', () => {
+                        playerFortunes.push(fortune);
+                        fortuneChosenThisBattle = true;
+                        updateBattleLog(`Fortune chosen: ${fortune.name}!`);
+                        setupSacrificeOptions(); // This will now show the locked state
+                        renegotiateButton.classList.add('hidden');
+                        revealFortunesButton.classList.add('hidden');
                     });
 
-                    if (validSlots.length > 0) {
-                        const randomSlot = validSlots[Math.floor(Math.random() * validSlots.length)];
-                        reels[randomSlot.reelIndex][randomSlot.symbolIndex] = BOMB_SYMBOL;
-                        renderInventories();
-                        
-                        const bombedInventory = document.getElementById(`inventory-${randomSlot.reelIndex}`);
-                        if (bombedInventory) {
-                            bombedInventory.classList.add('inventory-shake-animation');
-                            setTimeout(() => {
-                                bombedInventory.classList.remove('inventory-shake-animation');
-                            }, 500);
-                        }
-                    }
-                }
-
-                const results = [];
-                for (let i = 0; i < REEL_COUNT; i++) {
-                    const finalSymbol = await spinReel(i);
-                    results.push(finalSymbol);
-                }
-
-                for (let i = 0; i < REEL_COUNT; i++) {
-                    if (results[i] === BOMB_SYMBOL) {
-                        const reelWindow = reelWindowElements[i];
-                        
-                        reelWindow.classList.add('shake-animation');
-                        await new Promise(resolve => setTimeout(resolve, 500));
-                        reelWindow.classList.remove('shake-animation');
-                        
-                        reelDisplayElements[i].textContent = BOMB_EXPLOSION_SYMBOL;
-                        bombCounters[i] = BOMB_DURATION;
-
-                        reelWindow.classList.add('bombed');
-                        const counterEl = document.createElement('div');
-                        counterEl.className = 'bomb-counter';
-                        counterEl.textContent = bombCounters[i];
-                        reelWindow.appendChild(counterEl);
-
-                        const reel = reels[i];
-                        const bombIndex = reel.indexOf(BOMB_SYMBOL);
-                        if (bombIndex !== -1) {
-                            reel[bombIndex] = BLANK_SYMBOL;
-                        }
-                    }
-                }
-                renderInventories();
-
-                checkForWin(results);
-                isAnimating = false;
-            };
-
-            const spinReel = (reelIndex) => {
-                return new Promise(resolve => {
-                    if (bombCounters[reelIndex] > 0) {
-                        reelDisplayElements[reelIndex].textContent = BOMB_EXPLOSION_SYMBOL;
-                        resolve(BOMB_EXPLOSION_SYMBOL);
-                        return;
-                    }
-                    
-                    const reel = reels[reelIndex];
-                    const spinnableSymbols = reel.filter(s => s !== ELIMINATED_SLOT);
-
-                    if (spinnableSymbols.length === 0) {
-                        reelDisplayElements[reelIndex].textContent = BLANK_SYMBOL;
-                        resolve(BLANK_SYMBOL);
-                        return;
-                    }
-
-                    const display = reelDisplayElements[reelIndex];
-                    const windowEl = reelWindowElements[reelIndex];
-                    
-                    windowEl.classList.add('spinning');
-                    const spinAnimDuration = 600;
-                    const flickerInterval = 50;
-
-                    const flicker = setInterval(() => {
-                        const randomSymbol = spinnableSymbols[Math.floor(Math.random() * spinnableSymbols.length)];
-                        display.textContent = randomSymbol;
-                    }, flickerInterval);
-
-                    setTimeout(() => {
-                        clearInterval(flicker);
-                        const finalSymbol = spinnableSymbols[Math.floor(Math.random() * spinnableSymbols.length)];
-                        display.textContent = finalSymbol;
-                        windowEl.classList.remove('spinning');
-                        applyClownRotation();
-                        resolve(finalSymbol);
-                    }, spinAnimDuration);
-                });
-            };
-
-            const checkForWin = (results) => {
-                // 1. Calculate base winnings for special symbols first.
-                let baseWinnings = 0;
-                results.forEach(symbol => {
-                    if (symbol === CANDY_SYMBOL) baseWinnings += 50;
-                    else if (symbol === RING_SYMBOL) baseWinnings += 75;
+                    fortunesList.appendChild(li);
                 });
 
-                // 2. [FIX] Filter out non-paying symbols (blanks, bombs) before checking for matches.
-                const validSymbolsForMatch = results.filter(s => s !== BLANK_SYMBOL && s !== BOMB_EXPLOSION_SYMBOL);
+                renegotiateButton.classList.add('hidden');
+                revealFortunesButton.classList.add('hidden');
+                selectedSacrifice = null;
+            });
 
-                const payoutTable = {
-                    '🍒': { 3: 50, 4: 100 }, '🍊': { 3: 50, 4: 100 },
-                    '🍇': { 3: 50, 4: 100 }, '🍋‍🟩': { 3: 50, 4: 100 },
-                    '🔔': { 3: 75, 4: 150 }, '💎': { 3: 100, 4: 200 },
-                    '🍀': { 3: 250, 4: 500 }
-                };
 
-                // 3. Count symbols from the valid list.
-                const rawWildCount = validSymbolsForMatch.filter(s => s === '🤡').length;
-                const symbolsToCount = validSymbolsForMatch.filter(s => s !== CANDY_SYMBOL && s !== RING_SYMBOL && s !== '🤡');
-                const symbolCounts = symbolsToCount.reduce((acc, symbol) => {
-                    acc[symbol] = (acc[symbol] || 0) + 1;
-                    return acc;
-                }, {});
+            // --- Battle Logic ---
+            function checkSPRT() {
+                const playerStats = calculateTotalStats(player);
+                return Math.random() * 100 < playerStats.SPRT;
+            }
 
-                let isWinPossibleWithClown = false;
-                if (rawWildCount > 0) {
-                    for (const symbol in symbolCounts) {
-                        if (payoutTable[symbol] && (symbolCounts[symbol] + rawWildCount >= 3)) {
-                            isWinPossibleWithClown = true;
-                            break;
+            function applyStatusEffect(target, effectName, sprtBoost = false, source = 'player') {
+                // Prevent stacking the same effect, refresh instead
+                target.statusEffects = target.statusEffects.filter(e => e.name !== effectName);
+                let effect = {};
+                
+                let durationMultiplier = 1;
+                const isDebuff = ['Curse', 'Slow'].includes(effectName); // Poison has no duration
+                if (isDebuff && playerHasFortune('Prolonged Torment') && source === 'player') {
+                    durationMultiplier = 2;
+                }
+
+                switch(effectName) {
+                    case 'Poison':
+                        effect = { 
+                            name: 'Poison', 
+                            emoji: '☠️', 
+                            duration: 99, 
+                            currentDamage: 1, // For Toxic Decay
+                            onTurn: function(t) { // Use `function` to bind `this` to the effect object
+                                t.currentHP = Math.max(0, t.currentHP - this.currentDamage); 
+                                updateBattleLog(`${t.name} takes ${this.currentDamage} poison damage.`); 
+                                // FORTUNE: Toxic Decay
+                                if (playerHasFortune('Toxic Decay') && this.currentDamage < 10) {
+                                    this.currentDamage++;
+                                }
+                            } 
+                        };
+                        break;
+                    case 'Curse':
+                        var duration = 4;
+                        if (sprtBoost) duration *= 2;
+                        duration *= durationMultiplier; // FORTUNE: Prolonged Torment
+                        effect = { name: 'Curse', emoji: '🕯️', duration: duration, statMods: { ATK: -2, DEF: -2 } };
+                        break;
+                    case 'Slow':
+                        var duration = 3;
+                        if (sprtBoost) duration *= 2;
+                        duration *= durationMultiplier; // FORTUNE: Prolonged Torment
+                        effect = { name: 'Slow', emoji: '🐌', duration: duration, setsSPDToZero: true, skipTurn: true };
+                        break;
+                    case 'Regen':
+                        var duration = 99;
+                        if (sprtBoost) duration *= 2;
+                        effect = { name: 'Regen', emoji: '❇️', duration: duration, onTurn: (t) => { t.currentHP = Math.min(t.baseStats.HP || t.maxHp, t.currentHP + 1); updateBattleLog(`${t.name} recovers 1 HP from regen.`); } };
+                        break;
+                    case 'Blessing':
+                        var duration = 4;
+                        if (sprtBoost) duration *= 2;
+                        effect = { name: 'Blessing', emoji: '🌟', duration: duration, statMods: { SPRT: 5 } };
+                        break;
+                    case 'Rush':
+                        var duration = 3;
+                        if (sprtBoost) duration *= 2;
+                        effect = { name: 'Rush', emoji: '⚡', duration: duration, statMods: { SPD: 25 }, hasExtraTurn: true };
+                        break;
+                    case 'Barrier':
+                        var duration = 4;
+                        if (sprtBoost) duration *= 2;
+                        effect = { name: 'Barrier', emoji: '🛡️', duration: duration, statMods: { DEF: 4 } };
+                        break;
+                }
+                if (effect.name) {
+                    target.statusEffects.push(effect);
+                    updateBattleLog(`${target.name} is affected by ${effectName}!`);
+                }
+            }
+            
+            async function processStatusEffects(actor) {
+                 for (const effect of [...actor.statusEffects]) { // Use spread to prevent mutation issues during loop
+                    if (effect.onTurn) {
+                        effect.onTurn(actor);
+                        updateDamageUI(actor); 
+                        await new Promise(res => setTimeout(res, 500));
+                    }
+                    if (effect.duration < 90) { // Don't decrement "infinite" effects
+                        effect.duration--;
+                    }
+                }
+                actor.statusEffects = actor.statusEffects.filter(e => e.duration > 0);
+                
+                if (actor.isPlayer) {
+                    updateStatsUI();
+                } else {
+                    updateEnemyStatsUI(actor);
+                    const statusEl = document.getElementById(`enemy-status-${actor.index}`);
+                    if (statusEl) updateStatusEffectsUI(actor, statusEl);
+                }
+            }
+            
+            function startNewRound() {
+                updateBattleLog("New round starts!");
+                const livingCombatants = [player, ...activeEnemies].filter(c => c.currentHP > 0);
+                turnQueue = livingCombatants.sort((a, b) => calculateTotalStats(b).SPD - calculateTotalStats(a).SPD);
+                currentTurnIndex = 0;
+                executeNextTurn();
+            }
+
+            function addExp(amount) {
+                if (player.level >= 99) return; // Max level cap
+                exp += amount;
+                const expToNextLevel = 10;
+                if (exp >= expToNextLevel) {
+                    exp -= expToNextLevel;
+                    handleLevelUp();
+                }
+                updateStatsUI();
+            }
+
+            function handleNextBattle() {
+                battleSequenceIndex++;
+                if (battleSequenceIndex < battleSequence.length) {
+                    setTimeout(() => spawnBattle(battleSequence[battleSequenceIndex]), 2000);
+                } else {
+                    updateBattleLog("You have defeated all enemies!");
+                    isBattleActive = false;
+                }
+            }
+
+            async function endBattle(totalGold) {
+                updateBattleLog(`All enemies defeated! +${totalGold} Gold, +5 EXP`);
+                gold += totalGold;
+                updateGoldUI();
+                player.statusEffects = []; 
+                await new Promise(r => setTimeout(r, 1500));
+                addExp(5);
+                isBattleActive = false;
+                
+                // Don't automatically start next battle if a level up is pending
+                if (currentModal !== modals.levelup) {
+                   handleNextBattle();
+                }
+            }
+
+            async function endPlayerTurn() {
+                const totalGold = activeEnemies.reduce((sum, e) => e.currentHP <= 0 ? sum + e.gold : sum, 0);
+
+                if (!activeEnemies.some(e => e.currentHP > 0)) {
+                    endBattle(totalGold);
+                    return;
+                }
+
+                await new Promise(res => setTimeout(res, 500)); 
+
+                if (await checkForExtraTurn(player)) {
+                    toggleActionButtons(false);
+                    updateBattleLog("Extra action! It's your turn again!");
+                } else {
+                    currentTurnIndex++;
+                    executeNextTurn();
+                }
+            }
+
+
+            async function executeNextTurn() {
+                const totalGold = activeEnemies.reduce((sum, e) => e.currentHP <= 0 ? sum + e.gold : sum, 0);
+
+                if (!activeEnemies.some(e => e.currentHP > 0)) {
+                    if (isBattleActive) endBattle(totalGold);
+                    return;
+                }
+                if (player.currentHP <= 0) {
+                    updateBattleLog("You have been defeated... GAME OVER.");
+                    toggleActionButtons(true);
+                    isBattleActive = false;
+                    return;
+                }
+                
+                if (currentTurnIndex >= turnQueue.length) {
+                    startNewRound();
+                    return;
+                }
+                
+                const actor = turnQueue[currentTurnIndex];
+                if (actor.currentHP <= 0) {
+                    currentTurnIndex++;
+                    executeNextTurn();
+                    return;
+                }
+                
+                await processStatusEffects(actor);
+                if (actor.currentHP <= 0) { // Re-check if status effects defeated the actor
+                    currentTurnIndex++;
+                    executeNextTurn();
+                    return;
+                }
+
+
+                const slowEffect = actor.statusEffects.find(e => e.name === 'Slow');
+                if (slowEffect && slowEffect.skipTurn) {
+                    slowEffect.skipTurn = false; 
+                    updateBattleLog(`${actor.name} is slowed and skips a turn!`);
+                    await new Promise(res => setTimeout(res, 1000));
+                    currentTurnIndex++;
+                    executeNextTurn();
+                    return;
+                }
+                
+                if (actor.isPlayer) {
+                    updateBattleLog('Your turn!');
+                    toggleActionButtons(false);
+                } else { 
+                    updateBattleLog(`${actor.name}'s turn.`);
+                    toggleActionButtons(true);
+                    await new Promise(res => setTimeout(res, 1000));
+                    
+                    const enemyStats = calculateTotalStats(actor);
+                    const playerStats = calculateTotalStats(player);
+                    const damage = Math.max(0, enemyStats.ATK - playerStats.DEF);
+                    
+                    if (damage > 0) {
+                         player.currentHP = Math.max(0, player.currentHP - damage);
+                         updateBattleLog(`${actor.name} attacks you for ${damage} damage.`);
+                         updateStatsUI();
+                    }
+
+                    if (actor.debuffs) {
+                        for (const debuff of actor.debuffs) {
+                            if (Math.random() * 100 < debuff.chance) {
+                                await new Promise(res => setTimeout(res, 800));
+                                applyStatusEffect(player, debuff.name, false, 'enemy');
+                                updateStatsUI();
+                            }
                         }
+                    } else if (damage <= 0) {
+                        updateBattleLog(`${actor.name} takes its turn but does nothing.`);
+                    }
+                    
+                    if (await checkForExtraTurn(actor) && player.currentHP > 0) {
+                        updateBattleLog(`${actor.name} gets an extra action!`);
+                        await new Promise(res => setTimeout(res, 1000));
+                        const damage2 = Math.max(0, enemyStats.ATK - playerStats.DEF);
+                        player.currentHP = Math.max(0, player.currentHP - damage2);
+                        updateBattleLog(`${actor.name} attacks again for ${damage2} damage.`);
+                        updateStatsUI();
+                    }
+
+                    currentTurnIndex++;
+                    executeNextTurn();
+                }
+            }
+
+            async function checkForExtraTurn(actor) {
+                const spd = calculateTotalStats(actor).SPD;
+                
+                const rushEffect = actor.statusEffects.find(e => e.name === 'Rush');
+                if (rushEffect && rushEffect.hasExtraTurn) {
+                    rushEffect.hasExtraTurn = false;
+                     return true;
+                }
+                
+                if (Math.random() * 100 < spd) {
+                    return true;
+                }
+                return false;
+            }
+
+            function updateDamageUI(target) {
+                if (target.isPlayer) {
+                    updateStatsUI();
+                } else {
+                    const hpElement = document.getElementById(`enemy-hp-${target.index}`);
+                    const hpBarElement = document.getElementById(`enemy-hp-bar-${target.index}`);
+                    hpElement.textContent = `HP: ${Math.max(0, target.currentHP)} / ${target.maxHp}`;
+                    const hpPercent = (Math.max(0, target.currentHP) / target.maxHp) * 100;
+                    hpBarElement.style.width = `${hpPercent}%`;
+
+                    if (target.currentHP <= 0) {
+                        document.getElementById(`enemy-display-${target.index}`).style.opacity = '0.5';
+                        document.getElementById(`enemy-display-${target.index}`).classList.remove('targeted');
+                        document.getElementById(`enemy-display-${target.index}`).style.cursor = 'default';
+                        if(currentTarget === target) {
+                           const nextTarget = activeEnemies.find(e => e.currentHP > 0);
+                           if (nextTarget) {
+                               document.getElementById(`enemy-display-${nextTarget.index}`).click();
+                           } else {
+                               currentTarget = null;
+                           }
+                        }
+                    }
+                }
+            }
+
+            attackButton.addEventListener('click', async () => {
+                toggleActionButtons(true);
+
+                const isArcher = playerHasFortune("Archer's Edge") && player.equippedWeapon?.name === 'Bow';
+                const isThief = playerHasFortune("Thief Strike") && player.equippedWeapon?.name === 'Dagger';
+
+                if (isArcher) {
+                    // FORTUNE: Archer's Edge
+                    const playerStats = calculateTotalStats(player);
+                    updateBattleLog(`You fire a volley with your bow!`);
+                    
+                    const livingEnemies = activeEnemies.filter(e => e.currentHP > 0);
+                    for (const enemy of livingEnemies) {
+                        const targetStats = calculateTotalStats(enemy);
+                        const damage = Math.max(0, playerStats.ATK - targetStats.DEF);
+                        enemy.currentHP -= damage;
+                        await new Promise(res => setTimeout(res, 200)); 
+                        updateBattleLog(`Your arrow hits ${enemy.name} for ${damage} damage.`);
+                        updateDamageUI(enemy);
+                    }
+                } else {
+                    // Standard single-target attack
+                    if (!currentTarget || currentTarget.currentHP <= 0) {
+                        updateBattleLog('You must select a valid target!');
+                        toggleActionButtons(false);
+                        return;
+                    }
+                    const playerStats = calculateTotalStats(player);
+                    const targetStats = calculateTotalStats(currentTarget);
+                    const damage = Math.max(0, playerStats.ATK - targetStats.DEF);
+                    currentTarget.currentHP -= damage;
+                    updateBattleLog(`You attack ${currentTarget.name} for ${damage} damage.`);
+                    updateDamageUI(currentTarget);
+
+                    // FORTUNE: Thief Strike
+                    if (isThief) {
+                        const goldStolen = 3;
+                        gold += goldStolen;
+                        updateGoldUI();
+                        await new Promise(res => setTimeout(res, 500));
+                        updateBattleLog(`...and steal ${goldStolen} gold!`);
                     }
                 }
                 
-                const clownRiskTiers = [
-                    { wildChance: 1.00, bonusCoins: 0, bonusMultiplier: 1 },
-                    { wildChance: 0.85, bonusCoins: 25, bonusMultiplier: 1 },
-                    { wildChance: 0.75, bonusCoins: 50, bonusMultiplier: 1 },
-                    { wildChance: 0.65, bonusCoins: 0, bonusMultiplier: 2 },
-                    { wildChance: 0.15, bonusCoins: 0, bonusMultiplier: 5 }
-                ];
-                const currentTier = clownRiskTiers[clownRiskLevel];
-                
-                let effectiveWildCount = 0;
-                let clownFailed = false;
+                endPlayerTurn();
+            });
 
-                if (rawWildCount > 0) {
-                    if (clownRiskLevel === 0 || Math.random() < currentTier.wildChance) {
-                        effectiveWildCount = rawWildCount;
-                    } else {
-                        clownFailed = true;
+            function updateSpellsUI() {
+                spellsList.innerHTML = '';
+                spells.forEach(spell => {
+                    const li = document.createElement('li');
+                    // FORTUNE: Efficient Magic
+                    const actualCost = playerHasFortune('Efficient Magic') ? Math.max(1, spell.cost - 1) : spell.cost;
+                    const canCast = player.currentMP >= actualCost;
+                    li.classList.toggle('opacity-50', !canCast);
+                    li.innerHTML = `
+                        <div class="readable-text">
+                            <p class="font-bold text-lg">${spell.emoji} ${spell.name}</p>
+                            <p class="text-sm text-gray-400">${spell.description}</p>
+                        </div>
+                        <span class="text-blue-400 readable-text">${actualCost} MP</span>
+                    `;
+                    if (canCast) {
+                        li.addEventListener('click', () => castSpell(spell));
                     }
+                    spellsList.appendChild(li);
+                });
+            }
+            
+            async function useItem(item, index) {
+                if (attackButton.disabled) return;
+                closeModal();
+                toggleActionButtons(true);
+
+                const sprtTriggered = checkSPRT();
+                if (sprtTriggered) {
+                    updateBattleLog("❤️‍🔥 SPRT triggered! Item's effect doubled!");
+                    await new Promise(res => setTimeout(res, 800));
                 }
 
-                let matchWinnings = 0;
-                let winTypeFound = 0;
-
-                for (const symbol in symbolCounts) {
-                    if (payoutTable[symbol] && symbolCounts[symbol] + effectiveWildCount === 4) {
-                        matchWinnings += payoutTable[symbol][4];
-                        winTypeFound = 4;
+                switch (item.name) {
+                    case 'TONIC': {
+                        let healAmount = 6;
+                        if (sprtTriggered) healAmount *= 2;
+                        player.currentHP += healAmount;
+                        updateBattleLog(`You used a Tonic and restored ${healAmount} HP.`);
+                        break;
+                    }
+                    case 'GEM': {
+                        const buffs = ['Regen', 'Blessing', 'Rush', 'Barrier'];
+                        const debuffs = ['Poison', 'Curse', 'Slow'];
+                        const randomBuff = buffs[Math.floor(Math.random() * buffs.length)];
+                        const randomDebuff = debuffs[Math.floor(Math.random() * debuffs.length)];
+                        
+                        applyStatusEffect(player, randomBuff, sprtTriggered, 'player');
+                        if (currentTarget) {
+                            await new Promise(res => setTimeout(res, 800));
+                            applyStatusEffect(currentTarget, randomDebuff, sprtTriggered, 'player');
+                        }
+                        break;
+                    }
+                    case 'CROSS': {
+                        let sprtGain = 5;
+                        if (sprtTriggered) sprtGain *= 2;
+                        player.baseStats.SPRT += sprtGain;
+                        player.statusEffects = player.statusEffects.filter(e => e.name !== 'Curse');
+                        updateBattleLog(`You used a Cross, gaining ${sprtGain} SPRT and curing Curse.`);
+                        break;
+                    }
+                    case 'FAIRY': {
+                        let mpRestore = 5;
+                        let maxMpGain = 1;
+                        if (sprtTriggered) {
+                            mpRestore *= 2;
+                            maxMpGain *= 2;
+                        }
+                        player.currentMP += mpRestore;
+                        player.baseStats.MP += maxMpGain;
+                        updateBattleLog(`You used a Fairy, restoring ${mpRestore} MP and gaining ${maxMpGain} max MP.`);
+                        
+                        // FORTUNE: Enchantment
+                        if (playerHasFortune('Enchantment')) {
+                            await new Promise(res => setTimeout(res, 800));
+                            applyStatusEffect(player, 'Regen', false, 'player');
+                        }
                         break;
                     }
                 }
-                if (!winTypeFound) {
-                    for (const symbol in symbolCounts) {
-                        if (payoutTable[symbol] && symbolCounts[symbol] + effectiveWildCount === 3) {
-                            matchWinnings += payoutTable[symbol][3];
-                            winTypeFound = 3;
-                            break;
-                        }
-                    }
-                }
 
-                if (rawWildCount > 0 && !clownFailed && clownRiskLevel > 0 && matchWinnings > 0) {
-                    matchWinnings = (matchWinnings * currentTier.bonusMultiplier) + currentTier.bonusCoins;
-                }
+                playerInventory.splice(index, 1);
+                updateStatsUI();
+                activeEnemies.forEach(updateEnemyStatsUI);
+                endPlayerTurn();
+            }
+
+            async function castSpell(spell) {
+                closeModal();
+                toggleActionButtons(true);
                 
-                const totalWinnings = baseWinnings + matchWinnings;
-
-                if (totalWinnings > 0) {
-                    totalCoins += totalWinnings;
-                    showWinMessage(`Win ${totalWinnings}!`, 2000);
-                    reelWindowElements.forEach(rw => rw.classList.add('win-animation'));
-                    
-                    setTimeout(() => {
-                        reelWindowElements.forEach(rw => rw.classList.remove('win-animation'));
-                        updateTopBar();
-                        spinButton.disabled = false;
-                    }, 2000);
-
-                } else if (clownFailed && isWinPossibleWithClown) {
-                    showWinMessage("🤡 Oops.", 1000);
-                    spinButton.disabled = false;
-                } else {
-                    spinButton.disabled = false;
+                // FORTUNE: Efficient Magic
+                const actualCost = playerHasFortune('Efficient Magic') ? Math.max(1, spell.cost - 1) : spell.cost;
+                player.currentMP -= actualCost;
+                
+                const sprtTriggered = checkSPRT();
+                if (sprtTriggered) {
+                    updateBattleLog("❤️‍🔥 SPRT triggered! Spell's effect doubled!");
+                    await new Promise(res => setTimeout(res, 800));
                 }
-            };
 
-            const handleResetLinks = () => {
-                if (totalCoins >= 1) {
-                    totalCoins -= 1;
-                    linkedReels.clear();
-                    Object.keys(linkedRowState).forEach(key => delete linkedRowState[key]);
-                    
-                    updateTopBar();
-                    renderInventories();
-                    checkAndHighlightLines();
-                    updateLinkButtonUI();
-                    hideModal(tokensModal);
-                } else {
-                    showWinMessage("Not enough coins!", 800);
-                }
-            };
-
-            const showModal = (modalElement) => {
-                modalElement.style.display = 'flex';
-            };
-            const hideModal = (modalElement) => {
-                modalElement.style.display = 'none';
-            };
-            
-            const applySymbolButtonBorders = () => {
-                const symbolColors = {
-                    '🍒': '#E01F3D', '🍊': '#F58216', '🍇': '#8A2BE2', 
-                    '🍋‍🟩': '#A4DE02', '🔔': '#FFD700', '💎': '#50A6C2', '🤡': '#FF69B4'
-                };
-
-                document.querySelectorAll('.symbol-btn').forEach(button => {
-                    const symbol = button.textContent.replace(/\+1/g, '').trim();
-                    if (symbolColors[symbol]) {
-                        button.style.borderColor = symbolColors[symbol];
+                if (spell.damage) {
+                    if (!currentTarget || currentTarget.currentHP <= 0) {
+                        updateBattleLog('You must select a valid target!');
+                        toggleActionButtons(false); 
+                        player.currentMP += actualCost; 
+                        return;
                     }
+                    let damage = spell.damage;
+                    if (sprtTriggered) damage *= 2;
+
+                    currentTarget.currentHP -= damage;
+                    updateBattleLog(`You cast ${spell.name} on ${currentTarget.name} for ${damage} damage!`);
+                    updateDamageUI(currentTarget);
+                }
+
+                if (spell.effect) {
+                    let target = spell.name === 'BARRIER' ? player : currentTarget;
+                     if (target) {
+                        applyStatusEffect(target, spell.effect, sprtTriggered, 'player');
+                    }
+                }
+
+                updateStatsUI();
+                activeEnemies.forEach(updateEnemyStatsUI);
+                endPlayerTurn();
+            }
+
+            function handleLevelUp() {
+                player.level++;
+                updateBattleLog(`You reached Level ${player.level}!`);
+                setupLevelUpModal();
+                openModal('levelup');
+            }
+
+            function setupLevelUpModal() {
+                const vitalityGroup = document.getElementById('levelup-vitality');
+                const strengthGroup = document.getElementById('levelup-strength');
+                const agilityGroup = document.getElementById('levelup-agility');
+                const confirmBtn = document.getElementById('confirm-levelup-button');
+
+                // Reset UI state
+                document.querySelectorAll('#levelup-modal .levelup-choice').forEach(c => c.classList.remove('selected'));
+                confirmBtn.disabled = true;
+
+                let choices = { vitality: null, strength: null, agility: null };
+
+                function checkChoices() {
+                    confirmBtn.disabled = !(choices.vitality && choices.strength && choices.agility);
+                }
+
+                vitalityGroup.querySelectorAll('.levelup-choice').forEach(choice => {
+                    choice.addEventListener('click', () => {
+                        vitalityGroup.querySelectorAll('.levelup-choice').forEach(c => c.classList.remove('selected'));
+                        choice.classList.add('selected');
+                        choices.vitality = { stat: choice.dataset.stat, value: parseInt(choice.dataset.value) };
+                        checkChoices();
+                    });
                 });
-            };
 
-            reelInventoriesContainer.addEventListener('click', (event) => {
-                if (isAnimating) return;
-                const inventory = event.target.closest('.inventory');
-                if (inventory) {
-                    selectedReel = parseInt(inventory.dataset.reel);
-                    updateSelectedReelUI();
-                    updateSymbolButtonsUI();
-                }
-            });
-
-            symbolButtonsContainer.addEventListener('click', handleSymbolAdd);
-            resetButton.addEventListener('click', handleResetReel);
-            spinButton.addEventListener('click', handleSpin);
-            linkButton.addEventListener('click', handleLink);
-            gambleButton.addEventListener('click', handleGambleClick);
-            priceDisplay.addEventListener('click', handleLimeClick); 
-            
-            coinsDisplay.addEventListener('click', () => {
-                coinsDisplay.classList.toggle('is-flipped');
-                riskModeActive = coinsDisplay.classList.contains('is-flipped');
-                updateTopBar();
-            });
-            
-            helpButton.addEventListener('click', () => showModal(helpModal));
-            tokensButton.addEventListener('click', () => showModal(tokensModal));
-            
-            closeButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    const modalId = button.dataset.modal;
-                    const modalToClose = document.getElementById(modalId);
-                    if(modalToClose) hideModal(modalToClose);
+                strengthGroup.querySelectorAll('.levelup-choice').forEach(choice => {
+                    choice.addEventListener('click', () => {
+                        strengthGroup.querySelectorAll('.levelup-choice').forEach(c => c.classList.remove('selected'));
+                        choice.classList.add('selected');
+                        choices.strength = { stat: choice.dataset.stat, value: parseInt(choice.dataset.value) };
+                        checkChoices();
+                    });
                 });
-            });
 
-            selectorDisplay.addEventListener('click', (event) => {
-                if (!isSelectorUnlocked) return;
-                const choice = event.target.dataset.choice;
-                if (choice && choice !== activeSelection) {
-                    activeSelection = choice;
-                    updateSelectorUI();
-                }
-            });
+                agilityGroup.querySelectorAll('.levelup-choice').forEach(choice => {
+                    choice.addEventListener('click', () => {
+                        agilityGroup.querySelectorAll('.levelup-choice').forEach(c => c.classList.remove('selected'));
+                        choice.classList.add('selected');
+                        choices.agility = { stat: choice.dataset.stat, value: parseInt(choice.dataset.value) };
+                        checkChoices();
+                    });
+                });
 
-            unlockLimeBtn.addEventListener('click', () => {
-                if (totalCoins >= 1) {
-                    totalCoins -= 1;
-                    isLimeUnlocked = true;
-                    updateTopBar();
-                    updateLockedFeaturesUI();
-                    hideModal(tokensModal);
-                } else {
-                    showWinMessage("Not enough coins!", 800);
-                }
-            });
+                confirmBtn.onclick = () => { // Use onclick to prevent multiple listeners
+                    player.baseStats[choices.vitality.stat] += choices.vitality.value;
+                    player.baseStats[choices.strength.stat] += choices.strength.value;
+                    player.baseStats[choices.agility.stat] += choices.agility.value;
+                    
+                    // Heal HP/MP on level up
+                    player.currentHP = player.baseStats.HP;
+                    player.currentMP = player.baseStats.MP;
 
-            unlockSelectorBtn.addEventListener('click', () => {
-                if (totalCoins >= 1) {
-                    totalCoins -= 1;
-                    isSelectorUnlocked = true;
-                    updateTopBar();
-                    updateLockedFeaturesUI();
-                    hideModal(tokensModal);
-                } else {
-                    showWinMessage("Not enough coins!", 800);
-                }
-            });
+                    updateStatsUI();
+                    closeModal();
+                    // After level up, if no battle is active, start a new one
+                    if (!isBattleActive) {
+                        handleNextBattle();
+                    }
+                };
+            }
 
-            resetLinksBtn.addEventListener('click', handleResetLinks);
-
-            clownSlider.addEventListener('input', (event) => {
-                const sliderValue = parseInt(event.target.value, 10);
-                clownRiskLevel = sliderValue;
-                currentClownRotation = sliderValue * 45;
-                applyClownRotation();
-            });
-
-            window.addEventListener('click', (event) => {
-                if (event.target == helpModal) {
-                    hideModal(helpModal);
-                }
-                if (event.target == tokensModal) {
-                    hideModal(tokensModal);
-                }
-            });
-            
-            // --- Game Initialization ---
-            initializeGame();
-            applySymbolButtonBorders();
-            updateSelectedReelUI();
-            renderInventories();
-            updateTopBar();
-            updateSymbolButtonsUI();
-            updateSelectorUI();
-            updateLockedFeaturesUI();
+            // --- Initial Setup ---
+            updateStatsUI();
+            updateGoldUI();
+            setupSacrificeOptions();
+            spawnBattle(battleSequence[battleSequenceIndex]);
         });
     </script>
 </body>
 </html>
+
