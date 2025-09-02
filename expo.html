@@ -23,6 +23,7 @@
             border-radius: 0.5rem;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
             backdrop-filter: blur(8px);
+            transition: opacity 0.3s ease, filter 0.3s ease;
         }
         .window-title {
             background: linear-gradient(to bottom, #4a5568, #2d3748);
@@ -85,6 +86,7 @@
             justify-content: space-between;
             align-items: center;
             list-style: none;
+            min-height: 80px; /* Enforce uniform height */
         }
         .sacrifice-button:hover:not(.disabled) {
             background-color: rgba(255, 255, 255, 0.05);
@@ -107,6 +109,7 @@
             align-items: center;
             min-height: 110px; /* Reduced height */
             gap: 1rem;
+            transition: filter 0.3s ease-out;
         }
         .enemy-container {
             display: flex;
@@ -122,11 +125,21 @@
             cursor: pointer;
         }
         .character-battle-display {
-            font-size: 6xl; /* 4.5rem */
+            font-size: 3rem; /* Adjusted for mobile */
+        }
+        @media (min-width: 768px) {
+             .character-battle-display {
+                font-size: 4.5rem; /* Revert for larger screens */
+            }
         }
         .enemy-battle-display {
-            font-size: 4.5rem; /* Character emoji size - INCREASED */
+            font-size: 3rem; /* Adjusted for mobile */
             line-height: 1;
+        }
+        @media (min-width: 768px) {
+            .enemy-battle-display {
+                font-size: 4.5rem; /* Revert for larger screens */
+            }
         }
         .enemy-battle-display:hover {
             transform: scale(1.05);
@@ -268,20 +281,73 @@
             vertical-align: middle;
             gap: 0.5rem;
         }
+
+        /* Floating Number Animation */
+        .floating-number {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            font-weight: bold;
+            font-family: 'Anton', sans-serif;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            pointer-events: none;
+            animation: floatUp 1.5s ease-out forwards;
+            z-index: 100;
+        }
+
+        @keyframes floatUp {
+            0% {
+                opacity: 1;
+                transform: translate(-50%, -50%) translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -150%) translateY(-50px);
+            }
+        }
+
+        .floating-number.damage { color: #ef4444; } /* red-500 */
+        .floating-number.heal { color: #22c55e; } /* green-500 */
+        .floating-number.poison { color: #a855f7; } /* purple-500 */
+
+        /* ** NEW ** Tab Styles for Mobile */
+        .tab-button {
+            padding: 0.75rem 0;
+            flex-grow: 1;
+            text-align: center;
+            cursor: pointer;
+            background-color: #2d3748;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease-in-out;
+            text-transform: uppercase;
+        }
+        .tab-button:hover {
+            background-color: #4a5568;
+        }
+        .tab-button.active {
+            color: #f59e0b; /* amber-500 */
+            border-bottom-color: #f59e0b;
+            background-color: rgba(17, 24, 39, 0.8);
+        }
+        .tab-panel {
+            padding: 0.75rem;
+        }
+
     </style>
 </head>
 <body class="p-2 md:p-4">
 
     <main class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-4">
 
-        <!-- Left Column -->
-        <div class="col-span-1 flex flex-col justify-between">
+        <div class="col-span-1 flex flex-col justify-between lg:order-1">
             <div class="flex flex-col gap-4">
                 <div class="game-window">
                     <h2 class="window-title">Character</h2>
                     <div class="p-3 flex flex-col items-center">
-                        <div class="flex items-center justify-center gap-2">
-                            <div class="character-battle-display text-6xl">🧑🏼‍🦱</div>
+                        <div class="relative flex items-center justify-center gap-2">
+                            <div class="character-battle-display">🧑🏼‍🦱</div>
                             <span id="player-status-effects"></span>
                         </div>
                     </div>
@@ -314,24 +380,27 @@
                     </div>
                 </div>
 
-                <div class="game-window">
+                <div class="hidden lg:block game-window">
+                    <h2 class="window-title">Equipped Stones</h2>
+                    <div class="p-3 space-y-1 readable-text">
+                         <div class="flex items-center gap-2">
+                            <div id="stone-slot-1-circle" class="w-4 h-4 rounded-full bg-black border border-gray-600 shadow-inner"></div>
+                            <div id="stone-slot-1" class="inventory-slot clickable flex-grow !mt-0 readable-text">Slot 1: Empty</div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div id="stone-slot-2-circle" class="w-4 h-4 rounded-full bg-black border border-gray-600 shadow-inner"></div>
+                            <div id="stone-slot-2" class="inventory-slot clickable flex-grow !mt-0 readable-text">Slot 2: Empty</div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div id="stone-slot-3-circle" class="w-4 h-4 rounded-full bg-black border border-gray-600 shadow-inner"></div>
+                            <div id="stone-slot-3" class="inventory-slot clickable flex-grow !mt-0 readable-text">Slot 3: Empty</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hidden lg:block game-window">
                     <h2 class="window-title">Equipment</h2>
                     <div class="p-3 space-y-2 readable-text">
-                        <div>
-                            <p class="font-semibold text-gray-300">STONES</p>
-                            <div class="flex items-center gap-2 mt-1">
-                                <div id="stone-slot-1-circle" class="w-4 h-4 rounded-full bg-black border border-gray-600 shadow-inner"></div>
-                                <div id="stone-slot-1" class="inventory-slot clickable flex-grow !mt-0 readable-text">Slot 1: Empty</div>
-                            </div>
-                            <div class="flex items-center gap-2 mt-1">
-                                <div id="stone-slot-2-circle" class="w-4 h-4 rounded-full bg-black border border-gray-600 shadow-inner"></div>
-                                <div id="stone-slot-2" class="inventory-slot clickable flex-grow !mt-0 readable-text">Slot 2: Empty</div>
-                            </div>
-                            <div class="flex items-center gap-2 mt-1">
-                                <div id="stone-slot-3-circle" class="w-4 h-4 rounded-full bg-black border border-gray-600 shadow-inner"></div>
-                                <div id="stone-slot-3" class="inventory-slot clickable flex-grow !mt-0 readable-text">Slot 3: Empty</div>
-                            </div>
-                        </div>
                         <div>
                             <p class="font-semibold text-gray-300">WEAPON</p>
                             <div id="weapon-slot" class="inventory-slot clickable">Empty (View Collection)</div>
@@ -344,18 +413,21 @@
                 </div>
             </div>
             
-            <button id="quick-tutorial-button" class="action-button w-full" style="background: linear-gradient(to top, #374151, #6b7280);">QUICK TUTORIAL</button>
+            <button id="quick-tutorial-button" class="action-button w-full mt-4" style="background: linear-gradient(to top, #374151, #6b7280);">QUICK TUTORIAL</button>
         </div>
 
-        <!-- Right Column -->
-        <div class="col-span-1 lg:col-span-2 flex flex-col gap-4">
+        <div class="col-span-1 lg:col-span-2 flex flex-col gap-4 lg:order-2">
 
             <div class="game-window flex flex-col">
                 <h2 class="window-title">Battle</h2>
-                <div id="battle-area-content" class="p-3 flex flex-col justify-center">
-                     <!-- Enemies will be dynamically inserted here -->
+                <div id="battle-area-content" class="p-3 flex flex-col justify-center relative">
+                     <div id="battle-area-visuals">
+                         </div>
+                     <div id="start-battle-container" class="absolute inset-0 flex items-center justify-center z-10">
+                        <button id="start-battle-button" class="action-button text-2xl px-8 py-4" style="background: linear-gradient(to top, #166534, #22c55e);">START BATTLE</button>
+                     </div>
                 </div>
-                <div id="battle-log" class="p-2 text-center readable-text text-gray-400 border-t border-b border-gray-700 h-10 flex items-center justify-center">New battle started!</div>
+                <div id="battle-log" class="p-2 text-center readable-text text-gray-400 border-t border-b border-gray-700 h-10 flex items-center justify-center">Prepare for battle!</div>
                 <div class="p-3 grid grid-cols-3 gap-2">
                     <button id="attack-button" class="action-button" style="background: linear-gradient(to top, #991b1b, #ef4444);">ATTACK</button>
                     <button id="spells-button" class="action-button" style="background: linear-gradient(to top, #0f766e, #14b8a6);">SPELLS</button>
@@ -363,13 +435,12 @@
                 </div>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="hidden lg:grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div id="sacrifice-window-container" class="game-window flex flex-col">
                     <h2 class="window-title">MAKE A SACRIFICE</h2>
                     <div class="flex-grow">
                         <ul id="fortunes-list" class="sacrifice-options">
-                            <!-- Sacrifice options will be dynamically inserted here -->
-                        </ul>
+                            </ul>
                     </div>
                     <div class="p-3 border-t border-gray-700">
                         <button id="renegotiate-sacrifices-button" class="action-button w-full" style="background: linear-gradient(to top, #450a0a, #7f1d1d);">RENEGOTIATE SACRIFICE</button>
@@ -413,20 +484,15 @@
                 </div>
             </div>
             
-             <!-- Stones Codex -->
-            <div class="game-window">
+             <div class="hidden lg:block game-window">
                 <h2 class="window-title">Stones Codex</h2>
                 <div class="p-3">
                     <div class="stone-circle-container">
-                        <!-- Debuffs -->
                         <div class="stone-circle" data-name="Poison" data-emoji="☠️" data-info='<div class="flex items-center justify-center gap-x-3"><span class="text-2xl">☠️</span><span>Poison: 1 dmg per turn (ignores DEF)</span></div>' style="background-color: #a855f7;"></div>
                         <div class="stone-circle" data-name="Curse" data-emoji="🕯️" data-info='<div class="flex items-center justify-center gap-x-3 text-center"><span class="text-2xl">🕯️</span><span>Curse: -2 ATK &amp; -2 DEF for 4 turns</span></div>' style="background-color: #374151;"></div>
                         <div class="stone-circle" data-name="Slow" data-emoji="🐌" data-info='<div class="flex items-center justify-center gap-x-3 text-center"><span class="text-2xl">🐌</span><span>Slow: Lose next action &amp; sets SPD to 0 for 3 turns</span></div>' style="background-color: #a16207;"></div>
                         
-                        <div class="h-8 w-px bg-gray-600 mx-2"></div> <!-- Separator -->
-
-                        <!-- Buffs -->
-                        <div class="stone-circle" data-name="Regen" data-emoji="❇️" data-info='<div class="flex items-center justify-center gap-x-3"><span class="text-2xl">❇️</span><span>Regen: Heal 1 HP per turn</span></div>' style="background-color: #22c55e;"></div>
+                        <div class="h-8 w-px bg-gray-600 mx-2"></div> <div class="stone-circle" data-name="Regen" data-emoji="❇️" data-info='<div class="flex items-center justify-center gap-x-3"><span class="text-2xl">❇️</span><span>Regen: Heal 1 HP per turn</span></div>' style="background-color: #22c55e;"></div>
                         <div class="stone-circle" data-name="Blessing" data-emoji="🌟" data-info='<div class="flex items-center justify-center gap-x-3 text-center"><span class="text-2xl">🌟</span><span>Blessing: Heal 4 HP &amp; +5 SPRT for 4 turns</span></div>' style="background-color: #e5e7eb;"></div>
                         <div class="stone-circle" data-name="Rush" data-emoji="⚡" data-info='<div class="flex items-center justify-center gap-x-3 text-center"><span class="text-2xl">⚡</span><span>Rush: Double next action &amp; +25 SPD for 3 turns</span></div>' style="background-color: #eab308;"></div>
                     </div>
@@ -437,20 +503,36 @@
                 </div>
             </div>
         </div>
+
+        <div id="mobile-tabs-container" class="col-span-1 lg:hidden game-window p-0 lg:order-3">
+             <div class="flex border-b border-gray-700 sticky top-0 bg-gray-800/80 backdrop-blur-sm rounded-t-md">
+                <button class="tab-button active" data-tab="sacrifice">Sacrifice</button>
+                <button class="tab-button" data-tab="shop">Shop</button>
+                <button class="tab-button" data-tab="gear">Gear</button>
+                <button class="tab-button" data-tab="codex">Codex</button>
+            </div>
+            
+            <div id="tab-panels">
+                 <div id="tab-sacrifice" class="tab-panel">
+                     </div>
+                 <div id="tab-shop" class="tab-panel hidden">
+                    </div>
+                <div id="tab-gear" class="tab-panel hidden grid grid-cols-1 md:grid-cols-2 gap-4">
+                    </div>
+                <div id="tab-codex" class="tab-panel hidden">
+                     </div>
+            </div>
+        </div>
     </main>
 
-    <!-- Modal Area -->
     <div id="modal-overlay" class="modal-overlay">
         
-        <!-- Spells Modal -->
         <div id="spells-modal" class="game-window modal-window hidden">
             <h2 class="window-title"><span>Spells</span> <button class="close-button">&times;</button></h2>
             <ul id="spells-list" class="item-list p-3 interactive">
-                <!-- Spells will be dynamically added here -->
-            </ul>
+                </ul>
         </div>
         
-        <!-- Weapons Modal -->
         <div id="weapons-modal" class="game-window modal-window hidden">
             <h2 class="window-title"><span>Weapon Collection</span> <button class="close-button">&times;</button></h2>
             <div class="p-3">
@@ -462,19 +544,17 @@
             </div>
         </div>
         
-        <!-- Armor Modal -->
         <div id="armor-modal" class="game-window modal-window hidden">
             <h2 class="window-title"><span>Armor Collection</span> <button class="close-button">&times;</button></h2>
             <div class="p-3">
                  <ul class="item-list bg-gray-900/50 rounded-md readable-text interactive">
                     <li data-name="Leather Gear" data-stat="DEF" data-value="1" data-emoji="🧥"><span>🧥 Leather Gear</span> <span class="readable-text">DEF +1</span></li>
-                    <li data-name="Stone Bracer" data-stat="DEF" data-value="2" data-emoji="🪨"><span>🪨 Stone Bracer</span> <span class="readable-text">DEF +2</span></li>
+                    <li data-name="Rock Bracer" data-stat="DEF" data-value="2" data-emoji="🪨"><span>🪨 Rock Bracer</span> <span class="readable-text">DEF +2</span></li>
                     <li data-name="Cloak" data-stat="SPRT" data-value="15" data-emoji="🕸️"><span>🕸️ Cloak</span> <span class="readable-text">SPRT +15</span></li>
                 </ul>
             </div>
         </div>
 
-        <!-- Items Modal -->
         <div id="items-modal" class="game-window modal-window hidden">
             <h2 class="window-title"><span>Items</span> <button class="close-button">&times;</button></h2>
             <ul class="item-list p-3">
@@ -482,15 +562,12 @@
             </ul>
         </div>
         
-        <!-- Fortunes Modal -->
         <div id="fortunes-modal" class="game-window modal-window hidden">
             <h2 class="window-title"><span>My Fortunes 🔮</span> <button class="close-button">&times;</button></h2>
             <ul id="player-fortunes-list" class="item-list p-3">
-                <!-- Player's fortunes will be dynamically added here -->
-            </ul>
+                </ul>
         </div>
 
-        <!-- Tutorial Modal -->
         <div id="tutorial-modal" class="game-window modal-window hidden">
             <h2 class="window-title"><span>Quick Tutorial</span> <button class="close-button">&times;</button></h2>
             <div class="p-4 readable-text space-y-4 text-lg">
@@ -523,7 +600,6 @@
             </div>
         </div>
 
-        <!-- Level Up Modal -->
         <div id="levelup-modal" class="game-window modal-window hidden">
             <h2 class="window-title"><span>LEVEL UP!</span></h2>
             <div class="p-4 readable-text">
@@ -561,6 +637,53 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // ** NEW ** Mobile Tab Logic
+            function setupMobileTabs() {
+                // Move desktop-only content into mobile tab panels for screens smaller than lg
+                if (window.innerWidth < 1024) {
+                    const sacrificeContent = document.querySelector('#sacrifice-window-container');
+                    const shopContent = sacrificeContent.nextElementSibling;
+                    const codexContent = document.querySelector('.lg\\:grid').nextElementSibling;
+                    const stonesContent = document.querySelector('.hidden.lg\\:block.game-window');
+                    const equipmentContent = stonesContent.nextElementSibling;
+
+                    const sacrificeTab = document.getElementById('tab-sacrifice');
+                    const shopTab = document.getElementById('tab-shop');
+                    const gearTab = document.getElementById('tab-gear');
+                    const codexTab = document.getElementById('tab-codex');
+
+                    // Clear any previous content
+                    sacrificeTab.innerHTML = '';
+                    shopTab.innerHTML = '';
+                    gearTab.innerHTML = '';
+                    codexTab.innerHTML = '';
+
+                    // Move content into tabs, removing borders/titles as they are part of the window
+                    if (sacrificeContent) sacrificeTab.appendChild(sacrificeContent);
+                    if (shopContent) shopTab.appendChild(shopContent);
+                    if (stonesContent) gearTab.appendChild(stonesContent);
+                    if (equipmentContent) gearTab.appendChild(equipmentContent);
+                    if (codexContent) codexTab.appendChild(codexContent);
+                }
+
+                const tabButtons = document.querySelectorAll('.tab-button');
+                const tabPanels = document.querySelectorAll('.tab-panel');
+
+                tabButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        // Deactivate all
+                        tabButtons.forEach(btn => btn.classList.remove('active'));
+                        tabPanels.forEach(panel => panel.classList.add('hidden'));
+
+                        // Activate clicked
+                        button.classList.add('active');
+                        const targetPanelId = 'tab-' + button.dataset.tab;
+                        document.getElementById(targetPanelId).classList.remove('hidden');
+                    });
+                });
+            }
+
+
             const modalOverlay = document.getElementById('modal-overlay');
             const modals = {
                 spells: document.getElementById('spells-modal'),
@@ -602,6 +725,8 @@
             let exp = 0;
             let playerInventory = [];
             let playerFortunes = [];
+            let playerSacrifices = []; // To track special sacrifices like 'Unstable Mind'
+            let brokenCodexStones = []; // To track stones broken by 'Clumsy'
             let equippedStones = [null, null, null];
             let brokenStoneSlots = [false, false, false];
             let selectedStone = null;
@@ -638,6 +763,7 @@
             let turnQueue = [];
             let currentTurnIndex = 0;
             let isBattleActive = false;
+            let isBattleStarted = false;
 
             // --- UI Elements ---
             const statElements = {
@@ -671,6 +797,9 @@
             const spellsButton = document.getElementById('spells-button');
             const itemsButton = document.getElementById('items-button');
             const battleAreaContent = document.getElementById('battle-area-content');
+            const battleAreaVisuals = document.getElementById('battle-area-visuals');
+            const startBattleContainer = document.getElementById('start-battle-container');
+            const startBattleButton = document.getElementById('start-battle-button');
             const battleLog = document.getElementById('battle-log');
             const fortunesList = document.getElementById('fortunes-list');
             const spellsList = document.getElementById('spells-list');
@@ -678,6 +807,39 @@
             const renegotiateButton = document.getElementById('renegotiate-sacrifices-button');
             
             // --- Game Logic Functions ---
+
+            /**
+             * Creates a floating number animation over a target element for damage/healing.
+             * @param {HTMLElement} target - The character or enemy display element.
+             * @param {number} amount - The amount of damage or healing.
+             * @param {string} type - 'damage', 'heal', or 'poison'.
+             */
+            function showFloatingNumber(target, amount, type) {
+                if (amount <= 0 || !target) return; // Don't show for 0 or if target is missing
+
+                const parentContainer = target.parentElement;
+                if (!parentContainer) return;
+                parentContainer.style.position = 'relative'; // Ensure parent is relative for positioning
+
+                const numberEl = document.createElement('div');
+                let text = '';
+                switch(type) {
+                    case 'damage': text = `-${amount}`; break;
+                    case 'heal': text = `+${amount}`; break;
+                    case 'poison': text = `-${amount}`; break;
+                }
+                numberEl.textContent = text;
+                numberEl.className = `floating-number ${type}`;
+
+                parentContainer.appendChild(numberEl);
+
+                setTimeout(() => {
+                    if (numberEl.parentElement) {
+                        parentContainer.removeChild(numberEl);
+                    }
+                }, 1500); // Must match CSS animation duration
+            }
+
             function calculateTotalStats(character) {
                 const total = { ...character.baseStats };
                 
@@ -796,14 +958,13 @@
                 battleLog.textContent = message;
             }
 
-            function spawnBattle(enemyKeys) {
-                // Reset fortune choice for the new battle
+            function prepareBattle(enemyKeys) {
                 fortuneChosenThisBattle = false;
                 setupSacrificeOptions();
 
                 activeEnemies = [];
                 currentTarget = null;
-                battleAreaContent.innerHTML = ''; 
+                battleAreaVisuals.innerHTML = ''; 
 
                 const battleArea = document.createElement('div');
                 battleArea.className = 'battle-area';
@@ -828,7 +989,7 @@
                         statsContainer.className = 'enemy-stats-text text-right w-24 font-bold readable-text';
                         
                         const container = document.createElement('div');
-                        container.className = 'enemy-container text-center';
+                        container.className = 'enemy-container text-center relative';
                         container.id = `enemy-container-${index}`;
 
                         const nameEl = document.createElement('h3');
@@ -865,7 +1026,7 @@
                     }
                 });
                 
-                battleAreaContent.appendChild(battleArea);
+                battleAreaVisuals.appendChild(battleArea);
                 
                 activeEnemies.forEach(enemy => updateEnemyStatsUI(enemy));
 
@@ -873,10 +1034,25 @@
                 if(firstLivingEnemy) {
                     document.getElementById(`enemy-display-${firstLivingEnemy.index}`).click();
                 }
+
+                startBattleContainer.style.display = 'flex';
+                battleAreaVisuals.classList.add('blur-sm', 'brightness-50');
+
+                isBattleStarted = false;
+                isBattleActive = false;
+            }
+
+            function startBattle() {
+                isBattleStarted = true;
+                startBattleContainer.style.display = 'none';
+                battleAreaVisuals.classList.remove('blur-sm', 'brightness-50');
+                
+                togglePreBattleUI(false); // Disable pre-battle actions
                 
                 isBattleActive = true;
                 startNewRound();
             }
+
 
             function updateEnemyStatsUI(enemy) {
                  const totalStats = calculateTotalStats(enemy);
@@ -896,10 +1072,38 @@
                  }
             }
             
-            function toggleActionButtons(disabled) {
+            function toggleBattleActions(disabled) {
                 attackButton.disabled = disabled;
                 spellsButton.disabled = disabled;
                 itemsButton.disabled = disabled;
+
+                stoneSlots.forEach((slot, index) => {
+                    const stone = equippedStones[index];
+                    const canUse = !disabled && stone && !brokenStoneSlots[index];
+                    slot.classList.toggle('clickable', canUse);
+                    slot.classList.toggle('opacity-50', !canUse);
+                    slot.style.cursor = canUse ? 'pointer' : 'default';
+                });
+            }
+
+            function togglePreBattleUI(enabled) {
+                const equipmentWindow = weaponSlot.closest('.game-window');
+                const desktopWindows = document.querySelectorAll('.hidden.lg\\:grid, .hidden.lg\\:block');
+                const mobileTabs = document.getElementById('mobile-tabs-container');
+                
+                const elementsToToggle = [equipmentWindow, ...desktopWindows, mobileTabs];
+
+                elementsToToggle.forEach(el => {
+                    if (el) {
+                        el.style.pointerEvents = enabled ? 'auto' : 'none';
+                        el.classList.toggle('opacity-50', !enabled);
+                        el.classList.toggle('filter', !enabled);
+                        el.classList.toggle('grayscale', !enabled);
+                    }
+                });
+
+                weaponSlot.classList.toggle('clickable', enabled);
+                armorSlot.classList.toggle('clickable', enabled);
             }
 
             const openModal = (modalId) => {
@@ -1001,6 +1205,7 @@
             
             stoneCircles.forEach(circle => {
                 circle.addEventListener('click', () => {
+                    if (circle.classList.contains('disabled')) return;
                     stoneCircles.forEach(c => c.classList.remove('active'));
                     circle.classList.add('active');
                     stoneDescriptionBox.innerHTML = circle.dataset.info;
@@ -1043,7 +1248,7 @@
             
             function useStone(slotIndex) {
                 const stone = equippedStones[slotIndex];
-                if (!stone || attackButton.disabled) return;
+                if (!stone || !isBattleStarted || attackButton.disabled) return;
 
                 const buffNames = ['Regen', 'Blessing', 'Rush'];
                 const isBuff = buffNames.includes(stone.name);
@@ -1054,7 +1259,7 @@
                     return;
                 }
                 
-                toggleActionButtons(true);
+                toggleBattleActions(true);
                 stone.uses--;
                 
                 const sprtTriggered = checkSPRT();
@@ -1065,7 +1270,15 @@
                 if (stone.name === 'Blessing') {
                     let healAmount = 4;
                     if (sprtTriggered) healAmount *= 2;
+                    
+                    const hpBefore = target.currentHP;
                     target.currentHP = Math.min(target.baseStats.HP || target.maxHp, target.currentHP + healAmount);
+                    const actualHeal = target.currentHP - hpBefore;
+                    
+                    if (actualHeal > 0) {
+                        const targetEl = target.isPlayer ? document.querySelector('.character-battle-display') : document.getElementById(`enemy-display-${target.index}`);
+                        showFloatingNumber(targetEl, actualHeal, 'heal');
+                    }
                 }
 
                 applyStatusEffect(target, stone.name, sprtTriggered, 'player');
@@ -1117,6 +1330,10 @@
                 [ // Set 2
                     { name: '💔 Heartbreak', type: 'SPRT', value: -10, text: '-10 SPRT', style: 'text-orange-400' },
                     { name: '📜 Gambling Debt', type: 'GOLD', value: -25, text: '-25 Gold', style: 'text-yellow-400' }
+                ],
+                [ // Set 3
+                    { name: '🫳🏽 Clumsy', type: 'SPECIAL', special: 'clumsy', text: 'Lose 1 stone.', style: 'text-gray-400' },
+                    { name: '🎭 Unstable Mind', type: 'SPECIAL', special: 'unstableMind', text: 'share 🍶', style: 'text-cyan-400' }
                 ]
             ];
             let selectedSacrifice = null;
@@ -1194,10 +1411,11 @@
                     if (sac.type === 'HP' && player.baseStats.HP + sac.value <= 0) canAfford = false;
                     if (sac.type === 'SPRT' && player.baseStats.SPRT + sac.value < 0) canAfford = false;
                     if (sac.type === 'GOLD' && gold + sac.value < 0) canAfford = false;
+                    if (sac.special === 'clumsy' && document.querySelectorAll('.stone-circle:not(.disabled)').length === 0) canAfford = false;
 
                     li.innerHTML = `
                         <span class="readable-text text-lg">${sac.name}</span>
-                        <span class="readable-text ${sac.style} font-bold">${sac.text}</span>
+                        <span class="readable-text text-lg ${sac.style} font-bold">${sac.text}</span>
                     `;
 
                     if (canAfford) {
@@ -1224,11 +1442,33 @@
                     return;
                 }
                 player.currentHP -= 1;
+                showFloatingNumber(document.querySelector('.character-battle-display'), 1, 'damage');
                 player.currentMP -= 1;
                 updateStatsUI();
                 updateBattleLog("You renegotiate, losing 1 HP and 1 MP.");
                 setupSacrificeOptions(currentlyOfferedSacrifices);
             });
+
+            function breakRandomStoneCodex() {
+                const allStoneElements = Array.from(document.querySelectorAll('.stone-circle'));
+                const availableStones = allStoneElements.filter(s => !s.classList.contains('disabled'));
+
+                if (availableStones.length > 0) {
+                    const stoneToBreak = availableStones[Math.floor(Math.random() * availableStones.length)];
+                    const stoneName = stoneToBreak.dataset.name;
+                    
+                    brokenCodexStones.push(stoneName);
+                    stoneToBreak.classList.add('disabled', 'opacity-25', 'cursor-not-allowed');
+                    stoneToBreak.style.pointerEvents = 'none';
+                    
+                    stoneToBreak.innerHTML = '<span class="text-3xl text-red-500">❌</span>';
+                    stoneToBreak.style.display = 'flex';
+                    stoneToBreak.style.alignItems = 'center';
+                    stoneToBreak.style.justifyContent = 'center';
+
+                    updateBattleLog(`A stone shatters! The ${stoneName} stone is lost forever.`);
+                }
+            }
 
             revealFortunesButton.addEventListener('click', () => {
                 if (!selectedSacrifice) return;
@@ -1244,6 +1484,12 @@
                 } else if (selectedSacrifice.type === 'GOLD') {
                     gold += selectedSacrifice.value;
                     updateGoldUI();
+                } else if (selectedSacrifice.type === 'SPECIAL') {
+                    if (selectedSacrifice.special === 'clumsy') {
+                        breakRandomStoneCodex();
+                    } else if (selectedSacrifice.special === 'unstableMind') {
+                        playerSacrifices.push(selectedSacrifice.name);
+                    }
                 }
                 updateBattleLog(`Sacrifice made: ${selectedSacrifice.name}.`);
                 updateStatsUI();
@@ -1255,7 +1501,6 @@
                 const shuffled = [...availableFortunes].sort(() => 0.5 - Math.random());
                 const selectedFortunes = shuffled.slice(0, 3);
                 
-                // Update UI to show fortunes as cards, preventing window resize
                 const fortuneWindow = fortunesList.closest('.game-window');
                 fortuneWindow.querySelector('.window-title').textContent = "CHOOSE YOUR FATE";
                 fortunesList.className = 'p-3 grid grid-cols-1 sm:grid-cols-3 gap-3 h-full items-stretch'; 
@@ -1324,7 +1569,6 @@
                             currentDamage: 1, // For Toxic Decay
                             onTurn: function(t) { // Use `function` to bind `this` to the effect object
                                 t.currentHP = Math.max(0, t.currentHP - this.currentDamage); 
-                                updateBattleLog(`${t.name} takes ${this.currentDamage} poison damage.`); 
                                 // FORTUNE: Toxic Decay
                                 if (playerHasFortune('Toxic Decay') && this.currentDamage < 10) {
                                     this.currentDamage++;
@@ -1347,7 +1591,7 @@
                     case 'Regen':
                         var duration = 99;
                         if (sprtBoost) duration *= 2;
-                        effect = { name: 'Regen', emoji: '❇️', duration: duration, onTurn: (t) => { t.currentHP = Math.min(t.baseStats.HP || t.maxHp, t.currentHP + 1); updateBattleLog(`${t.name} recovers 1 HP from regen.`); } };
+                        effect = { name: 'Regen', emoji: '❇️', duration: duration, onTurn: (t) => { t.currentHP = Math.min(t.baseStats.HP || t.maxHp, t.currentHP + 1); } };
                         break;
                     case 'Blessing':
                         var duration = 4;
@@ -1372,11 +1616,30 @@
             }
             
             async function processStatusEffects(actor) {
-                 for (const effect of [...actor.statusEffects]) { // Use spread to prevent mutation issues during loop
+                 for (const effect of [...actor.statusEffects]) {
                     if (effect.onTurn) {
+                        const hpBefore = actor.currentHP;
                         effect.onTurn(actor);
+                        const hpAfter = actor.currentHP;
+                        const change = hpAfter - hpBefore;
+                        
+                        const targetEl = actor.isPlayer ? document.querySelector('.character-battle-display') : document.getElementById(`enemy-display-${actor.index}`);
+                        let logMessage = '';
+
+                        if (change > 0) { // Heal (Regen)
+                            showFloatingNumber(targetEl, change, 'heal');
+                            logMessage = `${actor.name} recovers ${change} HP from regen.`;
+                        } else if (change < 0) { // Damage (Poison)
+                            const damage = -change;
+                            showFloatingNumber(targetEl, damage, 'poison');
+                            logMessage = `${actor.name} takes ${damage} poison damage.`;
+                        }
+
                         updateDamageUI(actor); 
-                        await new Promise(res => setTimeout(res, 500));
+                        if (logMessage) {
+                            await new Promise(res => setTimeout(res, 500));
+                            updateBattleLog(logMessage);
+                        }
                     }
                     if (effect.duration < 90) { // Don't decrement "infinite" effects
                         effect.duration--;
@@ -1415,23 +1678,29 @@
             function handleNextBattle() {
                 battleSequenceIndex++;
                 if (battleSequenceIndex < battleSequence.length) {
-                    setTimeout(() => spawnBattle(battleSequence[battleSequenceIndex]), 2000);
+                    setTimeout(() => {
+                        prepareBattle(battleSequence[battleSequenceIndex]);
+                        togglePreBattleUI(true);
+                        toggleBattleActions(true);
+                    }, 2000);
                 } else {
                     updateBattleLog("You have defeated all enemies!");
+                    toggleBattleActions(true);
                     isBattleActive = false;
+                    isBattleStarted = false;
                 }
             }
 
             async function endBattle(totalGold) {
+                isBattleActive = false;
+                isBattleStarted = false;
                 updateBattleLog(`All enemies defeated! +${totalGold} Gold, +5 EXP`);
                 gold += totalGold;
                 updateGoldUI();
                 player.statusEffects = []; 
                 await new Promise(r => setTimeout(r, 1500));
                 addExp(5);
-                isBattleActive = false;
                 
-                // Don't automatically start next battle if a level up is pending
                 if (currentModal !== modals.levelup) {
                    handleNextBattle();
                 }
@@ -1448,7 +1717,7 @@
                 await new Promise(res => setTimeout(res, 500)); 
 
                 if (await checkForExtraTurn(player)) {
-                    toggleActionButtons(false);
+                    toggleBattleActions(false);
                     updateBattleLog("Extra action! It's your turn again!");
                 } else {
                     currentTurnIndex++;
@@ -1466,7 +1735,7 @@
                 }
                 if (player.currentHP <= 0) {
                     updateBattleLog("You have been defeated... GAME OVER.");
-                    toggleActionButtons(true);
+                    toggleBattleActions(true);
                     isBattleActive = false;
                     return;
                 }
@@ -1503,10 +1772,10 @@
                 
                 if (actor.isPlayer) {
                     updateBattleLog('Your turn!');
-                    toggleActionButtons(false);
+                    toggleBattleActions(false);
                 } else { 
                     updateBattleLog(`${actor.name}'s turn.`);
-                    toggleActionButtons(true);
+                    toggleBattleActions(true);
                     await new Promise(res => setTimeout(res, 1000));
                     
                     const enemyStats = calculateTotalStats(actor);
@@ -1515,6 +1784,7 @@
                     
                     if (damage > 0) {
                          player.currentHP = Math.max(0, player.currentHP - damage);
+                         showFloatingNumber(document.querySelector('.character-battle-display'), damage, 'damage');
                          updateBattleLog(`${actor.name} attacks you for ${damage} damage.`);
                          updateStatsUI();
                     }
@@ -1536,6 +1806,7 @@
                         await new Promise(res => setTimeout(res, 1000));
                         const damage2 = Math.max(0, enemyStats.ATK - playerStats.DEF);
                         player.currentHP = Math.max(0, player.currentHP - damage2);
+                        showFloatingNumber(document.querySelector('.character-battle-display'), damage2, 'damage');
                         updateBattleLog(`${actor.name} attacks again for ${damage2} damage.`);
                         updateStatsUI();
                     }
@@ -1587,7 +1858,7 @@
             }
 
             attackButton.addEventListener('click', async () => {
-                toggleActionButtons(true);
+                toggleBattleActions(true);
 
                 const isArcher = playerHasFortune("Archer's Edge") && player.equippedWeapon?.name === 'Bow';
                 const isThief = playerHasFortune("Thief Strike") && player.equippedWeapon?.name === 'Dagger';
@@ -1602,21 +1873,23 @@
                         const targetStats = calculateTotalStats(enemy);
                         const damage = Math.max(0, playerStats.ATK - targetStats.DEF);
                         enemy.currentHP -= damage;
+                        showFloatingNumber(document.getElementById(`enemy-display-${enemy.index}`), damage, 'damage');
+                        updateDamageUI(enemy);
                         await new Promise(res => setTimeout(res, 200)); 
                         updateBattleLog(`Your arrow hits ${enemy.name} for ${damage} damage.`);
-                        updateDamageUI(enemy);
                     }
                 } else {
                     // Standard single-target attack
                     if (!currentTarget || currentTarget.currentHP <= 0) {
                         updateBattleLog('You must select a valid target!');
-                        toggleActionButtons(false);
+                        toggleBattleActions(false);
                         return;
                     }
                     const playerStats = calculateTotalStats(player);
                     const targetStats = calculateTotalStats(currentTarget);
                     const damage = Math.max(0, playerStats.ATK - targetStats.DEF);
                     currentTarget.currentHP -= damage;
+                    showFloatingNumber(document.getElementById(`enemy-display-${currentTarget.index}`), damage, 'damage');
                     updateBattleLog(`You attack ${currentTarget.name} for ${damage} damage.`);
                     updateDamageUI(currentTarget);
 
@@ -1658,7 +1931,7 @@
             async function useItem(item, index) {
                 if (attackButton.disabled) return;
                 closeModal();
-                toggleActionButtons(true);
+                toggleBattleActions(true);
 
                 const sprtTriggered = checkSPRT();
                 if (sprtTriggered) {
@@ -1670,8 +1943,32 @@
                     case 'TONIC': {
                         let healAmount = 6;
                         if (sprtTriggered) healAmount *= 2;
-                        player.currentHP += healAmount;
-                        updateBattleLog(`You used a Tonic and restored ${healAmount} HP.`);
+                        
+                        if (playerSacrifices.includes('🎭 Unstable Mind')) {
+                            const playerHeal = Math.ceil(healAmount / 2);
+                            const enemyHeal = Math.floor(healAmount / 2);
+
+                            player.currentHP = Math.min(player.baseStats.HP, player.currentHP + playerHeal);
+                            showFloatingNumber(document.querySelector('.character-battle-display'), playerHeal, 'heal');
+                            updateBattleLog(`You used a Tonic, restoring ${playerHeal} HP.`);
+
+                            const livingEnemies = activeEnemies.filter(e => e.currentHP > 0);
+                            if (livingEnemies.length > 0 && enemyHeal > 0) {
+                                const randomEnemy = livingEnemies[Math.floor(Math.random() * livingEnemies.length)];
+                                randomEnemy.currentHP = Math.min(randomEnemy.maxHp, randomEnemy.currentHP + enemyHeal);
+                                updateDamageUI(randomEnemy);
+                                showFloatingNumber(document.getElementById(`enemy-display-${randomEnemy.index}`), enemyHeal, 'heal');
+                                
+                                await new Promise(res => setTimeout(res, 800));
+                                updateBattleLog(`...but ${enemyHeal} HP is also restored to ${randomEnemy.name}!`);
+                            }
+                        } else {
+                             const hpBefore = player.currentHP;
+                             player.currentHP = Math.min(player.baseStats.HP, player.currentHP + healAmount);
+                             const actualHeal = player.currentHP - hpBefore;
+                             if(actualHeal > 0) showFloatingNumber(document.querySelector('.character-battle-display'), actualHeal, 'heal');
+                             updateBattleLog(`You used a Tonic and restored ${actualHeal} HP.`);
+                        }
                         break;
                     }
                     case 'GEM': {
@@ -1723,9 +2020,8 @@
 
             async function castSpell(spell) {
                 closeModal();
-                toggleActionButtons(true);
+                toggleBattleActions(true);
                 
-                // FORTUNE: Efficient Magic
                 const actualCost = playerHasFortune('Efficient Magic') ? Math.max(1, spell.cost - 1) : spell.cost;
                 player.currentMP -= actualCost;
                 
@@ -1738,7 +2034,7 @@
                 if (spell.damage) {
                     if (!currentTarget || currentTarget.currentHP <= 0) {
                         updateBattleLog('You must select a valid target!');
-                        toggleActionButtons(false); 
+                        toggleBattleActions(false); 
                         player.currentMP += actualCost; 
                         return;
                     }
@@ -1746,6 +2042,7 @@
                     if (sprtTriggered) damage *= 2;
 
                     currentTarget.currentHP -= damage;
+                    showFloatingNumber(document.getElementById(`enemy-display-${currentTarget.index}`), damage, 'damage');
                     updateBattleLog(`You cast ${spell.name} on ${currentTarget.name} for ${damage} damage!`);
                     updateDamageUI(currentTarget);
                 }
@@ -1823,20 +2120,22 @@
 
                     updateStatsUI();
                     closeModal();
-                    // After level up, if no battle is active, start a new one
+                    
                     if (!isBattleActive) {
-                        handleNextBattle();
+                       handleNextBattle();
                     }
                 };
             }
 
             // --- Initial Setup ---
+            startBattleButton.addEventListener('click', startBattle);
             updateStatsUI();
             updateGoldUI();
-            setupSacrificeOptions();
-            spawnBattle(battleSequence[battleSequenceIndex]);
+            prepareBattle(battleSequence[battleSequenceIndex]);
+            togglePreBattleUI(true);
+            toggleBattleActions(true);
+            setupMobileTabs(); // ** NEW ** Call the function to set up mobile UI
         });
     </script>
 </body>
 </html>
-
