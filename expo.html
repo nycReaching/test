@@ -11,25 +11,32 @@
     <style>
         body {
             font-family: 'Anton', sans-serif;
-            background-color: #0c0a09;
-            background-image: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+            /* Changed background to a green-to-purple gradient */
+            background: linear-gradient(135deg, #102a1b, #2a102a);
             color: #e2e8f0;
             letter-spacing: 0.05em;
             min-height: 100vh;
+            /* Added flex properties to center the game on the page */
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .game-window {
-            background-color: rgba(17, 24, 39, 0.8);
-            border: 1px solid #4a5568;
+            /* Made the window background even more transparent */
+            background-color: rgba(12, 10, 9, 0.5);
+            /* Updated border color to match the new theme */
+            border: 1px solid #6b7280;
             border-radius: 0.5rem;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(8px);
+            /* Increased the blur for a better transparency effect */
+            backdrop-filter: blur(12px);
             transition: opacity 0.3s ease, filter 0.3s ease;
         }
         .window-title {
             background: linear-gradient(to bottom, #4a5568, #2d3748);
             border-top-left-radius: 0.5rem;
             border-top-right-radius: 0.5rem;
-            padding: 0.25rem 1rem; /* Reduced padding */
+            padding: 0.2rem 0.8rem; /* Reduced padding */
             border-bottom: 1px solid #718096;
             font-family: 'Anton', sans-serif;
             color: #f7fafc;
@@ -37,7 +44,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            text-transform: uppercase; /* Added for all caps */
+            text-transform: uppercase;
         }
         .readable-text {
             font-family: 'Inter', sans-serif;
@@ -46,13 +53,13 @@
         .stat-grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 0.5rem; /* Reduced gap */
+            gap: 0.4rem; /* Reduced gap */
         }
         .item-list li {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0.25rem 0.5rem; /* Reduced padding */
+            padding: 0.2rem 0.4rem; /* Reduced padding */
             border-bottom: 1px solid #4a5568;
             transition: background-color: 0.2s;
         }
@@ -71,13 +78,13 @@
         .sacrifice-options {
             display: flex;
             flex-direction: column;
-            gap: 0.75rem; /* Reduced gap */
+            gap: 0.6rem; /* Reduced gap */
             height: 100%;
             justify-content: center;
-            padding: 0.75rem; /* Reduced padding */
+            padding: 0.6rem; /* Reduced padding */
         }
         .sacrifice-button {
-            padding: 1rem; /* Reduced padding */
+            padding: 0.8rem; /* Reduced padding */
             border: 2px solid #4a5568;
             border-radius: 0.5rem;
             cursor: pointer;
@@ -86,7 +93,7 @@
             justify-content: space-between;
             align-items: center;
             list-style: none;
-            min-height: 80px; /* Enforce uniform height */
+            min-height: 70px; /* Enforce uniform height */
         }
         .sacrifice-button:hover:not(.disabled) {
             background-color: rgba(255, 255, 255, 0.05);
@@ -105,10 +112,9 @@
 
         .battle-area {
             display: flex;
-            justify-content: center; /* ** MODIFIED ** from space-around */
+            justify-content: space-around;
             align-items: center;
-            flex-wrap: wrap; /* ** NEW ** Allows enemies to stack vertically */
-            min-height: 110px; /* Reduced height */
+            min-height: 95px; /* Reduced height */
             gap: 1rem;
             transition: filter 0.3s ease-out;
         }
@@ -118,7 +124,7 @@
             align-items: center;
         }
         .character-battle-display, .enemy-battle-display {
-            padding: 0.5rem 1rem; /* Reduced padding */
+            padding: 0.4rem 0.8rem; /* Reduced padding */
             border-radius: 0.5rem;
             text-align: center;
             background-color: rgba(0,0,0,0.2);
@@ -126,21 +132,11 @@
             cursor: pointer;
         }
         .character-battle-display {
-            font-size: 3rem; /* Adjusted for mobile */
-        }
-        @media (min-width: 768px) {
-             .character-battle-display {
-                font-size: 4.5rem; /* Revert for larger screens */
-            }
+            font-size: 3rem; /* text-5xl */
         }
         .enemy-battle-display {
-            font-size: 3rem; /* Adjusted for mobile */
+            font-size: 3.8rem; /* Character emoji size - REDUCED */
             line-height: 1;
-        }
-        @media (min-width: 768px) {
-            .enemy-battle-display {
-                font-size: 4.5rem; /* Revert for larger screens */
-            }
         }
         .enemy-battle-display:hover {
             transform: scale(1.05);
@@ -169,8 +165,8 @@
             border-color: #4a5568;
         }
         .action-button {
-            border: none; color: white; padding: 0.5rem 1rem; text-align: center; /* Reduced padding */
-            font-size: 1rem; margin: 4px 2px; transition: all 0.3s ease; cursor: pointer;
+            border: none; color: white; padding: 0.4rem 0.8rem; text-align: center; /* Reduced padding */
+            font-size: 0.9rem; margin: 4px 2px; transition: all 0.3s ease; cursor: pointer;
             border-radius: 0.375rem; box-shadow: 0 4px 6px rgba(0,0,0,0.4); text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
             font-family: 'Anton', sans-serif; /* Ensuring Anton font */
             text-transform: uppercase; /* Ensuring uppercase */
@@ -201,7 +197,7 @@
             max-width: 500px;
         }
         .close-button {
-            background: none; border: none; font-size: 1.75rem; color: #cbd5e1;
+            background: none; border: none; font-size: 1.5rem; color: #cbd5e1;
             cursor: pointer; transition: color 0.2s; line-height: 1;
         }
         .close-button:hover { color: white; }
@@ -211,7 +207,7 @@
             margin-bottom: 1rem;
         }
         .levelup-choice {
-            padding: 0.75rem;
+            padding: 0.6rem; /* Reduced */
             border: 2px solid #4a5568;
             border-radius: 0.375rem;
             cursor: pointer;
@@ -229,11 +225,11 @@
         .stone-circle-container {
             display: flex;
             justify-content: space-around;
-            padding: 0.25rem 0; /* Reduced padding */
+            padding: 0.2rem 0; /* Reduced padding */
             align-items: center;
         }
         .stone-circle {
-            width: 32px; height: 32px; border-radius: 50%;
+            width: 28px; height: 28px; border-radius: 50%; /* Reduced */
             cursor: pointer; transition: all 0.2s;
             filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4)); /* Simple drop shadow added */
         }
@@ -242,11 +238,11 @@
             filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.5)); /* Enhanced drop shadow */
         }
         .stone-description {
-            min-height: 40px; /* Reduced height */
+            min-height: 36px; /* Reduced height */
             background-color: rgba(0,0,0,0.2);
             border-radius: 0.25rem;
             padding: 0.5rem;
-            margin-top: 0.5rem; /* Reduced margin */
+            margin-top: 0.4rem; /* Reduced margin */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -255,7 +251,7 @@
         }
         /* HP/MP Bar Styles */
         .stat-bar-container {
-            height: 10px;
+            height: 8px; /* Reduced */
             background-color: #2d3748;
             border-radius: 9999px;
             overflow: hidden;
@@ -272,15 +268,11 @@
         .mp-bar { background-color: #14b8a6; } /* teal-500 */
         .enemy-hp-bar { background-color: #ef4444; } /* red-500 */
 
-        .enemy-stats-text {
-            /* This class is a container, font is set by readable-text now */
-        }
-        
         #player-status-effects, [id^="enemy-status-"] {
             display: inline-flex;
             align-items: center;
             vertical-align: middle;
-            gap: 0.5rem;
+            gap: 0.4rem; /* Reduced */
         }
 
         /* Floating Number Animation */
@@ -289,70 +281,55 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 2rem;
+            font-size: 2.25rem; /* Increased size */
             font-weight: bold;
             font-family: 'Anton', sans-serif;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
             pointer-events: none;
-            animation: floatUp 1.5s ease-out forwards;
+            animation: fadeInOut 1.2s ease-out forwards;
             z-index: 100;
         }
 
-        @keyframes floatUp {
+        @keyframes fadeInOut {
             0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.8);
+            }
+            20% {
                 opacity: 1;
-                transform: translate(-50%, -50%) translateY(0);
+                transform: translate(-50%, -60%) scale(1.1);
+            }
+            80% {
+                opacity: 1;
+                transform: translate(-50%, -70%) scale(1);
             }
             100% {
                 opacity: 0;
-                transform: translate(-50%, -150%) translateY(-50px);
+                transform: translate(-50%, -80%);
             }
         }
 
         .floating-number.damage { color: #ef4444; } /* red-500 */
         .floating-number.heal { color: #22c55e; } /* green-500 */
         .floating-number.poison { color: #a855f7; } /* purple-500 */
-
-        /* ** NEW ** Tab Styles for Mobile */
-        .tab-button {
-            padding: 0.75rem 0;
-            flex-grow: 1;
-            text-align: center;
-            cursor: pointer;
-            background-color: #2d3748;
-            border-bottom: 3px solid transparent;
-            transition: all 0.2s ease-in-out;
-            text-transform: uppercase;
-        }
-        .tab-button:hover {
-            background-color: #4a5568;
-        }
-        .tab-button.active {
-            color: #f59e0b; /* amber-500 */
-            border-bottom-color: #f59e0b;
-            background-color: rgba(17, 24, 39, 0.8);
-        }
-        .tab-panel {
-            padding: 0.75rem;
-        }
-
     </style>
 </head>
-<body class="p-2 md:p-4">
+<body class="p-2 md:p-3">
 
-    <main class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <main class="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-3">
 
-        <div class="col-span-1 flex flex-col justify-between lg:order-1">
-            <div class="flex flex-col gap-4">
+        <!-- Left Column -->
+        <div class="col-span-1 flex flex-col gap-3">
+            <div class="flex flex-col gap-3">
                 <div class="game-window">
                     <h2 class="window-title">Character</h2>
-                    <div class="p-3 flex flex-col items-center">
+                    <div class="p-2 flex flex-col items-center">
                         <div class="relative flex items-center justify-center gap-2">
-                            <div class="character-battle-display">🧑🏼‍🦱</div>
+                            <div class="character-battle-display text-5xl">🧑🏼‍🦱</div>
                             <span id="player-status-effects"></span>
                         </div>
                     </div>
-                    <div class="p-3 pt-1 text-lg stat-grid">
+                    <div class="p-2 pt-1 text-base stat-grid">
                         <div class="col-span-2">
                             <div class="flex justify-between items-baseline"><span class="font-bold">❤️ HP:</span> <span id="stat-hp" class="ml-2 font-bold readable-text">10 / 10</span></div>
                             <div class="stat-bar-container"><div id="hp-bar" class="stat-bar hp-bar" style="width: 100%;"></div></div>
@@ -366,7 +343,7 @@
                         <div><span class="text-yellow-400 font-bold">👢 SPD:</span> <span id="stat-spd" class="ml-2 font-bold text-slate-200 readable-text">10</span></div>
                         <div><span class="text-orange-400 font-bold">❤️‍🔥 SPRT:</span> <span id="stat-sprt" class="ml-2 font-bold text-slate-200 readable-text">10</span></div>
                     </div>
-                    <div class="p-3 border-t border-gray-700 text-lg space-y-1">
+                    <div class="p-2 border-t border-gray-700 text-base space-y-1">
                         <div class="flex justify-between">
                             <span>📈 LVL: <span id="stat-lvl" class="ml-2 font-bold readable-text">1</span></span>
                             <span>⭐ EXP: <span id="stat-exp" class="ml-2 font-bold readable-text">0 / 10</span></span>
@@ -375,15 +352,15 @@
                             <span>💰 GOLD: <span id="gold-display" class="ml-2 font-bold text-yellow-400 readable-text">15</span></span>
                             <div class="flex items-center gap-2">
                                 <span>FORTUNES:</span>
-                                <button id="view-fortunes-button" class="action-button !py-1 !px-3 !m-0" style="background: linear-gradient(to top, #2d3748, #6b7280);"><span class="text-xl">🔮</span></button>
+                                <button id="view-fortunes-button" class="action-button !py-1 !px-2 !m-0" style="background: linear-gradient(to top, #2d3748, #6b7280);"><span class="text-lg">🔮</span></button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="hidden lg:block game-window">
+                <div class="game-window">
                     <h2 class="window-title">Equipped Stones</h2>
-                    <div class="p-3 space-y-1 readable-text">
+                    <div class="p-2 space-y-1 readable-text">
                          <div class="flex items-center gap-2">
                             <div id="stone-slot-1-circle" class="w-4 h-4 rounded-full bg-black border border-gray-600 shadow-inner"></div>
                             <div id="stone-slot-1" class="inventory-slot clickable flex-grow !mt-0 readable-text">Slot 1: Empty</div>
@@ -398,57 +375,1783 @@
                         </div>
                     </div>
                 </div>
-
-                <div class="hidden lg:block game-window">
-                    <h2 class="window-title">Equipment</h2>
-                    <div class="p-3 space-y-2 readable-text">
-                        <div>
-                            <p class="font-semibold text-gray-300">WEAPON</p>
-                            <div id="weapon-slot" class="inventory-slot clickable">Empty (View Collection)</div>
-                        </div>
-                        <div>
-                            <p class="font-semibold text-gray-300">ARMOR</p>
-                            <div id="armor-slot" class="inventory-slot clickable">Empty (View Collection)</div>
-                        </div>
-                    </div>
-                </div>
             </div>
-            
-            <button id="quick-tutorial-button" class="action-button w-full mt-4" style="background: linear-gradient(to top, #374151, #6b7280);">QUICK TUTORIAL</button>
         </div>
 
-        <div class="col-span-1 lg:col-span-2 flex flex-col gap-4 lg:order-2">
-
-            <div class="game-window flex flex-col">
-                <h2 class="window-title">Battle</h2>
-                <div id="battle-area-content" class="p-3 flex flex-col justify-center relative">
-                     <div id="battle-area-visuals">
-                         </div>
-                     <div id="start-battle-container" class="absolute inset-0 flex items-center justify-center z-10">
-                        <button id="start-battle-button" class="action-button text-2xl px-8 py-4" style="background: linear-gradient(to top, #166534, #22c55e);">START BATTLE</button>
-                     </div>
+        <!-- Right Column -->
+        <div class="col-span-1 lg:col-span-2 flex flex-col gap-3">
+            
+            <!-- START BATTLE WINDOW (Visible during Pre-battle) -->
+            <div id="start-battle-window" class="game-window">
+                <div class="p-2 flex items-center justify-center">
+                    <button id="start-battle-button" class="action-button text-xl px-6 py-3" style="background: linear-gradient(to top, #166534, #22c55e);">START BATTLE</button>
                 </div>
-                <div id="battle-log" class="p-2 text-center readable-text text-gray-400 border-t border-b border-gray-700 h-10 flex items-center justify-center">Prepare for battle!</div>
-                <div class="p-3 grid grid-cols-3 gap-2">
+            </div>
+
+            <!-- BATTLE WINDOW (Hidden during Pre-battle) -->
+            <div id="battle-window" class="game-window flex-col hidden flex-grow min-h-0">
+                <h2 class="window-title">Battle</h2>
+                <div id="battle-area-content" class="flex-grow flex flex-col justify-center relative p-2">
+                    <div id="battle-area-visuals">
+                        <!-- Enemies will be dynamically inserted here -->
+                    </div>
+                </div>
+                <div id="battle-log" class="p-2 text-center readable-text text-gray-400 border-t border-b border-gray-700 h-8 flex items-center justify-center">Prepare for battle!</div>
+                <div class="p-2 grid grid-cols-3 gap-2">
                     <button id="attack-button" class="action-button" style="background: linear-gradient(to top, #991b1b, #ef4444);">ATTACK</button>
                     <button id="spells-button" class="action-button" style="background: linear-gradient(to top, #0f766e, #14b8a6);">SPELLS</button>
                     <button id="items-button" class="action-button" style="background: linear-gradient(to top, #b45309, #f59e0b);">ITEMS</button>
                 </div>
             </div>
             
-            <div class="hidden lg:grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- PRE-BATTLE WINDOWS (Visible during Pre-battle) -->
+            <div id="pre-battle-windows" class="flex flex-col gap-3">
                 <div id="sacrifice-window-container" class="game-window flex flex-col">
                     <h2 class="window-title">MAKE A SACRIFICE</h2>
                     <div class="flex-grow">
                         <ul id="fortunes-list" class="sacrifice-options">
-                            </ul>
+                            <!-- Sacrifice options will be dynamically inserted here -->
+                        </ul>
                     </div>
-                    <div class="p-3 border-t border-gray-700">
+                    <div class="p-2 border-t border-gray-700">
                         <button id="renegotiate-sacrifices-button" class="action-button w-full" style="background: linear-gradient(to top, #450a0a, #7f1d1d);">RENEGOTIATE SACRIFICE</button>
                         <button id="reveal-fortunes-button" class="action-button w-full hidden" style="background: linear-gradient(to top, #2d3748, #6b7280);" disabled>REVEAL FORTUNES</button>
                     </div>
                 </div>
-                <div class="game-window flex flex-col">
-                    <h2 class="window-title">Shop</h2>
-                     <div class="flex-grow">
-                        <ul class="it
+                 <div class="game-window">
+                    <h2 class="window-title">Equipment</h2>
+                    <div class="p-2 grid grid-cols-2 gap-3 items-center readable-text">
+                        <div>
+                            <p class="font-semibold text-gray-300">WEAPON <span id="weapon-unlock-level-display" class="hidden ml-2 readable-text font-normal"></span></p>
+                            <div id="weapon-slot" class="inventory-slot clickable">Empty</div>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-gray-300">ARMOR <span id="armor-unlock-level-display" class="hidden ml-2 readable-text font-normal"></span></p>
+                            <div id="armor-slot" class="inventory-slot clickable">Empty</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Buttons Container -->
+            <div class="grid grid-cols-3 gap-3">
+                <button id="open-shop-button" class="action-button w-full" style="background: linear-gradient(to top, #b45309, #f59e0b);">SHOP</button>
+                <button id="quick-tutorial-button" class="action-button w-full" style="background: linear-gradient(to top, #374151, #6b7280);">QUICK TUTORIAL</button>
+                <button onclick="location.reload()" class="action-button w-full" style="background: linear-gradient(to top, #991b1b, #ef4444);">RESET GAME</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Area -->
+    <div id="modal-overlay" class="modal-overlay">
+        
+        <!-- Spells Modal -->
+        <div id="spells-modal" class="game-window modal-window hidden">
+            <h2 class="window-title"><span>Spells</span> <button class="close-button">&times;</button></h2>
+            <ul id="spells-list" class="item-list p-2 interactive">
+                <!-- Spells will be dynamically added here -->
+            </ul>
+        </div>
+        
+        <!-- Weapons Modal -->
+        <div id="weapons-modal" class="game-window modal-window hidden">
+            <h2 class="window-title"><span>Weapon Collection</span> <button class="close-button">&times;</button></h2>
+            <div class="p-2">
+                 <ul class="item-list bg-gray-900/50 rounded-md readable-text interactive text-sm">
+                    <li data-name="Bow" data-stat="ATK" data-value="1" data-emoji="🏹"><span>🏹 Bow</span> <span class="readable-text">ATK +1</span></li>
+                    <li data-name="Dagger" data-stat="ATK" data-value="1" data-emoji="🗡️"><span>🗡️ Dagger</span> <span class="readable-text">ATK +1</span></li>
+                    <li data-name="Hammer" data-stat="ATK" data-value="3" data-emoji="🔨"><span>🔨 Hammer</span> <span class="readable-text">ATK +3</span></li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Armor Modal -->
+        <div id="armor-modal" class="game-window modal-window hidden">
+            <h2 class="window-title"><span>Armor Collection</span> <button class="close-button">&times;</button></h2>
+            <div class="p-2">
+                 <ul class="item-list bg-gray-900/50 rounded-md readable-text interactive text-sm">
+                    <li data-name="Leather Gear" data-stat="DEF" data-value="1" data-emoji="🧥"><span>🧥 Leather Gear</span> <span class="readable-text">DEF +1</span></li>
+                    <li data-name="Rock Bracer" data-stat="DEF" data-value="2" data-emoji="🪨"><span>🪨 Rock Bracer</span> <span class="readable-text">DEF +2</span></li>
+                    <li data-name="Cloak" data-stat="SPRT" data-value="15" data-emoji="🕸️"><span>🕸️ Cloak</span> <span class="readable-text">SPRT +15</span></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Items Modal -->
+        <div id="items-modal" class="game-window modal-window hidden">
+            <h2 class="window-title"><span>Items</span> <button class="close-button">&times;</button></h2>
+            <ul class="item-list p-2">
+                <li class="readable-text text-gray-400 justify-center">Purchased items will appear here.</li>
+            </ul>
+        </div>
+        
+        <!-- Fortunes Modal -->
+        <div id="fortunes-modal" class="game-window modal-window hidden">
+            <h2 class="window-title"><span>My Fortunes 🔮</span> <button class="close-button">&times;</button></h2>
+            <ul id="player-fortunes-list" class="item-list p-2">
+                <!-- Player's fortunes will be dynamically added here -->
+            </ul>
+        </div>
+
+        <!-- Shop Modal -->
+        <div id="shop-modal" class="game-window modal-window hidden">
+            <h2 class="window-title"><span>Shop</span><button class="close-button">&times;</button></h2>
+            <div class="flex-grow">
+                <ul class="item-list p-2">
+                    <li>
+                        <div class="readable-text">
+                            <p class="font-bold text-base">🍶 TONIC</p>
+                            <p class="text-sm text-gray-400">Restore 6 HP</p>
+                        </div>
+                        <button class="shop-buy-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 py-1 px-2 rounded transition-colors readable-text text-sm" data-cost="5" data-name="TONIC" data-emoji="🍶" data-description="Restore 6 HP">🪙 5</button>
+                    </li>
+                    <li>
+                        <div class="readable-text">
+                            <p class="font-bold text-base">💎 GEM</p>
+                            <p class="text-sm text-gray-400">Random buff & debuff</p>
+                        </div>
+                        <button class="shop-buy-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 py-1 px-2 rounded transition-colors readable-text text-sm" data-cost="25" data-name="GEM" data-emoji="💎" data-description="Random buff & debuff">🪙 25</button>
+                    </li>
+                    <li>
+                        <div class="readable-text">
+                            <p class="font-bold text-base">✝️ CROSS</p>
+                            <p class="text-sm text-gray-400">+5 SPRT & cure curse</p>
+                        </div>
+                        <button class="shop-buy-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 py-1 px-2 rounded transition-colors readable-text text-sm" data-cost="10" data-name="CROSS" data-emoji="✝️" data-description="+5 SPRT & cure curse">🪙 10</button>
+                    </li>
+                     <li>
+                        <div class="readable-text">
+                            <p class="font-bold text-base">🧚🏼 FAIRY</p>
+                            <p class="text-sm text-gray-400">Restore 5 MP & gain +1 max MP</p>
+                        </div>
+                        <button class="shop-buy-button bg-yellow-500 hover:bg-yellow-600 text-gray-900 py-1 px-2 rounded transition-colors readable-text text-sm" data-cost="15" data-name="FAIRY" data-emoji="🧚🏼" data-description="Restore 5 MP and gain +1 max MP">🪙 15</button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Stones Codex Modal -->
+        <div id="stones-codex-modal" class="game-window modal-window hidden">
+            <h2 class="window-title"><span>Stones Codex</span><button class="close-button">&times;</button></h2>
+            <div class="p-2">
+                <div class="stone-circle-container">
+                    <!-- Debuffs -->
+                    <div class="stone-circle" data-name="Poison" data-emoji="☠️" data-info='<div class="flex items-center justify-center gap-x-3"><span class="text-xl">☠️</span><span class="text-sm">Poison: 1 dmg per turn (ignores DEF)</span></div>' style="background-color: #a855f7;"></div>
+                    <div class="stone-circle" data-name="Curse" data-emoji="🕯️" data-info='<div class="flex items-center justify-center gap-x-3 text-center"><span class="text-xl">🕯️</span><span class="text-sm">Curse: -2 ATK &amp; -2 DEF for 4 turns</span></div>' style="background-color: #374151;"></div>
+                    <div class="stone-circle" data-name="Slow" data-emoji="🐌" data-info='<div class="flex items-center justify-center gap-x-3 text-center"><span class="text-xl">🐌</span><span class="text-sm">Slow: Lose next action &amp; sets SPD to 0 for 3 turns</span></div>' style="background-color: #a16207;"></div>
+                    
+                    <div class="h-8 w-px bg-gray-600 mx-2"></div> <!-- Separator -->
+
+                    <!-- Buffs -->
+                    <div class="stone-circle" data-name="Regen" data-emoji="❇️" data-info='<div class="flex items-center justify-center gap-x-3"><span class="text-xl">❇️</span><span class="text-sm">Regen: Heal 1 HP per turn</span></div>' style="background-color: #22c55e;"></div>
+                    <div class="stone-circle" data-name="Blessing" data-emoji="🌟" data-info='<div class="flex items-center justify-center gap-x-3 text-center"><span class="text-xl">🌟</span><span class="text-sm">Blessing: Heal 4 HP &amp; +5 SPRT for 4 turns</span></div>' style="background-color: #e5e7eb;"></div>
+                    <div class="stone-circle" data-name="Rush" data-emoji="⚡" data-info='<div class="flex items-center justify-center gap-x-3 text-center"><span class="text-xl">⚡</span><span class="text-sm">Rush: Double next action &amp; +25 SPD for 3 turns</span></div>' style="background-color: #eab308;"></div>
+                </div>
+                <div id="stone-description-box" class="stone-description readable-text">
+                    <span class="text-gray-400 text-sm">Click a stone to see its effect.</span>
+                </div>
+                <button id="equip-stone-button" class="action-button w-full mt-2 invisible" style="background: linear-gradient(to top, #581c87, #9333ea);">EQUIP STONE</button>
+            </div>
+        </div>
+
+        <!-- Tutorial Modal -->
+        <div id="tutorial-modal" class="game-window modal-window hidden">
+            <h2 class="window-title"><span>Quick Tutorial</span> <button class="close-button">&times;</button></h2>
+            <div class="p-3 readable-text space-y-3 text-base">
+                <div>
+                    <h3 class="text-lg font-bold mb-2 text-gray-300 uppercase tracking-wider">Base Stats</h3>
+                    <p><span class="font-bold text-red-400">⚔️ ATK</span> = Total attack damage.</p>
+                    <p><span class="font-bold text-blue-500">🛡️ DEF</span> = Total damage reduction.</p>
+                    <p><span class="font-bold text-yellow-400">👢 SPD</span> = Determines turn order and % bonus turn.</p>
+                    <p><span class="font-bold text-orange-400">❤️‍🔥 SPRT</span> = % chance to double the effect of spells & items.</p>
+                </div>
+                <div class="pt-3 border-t border-gray-700">
+                    <h3 class="text-lg font-bold mb-2 text-gray-300 uppercase tracking-wider">Status Effects</h3>
+                    <p class="text-sm italic text-gray-400 -mt-1 mb-3">Note: All buffs and debuffs are cleared at the end of battle.</p>
+                    
+                    <h4 class="font-bold mb-1 text-red-400 uppercase tracking-wider">Debuffs</h4>
+                    <div class="space-y-1 text-sm pl-4">
+                        <p><span class="font-bold">☠️ Poison</span> → 1 dmg per turn (ignores DEF).</p>
+                        <p><span class="font-bold">🕯️ Curse</span> → -2 ATK &amp; -2 DEF for 4 turns.</p>
+                        <p><span class="font-bold">🐌 Slow</span> → Lose next action &amp; sets SPD to 0 for 3 turns.</p>
+                    </div>
+
+                    <h4 class="font-bold mt-3 mb-1 text-green-400 uppercase tracking-wider">Buffs</h4>
+                    <div class="space-y-1 text-sm pl-4">
+                        <p><span class="font-bold">❇️ Regen</span> → Heal 1 HP per turn.</p>
+                        <p><span class="font-bold">🌟 Blessing</span> → Heal 4 HP &amp; +5 SPRT for 4 turns.</p>
+                        <p><span class="font-bold">⚡ Rush</span> → Double next action &amp; +25 SPD for 3 turns.</p>
+                        <p><span class="font-bold">🛡️ Barrier</span> → +4 DEF for 4 turns.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Level Up Modal -->
+        <div id="levelup-modal" class="game-window modal-window hidden">
+            <h2 class="window-title"><span>LEVEL UP!</span></h2>
+            <div class="p-3 readable-text">
+                <p class="text-center text-base mb-4">Allocate your stat points.</p>
+                
+                <div class="levelup-choice-group" id="levelup-vitality">
+                    <p class="text-center font-bold text-gray-400 mb-2 text-sm">2 POINTS</p>
+                    <div class="grid grid-cols-2 gap-3 text-sm">
+                        <div class="levelup-choice text-center" data-stat="HP" data-value="2">❤️ +2 Max HP</div>
+                        <div class="levelup-choice text-center" data-stat="MP" data-value="2">✨ +2 Max MP</div>
+                    </div>
+                </div>
+
+                <div class="levelup-choice-group" id="levelup-strength">
+                     <p class="text-center font-bold text-gray-400 mb-2 text-sm">1 POINT</p>
+                    <div class="grid grid-cols-2 gap-3 text-sm">
+                        <div class="levelup-choice text-center" data-stat="ATK" data-value="1">⚔️ +1 ATK</div>
+                        <div class="levelup-choice text-center" data-stat="DEF" data-value="1">🛡️ +1 DEF</div>
+                    </div>
+                </div>
+
+                <div class="levelup-choice-group" id="levelup-agility">
+                     <p class="text-center font-bold text-gray-400 mb-2 text-sm">2 POINTS</p>
+                    <div class="grid grid-cols-2 gap-3 text-sm">
+                        <div class="levelup-choice text-center" data-stat="SPD" data-value="2">👢 +2 SPD</div>
+                        <div class="levelup-choice text-center" data-stat="SPRT" data-value="2">❤️‍🔥 +2 SPRT</div>
+                    </div>
+                </div>
+
+                <button id="confirm-levelup-button" class="action-button w-full mt-4" style="background: linear-gradient(to top, #0f766e, #14b8a6);" disabled>CONFIRM</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const modalOverlay = document.getElementById('modal-overlay');
+            const modals = {
+                spells: document.getElementById('spells-modal'),
+                weapons: document.getElementById('weapons-modal'),
+                armor: document.getElementById('armor-modal'),
+                items: document.getElementById('items-modal'),
+                tutorial: document.getElementById('tutorial-modal'),
+                levelup: document.getElementById('levelup-modal'),
+                fortunes: document.getElementById('fortunes-modal'),
+                shop: document.getElementById('shop-modal'),
+                stones: document.getElementById('stones-codex-modal'),
+            };
+
+            const openButtons = {
+                spells: document.getElementById('spells-button'),
+                weapons: document.getElementById('weapon-slot'),
+                armor: document.getElementById('armor-slot'),
+                items: document.getElementById('items-button'),
+                tutorial: document.getElementById('quick-tutorial-button'),
+                fortunes: document.getElementById('view-fortunes-button'),
+                shop: document.getElementById('open-shop-button'),
+            };
+
+            const closeButtons = document.querySelectorAll('.close-button');
+
+            let currentModal = null;
+
+            // --- Game Data ---
+            const player = {
+                name: 'Jules',
+                isPlayer: true,
+                level: 1,
+                baseStats: { HP: 10, MP: 10, ATK: 1, DEF: 1, SPD: 10, SPRT: 10 },
+                currentHP: 10,
+                currentMP: 10,
+                statusEffects: [],
+                equippedWeapon: null,
+                equippedArmor: null,
+                weaponUnlockLevel: 0,
+                armorUnlockLevel: 0,
+            };
+            
+            let gold = 15;
+            let exp = 0;
+            let playerInventory = [];
+            let playerFortunes = [];
+            let playerSacrifices = []; // To track special sacrifices like 'Unstable Mind'
+            let brokenCodexStones = []; // To track stones broken by 'Clumsy'
+            let equippedStones = [null, null, null];
+            let brokenStoneSlots = [false, false, false];
+            let selectedStone = null;
+            let stoneSlotToEquip = null;
+            let fortuneChosenThisBattle = false;
+            let battleSequenceIndex = 0;
+
+            // --- Helper function to check for fortunes ---
+            function playerHasFortune(fortuneName) {
+                return playerFortunes.some(f => f.name === fortuneName);
+            }
+            
+            const enemies = {
+                darkWolf: { name: 'Dark Wolf', maxHp: 5, attack: 4, def: 0, spd: 5, emoji: '🐺', exp: 5, gold: 5 },
+                poisonFrog: { name: 'Poisonous Frog', maxHp: 5, attack: 4, def: 0, spd: 5, emoji: '🐸', exp: 5, gold: 5, debuffs: [{ name: 'Poison', emoji: '☠️', chance: 50 }] },
+                golem: { name: 'Golem', maxHp: 30, attack: 6, def: 3, spd: 5, emoji: '🗿', exp: 15, gold: 20 },
+                cursemancer: { name: 'Cursemancer', maxHp: 14, attack: 0, def: 0, spd: 0, emoji: '🧙🏽‍♂️', exp: 10, gold: 15, debuffs: [{ name: 'Curse', emoji: '🕯️', chance: 50 }] },
+                spider: { name: 'Spider', maxHp: 9, attack: 7, def: 3, spd: 25, emoji: '🕷️', exp: 8, gold: 10 },
+            };
+            const battleSequence = [
+                ['darkWolf', 'poisonFrog'],
+                ['golem'],
+                ['cursemancer', 'spider'],
+            ];
+            let activeEnemies = [];
+            let currentTarget = null;
+            
+            const spells = [
+                { name: 'FIRE', emoji: '🔥', cost: 4, damage: 6, description: 'Deal 6 dmg' },
+                { name: 'ICE', emoji: '❄️', cost: 4, damage: 2, effect: 'Slow', description: 'Deal 2 dmg + inflict 🐌 Slow' },
+                { name: 'BARRIER', emoji: '🛡️', cost: 5, effect: 'Barrier', description: '+4 DEF for 4 turns' }
+            ];
+
+            // --- Battle Turn Management ---
+            let turnQueue = [];
+            let currentTurnIndex = 0;
+            let isBattleActive = false;
+            let isBattleStarted = false;
+
+            // --- UI Elements ---
+            const statElements = {
+                HP: document.getElementById('stat-hp'),
+                MP: document.getElementById('stat-mp'),
+                ATK: document.getElementById('stat-atk'),
+                DEF: document.getElementById('stat-def'),
+                SPD: document.getElementById('stat-spd'),
+                SPRT: document.getElementById('stat-sprt'),
+                LVL: document.getElementById('stat-lvl'),
+                EXP: document.getElementById('stat-exp'),
+            };
+            const playerStatusEffectsEl = document.getElementById('player-status-effects');
+            const hpBar = document.getElementById('hp-bar');
+            const mpBar = document.getElementById('mp-bar');
+            const goldElement = document.getElementById('gold-display');
+            const itemsModalList = document.querySelector('#items-modal .item-list');
+            const weaponSlot = document.getElementById('weapon-slot');
+            const armorSlot = document.getElementById('armor-slot');
+            const stoneSlots = [
+                document.getElementById('stone-slot-1'),
+                document.getElementById('stone-slot-2'),
+                document.getElementById('stone-slot-3'),
+            ];
+            const stoneSlotCircles = [
+                document.getElementById('stone-slot-1-circle'),
+                document.getElementById('stone-slot-2-circle'),
+                document.getElementById('stone-slot-3-circle'),
+            ];
+            const attackButton = document.getElementById('attack-button');
+            const spellsButton = document.getElementById('spells-button');
+            const itemsButton = document.getElementById('items-button');
+            const battleAreaVisuals = document.getElementById('battle-area-visuals');
+            const startBattleButton = document.getElementById('start-battle-button');
+            const battleLog = document.getElementById('battle-log');
+            const fortunesList = document.getElementById('fortunes-list');
+            const spellsList = document.getElementById('spells-list');
+            const revealFortunesButton = document.getElementById('reveal-fortunes-button');
+            const renegotiateButton = document.getElementById('renegotiate-sacrifices-button');
+            
+            // UI Elements for View Switching
+            const startBattleWindow = document.getElementById('start-battle-window');
+            const battleWindow = document.getElementById('battle-window');
+            const preBattleWindows = document.getElementById('pre-battle-windows');
+            
+            // --- Game Logic Functions ---
+
+            /**
+             * Creates a floating number animation over a target element for damage/healing.
+             * @param {HTMLElement} target - The character or enemy display element.
+             * @param {number} amount - The amount of damage or healing.
+             * @param {string} type - 'damage', 'heal', or 'poison'.
+             */
+            function showFloatingNumber(target, amount, type) {
+                if (amount <= 0 || !target) return; // Don't show for 0 or if target is missing
+
+                const parentContainer = target.parentElement;
+                if (!parentContainer) return;
+                parentContainer.style.position = 'relative'; // Ensure parent is relative for positioning
+
+                const numberEl = document.createElement('div');
+                let text = '';
+                switch(type) {
+                    case 'damage': text = `-${amount}`; break;
+                    case 'heal': text = `+${amount}`; break;
+                    case 'poison': text = `-${amount}`; break;
+                }
+                numberEl.textContent = text;
+                numberEl.className = `floating-number ${type}`;
+
+                parentContainer.appendChild(numberEl);
+
+                setTimeout(() => {
+                    if (numberEl.parentElement) {
+                        parentContainer.removeChild(numberEl);
+                    }
+                }, 1200); // Must match CSS animation duration
+            }
+
+            function updateEquipmentUI() {
+                const weaponUnlockDisplay = document.getElementById('weapon-unlock-level-display');
+                const armorUnlockDisplay = document.getElementById('armor-unlock-level-display');
+                const weaponSlotEl = document.getElementById('weapon-slot');
+                const armorSlotEl = document.getElementById('armor-slot');
+
+                // Weapon
+                if (player.weaponUnlockLevel > 0) {
+                    weaponUnlockDisplay.textContent = `🔓 LVL: ${player.weaponUnlockLevel}`;
+                    weaponUnlockDisplay.classList.remove('hidden');
+                    const isUnlocked = player.level >= player.weaponUnlockLevel;
+                    weaponUnlockDisplay.classList.toggle('text-green-400', isUnlocked);
+                    weaponUnlockDisplay.classList.toggle('text-red-400', !isUnlocked);
+                    weaponSlotEl.classList.toggle('clickable', isUnlocked);
+                } else {
+                    weaponUnlockDisplay.classList.add('hidden');
+                    weaponSlotEl.classList.add('clickable');
+                }
+
+                // Armor
+                if (player.armorUnlockLevel > 0) {
+                    armorUnlockDisplay.textContent = `🔓 LVL: ${player.armorUnlockLevel}`;
+                    armorUnlockDisplay.classList.remove('hidden');
+                    const isUnlocked = player.level >= player.armorUnlockLevel;
+                    armorUnlockDisplay.classList.toggle('text-green-400', isUnlocked);
+                    armorUnlockDisplay.classList.toggle('text-red-400', !isUnlocked);
+                    armorSlotEl.classList.toggle('clickable', isUnlocked);
+                } else {
+                    armorUnlockDisplay.classList.add('hidden');
+                    armorSlotEl.classList.add('clickable');
+                }
+            }
+
+            function calculateTotalStats(character) {
+                const total = { ...character.baseStats };
+                
+                if (character.isPlayer) {
+                    if (player.equippedWeapon) total.ATK += player.equippedWeapon.value;
+                    if (player.equippedArmor) {
+                        if (player.equippedArmor.stat === 'DEF') total.DEF += player.equippedArmor.value;
+                        if (player.equippedArmor.stat === 'SPRT') total.SPRT += player.equippedArmor.value;
+                    }
+                }
+
+                character.statusEffects.forEach(effect => {
+                    if(effect.statMods) {
+                        total.ATK += effect.statMods.ATK || 0;
+                        total.DEF += effect.statMods.DEF || 0;
+                        total.SPD += effect.statMods.SPD || 0;
+                        total.SPRT += effect.statMods.SPRT || 0;
+                    }
+                });
+                
+                if (character.isPlayer && playerHasFortune('Battle Grace')) {
+                    const buffNames = ['Regen', 'Blessing', 'Rush', 'Barrier'];
+                    const buffCount = character.statusEffects.filter(e => buffNames.includes(e.name)).length;
+                    if (buffCount >= 2) {
+                        total.DEF += 1;
+                    }
+                }
+
+                total.ATK = Math.max(0, total.ATK);
+                total.DEF = Math.max(0, total.DEF);
+                total.SPD = Math.max(0, total.SPD);
+                total.SPRT = Math.max(0, total.SPRT);
+                
+                if (character.statusEffects.some(e => e.setsSPDToZero)) {
+                    total.SPD = 0;
+                }
+
+                return total;
+            }
+
+            function updateGoldUI() {
+                goldElement.textContent = gold;
+            }
+            
+            function updateShopPrices() {
+                const discount = playerHasFortune('Bartering Edge') ? 2 : 0;
+                document.querySelectorAll('.shop-buy-button').forEach(button => {
+                    const originalCost = parseInt(button.dataset.cost, 10);
+                    const discountedCost = Math.max(0, originalCost - discount);
+                    button.innerHTML = `🪙 ${discountedCost}`;
+                });
+            }
+
+            function updateItemsModalUI() {
+                itemsModalList.innerHTML = '';
+                if (playerInventory.length === 0) {
+                    itemsModalList.innerHTML = '<li class="readable-text text-gray-400 justify-center">Purchased items will appear here.</li>';
+                    return;
+                }
+                playerInventory.forEach((item, index) => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <div class="readable-text">
+                            <p class="font-bold text-base">${item.emoji} ${item.name}</p>
+                            <p class="text-sm text-gray-400">${item.description}</p>
+                        </div>
+                        <button class="use-item-button bg-green-600 hover:bg-green-700 text-white py-1 px-3 rounded-sm text-sm readable-text">USE</button>
+                    `;
+                    li.querySelector('.use-item-button').addEventListener('click', () => useItem(item, index));
+                    itemsModalList.appendChild(li);
+                });
+            }
+
+            function formatStatDisplay(base, total) {
+                const change = total - base;
+                if (change === 0) {
+                    return total;
+                }
+                const sign = change >= 0 ? '+' : '';
+                return `${base}${sign}${change}(${total})`;
+            }
+
+            function updateStatsUI() {
+                const totalStats = calculateTotalStats(player);
+                
+                player.currentHP = Math.min(player.currentHP, player.baseStats.HP);
+                player.currentMP = Math.min(player.currentMP, player.baseStats.MP);
+
+                statElements.HP.textContent = `${player.currentHP} / ${player.baseStats.HP}`;
+                statElements.MP.textContent = `${player.currentMP} / ${player.baseStats.MP}`;
+                
+                statElements.ATK.textContent = formatStatDisplay(player.baseStats.ATK, totalStats.ATK);
+                statElements.DEF.textContent = formatStatDisplay(player.baseStats.DEF, totalStats.DEF);
+                statElements.SPRT.textContent = formatStatDisplay(player.baseStats.SPRT, totalStats.SPRT);
+                statElements.SPD.textContent = formatStatDisplay(player.baseStats.SPD, totalStats.SPD);
+
+                statElements.LVL.textContent = player.level;
+                statElements.EXP.textContent = `${exp} / 10`;
+
+                const hpPercent = (player.currentHP / player.baseStats.HP) * 100;
+                const mpPercent = (player.currentMP / player.baseStats.MP) * 100;
+                hpBar.style.width = `${hpPercent}%`;
+                mpBar.style.width = `${mpPercent}%`;
+                
+                updateStatusEffectsUI(player, playerStatusEffectsEl);
+            }
+
+            function updateStatusEffectsUI(character, element) {
+                 element.innerHTML = character.statusEffects.map(effect => {
+                    if (effect.name === 'Poison') {
+                        return `<div class="inline-flex items-center text-base gap-1">${effect.emoji}<span class="text-sm font-bold text-purple-400 readable-text">${effect.currentDamage}</span></div>`;
+                    }
+                    if (effect.name === 'Regen') {
+                        return `<div class="inline-flex items-center text-base gap-1">${effect.emoji}<span class="text-sm font-bold text-green-400 readable-text">1</span></div>`;
+                    }
+                    const durationDisplay = `<span class="absolute -top-1 -right-1.5 text-xs font-bold text-white bg-black/60 rounded-full h-4 w-4 flex items-center justify-center pointer-events-none readable-text">${effect.duration}</span>`;
+                    return `<div class="relative inline-block text-base">${effect.emoji}${durationDisplay}</div>`;
+                }).join('');
+            }
+            
+            function updateBattleLog(message) {
+                battleLog.textContent = message;
+            }
+
+            // Toggles between battle and pre-battle views
+            function toggleBattleView(isBattleMode) {
+                if (isBattleMode) {
+                    startBattleWindow.classList.add('hidden');
+                    preBattleWindows.classList.add('hidden');
+                    battleWindow.classList.remove('hidden');
+                    battleWindow.classList.add('flex'); // Make sure it displays as a flex container
+                } else {
+                    startBattleWindow.classList.remove('hidden');
+                    preBattleWindows.classList.remove('hidden');
+                    battleWindow.classList.add('hidden');
+                    battleWindow.classList.remove('flex');
+                }
+            }
+
+            function prepareBattle(enemyKeys) {
+                fortuneChosenThisBattle = false;
+                setupSacrificeOptions();
+
+                activeEnemies = [];
+                currentTarget = null;
+                battleAreaVisuals.innerHTML = ''; 
+
+                const battleArea = document.createElement('div');
+                battleArea.className = 'battle-area';
+
+                if (enemyKeys.length === 1) {
+                    battleArea.style.justifyContent = 'flex-start';
+                    battleArea.style.paddingLeft = 'calc(25% - 2rem)';
+                }
+
+                enemyKeys.forEach((key, index) => {
+                    if (enemies[key]) {
+                        const enemyData = { 
+                            ...enemies[key], 
+                            hp: enemies[key].maxHp, 
+                            currentHP: enemies[key].maxHp,
+                            index,
+                            statusEffects: [],
+                            baseStats: { ATK: enemies[key].attack, DEF: enemies[key].def, SPD: enemies[key].spd, SPRT: 0 }
+                        };
+                        activeEnemies.push(enemyData);
+
+                        const enemyWrapper = document.createElement('div');
+                        enemyWrapper.className = 'flex items-center gap-4';
+
+                        const statsContainer = document.createElement('div');
+                        statsContainer.id = `enemy-stats-${index}`;
+                        statsContainer.className = 'enemy-stats-text text-right w-24 font-bold readable-text text-sm';
+                        
+                        const container = document.createElement('div');
+                        container.className = 'enemy-container text-center relative';
+                        container.id = `enemy-container-${index}`;
+
+                        const nameEl = document.createElement('h3');
+                        nameEl.className = 'text-base';
+                        nameEl.innerHTML = `${enemyData.name.toUpperCase()} <span id="enemy-status-${index}" class="ml-1"></span>`;
+
+                        const hpContainer = document.createElement('div');
+                        hpContainer.className = 'w-full mt-2 text-center';
+                        hpContainer.innerHTML = `
+                            <p id="enemy-hp-${index}" class="text-base font-bold readable-text text-slate-200">HP: ${enemyData.currentHP} / ${enemyData.maxHp}</p>
+                            <div class="stat-bar-container mt-1"><div id="enemy-hp-bar-${index}" class="stat-bar enemy-hp-bar" style="width: 100%;"></div></div>
+                        `;
+                        
+                        const displayEl = document.createElement('div');
+                        displayEl.id = `enemy-display-${index}`;
+                        displayEl.className = 'enemy-battle-display mt-2';
+                        displayEl.textContent = enemyData.emoji;
+                        
+                        displayEl.addEventListener('click', () => {
+                            if (enemyData.currentHP <= 0) return; 
+                            document.querySelectorAll('.enemy-battle-display').forEach(el => el.classList.remove('targeted'));
+                            displayEl.classList.add('targeted');
+                            currentTarget = enemyData;
+                        });
+
+                        container.appendChild(nameEl);
+                        container.appendChild(displayEl);
+                        container.appendChild(hpContainer);
+
+                        enemyWrapper.appendChild(statsContainer);
+                        enemyWrapper.appendChild(container);
+
+                        battleArea.appendChild(enemyWrapper);
+                    }
+                });
+                
+                battleAreaVisuals.appendChild(battleArea);
+                
+                activeEnemies.forEach(enemy => updateEnemyStatsUI(enemy));
+
+                const firstLivingEnemy = activeEnemies.find(e => e.currentHP > 0);
+                if(firstLivingEnemy) {
+                    document.getElementById(`enemy-display-${firstLivingEnemy.index}`).click();
+                }
+
+                toggleBattleView(false);
+
+                isBattleStarted = false;
+                isBattleActive = false;
+            }
+
+            function startBattle() {
+                isBattleStarted = true;
+                toggleBattleView(true); // Switch to battle mode
+                isBattleActive = true;
+                startNewRound();
+            }
+
+
+            function updateEnemyStatsUI(enemy) {
+                 const totalStats = calculateTotalStats(enemy);
+                 const statsContainer = document.getElementById(`enemy-stats-${enemy.index}`);
+                 if (statsContainer) {
+                    let debuffHtml = '';
+                    if (enemy.debuffs && enemy.debuffs.length > 0) {
+                        const debuffString = enemy.debuffs.map(d => `${d.emoji}: ${d.chance}%`).join(' ');
+                        debuffHtml = `<p class="text-purple-400 mt-1">${debuffString}</p>`;
+                    }
+                    statsContainer.innerHTML = `
+                        <p class="text-red-400">ATK: <span class="text-white">${totalStats.ATK}</span></p>
+                        <p class="text-blue-500">DEF: <span class="text-white">${totalStats.DEF}</span></p>
+                        <p class="text-yellow-400">SPD: <span class="text-white">${totalStats.SPD}</span></p>
+                        ${debuffHtml}
+                     `;
+                 }
+            }
+            
+            function toggleBattleActions(disabled) {
+                attackButton.disabled = disabled;
+                spellsButton.disabled = disabled;
+                itemsButton.disabled = disabled;
+
+                stoneSlots.forEach((slot, index) => {
+                    const stone = equippedStones[index];
+                    const canUse = !disabled && stone && !brokenStoneSlots[index];
+                    slot.classList.toggle('clickable', canUse);
+                    slot.classList.toggle('opacity-50', !canUse);
+                    slot.style.cursor = canUse ? 'pointer' : 'default';
+                });
+            }
+
+            const openModal = (modalId) => {
+                if (modalId === 'spells') updateSpellsUI();
+                if (modalId === 'items') updateItemsModalUI();
+                if (modalId === 'fortunes') updatePlayerFortunesUI();
+
+                if (currentModal) {
+                    currentModal.classList.add('hidden');
+                }
+                currentModal = modals[modalId];
+                if (currentModal) {
+                    modalOverlay.style.display = 'flex';
+                    currentModal.classList.remove('hidden');
+                }
+            };
+
+            const closeModal = () => {
+                modalOverlay.style.display = 'none';
+                if (currentModal) {
+                    currentModal.classList.add('hidden');
+                    currentModal = null;
+                }
+            };
+
+            // Special handling for equipment modals with locking
+            openButtons.weapons.addEventListener('click', () => {
+                if (player.level < player.weaponUnlockLevel) {
+                    updateBattleLog(`You must reach LVL ${player.weaponUnlockLevel} to change your weapon!`);
+                    return;
+                }
+                openModal('weapons');
+            });
+            openButtons.armor.addEventListener('click', () => {
+                if (player.level < player.armorUnlockLevel) {
+                    updateBattleLog(`You must reach LVL ${player.armorUnlockLevel} to change your armor!`);
+                    return;
+                }
+                openModal('armor');
+            });
+
+            // General handling for other modals
+            ['spells', 'items', 'tutorial', 'fortunes', 'shop'].forEach(key => {
+                if (openButtons[key]) {
+                    openButtons[key].addEventListener('click', () => openModal(key));
+                }
+            });
+
+            closeButtons.forEach(button => button.addEventListener('click', closeModal));
+            modalOverlay.addEventListener('click', (e) => {
+                if (e.target === modalOverlay && currentModal !== modals.levelup) {
+                    closeModal();
+                }
+            });
+            
+            document.querySelectorAll('.shop-buy-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    let cost = parseInt(button.dataset.cost, 10);
+                    const itemName = button.dataset.name;
+                    const itemEmoji = button.dataset.emoji;
+                    const itemDescription = button.dataset.description;
+
+                    if (playerHasFortune('Bartering Edge')) {
+                        cost = Math.max(0, cost - 2);
+                    }
+
+                    if (gold >= cost) {
+                        gold -= cost;
+                        playerInventory.push({ name: itemName, emoji: itemEmoji, description: itemDescription });
+                        updateGoldUI();
+                        updateItemsModalUI();
+                        updateBattleLog(`You purchased a ${itemName}!`);
+                    } else {
+                        updateBattleLog("You don't have enough gold!");
+                    }
+                });
+            });
+
+            document.querySelectorAll('#weapons-modal .item-list li').forEach(item => {
+                item.addEventListener('click', () => {
+                    const wasUnequipped = player.equippedWeapon === null;
+
+                    player.equippedWeapon = { 
+                        name: item.dataset.name, 
+                        stat: item.dataset.stat, 
+                        value: parseInt(item.dataset.value, 10),
+                        emoji: item.dataset.emoji
+                    };
+
+                    if (wasUnequipped) {
+                        player.weaponUnlockLevel = 3;
+                    }
+
+                    weaponSlot.textContent = `${player.equippedWeapon.emoji} ${player.equippedWeapon.name}`;
+                    weaponSlot.classList.remove('italic', 'text-gray-500');
+                    weaponSlot.style.color = '#e2e8f0';
+                    updateStatsUI();
+                    updateEquipmentUI();
+                    closeModal();
+                });
+            });
+
+            document.querySelectorAll('#armor-modal .item-list li').forEach(item => {
+                item.addEventListener('click', () => {
+                    const wasUnequipped = player.equippedArmor === null;
+
+                    player.equippedArmor = { 
+                        name: item.dataset.name, 
+                        stat: item.dataset.stat, 
+                        value: parseInt(item.dataset.value, 10),
+                        emoji: item.dataset.emoji
+                    };
+
+                    if (wasUnequipped) {
+                        player.armorUnlockLevel = 3;
+                    }
+
+                    armorSlot.textContent = `${player.equippedArmor.emoji} ${player.equippedArmor.name}`;
+                    armorSlot.classList.remove('italic', 'text-gray-500');
+                    armorSlot.style.color = '#e2e8f0';
+                    updateStatsUI();
+                    updateEquipmentUI();
+                    closeModal();
+                });
+            });
+
+            const stoneCircles = document.querySelectorAll('.stone-circle');
+            const stoneDescriptionBox = document.getElementById('stone-description-box');
+            const equipStoneButton = document.getElementById('equip-stone-button');
+            
+            stoneCircles.forEach(circle => {
+                circle.addEventListener('click', () => {
+                    if (circle.classList.contains('disabled')) return;
+                    stoneCircles.forEach(c => c.classList.remove('active'));
+                    circle.classList.add('active');
+                    stoneDescriptionBox.innerHTML = circle.dataset.info;
+                    selectedStone = {
+                        name: circle.dataset.name,
+                        emoji: circle.dataset.emoji,
+                        color: circle.style.backgroundColor
+                    };
+                    const stoneColor = circle.style.backgroundColor;
+                    equipStoneButton.style.background = stoneColor;
+                    equipStoneButton.classList.remove('invisible');
+                });
+            });
+
+            equipStoneButton.addEventListener('click', () => {
+                if (!selectedStone || stoneSlotToEquip === null) return;
+
+                const slotIndex = stoneSlotToEquip;
+
+                if (equippedStones[slotIndex] === null && !brokenStoneSlots[slotIndex]) {
+                    const initialUses = playerHasFortune('Durable Stones') ? 3 : 2;
+                    equippedStones[slotIndex] = { ...selectedStone, uses: initialUses };
+                    const stone = equippedStones[slotIndex];
+                    const slotElement = stoneSlots[slotIndex];
+                    const slotCircle = stoneSlotCircles[slotIndex];
+
+                    slotElement.textContent = `${stone.emoji} ${stone.name} (${stone.uses})`;
+                    slotElement.classList.remove('italic');
+                    slotElement.style.color = '#e2e8f0';
+                    
+                    slotCircle.style.backgroundColor = stone.color;
+                    slotCircle.classList.remove('bg-black');
+                    
+                    updateBattleLog(`Equipped ${stone.name} stone.`);
+                    closeModal();
+                    stoneSlotToEquip = null;
+                }
+            });
+            
+            function useStone(slotIndex) {
+                const stone = equippedStones[slotIndex];
+                if (!stone || !isBattleStarted || attackButton.disabled) return;
+
+                const buffNames = ['Regen', 'Blessing', 'Rush'];
+                const isBuff = buffNames.includes(stone.name);
+                let target = isBuff ? player : currentTarget;
+
+                if (!isBuff && (!currentTarget || currentTarget.currentHP <= 0)) {
+                    updateBattleLog('You must select a valid enemy to use that on!');
+                    return;
+                }
+                
+                toggleBattleActions(true);
+                stone.uses--;
+                
+                const sprtTriggered = checkSPRT();
+                if(sprtTriggered) {
+                    updateBattleLog("❤️‍🔥 SPRT triggered! Stone's effect doubled!");
+                }
+                
+                if (stone.name === 'Blessing') {
+                    let healAmount = 4;
+                    if (sprtTriggered) healAmount *= 2;
+                    
+                    const hpBefore = target.currentHP;
+                    target.currentHP = Math.min(target.baseStats.HP || target.maxHp, target.currentHP + healAmount);
+                    const actualHeal = target.currentHP - hpBefore;
+                    
+                    if (actualHeal > 0) {
+                        const targetEl = target.isPlayer ? document.querySelector('.character-battle-display') : document.getElementById(`enemy-display-${target.index}`);
+                        showFloatingNumber(targetEl, actualHeal, 'heal');
+                    }
+                }
+
+                applyStatusEffect(target, stone.name, sprtTriggered, 'player');
+
+                const slotElement = stoneSlots[slotIndex];
+                if (stone.uses > 0) {
+                    slotElement.textContent = `${stone.emoji} ${stone.name} (${stone.uses})`;
+                } else {
+                    const slotCircle = stoneSlotCircles[slotIndex];
+                    equippedStones[slotIndex] = null;
+                    brokenStoneSlots[slotIndex] = true;
+
+                    slotElement.textContent = `Slot ${slotIndex + 1}: Broken`;
+                    slotElement.classList.add('italic');
+                    slotElement.classList.remove('clickable');
+                    slotElement.style.color = '#718096';
+                    slotCircle.style.backgroundColor = '';
+                    slotCircle.classList.add('bg-black');
+                }
+                
+                updateStatsUI();
+                activeEnemies.forEach(updateEnemyStatsUI);
+                
+                endPlayerTurn();
+            }
+
+            stoneSlots.forEach((slot, index) => {
+                slot.addEventListener('click', () => {
+                    if (equippedStones[index] === null && !brokenStoneSlots[index]) {
+                        stoneSlotToEquip = index;
+                        openModal('stones');
+                    } else {
+                        useStone(index);
+                    }
+                });
+            });
+
+            // --- Fortunes Logic ---
+            const allFortunes = [
+                { name: 'Durable Stones', description: '+1 stone durability.', rarity: 'Common' },
+                { name: 'Efficient Magic', description: '-1 MP cost for all spells.', rarity: 'Common' },
+                { name: 'Bartering Edge', description: '-2 Gold discount on items.', rarity: 'Common' },
+                { name: 'Archer\'s Edge', description: 'Attacks all enemies when 🏹 Bow is equipped.', rarity: 'Special' },
+                { name: 'Enchantment', description: 'Using 🧚🏼 Fairy gives ❇️ Regen.', rarity: 'Special' },
+                { name: 'Battle Grace', description: 'When player has any 2 active buffs, gain +1 DEF.', rarity: 'Special' },
+                { name: 'Prolonged Torment', description: 'Debuff durations are doubled.', rarity: 'Rare' },
+                { name: 'Thief Strike', description: 'Attacking with 🗡️ Dagger equipped also steals 3 gold.', rarity: 'Rare' },
+                { name: 'Toxic Decay', description: '☠️ deals +1 damage every turn (10 max).', rarity: 'Rare' },
+            ];
+
+            const allSacrifices = [
+                [
+                    { name: '🩸 Blood Pact', type: 'HP', value: -2, text: '-2 Max HP', style: 'text-red-400' },
+                    { name: '🦶🏼 Broken Ankle', type: 'SPD', value: -5, text: '-5 SPD', style: 'text-yellow-400' }
+                ],
+                [
+                    { name: '💔 Heartbreak', type: 'SPRT', value: -10, text: '-10 SPRT', style: 'text-orange-400' },
+                    { name: '📜 Gambling Debt', type: 'GOLD', value: -25, text: '-25 Gold', style: 'text-yellow-400' }
+                ],
+                [
+                    { name: '🫳🏽 Clumsy', type: 'SPECIAL', special: 'clumsy', text: 'Lose 1 stone.', style: 'text-gray-400' },
+                    { name: '🎭 Unstable Mind', type: 'SPECIAL', special: 'unstableMind', text: 'share 🍶', style: 'text-cyan-400' }
+                ]
+            ];
+            let selectedSacrifice = null;
+            let currentlyOfferedSacrifices = [];
+
+            function updatePlayerFortunesUI() {
+                const listEl = document.getElementById('player-fortunes-list');
+                listEl.innerHTML = '';
+
+                if (playerFortunes.length === 0) {
+                    listEl.innerHTML = '<li class="readable-text text-gray-400 justify-center">No fortunes collected yet.</li>';
+                    return;
+                }
+
+                const rarityStyles = {
+                    'Common': { text: 'text-blue-400', border: 'border-blue-600' },
+                    'Special': { text: 'text-yellow-400', border: 'border-yellow-600' },
+                    'Rare': { text: 'text-pink-400', border: 'border-pink-600' },
+                };
+
+                playerFortunes.forEach(fortune => {
+                    const styles = rarityStyles[fortune.rarity];
+                    const li = document.createElement('li');
+                    li.className = `!border-l-4 ${styles.border} !items-start`;
+                    li.innerHTML = `
+                        <div class="readable-text flex-grow">
+                            <p class="font-bold text-base ${styles.text}">${fortune.name}</p>
+                            <p class="text-sm text-gray-300">${fortune.description}</p>
+                            ${fortune.sacrificeName ? `<p class="text-xs text-gray-500 italic mt-1">Sacrifice: ${fortune.sacrificeName}</p>` : ''}
+                        </div>
+                        <span class="readable-text text-sm ${styles.text}">(${fortune.rarity})</span>
+                    `;
+                    listEl.appendChild(li);
+                });
+            }
+
+            function setupSacrificeOptions(exclude = []) {
+                const fortuneWindow = fortunesList.closest('.game-window');
+                fortuneWindow.querySelector('.window-title').textContent = "MAKE A SACRIFICE";
+
+                if (fortuneChosenThisBattle) {
+                    fortunesList.className = 'sacrifice-options';
+                    fortunesList.innerHTML = `<li class="sacrifice-button !cursor-default !border-gray-800"><span class="readable-text text-base text-center text-gray-500 w-full">A new choice awaits after the next battle.</span></li>`;
+                    renegotiateButton.classList.add('hidden');
+                    revealFortunesButton.classList.add('hidden');
+                    return;
+                }
+
+                fortunesList.className = 'sacrifice-options';
+                fortunesList.innerHTML = '';
+                selectedSacrifice = null;
+
+                revealFortunesButton.classList.add('hidden');
+                renegotiateButton.classList.remove('hidden');
+                renegotiateButton.disabled = false;
+                revealFortunesButton.disabled = true;
+
+                const sacrificePool = allSacrifices.flat();
+                let availableSacrifices = sacrificePool.filter(sac => 
+                    !exclude.some(ex => ex.name === sac.name)
+                );
+
+                if (availableSacrifices.length < 2) {
+                    availableSacrifices = sacrificePool;
+                }
+
+                const shuffled = [...availableSacrifices].sort(() => 0.5 - Math.random());
+                const selectedOptions = shuffled.slice(0, 2);
+                currentlyOfferedSacrifices = selectedOptions;
+
+                selectedOptions.forEach(sac => {
+                    const li = document.createElement('li');
+                    li.className = 'sacrifice-button';
+                    
+                    let canAfford = true;
+                    if (sac.type === 'HP' && player.baseStats.HP + sac.value <= 0) canAfford = false;
+                    if (sac.type === 'SPRT' && player.baseStats.SPRT + sac.value < 0) canAfford = false;
+                    if (sac.type === 'GOLD' && gold + sac.value < 0) canAfford = false;
+                    if (sac.special === 'clumsy' && document.querySelectorAll('.stone-circle:not(.disabled)').length === 0) canAfford = false;
+
+                    li.innerHTML = `
+                        <span class="readable-text text-base">${sac.name}</span>
+                        <span class="readable-text text-base ${sac.style} font-bold">${sac.text}</span>
+                    `;
+
+                    if (canAfford) {
+                        li.addEventListener('click', () => {
+                            document.querySelectorAll('#fortunes-list .sacrifice-button').forEach(o => o.classList.remove('selected'));
+                            li.classList.add('selected');
+                            selectedSacrifice = sac;
+                            
+                            renegotiateButton.classList.add('hidden');
+                            revealFortunesButton.classList.remove('hidden');
+                            revealFortunesButton.disabled = false;
+                        });
+                    } else {
+                         li.classList.add('disabled');
+                         li.title = "You cannot afford this sacrifice.";
+                    }
+                    fortunesList.appendChild(li);
+                });
+            }
+            
+            renegotiateButton.addEventListener('click', () => {
+                if (player.currentHP <= 1 || player.currentMP < 1) {
+                    updateBattleLog("Not enough HP/MP to renegotiate!");
+                    return;
+                }
+                player.currentHP -= 1;
+                showFloatingNumber(document.querySelector('.character-battle-display'), 1, 'damage');
+                player.currentMP -= 1;
+                updateStatsUI();
+                updateBattleLog("You renegotiate, losing 1 HP and 1 MP.");
+                setupSacrificeOptions(currentlyOfferedSacrifices);
+            });
+
+            function breakRandomStoneCodex() {
+                const allStoneElements = Array.from(document.querySelectorAll('.stone-circle'));
+                const availableStones = allStoneElements.filter(s => !s.classList.contains('disabled'));
+
+                if (availableStones.length > 0) {
+                    const stoneToBreak = availableStones[Math.floor(Math.random() * availableStones.length)];
+                    const stoneName = stoneToBreak.dataset.name;
+                    
+                    brokenCodexStones.push(stoneName);
+                    stoneToBreak.classList.add('disabled', 'opacity-25', 'cursor-not-allowed');
+                    stoneToBreak.style.pointerEvents = 'none';
+                    
+                    stoneToBreak.innerHTML = '<span class="text-2xl text-red-500">❌</span>';
+                    stoneToBreak.style.display = 'flex';
+                    stoneToBreak.style.alignItems = 'center';
+                    stoneToBreak.style.justifyContent = 'center';
+
+                    updateBattleLog(`A stone shatters! The ${stoneName} stone is lost forever.`);
+                }
+            }
+
+            revealFortunesButton.addEventListener('click', () => {
+                if (!selectedSacrifice) return;
+
+                const sacrificeMade = selectedSacrifice; // Capture the sacrifice object
+
+                if (sacrificeMade.type === 'HP') {
+                    player.baseStats.HP += sacrificeMade.value;
+                    player.currentHP = Math.min(player.currentHP, player.baseStats.HP);
+                } else if (sacrificeMade.type === 'SPD') {
+                    player.baseStats.SPD += sacrificeMade.value;
+                } else if (sacrificeMade.type === 'SPRT') {
+                    player.baseStats.SPRT += sacrificeMade.value;
+                } else if (sacrificeMade.type === 'GOLD') {
+                    gold += sacrificeMade.value;
+                    updateGoldUI();
+                } else if (sacrificeMade.type === 'SPECIAL') {
+                    if (sacrificeMade.special === 'clumsy') {
+                        breakRandomStoneCodex();
+                    } else if (sacrificeMade.special === 'unstableMind') {
+                        playerSacrifices.push(sacrificeMade.name);
+                    }
+                }
+                updateBattleLog(`Sacrifice made: ${sacrificeMade.name}.`);
+                updateStatsUI();
+
+                const availableFortunes = allFortunes.filter(fortune => 
+                    !playerFortunes.some(playerFortune => playerFortune.name === fortune.name)
+                );
+                const shuffled = [...availableFortunes].sort(() => 0.5 - Math.random());
+                const selectedFortunes = shuffled.slice(0, 3);
+                
+                const fortuneWindow = fortunesList.closest('.game-window');
+                fortuneWindow.querySelector('.window-title').textContent = "CHOOSE YOUR FATE";
+                fortunesList.className = 'p-2 grid grid-cols-1 sm:grid-cols-3 gap-2 h-full items-stretch'; 
+                fortunesList.innerHTML = ''; 
+
+                const rarityStyles = {
+                    'Common': { text: 'text-blue-400', border: 'hover:border-blue-400' },
+                    'Special': { text: 'text-yellow-400', border: 'hover:border-yellow-400' },
+                    'Rare': { text: 'text-pink-400', border: 'hover:border-pink-400' },
+                };
+                
+                selectedFortunes.forEach(fortune => {
+                    const styles = rarityStyles[fortune.rarity];
+                    const li = document.createElement('li');
+                    li.className = `list-none border-2 border-gray-700 rounded-lg p-2 flex flex-col justify-between cursor-pointer transition-all ${styles.border} bg-gray-900/50`;
+                    
+                    li.innerHTML = `
+                        <div class="readable-text">
+                            <p class="font-bold ${styles.text}">${fortune.name}</p>
+                            <p class="text-sm text-gray-300 mt-1">${fortune.description}</p>
+                        </div>
+                        <p class="readable-text text-right text-sm ${styles.text} mt-2">(${fortune.rarity})</p>
+                    `;
+                    
+                    li.addEventListener('click', () => {
+                        playerFortunes.push({ ...fortune, sacrificeName: sacrificeMade.name });
+                        fortuneChosenThisBattle = true;
+                        updateBattleLog(`Fortune chosen: ${fortune.name}!`);
+                        setupSacrificeOptions();
+                        renegotiateButton.classList.add('hidden');
+                        revealFortunesButton.classList.add('hidden');
+                        updateShopPrices();
+                    });
+
+                    fortunesList.appendChild(li);
+                });
+
+                renegotiateButton.classList.add('hidden');
+                revealFortunesButton.classList.add('hidden');
+                selectedSacrifice = null;
+            });
+
+
+            // --- Battle Logic ---
+            function checkSPRT() {
+                const playerStats = calculateTotalStats(player);
+                return Math.random() * 100 < playerStats.SPRT;
+            }
+
+            function applyStatusEffect(target, effectName, sprtBoost = false, source = 'player') {
+                target.statusEffects = target.statusEffects.filter(e => e.name !== effectName);
+                let effect = {};
+                
+                let durationMultiplier = 1;
+                const isDebuff = ['Curse', 'Slow'].includes(effectName);
+                if (isDebuff && playerHasFortune('Prolonged Torment') && source === 'player') {
+                    durationMultiplier = 2;
+                }
+
+                switch(effectName) {
+                    case 'Poison':
+                        effect = { 
+                            name: 'Poison', 
+                            emoji: '☠️', 
+                            duration: 99, 
+                            currentDamage: 1,
+                            onTurn: function(t) {
+                                t.currentHP = Math.max(0, t.currentHP - this.currentDamage); 
+                                if (playerHasFortune('Toxic Decay') && this.currentDamage < 10) {
+                                    this.currentDamage++;
+                                }
+                            } 
+                        };
+                        break;
+                    case 'Curse':
+                        var duration = 4;
+                        if (sprtBoost) duration *= 2;
+                        duration *= durationMultiplier;
+                        effect = { name: 'Curse', emoji: '🕯️', duration: duration, statMods: { ATK: -2, DEF: -2 } };
+                        break;
+                    case 'Slow':
+                        var duration = 3;
+                        if (sprtBoost) duration *= 2;
+                        duration *= durationMultiplier;
+                        effect = { name: 'Slow', emoji: '🐌', duration: duration, setsSPDToZero: true, skipTurn: true };
+                        break;
+                    case 'Regen':
+                        var duration = 99;
+                        if (sprtBoost) duration *= 2;
+                        effect = { name: 'Regen', emoji: '❇️', duration: duration, onTurn: (t) => { t.currentHP = Math.min(t.baseStats.HP || t.maxHp, t.currentHP + 1); } };
+                        break;
+                    case 'Blessing':
+                        var duration = 4;
+                        if (sprtBoost) duration *= 2;
+                        effect = { name: 'Blessing', emoji: '🌟', duration: duration, statMods: { SPRT: 5 } };
+                        break;
+                    case 'Rush':
+                        var duration = 3;
+                        if (sprtBoost) duration *= 2;
+                        effect = { name: 'Rush', emoji: '⚡', duration: duration, statMods: { SPD: 25 }, hasExtraTurn: true };
+                        break;
+                    case 'Barrier':
+                        var duration = 4;
+                        if (sprtBoost) duration *= 2;
+                        effect = { name: 'Barrier', emoji: '🛡️', duration: duration, statMods: { DEF: 4 } };
+                        break;
+                }
+                if (effect.name) {
+                    target.statusEffects.push(effect);
+                    updateBattleLog(`${target.name} is affected by ${effectName}!`);
+                }
+            }
+            
+            async function processStatusEffects(actor) {
+                 for (const effect of [...actor.statusEffects]) {
+                    if (effect.onTurn) {
+                        const hpBefore = actor.currentHP;
+                        effect.onTurn(actor);
+                        const hpAfter = actor.currentHP;
+                        const change = hpAfter - hpBefore;
+                        
+                        const targetEl = actor.isPlayer ? document.querySelector('.character-battle-display') : document.getElementById(`enemy-display-${actor.index}`);
+                        let logMessage = '';
+
+                        if (change > 0) {
+                            showFloatingNumber(targetEl, change, 'heal');
+                            logMessage = `${actor.name} recovers ${change} HP from regen.`;
+                        } else if (change < 0) {
+                            const damage = -change;
+                            showFloatingNumber(targetEl, damage, 'poison');
+                            logMessage = `${actor.name} takes ${damage} poison damage.`;
+                        }
+
+                        updateDamageUI(actor); 
+                        if (logMessage) {
+                            await new Promise(res => setTimeout(res, 500));
+                            updateBattleLog(logMessage);
+                        }
+                    }
+                    if (effect.duration < 90) {
+                        effect.duration--;
+                    }
+                }
+                actor.statusEffects = actor.statusEffects.filter(e => e.duration > 0);
+                
+                if (actor.isPlayer) {
+                    updateStatsUI();
+                } else {
+                    updateEnemyStatsUI(actor);
+                    const statusEl = document.getElementById(`enemy-status-${actor.index}`);
+                    if (statusEl) updateStatusEffectsUI(actor, statusEl);
+                }
+            }
+            
+            function startNewRound() {
+                updateBattleLog("New round starts!");
+                const livingCombatants = [player, ...activeEnemies].filter(c => c.currentHP > 0);
+                turnQueue = livingCombatants.sort((a, b) => calculateTotalStats(b).SPD - calculateTotalStats(a).SPD);
+                currentTurnIndex = 0;
+                executeNextTurn();
+            }
+
+            function addExp(amount) {
+                if (player.level >= 99) return;
+                exp += amount;
+                const expToNextLevel = 10;
+                if (exp >= expToNextLevel) {
+                    exp -= expToNextLevel;
+                    handleLevelUp();
+                }
+                updateStatsUI();
+            }
+
+            function handleNextBattle() {
+                battleSequenceIndex++;
+                if (battleSequenceIndex < battleSequence.length) {
+                    setTimeout(() => {
+                        prepareBattle(battleSequence[battleSequenceIndex]);
+                        toggleBattleActions(true);
+                    }, 2000);
+                } else {
+                    updateBattleLog("You have defeated all enemies!");
+                    toggleBattleActions(true);
+                    toggleBattleView(false);
+                    isBattleActive = false;
+                    isBattleStarted = false;
+                }
+            }
+
+            async function endBattle(totalGold) {
+                isBattleActive = false;
+                isBattleStarted = false;
+                updateBattleLog(`All enemies defeated! +${totalGold} Gold, +5 EXP`);
+                gold += totalGold;
+                updateGoldUI();
+                player.statusEffects = []; 
+                await new Promise(r => setTimeout(r, 1500));
+                addExp(5);
+                
+                if (currentModal !== modals.levelup) {
+                   handleNextBattle();
+                }
+            }
+
+            async function endPlayerTurn() {
+                const totalGold = activeEnemies.reduce((sum, e) => e.currentHP <= 0 ? sum + e.gold : sum, 0);
+
+                if (!activeEnemies.some(e => e.currentHP > 0)) {
+                    endBattle(totalGold);
+                    return;
+                }
+
+                await new Promise(res => setTimeout(res, 500)); 
+
+                if (await checkForExtraTurn(player)) {
+                    toggleBattleActions(false);
+                    updateBattleLog("Extra action! It's your turn again!");
+                } else {
+                    currentTurnIndex++;
+                    executeNextTurn();
+                }
+            }
+
+
+            async function executeNextTurn() {
+                const totalGold = activeEnemies.reduce((sum, e) => e.currentHP <= 0 ? sum + e.gold : sum, 0);
+
+                if (!activeEnemies.some(e => e.currentHP > 0)) {
+                    if (isBattleActive) endBattle(totalGold);
+                    return;
+                }
+                if (player.currentHP <= 0) {
+                    updateBattleLog("You have been defeated... GAME OVER.");
+                    toggleBattleActions(true);
+                    isBattleActive = false;
+                    return;
+                }
+                
+                if (currentTurnIndex >= turnQueue.length) {
+                    startNewRound();
+                    return;
+                }
+                
+                const actor = turnQueue[currentTurnIndex];
+                if (actor.currentHP <= 0) {
+                    currentTurnIndex++;
+                    executeNextTurn();
+                    return;
+                }
+                
+                await processStatusEffects(actor);
+                if (actor.currentHP <= 0) {
+                    currentTurnIndex++;
+                    executeNextTurn();
+                    return;
+                }
+
+
+                const slowEffect = actor.statusEffects.find(e => e.name === 'Slow');
+                if (slowEffect && slowEffect.skipTurn) {
+                    slowEffect.skipTurn = false; 
+                    updateBattleLog(`${actor.name} is slowed and skips a turn!`);
+                    await new Promise(res => setTimeout(res, 1000));
+                    currentTurnIndex++;
+                    executeNextTurn();
+                    return;
+                }
+                
+                if (actor.isPlayer) {
+                    updateBattleLog('Your turn!');
+                    toggleBattleActions(false);
+                } else { 
+                    updateBattleLog(`${actor.name}'s turn.`);
+                    toggleBattleActions(true);
+                    await new Promise(res => setTimeout(res, 1000));
+                    
+                    const enemyStats = calculateTotalStats(actor);
+                    const playerStats = calculateTotalStats(player);
+                    const damage = Math.max(0, enemyStats.ATK - playerStats.DEF);
+                    
+                    if (damage > 0) {
+                         player.currentHP = Math.max(0, player.currentHP - damage);
+                         showFloatingNumber(document.querySelector('.character-battle-display'), damage, 'damage');
+                         updateBattleLog(`${actor.name} attacks you for ${damage} damage.`);
+                         updateStatsUI();
+                    }
+
+                    if (actor.debuffs) {
+                        for (const debuff of actor.debuffs) {
+                            if (Math.random() * 100 < debuff.chance) {
+                                await new Promise(res => setTimeout(res, 800));
+                                applyStatusEffect(player, debuff.name, false, 'enemy');
+                                updateStatsUI();
+                            }
+                        }
+                    } else if (damage <= 0) {
+                        updateBattleLog(`${actor.name} takes its turn but does nothing.`);
+                    }
+                    
+                    if (await checkForExtraTurn(actor) && player.currentHP > 0) {
+                        updateBattleLog(`${actor.name} gets an extra action!`);
+                        await new Promise(res => setTimeout(res, 1000));
+                        const damage2 = Math.max(0, enemyStats.ATK - playerStats.DEF);
+                        player.currentHP = Math.max(0, player.currentHP - damage2);
+                        showFloatingNumber(document.querySelector('.character-battle-display'), damage2, 'damage');
+                        updateBattleLog(`${actor.name} attacks again for ${damage2} damage.`);
+                        updateStatsUI();
+                    }
+
+                    currentTurnIndex++;
+                    executeNextTurn();
+                }
+            }
+
+            async function checkForExtraTurn(actor) {
+                const spd = calculateTotalStats(actor).SPD;
+                
+                const rushEffect = actor.statusEffects.find(e => e.name === 'Rush');
+                if (rushEffect && rushEffect.hasExtraTurn) {
+                    rushEffect.hasExtraTurn = false;
+                     return true;
+                }
+                
+                if (Math.random() * 100 < spd) {
+                    return true;
+                }
+                return false;
+            }
+
+            function updateDamageUI(target) {
+                if (target.isPlayer) {
+                    updateStatsUI();
+                } else {
+                    const hpElement = document.getElementById(`enemy-hp-${target.index}`);
+                    const hpBarElement = document.getElementById(`enemy-hp-bar-${target.index}`);
+                    hpElement.textContent = `HP: ${Math.max(0, target.currentHP)} / ${target.maxHp}`;
+                    const hpPercent = (Math.max(0, target.currentHP) / target.maxHp) * 100;
+                    hpBarElement.style.width = `${hpPercent}%`;
+
+                    if (target.currentHP <= 0) {
+                        document.getElementById(`enemy-display-${target.index}`).style.opacity = '0.5';
+                        document.getElementById(`enemy-display-${target.index}`).classList.remove('targeted');
+                        document.getElementById(`enemy-display-${target.index}`).style.cursor = 'default';
+                        if(currentTarget === target) {
+                           const nextTarget = activeEnemies.find(e => e.currentHP > 0);
+                           if (nextTarget) {
+                               document.getElementById(`enemy-display-${nextTarget.index}`).click();
+                           } else {
+                               currentTarget = null;
+                           }
+                        }
+                    }
+                }
+            }
+
+            attackButton.addEventListener('click', async () => {
+                toggleBattleActions(true);
+
+                const isArcher = playerHasFortune("Archer's Edge") && player.equippedWeapon?.name === 'Bow';
+                const isThief = playerHasFortune("Thief Strike") && player.equippedWeapon?.name === 'Dagger';
+
+                if (isArcher) {
+                    const playerStats = calculateTotalStats(player);
+                    updateBattleLog(`You fire a volley with your bow!`);
+                    
+                    const livingEnemies = activeEnemies.filter(e => e.currentHP > 0);
+                    for (const enemy of livingEnemies) {
+                        const targetStats = calculateTotalStats(enemy);
+                        const damage = Math.max(0, playerStats.ATK - targetStats.DEF);
+                        enemy.currentHP -= damage;
+                        showFloatingNumber(document.getElementById(`enemy-display-${enemy.index}`), damage, 'damage');
+                        updateDamageUI(enemy);
+                        await new Promise(res => setTimeout(res, 200)); 
+                        updateBattleLog(`Your arrow hits ${enemy.name} for ${damage} damage.`);
+                    }
+                } else {
+                    if (!currentTarget || currentTarget.currentHP <= 0) {
+                        updateBattleLog('You must select a valid target!');
+                        toggleBattleActions(false);
+                        return;
+                    }
+                    const playerStats = calculateTotalStats(player);
+                    const targetStats = calculateTotalStats(currentTarget);
+                    const damage = Math.max(0, playerStats.ATK - targetStats.DEF);
+                    currentTarget.currentHP -= damage;
+                    showFloatingNumber(document.getElementById(`enemy-display-${currentTarget.index}`), damage, 'damage');
+                    updateBattleLog(`You attack ${currentTarget.name} for ${damage} damage.`);
+                    updateDamageUI(currentTarget);
+
+                    if (isThief) {
+                        const goldStolen = 3;
+                        gold += goldStolen;
+                        updateGoldUI();
+                        await new Promise(res => setTimeout(res, 500));
+                        updateBattleLog(`...and steal ${goldStolen} gold!`);
+                    }
+                }
+                
+                endPlayerTurn();
+            });
+
+            function updateSpellsUI() {
+                spellsList.innerHTML = '';
+                spells.forEach(spell => {
+                    const li = document.createElement('li');
+                    const actualCost = playerHasFortune('Efficient Magic') ? Math.max(1, spell.cost - 1) : spell.cost;
+                    const canCast = player.currentMP >= actualCost;
+                    li.classList.toggle('opacity-50', !canCast);
+                    li.innerHTML = `
+                        <div class="readable-text">
+                            <p class="font-bold text-base">${spell.emoji} ${spell.name}</p>
+                            <p class="text-sm text-gray-400">${spell.description}</p>
+                        </div>
+                        <span class="text-blue-400 readable-text">${actualCost} MP</span>
+                    `;
+                    if (canCast) {
+                        li.addEventListener('click', () => castSpell(spell));
+                    }
+                    spellsList.appendChild(li);
+                });
+            }
+            
+            async function useItem(item, index) {
+                if (attackButton.disabled) return;
+                closeModal();
+                toggleBattleActions(true);
+
+                const sprtTriggered = checkSPRT();
+                if (sprtTriggered) {
+                    updateBattleLog("❤️‍🔥 SPRT triggered! Item's effect doubled!");
+                    await new Promise(res => setTimeout(res, 800));
+                }
+
+                switch (item.name) {
+                    case 'TONIC': {
+                        let healAmount = 6;
+                        if (sprtTriggered) healAmount *= 2;
+                        
+                        if (playerSacrifices.includes('🎭 Unstable Mind')) {
+                            const playerHeal = Math.ceil(healAmount / 2);
+                            const enemyHeal = Math.floor(healAmount / 2);
+
+                            player.currentHP = Math.min(player.baseStats.HP, player.currentHP + playerHeal);
+                            showFloatingNumber(document.querySelector('.character-battle-display'), playerHeal, 'heal');
+                            updateBattleLog(`You used a Tonic, restoring ${playerHeal} HP.`);
+
+                            const livingEnemies = activeEnemies.filter(e => e.currentHP > 0);
+                            if (livingEnemies.length > 0 && enemyHeal > 0) {
+                                const randomEnemy = livingEnemies[Math.floor(Math.random() * livingEnemies.length)];
+                                randomEnemy.currentHP = Math.min(randomEnemy.maxHp, randomEnemy.currentHP + enemyHeal);
+                                updateDamageUI(randomEnemy);
+                                showFloatingNumber(document.getElementById(`enemy-display-${randomEnemy.index}`), enemyHeal, 'heal');
+                                
+                                await new Promise(res => setTimeout(res, 800));
+                                updateBattleLog(`...but ${enemyHeal} HP is also restored to ${randomEnemy.name}!`);
+                            }
+                        } else {
+                             const hpBefore = player.currentHP;
+                             player.currentHP = Math.min(player.baseStats.HP, player.currentHP + healAmount);
+                             const actualHeal = player.currentHP - hpBefore;
+                             if(actualHeal > 0) showFloatingNumber(document.querySelector('.character-battle-display'), actualHeal, 'heal');
+                             updateBattleLog(`You used a Tonic and restored ${actualHeal} HP.`);
+                        }
+                        break;
+                    }
+                    case 'GEM': {
+                        const buffs = ['Regen', 'Blessing', 'Rush', 'Barrier'];
+                        const debuffs = ['Poison', 'Curse', 'Slow'];
+                        const randomBuff = buffs[Math.floor(Math.random() * buffs.length)];
+                        const randomDebuff = debuffs[Math.floor(Math.random() * debuffs.length)];
+                        
+                        applyStatusEffect(player, randomBuff, sprtTriggered, 'player');
+                        if (currentTarget) {
+                            await new Promise(res => setTimeout(res, 800));
+                            applyStatusEffect(currentTarget, randomDebuff, sprtTriggered, 'player');
+                        }
+                        break;
+                    }
+                    case 'CROSS': {
+                        let sprtGain = 5;
+                        if (sprtTriggered) sprtGain *= 2;
+                        player.baseStats.SPRT += sprtGain;
+                        player.statusEffects = player.statusEffects.filter(e => e.name !== 'Curse');
+                        updateBattleLog(`You used a Cross, gaining ${sprtGain} SPRT and curing Curse.`);
+                        break;
+                    }
+                    case 'FAIRY': {
+                        let mpRestore = 5;
+                        let maxMpGain = 1;
+                        if (sprtTriggered) {
+                            mpRestore *= 2;
+                            maxMpGain *= 2;
+                        }
+                        player.currentMP += mpRestore;
+                        player.baseStats.MP += maxMpGain;
+                        updateBattleLog(`You used a Fairy, restoring ${mpRestore} MP and gaining ${maxMpGain} max MP.`);
+                        
+                        if (playerHasFortune('Enchantment')) {
+                            await new Promise(res => setTimeout(res, 800));
+                            applyStatusEffect(player, 'Regen', false, 'player');
+                        }
+                        break;
+                    }
+                }
+
+                playerInventory.splice(index, 1);
+                updateStatsUI();
+                activeEnemies.forEach(updateEnemyStatsUI);
+                endPlayerTurn();
+            }
+
+            async function castSpell(spell) {
+                closeModal();
+                toggleBattleActions(true);
+                
+                const actualCost = playerHasFortune('Efficient Magic') ? Math.max(1, spell.cost - 1) : spell.cost;
+                player.currentMP -= actualCost;
+                
+                const sprtTriggered = checkSPRT();
+                if (sprtTriggered) {
+                    updateBattleLog("❤️‍🔥 SPRT triggered! Spell's effect doubled!");
+                    await new Promise(res => setTimeout(res, 800));
+                }
+
+                if (spell.damage) {
+                    if (!currentTarget || currentTarget.currentHP <= 0) {
+                        updateBattleLog('You must select a valid target!');
+                        toggleBattleActions(false); 
+                        player.currentMP += actualCost; 
+                        return;
+                    }
+                    let damage = spell.damage;
+                    if (sprtTriggered) damage *= 2;
+
+                    currentTarget.currentHP -= damage;
+                    showFloatingNumber(document.getElementById(`enemy-display-${currentTarget.index}`), damage, 'damage');
+                    updateBattleLog(`You cast ${spell.name} on ${currentTarget.name} for ${damage} damage!`);
+                    updateDamageUI(currentTarget);
+                }
+
+                if (spell.effect) {
+                    let target = spell.name === 'BARRIER' ? player : currentTarget;
+                     if (target) {
+                        applyStatusEffect(target, spell.effect, sprtTriggered, 'player');
+                    }
+                }
+
+                updateStatsUI();
+                activeEnemies.forEach(updateEnemyStatsUI);
+                endPlayerTurn();
+            }
+
+            function handleLevelUp() {
+                player.level++;
+                updateBattleLog(`You reached Level ${player.level}!`);
+                setupLevelUpModal();
+                openModal('levelup');
+            }
+
+            function setupLevelUpModal() {
+                const vitalityGroup = document.getElementById('levelup-vitality');
+                const strengthGroup = document.getElementById('levelup-strength');
+                const agilityGroup = document.getElementById('levelup-agility');
+                const confirmBtn = document.getElementById('confirm-levelup-button');
+
+                document.querySelectorAll('#levelup-modal .levelup-choice').forEach(c => c.classList.remove('selected'));
+                confirmBtn.disabled = true;
+
+                let choices = { vitality: null, strength: null, agility: null };
+
+                function checkChoices() {
+                    confirmBtn.disabled = !(choices.vitality && choices.strength && choices.agility);
+                }
+
+                vitalityGroup.querySelectorAll('.levelup-choice').forEach(choice => {
+                    choice.addEventListener('click', () => {
+                        vitalityGroup.querySelectorAll('.levelup-choice').forEach(c => c.classList.remove('selected'));
+                        choice.classList.add('selected');
+                        choices.vitality = { stat: choice.dataset.stat, value: parseInt(choice.dataset.value) };
+                        checkChoices();
+                    });
+                });
+
+                strengthGroup.querySelectorAll('.levelup-choice').forEach(choice => {
+                    choice.addEventListener('click', () => {
+                        strengthGroup.querySelectorAll('.levelup-choice').forEach(c => c.classList.remove('selected'));
+                        choice.classList.add('selected');
+                        choices.strength = { stat: choice.dataset.stat, value: parseInt(choice.dataset.value) };
+                        checkChoices();
+                    });
+                });
+
+                agilityGroup.querySelectorAll('.levelup-choice').forEach(choice => {
+                    choice.addEventListener('click', () => {
+                        agilityGroup.querySelectorAll('.levelup-choice').forEach(c => c.classList.remove('selected'));
+                        choice.classList.add('selected');
+                        choices.agility = { stat: choice.dataset.stat, value: parseInt(choice.dataset.value) };
+                        checkChoices();
+                    });
+                });
+
+                confirmBtn.onclick = () => {
+                    player.baseStats[choices.vitality.stat] += choices.vitality.value;
+                    player.baseStats[choices.strength.stat] += choices.strength.value;
+                    player.baseStats[choices.agility.stat] += choices.agility.value;
+                    
+                    player.currentHP = player.baseStats.HP;
+                    player.currentMP = player.baseStats.MP;
+
+                    updateStatsUI();
+                    updateEquipmentUI();
+                    closeModal();
+                    
+                    if (!isBattleActive) {
+                       handleNextBattle();
+                    }
+                };
+            }
+
+            // --- Initial Setup ---
+            startBattleButton.addEventListener('click', startBattle);
+            updateStatsUI();
+            updateGoldUI();
+            updateShopPrices();
+            updateEquipmentUI();
+            prepareBattle(battleSequence[battleSequenceIndex]);
+            toggleBattleActions(true);
+        });
+    </script>
+</body>
+</html>
+
