@@ -107,16 +107,16 @@
                 <!-- 3x3 Grid -->
                 <div class="grid grid-cols-3 grid-rows-3 gap-2 w-1/2 aspect-square">
                     <!-- Row 1 (Equipment Slots) -->
-                    <button class="equip-slot bg-gray-800 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-gray-700 btn-glow text-3xl flex items-center justify-center"></button>
-                    <button class="equip-slot bg-gray-800 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-gray-700 btn-glow text-3xl flex items-center justify-center"></button>
-                    <button class="equip-slot bg-gray-800 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-gray-700 btn-glow text-3xl flex items-center justify-center"></button>
+                    <button class="equip-slot bg-blue-900 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-blue-800 btn-glow text-3xl flex items-center justify-center"></button>
+                    <button class="equip-slot bg-blue-900 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-blue-800 btn-glow text-3xl flex items-center justify-center"></button>
+                    <button class="equip-slot bg-blue-900 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-blue-800 btn-glow text-3xl flex items-center justify-center"></button>
                     <!-- Row 2 -->
                     <button class="bg-teal-800 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-teal-700 btn-glow text-3xl flex items-center justify-center">❤️‍🔥</button>
                     <button class="bg-teal-800 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-teal-700 btn-glow text-3xl flex items-center justify-center">❄️</button>
                     <button class="bg-teal-800 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-teal-700 btn-glow text-3xl flex items-center justify-center">🛡️</button>
                     <!-- Row 3 -->
                     <button id="fortunesBtn" class="bg-purple-500 rounded-lg text-3xl shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-purple-600 btn-glow flex items-center justify-center">🔮</button>
-                    <button id="buildBtn" class="bg-gray-600 rounded-lg text-3xl shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-gray-700 btn-glow flex items-center justify-center">🔨</button>
+                    <button id="buildBtn" class="bg-gray-500 rounded-lg text-3xl shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-gray-600 btn-glow flex items-center justify-center">🔨</button>
                     <button id="shopBtn" class="bg-yellow-500 rounded-lg text-3xl shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-yellow-600 btn-glow flex items-center justify-center">🪙</button>
                 </div>
             </div>
@@ -140,18 +140,102 @@
         </div>
 
         <!-- Build Modal -->
-        <div id="buildModal" class="hidden absolute bottom-0 left-0 w-full h-1/2 bg-gray-800 rounded-t-2xl border-t-4 border-gray-500 p-4 flex flex-col justify-between items-center transition-transform duration-300 ease-in-out">
-            <h2 class="text-2xl font-bold text-gray-300">Build</h2>
-            <div class="text-gray-300">Construct your empire.</div>
-            <button id="closeBuild" class="bg-red-500 rounded-full w-12 h-12 flex items-center justify-center text-2xl shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-red-600 btn-glow">❌</button>
+        <div id="buildModal" class="hidden absolute bottom-0 left-0 w-full h-2/3 bg-gray-800 rounded-t-2xl border-t-4 border-gray-500 p-4 flex flex-col items-center transition-transform duration-300 ease-in-out">
+            <h2 class="text-xl font-bold text-gray-300 mb-3">Build Equipment</h2>
+            <div class="flex flex-col gap-4 w-full max-w-xs">
+                <!-- Weapon Slot -->
+                <div class="bg-gray-900 rounded-lg flex items-center justify-center p-3 w-full border-2 border-gray-600">
+                    <span class="text-2xl mr-3">🗡️</span>
+                    <span class="font-anton text-white tracking-wider text-lg">DAGGER</span>
+                </div>
+                <!-- Armor Slot -->
+                <div class="bg-gray-900 rounded-lg flex items-center justify-center p-3 w-full border-2 border-gray-600">
+                    <span class="text-2xl mr-3">🧥</span>
+                    <span class="font-anton text-white tracking-wider text-lg">LEATHERS</span>
+                </div>
+                <!-- Ring Slot -->
+                <div class="bg-gray-900 rounded-lg flex items-center justify-center p-3 w-full border-2 border-gray-600">
+                    <span class="text-2xl mr-3">💍</span>
+                    <span class="font-anton text-white tracking-wider text-lg">CONJURE STONE</span>
+                </div>
+            </div>
+            <button id="closeBuild" class="absolute bottom-4 bg-red-500 rounded-full w-10 h-10 flex items-center justify-center text-xl shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-red-600 btn-glow">❌</button>
         </div>
 
         <!-- Shop Modal -->
-        <div id="shopModal" class="hidden absolute bottom-0 left-0 w-full h-1/2 bg-gray-800 rounded-t-2xl border-t-4 border-yellow-500 p-4 flex flex-col justify-between items-center transition-transform duration-300 ease-in-out">
-            <h2 class="text-2xl font-bold text-yellow-400">Shop</h2>
-            <div class="text-gray-300">Spend your coin wisely.</div>
-            <button id="closeShop" class="bg-red-500 rounded-full w-12 h-12 flex items-center justify-center text-2xl shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-red-600 btn-glow">❌</button>
+        <div id="shopModal" class="hidden absolute bottom-0 left-0 w-full h-2/3 bg-gray-800 rounded-t-2xl border-t-4 border-yellow-500 p-4 flex flex-col transition-transform duration-300 ease-in-out">
+            <h2 class="text-lg font-bold text-yellow-400 mb-2 text-center flex-shrink-0">Shop</h2>
+            <div class="flex-grow w-full max-w-xs mx-auto flex flex-col justify-around">
+                <!-- Shop Item 1 -->
+                <div class="flex justify-between items-center py-1.5 border-b border-gray-700">
+                    <span class="text-xl">❤️</span>
+                    <div class="flex-grow px-2">
+                        <div class="font-semibold text-sm">Health Potion</div>
+                        <div class="text-gray-400 text-xs">In Stock: 5</div>
+                    </div>
+                    <button class="bg-yellow-500 text-gray-900 font-bold text-xs px-2 py-1 rounded-full shadow-md hover:bg-yellow-400 active:bg-yellow-600 transition-all duration-150">
+                        10 🪙
+                    </button>
+                </div>
+                <!-- Shop Item 2 -->
+                <div class="flex justify-between items-center py-1.5 border-b border-gray-700">
+                    <span class="text-xl">💣</span>
+                    <div class="flex-grow px-2">
+                        <div class="font-semibold text-sm">Bomb</div>
+                        <div class="text-gray-400 text-xs">In Stock: 2</div>
+                    </div>
+                    <button class="bg-yellow-500 text-gray-900 font-bold text-xs px-2 py-1 rounded-full shadow-md hover:bg-yellow-400 active:bg-yellow-600 transition-all duration-150">
+                        25 🪙
+                    </button>
+                </div>
+                <!-- Shop Item 3 -->
+                <div class="flex justify-between items-center py-1.5 border-b border-gray-700">
+                    <span class="text-xl">🔑</span>
+                    <div class="flex-grow px-2">
+                        <div class="font-semibold text-sm">Dungeon Key</div>
+                        <div class="text-gray-400 text-xs">In Stock: 1</div>
+                    </div>
+                    <button class="bg-yellow-500 text-gray-900 font-bold text-xs px-2 py-1 rounded-full shadow-md hover:bg-yellow-400 active:bg-yellow-600 transition-all duration-150">
+                        50 🪙
+                    </button>
+                </div>
+                <!-- Shop Item 4 -->
+                <div class="flex justify-between items-center py-1.5 border-b border-gray-700">
+                    <span class="text-xl">💎</span>
+                    <div class="flex-grow px-2">
+                        <div class="font-semibold text-sm">Gem</div>
+                        <div class="text-gray-400 text-xs">In Stock: 0</div>
+                    </div>
+                    <button class="bg-gray-600 text-gray-400 font-bold text-xs px-2 py-1 rounded-full shadow-md cursor-not-allowed" disabled>
+                        100 🪙
+                    </button>
+                </div>
+                <!-- Shop Item 5 -->
+                <div class="flex justify-between items-center py-1.5 border-b border-gray-700">
+                    <span class="text-xl">📜</span>
+                    <div class="flex-grow px-2">
+                        <div class="font-semibold text-sm">Scroll</div>
+                        <div class="text-gray-400 text-xs">In Stock: 10</div>
+                    </div>
+                    <button class="bg-yellow-500 text-gray-900 font-bold text-xs px-2 py-1 rounded-full shadow-md hover:bg-yellow-400 active:bg-yellow-600 transition-all duration-150">
+                        15 🪙
+                    </button>
+                </div>
+                <!-- Shop Item 6 -->
+                <div class="flex justify-between items-center py-1.5">
+                    <span class="text-xl">🎲</span>
+                    <div class="flex-grow px-2">
+                        <div class="font-semibold text-sm">Lucky Dice</div>
+                        <div class="text-gray-400 text-xs">In Stock: 3</div>
+                    </div>
+                    <button class="bg-yellow-500 text-gray-900 font-bold text-xs px-2 py-1 rounded-full shadow-md hover:bg-yellow-400 active:bg-yellow-600 transition-all duration-150">
+                        30 🪙
+                    </button>
+                </div>
+            </div>
+            <button id="closeShop" class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-red-500 rounded-full w-10 h-10 flex items-center justify-center text-xl shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-red-600 btn-glow">❌</button>
         </div>
+
 
         <!-- Equipment Reel Modal -->
         <div id="reelModal" class="hidden absolute inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -386,4 +470,3 @@
 
 </body>
 </html>
-
