@@ -20,6 +20,13 @@
         .progress-bar-fill {
             transition: width 0.3s ease-in-out;
         }
+        .emoji-red-stamp {
+            /* This filter chain converts the emoji into a red silhouette and adds a glow */
+            filter: grayscale(100%) brightness(40%) sepia(100%) hue-rotate(-50deg) saturate(600%) contrast(0.8) drop-shadow(0 0 8px rgba(139, 0, 0, 0.9));
+        }
+        .emoji-gold-glow {
+            filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8));
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
@@ -69,13 +76,13 @@
 
                 <!-- Icons (z-10 to appear above the slider bg) -->
                 <span class="text-2xl relative z-10">🐲</span>
-                <span class="text-2xl relative z-10">👹</span>
+                <span class="text-2xl relative z-10 emoji-red-stamp">👹</span>
                 <span class="text-2xl relative z-10">👻</span>
                 <span class="text-2xl relative z-10">💀</span>
                 <span class="text-2xl relative z-10">🕷️</span>
                 <span class="text-2xl relative z-10">🐍</span>
                 <span class="text-2xl relative z-10">🧟</span>
-                <span class="text-2xl relative z-10">🤖</span>
+                <span class="text-2xl relative z-10 emoji-gold-glow">🎁</span>
             </div>
         </div>
 
@@ -96,13 +103,13 @@
                 <!-- 3x3 Grid -->
                 <div class="grid grid-cols-3 grid-rows-3 gap-2 w-1/2 aspect-square">
                     <!-- Row 1 -->
-                    <button class="bg-gray-700 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-gray-600 btn-glow"></button>
-                    <button class="bg-gray-700 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-gray-600 btn-glow"></button>
-                    <button class="bg-gray-700 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-gray-600 btn-glow"></button>
+                    <button class="bg-gray-800 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-gray-700 btn-glow text-3xl flex items-center justify-center">🐌</button>
+                    <button class="bg-gray-800 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-gray-700 btn-glow text-3xl flex items-center justify-center">❇️</button>
+                    <button class="bg-gray-800 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-gray-700 btn-glow text-3xl flex items-center justify-center">🕯️</button>
                     <!-- Row 2 -->
-                    <button class="bg-gray-700 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-gray-600 btn-glow"></button>
-                    <button class="bg-gray-700 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-gray-600 btn-glow"></button>
-                    <button class="bg-gray-700 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-gray-600 btn-glow"></button>
+                    <button class="bg-teal-800 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-teal-700 btn-glow text-3xl flex items-center justify-center">❤️‍🔥</button>
+                    <button class="bg-teal-800 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-teal-700 btn-glow text-3xl flex items-center justify-center">❄️</button>
+                    <button class="bg-teal-800 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-teal-700 btn-glow text-3xl flex items-center justify-center">🛡️</button>
                     <!-- Row 3 -->
                     <button id="fortunesBtn" class="bg-purple-500 rounded-lg text-3xl shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-purple-600 btn-glow flex items-center justify-center">🔮</button>
                     <button id="buildBtn" class="bg-gray-600 rounded-lg text-3xl shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-gray-700 btn-glow flex items-center justify-center">🔨</button>
