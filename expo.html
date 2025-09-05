@@ -25,7 +25,7 @@
 <body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
 
     <!-- Mobile Screen Container -->
-    <div class="w-full max-w-sm h-[80vh] max-h-[700px] bg-gray-800 rounded-3xl shadow-2xl p-4 flex flex-col justify-between">
+    <div class="w-full max-w-sm h-[80vh] max-h-[700px] bg-gray-800 rounded-3xl shadow-2xl p-4 flex flex-col justify-between relative overflow-hidden">
 
         <!-- Top Section: Meters and Icons -->
         <div class="flex-shrink-0">
@@ -39,15 +39,19 @@
             </div>
 
             <!-- Icon Row -->
-            <div class="flex justify-around items-center bg-gray-900/50 rounded-lg p-2">
-                <span class="text-2xl">🍎</span>
-                <span class="text-2xl">💎</span>
-                <span class="text-2xl">🔥</span>
-                <span class="text-2xl">💧</span>
-                <span class="text-2xl">🍃</span>
-                <span class="text-2xl">⚡️</span>
-                <span class="text-2xl">☀️</span>
-                <span class="text-2xl">🌙</span>
+            <div id="enemy-container" class="relative flex justify-around items-center bg-gray-900/50 rounded-lg p-2 select-none cursor-grab active:cursor-grabbing">
+                <!-- The draggable slider window -->
+                <div id="enemy-slider" class="absolute top-0 left-0 h-full bg-blue-500/20 border-2 border-blue-400 rounded-lg pointer-events-none" style="transition: transform 0.2s ease-out;"></div>
+
+                <!-- Icons (z-10 to appear above the slider bg) -->
+                <span class="text-2xl relative z-10">🐲</span>
+                <span class="text-2xl relative z-10">👹</span>
+                <span class="text-2xl relative z-10">👻</span>
+                <span class="text-2xl relative z-10">💀</span>
+                <span class="text-2xl relative z-10">🕷️</span>
+                <span class="text-2xl relative z-10">🐍</span>
+                <span class="text-2xl relative z-10">🧟</span>
+                <span class="text-2xl relative z-10">🤖</span>
             </div>
         </div>
 
@@ -62,17 +66,7 @@
             <div class="flex gap-3">
                 <!-- Window to the left -->
                 <div class="bg-gray-700/50 rounded-lg w-1/2 p-4 flex flex-col items-center justify-center text-gray-400 gap-2">
-                     <span class="text-xs mb-2">Enemies</span>
-                     <div class="flex justify-around w-full">
-                        <div class="flex flex-col items-center">
-                            <span class="text-4xl">🦇</span>
-                            <span class="text-sm">Bat</span>
-                        </div>
-                        <div class="flex flex-col items-center">
-                            <span class="text-4xl">🐸</span>
-                            <span class="text-sm">Frog</span>
-                        </div>
-                     </div>
+                     <span class="text-sm">Info Panel</span>
                 </div>
 
                 <!-- 3x3 Grid -->
@@ -96,34 +90,160 @@
         <!-- Bottom Navigation Bar -->
         <div class="flex-shrink-0 bg-gray-900/50 rounded-lg p-2">
             <div class="flex justify-around">
-                <!-- Attack Button -->
+                <!-- Fortunes Button -->
                 <div class="flex flex-col items-center gap-1">
-                    <button class="w-16 h-14 bg-blue-500 rounded-lg text-3xl shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-blue-600 btn-glow flex items-center justify-center">
-                        ⚔️
+                    <button id="fortunesBtn" class="w-16 h-14 bg-purple-500 rounded-lg text-3xl shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-purple-600 btn-glow flex items-center justify-center">
+                        🔮
                     </button>
-                    <span class="text-xs text-gray-400">Attack</span>
+                    <span class="text-xs text-gray-400">Fortunes</span>
                 </div>
-                <!-- Defend Button -->
+                <!-- Build Button -->
                 <div class="flex flex-col items-center gap-1">
-                    <button class="w-16 h-14 bg-purple-500 rounded-lg text-3xl shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-purple-600 btn-glow flex items-center justify-center">
-                        🛡️
+                    <button id="buildBtn" class="w-16 h-14 bg-gray-600 rounded-lg text-3xl shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-gray-700 btn-glow flex items-center justify-center">
+                        🔨
                     </button>
-                    <span class="text-xs text-gray-400">Defend</span>
+                    <span class="text-xs text-gray-400">Build</span>
                 </div>
-                <!-- Magic Button -->
+                <!-- Shop Button -->
                 <div class="flex flex-col items-center gap-1">
-                    <button class="w-16 h-14 bg-yellow-500 rounded-lg text-3xl shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-yellow-600 btn-glow flex items-center justify-center">
-                        ✨
+                    <button id="shopBtn" class="w-16 h-14 bg-yellow-500 rounded-lg text-3xl shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-yellow-600 btn-glow flex items-center justify-center">
+                        🪙
                     </button>
-                    <span class="text-xs text-gray-400">Magic</span>
+                    <span class="text-xs text-gray-400">Shop</span>
                 </div>
             </div>
         </div>
+
+        <!-- MODAL WINDOWS -->
+        <!-- Fortunes Modal -->
+        <div id="fortunesModal" class="hidden absolute bottom-0 left-0 w-full h-1/2 bg-gray-800 rounded-t-2xl border-t-4 border-purple-500 p-4 flex flex-col justify-between items-center transition-transform duration-300 ease-in-out">
+            <h2 class="text-2xl font-bold text-purple-400">Fortunes</h2>
+            <div class="text-gray-300">Your fortunes await...</div>
+            <button id="closeFortunes" class="bg-red-500 rounded-full w-12 h-12 flex items-center justify-center text-2xl shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-red-600 btn-glow">❌</button>
+        </div>
+
+        <!-- Build Modal -->
+        <div id="buildModal" class="hidden absolute bottom-0 left-0 w-full h-1/2 bg-gray-800 rounded-t-2xl border-t-4 border-gray-500 p-4 flex flex-col justify-between items-center transition-transform duration-300 ease-in-out">
+            <h2 class="text-2xl font-bold text-gray-300">Build</h2>
+            <div class="text-gray-300">Construct your empire.</div>
+            <button id="closeBuild" class="bg-red-500 rounded-full w-12 h-12 flex items-center justify-center text-2xl shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-red-600 btn-glow">❌</button>
+        </div>
+
+        <!-- Shop Modal -->
+        <div id="shopModal" class="hidden absolute bottom-0 left-0 w-full h-1/2 bg-gray-800 rounded-t-2xl border-t-4 border-yellow-500 p-4 flex flex-col justify-between items-center transition-transform duration-300 ease-in-out">
+            <h2 class="text-2xl font-bold text-yellow-400">Shop</h2>
+            <div class="text-gray-300">Spend your coin wisely.</div>
+            <button id="closeShop" class="bg-red-500 rounded-full w-12 h-12 flex items-center justify-center text-2xl shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-red-600 btn-glow">❌</button>
+        </div>
+
     </div>
 
     <script>
-        // All button logic removed for now.
-        // Clicks will provide visual feedback via CSS active states.
+        document.addEventListener('DOMContentLoaded', () => {
+            // Button and Modal mapping
+            const modalMap = {
+                'fortunesBtn': { modal: document.getElementById('fortunesModal'), close: document.getElementById('closeFortunes') },
+                'buildBtn': { modal: document.getElementById('buildModal'), close: document.getElementById('closeBuild') },
+                'shopBtn': { modal: document.getElementById('shopModal'), close: document.getElementById('closeShop') }
+            };
+
+            // Function to open a modal
+            const openModal = (modal) => {
+                if (modal) modal.classList.remove('hidden');
+            };
+
+            // Function to close a modal
+            const closeModal = (modal) => {
+                if (modal) modal.classList.add('hidden');
+            };
+
+            // Set up event listeners for all buttons
+            for (const btnId in modalMap) {
+                const button = document.getElementById(btnId);
+                const { modal, close } = modalMap[btnId];
+                
+                if (button) {
+                    button.addEventListener('click', () => openModal(modal));
+                }
+                if (close) {
+                    close.addEventListener('click', () => closeModal(modal));
+                }
+            }
+
+            // --- Enemy Slider Logic ---
+            const enemyContainer = document.getElementById('enemy-container');
+            const enemySlider = document.getElementById('enemy-slider');
+            const numIcons = 8;
+            const groupSize = 3;
+            let isDragging = false;
+            let startX;
+            let initialTranslateX;
+            let currentTranslateX = 0;
+
+            // Function to calculate dimensions and positions
+            const calculateSliderDimensions = () => {
+                const containerWidth = enemyContainer.offsetWidth;
+                const iconWidth = containerWidth / numIcons;
+                const sliderWidth = iconWidth * groupSize;
+                enemySlider.style.width = `${sliderWidth}px`;
+                return { containerWidth, iconWidth, sliderWidth };
+            };
+            calculateSliderDimensions(); // Initial calculation
+            
+            // Recalculate on window resize
+            window.addEventListener('resize', calculateSliderDimensions);
+
+            const getEventX = (e) => e.touches ? e.touches[0].clientX : e.clientX;
+
+            const dragStart = (e) => {
+                isDragging = true;
+                startX = getEventX(e);
+                enemySlider.style.transition = 'none'; // Disable transition while dragging
+                initialTranslateX = currentTranslateX;
+                document.addEventListener('mousemove', dragMove);
+                document.addEventListener('touchmove', dragMove);
+                document.addEventListener('mouseup', dragEnd);
+                document.addEventListener('touchend', dragEnd);
+            };
+
+            const dragMove = (e) => {
+                if (!isDragging) return;
+                e.preventDefault();
+                const currentX = getEventX(e);
+                const deltaX = currentX - startX;
+                currentTranslateX = initialTranslateX + deltaX;
+                
+                // Clamp the movement within bounds
+                const { containerWidth, sliderWidth } = calculateSliderDimensions();
+                const maxTranslateX = containerWidth - sliderWidth;
+                currentTranslateX = Math.max(0, Math.min(currentTranslateX, maxTranslateX));
+
+                enemySlider.style.transform = `translateX(${currentTranslateX}px)`;
+            };
+
+            const dragEnd = () => {
+                if (!isDragging) return;
+                isDragging = false;
+                enemySlider.style.transition = 'transform 0.2s ease-out'; // Re-enable transition for snapping
+
+                const { iconWidth } = calculateSliderDimensions();
+                // Find the closest snap point (which icon index we are closest to)
+                const closestSnapIndex = Math.round(currentTranslateX / iconWidth);
+                // Clamp snap index to possible values (0 to 5 for 8 icons in groups of 3)
+                const clampedIndex = Math.min(numIcons - groupSize, Math.max(0, closestSnapIndex));
+                
+                currentTranslateX = clampedIndex * iconWidth;
+                enemySlider.style.transform = `translateX(${currentTranslateX}px)`;
+
+                document.removeEventListener('mousemove', dragMove);
+                document.removeEventListener('touchmove', dragMove);
+                document.removeEventListener('mouseup', dragEnd);
+                document.removeEventListener('touchend', dragEnd);
+            };
+
+            enemyContainer.addEventListener('mousedown', dragStart);
+            enemyContainer.addEventListener('touchstart', dragStart);
+        });
     </script>
 
 </body>
