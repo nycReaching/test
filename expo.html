@@ -70,7 +70,7 @@
                 </div>
 
                 <!-- 3x3 Grid -->
-                <div class="grid grid-cols-3 gap-2 w-1/2 aspect-square">
+                <div class="grid grid-cols-3 grid-rows-3 gap-2 w-1/2 aspect-square">
                     <!-- Row 1 -->
                     <button class="bg-gray-700 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-gray-600 btn-glow"></button>
                     <button class="bg-gray-700 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-gray-600 btn-glow"></button>
@@ -80,9 +80,9 @@
                     <button class="bg-gray-700 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-gray-600 btn-glow"></button>
                     <button class="bg-gray-700 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-gray-600 btn-glow"></button>
                     <!-- Row 3 -->
-                    <button class="bg-gray-700 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-gray-600 btn-glow"></button>
-                    <button class="bg-gray-700 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-gray-600 btn-glow"></button>
-                    <button class="bg-gray-700 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-gray-600 btn-glow"></button>
+                    <button id="fortunesBtn" class="bg-purple-500 rounded-lg text-3xl shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-purple-600 btn-glow flex items-center justify-center">🔮</button>
+                    <button id="buildBtn" class="bg-gray-600 rounded-lg text-3xl shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-gray-700 btn-glow flex items-center justify-center">🔨</button>
+                    <button id="shopBtn" class="bg-yellow-500 rounded-lg text-3xl shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-yellow-600 btn-glow flex items-center justify-center">🪙</button>
                 </div>
             </div>
         </div>
@@ -90,27 +90,9 @@
         <!-- Bottom Navigation Bar -->
         <div class="flex-shrink-0 bg-gray-900/50 rounded-lg p-2">
             <div class="flex justify-around">
-                <!-- Fortunes Button -->
-                <div class="flex flex-col items-center gap-1">
-                    <button id="fortunesBtn" class="w-16 h-14 bg-purple-500 rounded-lg text-3xl shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-purple-600 btn-glow flex items-center justify-center">
-                        🔮
-                    </button>
-                    <span class="text-xs text-gray-400">Fortunes</span>
-                </div>
-                <!-- Build Button -->
-                <div class="flex flex-col items-center gap-1">
-                    <button id="buildBtn" class="w-16 h-14 bg-gray-600 rounded-lg text-3xl shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-gray-700 btn-glow flex items-center justify-center">
-                        🔨
-                    </button>
-                    <span class="text-xs text-gray-400">Build</span>
-                </div>
-                <!-- Shop Button -->
-                <div class="flex flex-col items-center gap-1">
-                    <button id="shopBtn" class="w-16 h-14 bg-yellow-500 rounded-lg text-3xl shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-yellow-600 btn-glow flex items-center justify-center">
-                        🪙
-                    </button>
-                    <span class="text-xs text-gray-400">Shop</span>
-                </div>
+                <button class="w-16 h-14 bg-gray-700 rounded-lg shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-gray-600 btn-glow"></button>
+                <button class="w-16 h-14 bg-gray-700 rounded-lg shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-gray-600 btn-glow"></button>
+                <button class="w-16 h-14 bg-gray-700 rounded-lg shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-gray-600 btn-glow"></button>
             </div>
         </div>
 
@@ -248,4 +230,6 @@
 
 </body>
 </html>
+
+
 
