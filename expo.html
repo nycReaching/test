@@ -82,8 +82,16 @@
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Icon Row -->
+        <!-- Middle Section: Game Windows & Grid -->
+        <div class="flex-grow flex flex-col my-4 gap-3">
+            <!-- Large Window Above -->
+            <div id="battle-details-window" class="bg-gray-700/50 rounded-lg flex-grow flex items-center justify-center p-4 transition-all duration-300">
+                <!-- Content for this window can be added here -->
+            </div>
+            
+            <!-- Enemy/Battle Reel -->
             <div id="enemy-container" class="relative flex justify-around items-center bg-gray-900/50 rounded-lg p-2 select-none cursor-grab active:cursor-grabbing">
                 <!-- The draggable slider window -->
                 <div id="enemy-slider" class="absolute top-0 left-0 h-full bg-white/20 border-2 border-white rounded-lg pointer-events-none" style="transition: transform 0.2s ease-out;"></div>
@@ -101,20 +109,20 @@
                 <span class="text-2xl relative z-10"></span>
                 <span class="text-2xl relative z-10"></span>
             </div>
-        </div>
 
-        <!-- Middle Section: Game Windows & Grid -->
-        <div class="flex-grow flex flex-col my-4 gap-3">
-            <!-- Large Window Above - This is now empty as requested -->
-            <div id="battle-details-window" class="bg-gray-700/50 rounded-lg flex-grow flex items-center justify-center p-4 transition-all duration-300">
-                <!-- Content removed as per request -->
+            <!-- Action Button Bar (Previously at the bottom) -->
+            <div class="flex-shrink-0 bg-gray-900/50 rounded-lg p-2">
+                <div class="flex justify-around">
+                    <button id="reshuffleBtn" class="w-16 h-14 bg-gray-700 rounded-lg shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-gray-600 btn-glow flex items-center justify-center text-4xl">🔃</button>
+                    <button class="w-16 h-14 bg-red-600 rounded-lg shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-red-700 btn-glow flex items-center justify-center text-2xl text-white">🗡️13</button>
+                    <button class="w-16 h-14 bg-orange-600 rounded-lg shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-orange-700 btn-glow flex items-center justify-center text-white text-xl font-bold">10%</button>
+                </div>
             </div>
-
 
             <!-- Lower area with side window and grid -->
             <div class="flex gap-3">
                 <!-- Window to the left -->
-                <div class="bg-gray-700/50 rounded-lg w-1/2 p-2 flex flex-col items-center justify-center">
+                <div id="side-window-left" class="bg-gray-700/50 rounded-lg w-1/2 p-2 flex flex-col items-center justify-center">
                      <button id="start-battle-btn" class="w-full h-2/3 bg-green-600 hover:bg-green-700 text-white font-bold text-lg rounded-lg shadow-lg transition-all duration-200 active:scale-95 flex items-center justify-center">Start Battle</button>
                 </div>
 
@@ -133,15 +141,6 @@
                     <button id="buildBtn" class="bg-gray-500 rounded-lg text-3xl shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-gray-600 btn-glow flex items-center justify-center">🔨</button>
                     <button id="shopBtn" class="bg-yellow-500 rounded-lg text-3xl shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-yellow-600 btn-glow flex items-center justify-center">🪙</button>
                 </div>
-            </div>
-        </div>
-
-        <!-- Bottom Navigation Bar -->
-        <div class="flex-shrink-0 bg-gray-900/50 rounded-lg p-2">
-            <div class="flex justify-around">
-                <button id="reshuffleBtn" class="w-16 h-14 bg-gray-700 rounded-lg shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-gray-600 btn-glow flex items-center justify-center text-4xl">🔃</button>
-                <button class="w-16 h-14 bg-red-600 rounded-lg shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-red-700 btn-glow flex items-center justify-center text-2xl text-white">🗡️13</button>
-                <button class="w-16 h-14 bg-orange-600 rounded-lg shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-orange-700 btn-glow flex items-center justify-center text-white text-xl font-bold">10%</button>
             </div>
         </div>
 
@@ -393,7 +392,6 @@
                 currentEnemies.push(giftEmoji);
                 const finalEnemySet = shuffle(currentEnemies);
                 
-                // This targets the initial spans, which might not exist after battle starts.
                 const initialSpans = enemyContainer.querySelectorAll('span.relative.z-10');
 
                 initialSpans.forEach((span, index) => {
@@ -429,23 +427,20 @@
                 closeModal(openModalInstance);
             });
 
-            // --- NEW: Function to position the yellow battle selector ---
-            const positionBattleSelector = (targetSpan) => {
-                 if (!targetSpan) return;
+            const positionBattleSelector = (targetElement) => {
+                 if (!targetElement) return;
                  const containerRect = enemyContainer.getBoundingClientRect();
-                 const targetRect = targetSpan.getBoundingClientRect();
-                 
-                 const iconWidth = targetSpan.offsetWidth;
-                 const iconHeight = targetSpan.offsetHeight;
+                 const targetRect = targetElement.getBoundingClientRect();
 
-                 // Set size
-                 battleSelector.style.width = `${iconWidth + 12}px`;
-                 battleSelector.style.height = `${iconHeight + 12}px`;
-
-                 const leftOffset = targetRect.left - containerRect.left - 6; // Center the selector horizontally
-                 const topOffset = targetRect.top - containerRect.top - 6;   // Center the selector vertically
+                 const selectorWidth = 68; // Fixed width for selector
+                 const selectorHeight = 80; // Fixed height for selector
                  
-                 // Use translate for both X and Y positioning
+                 battleSelector.style.width = `${selectorWidth}px`;
+                 battleSelector.style.height = `${selectorHeight}px`;
+
+                 const leftOffset = targetRect.left - containerRect.left + (targetRect.width - selectorWidth) / 2;
+                 const topOffset = targetRect.top - containerRect.top + (targetRect.height - selectorHeight) / 2;
+                 
                  battleSelector.style.transform = `translate(${leftOffset}px, ${topOffset}px)`;
             }
 
@@ -454,15 +449,14 @@
                 if (battleStarted) return;
                 battleStarted = true;
                 
-                // Disable controls
-                startBattleBtn.classList.add('opacity-50', 'pointer-events-none');
+                // Disable controls and remove the start button
+                startBattleBtn.remove();
                 reshuffleBtn.disabled = true;
                 reshuffleBtn.classList.add('opacity-50', 'cursor-not-allowed');
                 enemyContainer.classList.remove('cursor-grab', 'active:cursor-grabbing');
                 enemyContainer.classList.add('cursor-default');
                 enemySlider.classList.add('hidden');
 
-                // 1. Get the selected enemies
                 const { iconWidth } = calculateSliderDimensions();
                 const startIndex = Math.round(currentTranslateX / iconWidth);
                 const allEnemySpans = document.querySelectorAll('#enemy-container > span');
@@ -473,35 +467,46 @@
                     isGift: span.classList.contains('emoji-gold-glow')
                 }));
 
-                // 2. Clear the enemy reel and re-style it
-                enemyContainer.innerHTML = ''; // Clear all children
-                enemyContainer.appendChild(battleSelector); // Re-add selector
-                enemyContainer.classList.remove('justify-around');
-                enemyContainer.classList.add('justify-center', 'gap-6');
+                enemyContainer.innerHTML = ''; 
+                enemyContainer.appendChild(battleSelector);
+                enemyContainer.classList.remove('justify-center', 'gap-4');
+                enemyContainer.classList.add('justify-around', 'items-center');
 
-                // 3. Display the 3 selected enemies
+
                 selectedEnemiesData.forEach(enemyData => {
+                    const enemyWrapper = document.createElement('div');
+                    // Uniform size for the wrapper
+                    enemyWrapper.className = 'relative cursor-pointer h-[70px] w-[60px] flex flex-col items-center justify-center';
+
                     const newEnemySpan = document.createElement('span');
-                    newEnemySpan.className = 'text-4xl relative z-10 cursor-pointer p-1';
+                    newEnemySpan.className = 'text-4xl relative z-10';
                     newEnemySpan.textContent = enemyData.emoji;
                     if (enemyData.isStamped) newEnemySpan.classList.add('emoji-red-stamp');
                     if (enemyData.isGift) newEnemySpan.classList.add('emoji-gold-glow');
                     
-                    // Add click listener to move the selector
-                    newEnemySpan.addEventListener('click', () => {
-                        positionBattleSelector(newEnemySpan);
+                    enemyWrapper.appendChild(newEnemySpan);
+                    
+                    // Add health bar for non-gift enemies
+                    if (!enemyData.isGift) {
+                        const healthBarContainer = document.createElement('div');
+                        healthBarContainer.className = 'w-12 h-2 bg-black/50 rounded-full mt-2';
+                        healthBarContainer.innerHTML = `<div class="h-full bg-red-600 rounded-full" style="width: 100%;"></div>`;
+                        enemyWrapper.appendChild(healthBarContainer);
+                    }
+
+                    enemyWrapper.addEventListener('click', () => {
+                        positionBattleSelector(enemyWrapper);
                     });
 
-                    enemyContainer.appendChild(newEnemySpan);
+                    enemyContainer.appendChild(enemyWrapper);
                 });
                 
-                // 4. Show and position the new yellow selector
-                const firstNewEnemy = enemyContainer.querySelector('span');
+                const firstNewEnemyWrapper = enemyContainer.querySelector('div.relative');
                 battleSelector.classList.remove('hidden');
                 
-                // Use a short timeout to ensure the new spans have rendered and have dimensions
+                // Use a short delay to ensure the element is painted before we measure it
                 setTimeout(() => {
-                    positionBattleSelector(firstNewEnemy);
+                    positionBattleSelector(firstNewEnemyWrapper);
                 }, 50);
 
             });
@@ -524,4 +529,3 @@
 
 </body>
 </html>
-
