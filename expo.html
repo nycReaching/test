@@ -122,8 +122,8 @@
             <!-- Lower area with side window and grid -->
             <div class="flex gap-3">
                 <!-- Window to the left -->
-                <div id="side-window-left" class="bg-gray-700/50 rounded-lg w-1/2 p-2 flex flex-col items-center justify-center">
-                     <!-- Start Battle button has been moved -->
+                <div id="side-window-left" class="bg-gray-700/50 rounded-lg w-1/2 p-2 flex flex-col items-start justify-start">
+                     <!-- Spell descriptions will appear here -->
                 </div>
 
                 <!-- 3x3 Grid -->
@@ -133,9 +133,9 @@
                     <button class="equip-slot bg-blue-900/50 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-blue-800/50 btn-glow text-3xl flex items-center justify-center"></button>
                     <button class="equip-slot bg-blue-900/50 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-blue-800/50 btn-glow text-3xl flex items-center justify-center"></button>
                     <!-- Row 2 -->
-                    <button class="bg-teal-800 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-teal-700 btn-glow text-3xl flex items-center justify-center">❤️‍🔥</button>
-                    <button class="bg-teal-800 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-teal-700 btn-glow text-3xl flex items-center justify-center">❄️</button>
-                    <button class="bg-teal-800 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-teal-700 btn-glow text-3xl flex items-center justify-center">🩶</button>
+                    <button id="flameheartBtn" class="bg-teal-800 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-teal-700 btn-glow text-3xl flex items-center justify-center">❤️‍🔥</button>
+                    <button id="frostbiteBtn" class="bg-teal-800 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-teal-700 btn-glow text-3xl flex items-center justify-center">❄️</button>
+                    <button id="armorheartBtn" class="bg-teal-800 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-teal-700 btn-glow text-3xl flex items-center justify-center">🩶</button>
                     <!-- Row 3 -->
                     <button id="fortunesBtn" class="bg-purple-500 rounded-lg text-3xl shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-purple-600 btn-glow flex items-center justify-center">🔮</button>
                     <button id="buildBtn" class="bg-gray-500 rounded-lg text-3xl shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-gray-600 btn-glow flex items-center justify-center">🔨</button>
@@ -238,6 +238,10 @@
             const equipmentChoiceModal = document.getElementById('equipmentChoiceModal');
             const equipmentChoiceContent = document.getElementById('equipmentChoiceContent');
             const startBattleBtn = document.getElementById('start-battle-btn');
+            const sideWindowLeft = document.getElementById('side-window-left');
+            const flameheartBtn = document.getElementById('flameheartBtn');
+            const frostbiteBtn = document.getElementById('frostbiteBtn');
+            const armorheartBtn = document.getElementById('armorheartBtn');
             
             const modalMap = {
                 fortunesBtn: { modal: document.getElementById('fortunesModal'), button: document.getElementById('fortunesBtn') },
@@ -257,6 +261,23 @@
                 armor: [{ emoji: '🧥', name: 'Leather Gear' }, { emoji: '🪨', name: 'Rock Bracer' }, { emoji: '🕸️', name: 'Cloak' }],
                 ring: [{ emoji: '💍', name: 'Eccentric Jewel' }]
             };
+            const spellDescriptions = {
+                flameheart: {
+                    title: "❤️‍🔥 Flameheart:",
+                    desc1: "Deal X and heal X.",
+                    desc2: "Depletes full magic bar."
+                },
+                frostbite: {
+                    title: "❄️ Frostbite:",
+                    desc1: "Deal X and inflict X.",
+                    desc2: "Depletes half magic bar."
+                },
+                armorheart: {
+                    title: "🩶 Armorheart:",
+                    desc1: "Add current health to armor.",
+                    desc2: "Depletes full magic bar."
+                }
+            };
             let activeEquipSlot = null;
             let activeBuildSlot = null;
             let isDragging = false;
@@ -266,6 +287,19 @@
             let dragStartTime;
             let currentBattleTargetIndex = 0;
 
+            // --- Spell Description Logic ---
+            const displaySpellInfo = (spellKey) => {
+                const spell = spellDescriptions[spellKey];
+                if (!spell) return;
+
+                sideWindowLeft.innerHTML = `
+                    <div class="text-white text-sm text-left w-full">
+                        <p class="font-bold mb-1">${spell.title}</p>
+                        <p>${spell.desc1}</p>
+                        <p>${spell.desc2}</p>
+                    </div>
+                `;
+            };
 
             // --- Modal Logic ---
             const openModal = (modalToOpen) => {
@@ -439,6 +473,10 @@
             }
 
             // --- Initial Setup & Event Listeners ---
+            flameheartBtn.addEventListener('click', () => displaySpellInfo('flameheart'));
+            frostbiteBtn.addEventListener('click', () => displaySpellInfo('frostbite'));
+            armorheartBtn.addEventListener('click', () => displaySpellInfo('armorheart'));
+
             Object.values(modalMap).forEach(item => {
                 item.button.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -607,4 +645,3 @@
 
 </body>
 </html>
-
