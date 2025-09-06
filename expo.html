@@ -608,28 +608,30 @@
                 enemySlider.classList.add('hidden');
 
                 const enemySpans = Array.from(enemyContainer.querySelectorAll('span.relative.z-10'));
-                
-                // Instantly clear the content to prevent the "flash" of new enemies.
+                const fadeOutDuration = isInitial ? 0 : 200; // No fade-out on initial load, just disappear.
+
+                // 1. Start by making all spans fade to transparent.
                 enemySpans.forEach(span => {
-                    span.textContent = '';
+                    span.style.transition = `opacity ${fadeOutDuration}ms ease-out`;
+                    span.style.opacity = '0';
                 });
-                
-                // A brief timeout to let the browser register the empty state before starting the animation.
+
+                // 2. Wait for the fade-out to complete (our guaranteed "empty" state).
                 setTimeout(() => {
-                    // Determine the new set of enemies
+                    // 3. Now that the spans are invisible, determine the new enemy set.
                     const shuffledPool = shuffle([...enemyPool]);
                     const currentEnemies = shuffledPool.slice(0, 7);
                     currentEnemies.push(giftEmoji);
                     const finalEnemySet = shuffle(currentEnemies);
                     
-                    // Update the content and classes of each enemy span (they are still invisible)
+                    // 4. Update the content and classes of the still-invisible spans.
                     enemySpans.forEach((span, index) => {
                         span.textContent = finalEnemySet[index];
                         span.className = 'text-2xl relative z-10'; // Reset classes
-                        span.style.opacity = '0';
-                        span.style.transition = 'opacity 0.4s ease-out';
+                        span.style.transition = 'opacity 0.4s ease-out'; // Set transition for the fade-in
                     });
 
+                    // Add special effects classes (e.g., glows)
                     const giftSpan = enemySpans.find(span => span.textContent === giftEmoji);
                     if (giftSpan) giftSpan.classList.add('emoji-gold-glow');
 
@@ -638,12 +640,13 @@
                         const randomEnemyToStamp = stampableSpans[Math.floor(Math.random() * stampableSpans.length)];
                         randomEnemyToStamp.classList.add('emoji-red-stamp');
                     }
+                    
                     currentTranslateX = 0;
                     enemySlider.style.transform = `translateX(0px)`;
 
-                    // Fade them in from left to right over 2 seconds
-                    const totalAnimationTime = 2000;
-                    const delayBetweenFades = totalAnimationTime / enemySpans.length;
+                    // 5. Sequentially fade in the spans from left to right.
+                    const totalRevealTime = 2000;
+                    const delayBetweenFades = totalRevealTime / enemySpans.length;
 
                     enemySpans.forEach((span, index) => {
                         setTimeout(() => {
@@ -651,7 +654,7 @@
                         }, index * delayBetweenFades);
                     });
 
-                    // After animation is complete, clean up and re-enable controls
+                    // 6. After the full reveal animation is complete, re-enable controls.
                     setTimeout(() => {
                         isReshuffling = false;
                         if (!battleStarted) { 
@@ -660,9 +663,11 @@
                             enemyContainer.classList.add('cursor-grab', 'active:cursor-grabbing');
                             startBattleBtn.disabled = false;
                         }
-                    }, totalAnimationTime);
-                }, 50); 
+                    }, totalRevealTime);
+
+                }, fadeOutDuration); // This timeout ensures we wait for the fade-out before proceeding.
             }
+
 
             // --- Initial Setup & Event Listeners ---
             flameheartBtn.addEventListener('click', () => displaySpellInfo('flameheart'));
@@ -752,7 +757,7 @@
             startBattleBtn.addEventListener('click', () => {
                 if (battleStarted || isReshuffling) return;
                 const { iconWidth } = calculateSliderDimensions();
-                const startIndex = Math.round(currentTranslateX / iconWidth);
+                const startIndex = Math.round(currentTranslateX / iconwidth);
 
                 battleStarted = true;
                 
