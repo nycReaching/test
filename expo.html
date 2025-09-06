@@ -51,34 +51,34 @@
             <div class="flex items-center justify-between gap-2 mb-2">
                 <div class="flex items-center h-5 text-xl">
                     <span class="text-red-500">❤️</span>
-                    <span class="font-bold ml-2 w-6 text-left">10</span>
+                    <span id="health-value" class="font-bold ml-2 w-6 text-left">10</span>
                     <span class="ml-2">🛡️</span>
-                    <span class="font-bold ml-1 w-6 text-left">3</span>
+                    <span id="armor-value" class="font-bold ml-1 w-6 text-left">3</span>
                 </div>
                 <div class="flex items-center gap-1 text-base">
                     <div class="flex items-center gap-1">
                         <span class="text-lg">🔃</span>
-                        <span class="font-bold w-5 text-left">5</span>
+                        <span id="reshuffle-value" class="font-bold w-5 text-left">5</span>
                     </div>
                     <div class="flex items-center gap-1">
                         <span class="text-lg">🌒</span>
-                        <span class="font-bold w-5 text-left">3</span>
+                        <span id="moonstone-value" class="font-bold w-5 text-left">3</span>
                     </div>
                 </div>
             </div>
             <!-- Meter 2 Row -->
             <div class="flex items-center justify-between gap-2 mb-3">
                  <div class="bg-gray-700 rounded-full h-5 w-2/3 border-2 border-gray-600">
-                    <div id="meter2" class="bg-teal-800 h-full rounded-full progress-bar-fill" style="width: 50%"></div>
+                    <div id="xp-bar" class="bg-teal-800 h-full rounded-full progress-bar-fill" style="width: 50%"></div>
                 </div>
                  <div class="flex items-center gap-1 text-base">
                     <div class="flex items-center gap-1">
                         <span class="text-lg">📈</span>
-                        <span class="font-bold w-5 text-left">1</span>
+                        <span id="level-value" class="font-bold w-5 text-left">1</span>
                     </div>
                     <div class="flex items-center gap-1">
                         <span class="text-lg">💰</span>
-                        <span class="font-bold w-5 text-left">25</span>
+                        <span id="gold-value" class="font-bold w-5 text-left">25</span>
                     </div>
                 </div>
             </div>
@@ -88,7 +88,7 @@
         <div class="flex-grow flex flex-col my-4 gap-3">
             <!-- Large Window Above -->
             <div id="battle-details-window" class="bg-gray-700/50 rounded-lg flex-grow flex items-center justify-center p-4 transition-all duration-300">
-                <!-- Content for this window can be added here -->
+                <button id="start-battle-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold text-lg py-3 px-10 rounded-lg shadow-lg transition-all duration-200 active:scale-95">Start Battle</button>
             </div>
             
             <!-- Enemy/Battle Reel -->
@@ -114,8 +114,8 @@
             <div class="flex-shrink-0 bg-gray-900/50 rounded-lg p-2">
                 <div class="flex justify-around">
                     <button id="reshuffleBtn" class="w-16 h-14 bg-gray-700 rounded-lg shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-gray-600 btn-glow flex items-center justify-center text-4xl">🔃</button>
-                    <button class="w-16 h-14 bg-red-600 rounded-lg shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-red-700 btn-glow flex items-center justify-center text-2xl text-white">🗡️13</button>
-                    <button class="w-16 h-14 bg-orange-600 rounded-lg shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-orange-700 btn-glow flex items-center justify-center text-white text-xl font-bold">10%</button>
+                    <button id="attackBtn" class="w-16 h-14 bg-red-600 rounded-lg shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-red-700 btn-glow flex items-center justify-center text-2xl text-white">🗡️<span id="attack-value">13</span></button>
+                    <button id="critBtn" class="w-16 h-14 bg-orange-600 rounded-lg shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-orange-700 btn-glow flex items-center justify-center text-white text-xl font-bold"><span id="crit-chance">10</span>%</button>
                 </div>
             </div>
 
@@ -123,7 +123,7 @@
             <div class="flex gap-3">
                 <!-- Window to the left -->
                 <div id="side-window-left" class="bg-gray-700/50 rounded-lg w-1/2 p-2 flex flex-col items-center justify-center">
-                     <button id="start-battle-btn" class="w-full h-2/3 bg-green-600 hover:bg-green-700 text-white font-bold text-lg rounded-lg shadow-lg transition-all duration-200 active:scale-95 flex items-center justify-center">Start Battle</button>
+                     <!-- Start Battle button has been moved -->
                 </div>
 
                 <!-- 3x3 Grid -->
@@ -232,7 +232,6 @@
             const enemySlider = document.getElementById('enemy-slider');
             const battleSelector = document.getElementById('battle-selector');
             const reshuffleBtn = document.getElementById('reshuffleBtn');
-            const enemySpans = enemyContainer.querySelectorAll('span');
             const reelModal = document.getElementById('reelModal');
             const equipSlots = document.querySelectorAll('.equip-slot');
             const reelItems = document.querySelectorAll('.reel-item');
@@ -261,9 +260,12 @@
             let activeEquipSlot = null;
             let activeBuildSlot = null;
             let isDragging = false;
-            let startX;
+            let startX, startY;
             let initialTranslateX;
             let currentTranslateX = 0;
+            let dragStartTime;
+            let currentBattleTargetIndex = 0;
+
 
             // --- Modal Logic ---
             const openModal = (modalToOpen) => {
@@ -324,7 +326,7 @@
             });
 
 
-            // --- Enemy Slider Logic ---
+            // --- Enemy Slider Interaction Logic ---
             const calculateSliderDimensions = () => {
                 const containerWidth = enemyContainer.offsetWidth;
                 const iconWidth = containerWidth / numIcons;
@@ -333,16 +335,22 @@
                 return { containerWidth, iconWidth, sliderWidth };
             };
             
-            const getEventX = (e) => e.touches ? e.touches[0].clientX : e.clientX;
+            const getEventCoords = (e) => ({
+                x: e.touches ? e.touches[0].clientX : e.clientX,
+                y: e.touches ? e.touches[0].clientY : e.clientY,
+            });
 
             const dragStart = (e) => {
                 if (battleStarted) return;
                 isDragging = true;
-                startX = getEventX(e);
+                const coords = getEventCoords(e);
+                startX = coords.x;
+                startY = coords.y;
+                dragStartTime = Date.now();
                 enemySlider.style.transition = 'none';
                 initialTranslateX = currentTranslateX;
                 document.addEventListener('mousemove', dragMove);
-                document.addEventListener('touchmove', dragMove);
+                document.addEventListener('touchmove', dragMove, { passive: false });
                 document.addEventListener('mouseup', dragEnd);
                 document.addEventListener('touchend', dragEnd);
             };
@@ -350,7 +358,8 @@
             const dragMove = (e) => {
                 if (!isDragging) return;
                 e.preventDefault();
-                const currentX = getEventX(e);
+                const coords = getEventCoords(e);
+                const currentX = coords.x;
                 const deltaX = currentX - startX;
                 currentTranslateX = initialTranslateX + deltaX;
                 
@@ -361,20 +370,39 @@
                 enemySlider.style.transform = `translateX(${currentTranslateX}px)`;
             };
 
-            const dragEnd = () => {
+            const dragEnd = (e) => {
                 if (!isDragging) return;
                 isDragging = false;
-                enemySlider.style.transition = 'transform 0.2s ease-out';
-                const { iconWidth } = calculateSliderDimensions();
-                const closestSnapIndex = Math.round(currentTranslateX / iconWidth);
-                const clampedIndex = Math.min(numIcons - groupSize, Math.max(0, closestSnapIndex));
-                currentTranslateX = clampedIndex * iconWidth;
-                enemySlider.style.transform = `translateX(${currentTranslateX}px)`;
+                
+                const coords = e.changedTouches ? e.changedTouches[0] : e;
+                const endX = coords.clientX;
+                const endY = coords.clientY;
+                const deltaX = endX - startX;
+                const deltaY = endY - startY;
+                const deltaTime = Date.now() - dragStartTime;
 
                 document.removeEventListener('mousemove', dragMove);
                 document.removeEventListener('touchmove', dragMove);
                 document.removeEventListener('mouseup', dragEnd);
                 document.removeEventListener('touchend', dragEnd);
+                
+                enemySlider.style.transition = 'transform 0.2s ease-out';
+                const { iconWidth } = calculateSliderDimensions();
+
+                // Check for Tap
+                if (deltaTime < 250 && Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10) {
+                    const containerRect = enemyContainer.getBoundingClientRect();
+                    const tapX = endX - containerRect.left;
+                    const tappedIndex = Math.floor(tapX / iconWidth);
+                    const targetIndex = Math.max(0, Math.min(numIcons - groupSize, tappedIndex - 1));
+                    currentTranslateX = targetIndex * iconWidth;
+                } else { // It's a swipe
+                    const closestSnapIndex = Math.round(currentTranslateX / iconWidth);
+                    const clampedIndex = Math.min(numIcons - groupSize, Math.max(0, closestSnapIndex));
+                    currentTranslateX = clampedIndex * iconWidth;
+                }
+
+                enemySlider.style.transform = `translateX(${currentTranslateX}px)`;
             };
             
             // --- Enemy Reshuffle Logic ---
@@ -393,7 +421,6 @@
                 const finalEnemySet = shuffle(currentEnemies);
                 
                 const initialSpans = enemyContainer.querySelectorAll('span.relative.z-10');
-
                 initialSpans.forEach((span, index) => {
                     span.textContent = finalEnemySet[index];
                     span.className = 'text-2xl relative z-10';
@@ -431,25 +458,78 @@
                  if (!targetElement) return;
                  const containerRect = enemyContainer.getBoundingClientRect();
                  const targetRect = targetElement.getBoundingClientRect();
-
-                 const selectorWidth = 68; // Fixed width for selector
-                 const selectorHeight = 80; // Fixed height for selector
-                 
+                 const selectorWidth = 68;
+                 const selectorHeight = 80;
                  battleSelector.style.width = `${selectorWidth}px`;
                  battleSelector.style.height = `${selectorHeight}px`;
-
                  const leftOffset = targetRect.left - containerRect.left + (targetRect.width - selectorWidth) / 2;
                  const topOffset = targetRect.top - containerRect.top + (targetRect.height - selectorHeight) / 2;
-                 
                  battleSelector.style.transform = `translate(${leftOffset}px, ${topOffset}px)`;
             }
+            
+            // --- Battle Mode Interaction Handlers ---
+            const battleDragStart = (e) => {
+                const coords = getEventCoords(e);
+                startX = coords.x;
+                startY = coords.y;
+                dragStartTime = Date.now();
+                isDragging = false; 
+                document.addEventListener('mousemove', battleDragMove);
+                document.addEventListener('touchmove', battleDragMove, { passive: false });
+                document.addEventListener('mouseup', battleDragEnd);
+                document.addEventListener('touchend', battleDragEnd);
+            };
+
+            const battleDragMove = (e) => {
+                const coords = getEventCoords(e);
+                if (!isDragging && Math.abs(coords.x - startX) > 10) { // Threshold to confirm drag
+                    isDragging = true;
+                }
+
+                if (!isDragging) return;
+
+                e.preventDefault();
+
+                const enemyWrappers = Array.from(enemyContainer.querySelectorAll('div.relative'));
+
+                // Find which enemy is under the cursor
+                let targetIndex = -1;
+                for (let i = 0; i < enemyWrappers.length; i++) {
+                    const wrapper = enemyWrappers[i];
+                    const wrapperRect = wrapper.getBoundingClientRect();
+                    // Check if the cursor's X is within the bounds of the enemy wrapper
+                    if (coords.x >= wrapperRect.left && coords.x <= wrapperRect.right) {
+                        targetIndex = i;
+                        break;
+                    }
+                }
+
+                if (targetIndex !== -1 && targetIndex !== currentBattleTargetIndex) {
+                    currentBattleTargetIndex = targetIndex;
+                    positionBattleSelector(enemyWrappers[currentBattleTargetIndex]);
+                }
+            };
+            
+            const battleDragEnd = (e) => {
+                document.removeEventListener('mousemove', battleDragMove);
+                document.removeEventListener('touchmove', battleDragMove);
+                document.removeEventListener('mouseup', battleDragEnd);
+                document.removeEventListener('touchend', battleDragEnd);
+
+                // Using a timeout to prevent click event firing immediately after drag
+                setTimeout(() => {
+                    isDragging = false;
+                }, 50);
+            };
 
             // --- Start Battle Logic ---
             startBattleBtn.addEventListener('click', () => {
                 if (battleStarted) return;
                 battleStarted = true;
                 
-                // Disable controls and remove the start button
+                enemyContainer.removeEventListener('mousedown', dragStart);
+                enemyContainer.removeEventListener('touchstart', dragStart);
+
                 startBattleBtn.remove();
                 reshuffleBtn.disabled = true;
                 reshuffleBtn.classList.add('opacity-50', 'cursor-not-allowed');
@@ -469,24 +549,20 @@
 
                 enemyContainer.innerHTML = ''; 
                 enemyContainer.appendChild(battleSelector);
-                enemyContainer.classList.remove('justify-center', 'gap-4');
-                enemyContainer.classList.add('justify-around', 'items-center');
+                enemyContainer.classList.remove('justify-around');
+                enemyContainer.classList.add('justify-center', 'gap-4');
 
 
-                selectedEnemiesData.forEach(enemyData => {
+                selectedEnemiesData.forEach((enemyData, index) => {
                     const enemyWrapper = document.createElement('div');
-                    // Uniform size for the wrapper
                     enemyWrapper.className = 'relative cursor-pointer h-[70px] w-[60px] flex flex-col items-center justify-center';
-
                     const newEnemySpan = document.createElement('span');
                     newEnemySpan.className = 'text-4xl relative z-10';
                     newEnemySpan.textContent = enemyData.emoji;
                     if (enemyData.isStamped) newEnemySpan.classList.add('emoji-red-stamp');
                     if (enemyData.isGift) newEnemySpan.classList.add('emoji-gold-glow');
-                    
                     enemyWrapper.appendChild(newEnemySpan);
                     
-                    // Add health bar for non-gift enemies
                     if (!enemyData.isGift) {
                         const healthBarContainer = document.createElement('div');
                         healthBarContainer.className = 'w-12 h-2 bg-black/50 rounded-full mt-2';
@@ -495,20 +571,22 @@
                     }
 
                     enemyWrapper.addEventListener('click', () => {
+                        if (isDragging) return;
+                        currentBattleTargetIndex = index;
                         positionBattleSelector(enemyWrapper);
                     });
-
                     enemyContainer.appendChild(enemyWrapper);
                 });
                 
                 const firstNewEnemyWrapper = enemyContainer.querySelector('div.relative');
                 battleSelector.classList.remove('hidden');
                 
-                // Use a short delay to ensure the element is painted before we measure it
-                setTimeout(() => {
-                    positionBattleSelector(firstNewEnemyWrapper);
-                }, 50);
+                currentBattleTargetIndex = 0;
+                setTimeout(() => positionBattleSelector(firstNewEnemyWrapper), 50);
 
+                // Add listeners for battle mode
+                enemyContainer.addEventListener('mousedown', battleDragStart);
+                enemyContainer.addEventListener('touchstart', battleDragStart);
             });
             
             calculateSliderDimensions();
@@ -529,3 +607,4 @@
 
 </body>
 </html>
+
