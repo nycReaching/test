@@ -156,11 +156,9 @@
 
         <!-- MODAL WINDOWS -->
         <!-- Fortunes Modal -->
-        <div id="fortunesModal" class="hidden absolute bottom-0 left-0 w-full h-2/3 bg-gray-800 rounded-t-2xl border-t-4 border-purple-500 p-4 flex flex-col justify-center items-center transition-transform duration-300 ease-in-out z-20">
-            <div class="w-full max-w-xs text-xl text-white space-y-4">
-                <button class="bg-gray-700 rounded-lg px-4 py-3 btn-glow active:bg-gray-600 w-full">🩸 Blood Pact</button>
-                <button class="bg-gray-700 rounded-lg px-4 py-3 btn-glow active:bg-gray-600 w-full">🦶🏼 Broken Ankle</button>
-                <button class="bg-gray-700 rounded-lg px-4 py-3 btn-glow active:bg-gray-600 w-full">🎭 Unstable Mind</button>
+        <div id="fortunesModal" class="hidden absolute bottom-0 left-0 w-full h-2/3 bg-gray-800 rounded-t-2xl border-t-4 border-purple-500 p-4 flex flex-col justify-start items-center transition-transform duration-300 ease-in-out z-20 pt-8">
+            <div id="fortunes-content" class="w-full max-w-xs text-xl text-white space-y-4 text-center">
+                <!-- Dynamically populated -->
             </div>
         </div>
 
@@ -238,6 +236,7 @@
             const flameheartBtn = document.getElementById('flameheartBtn');
             const frostbiteBtn = document.getElementById('frostbiteBtn');
             const armorheartBtn = document.getElementById('armorheartBtn');
+            const fortunesContent = document.getElementById('fortunes-content');
             
             const modalMap = {
                 fortunesBtn: { modal: document.getElementById('fortunesModal'), button: document.getElementById('fortunesBtn') },
@@ -279,6 +278,24 @@
                 '🌟': { title: "🌟 Blessing", desc: "Increases your damage.", costDesc: "Cost: 1 🌒" },
                 '⚡': { title: "⚡ Rush", desc: "Grants extra actions.", costDesc: "Cost: 1 🌒" }
             };
+            const sacrifices = [
+                '🩸 Blood Pact',
+                '🦶🏼 Broken Ankle',
+                '💔 Heartbreak',
+                '📜 Gambling Debt',
+                '🫳🏽 Clumsy',
+                '🎭 Unstable Mind'
+            ];
+            const boons = [
+                { text: 'Efficient Magic', color: 'text-blue-400' },
+                { text: 'Bartering Edge', color: 'text-blue-400' },
+                { text: 'Archer\'s Edge', color: 'text-yellow-400' },
+                { text: 'Enchantment', color: 'text-yellow-400' },
+                { text: 'Battle Grace', color: 'text-yellow-400' },
+                { text: 'Prolonged Torment', color: 'text-pink-400' },
+                { text: 'Thief Strike', color: 'text-pink-400' },
+                { text: 'Toxic Decay', color: 'text-pink-400' }
+            ];
 
             // --- State ---
             let playerState = {
@@ -308,6 +325,7 @@
             let dragStartTime;
             let currentBattleTargetIndex = 0;
             let currentEnemiesInBattle = [];
+            let fortunePhase = 'sacrifice'; // can be 'sacrifice' or 'boon'
 
             // --- UI Update Logic ---
             const updatePlayerUI = () => {
@@ -350,6 +368,57 @@
                 const spell = spellDescriptions[spellKey];
                 if (!spell) return;
                 displayInfoInSideWindow(spell.title, spell.desc1, spell.desc2);
+            };
+
+            // --- Fortunes Modal Logic ---
+            const showBoons = () => {
+                fortunePhase = 'boon';
+                fortunesContent.innerHTML = ''; // Clear previous content
+
+                const title = document.createElement('h2');
+                title.className = 'text-2xl font-bold mb-4 text-purple-300';
+                title.textContent = 'REWARD';
+                fortunesContent.appendChild(title);
+
+                const shuffledBoons = shuffle([...boons]);
+                const selectedBoons = shuffledBoons.slice(0, 3);
+
+                selectedBoons.forEach(boon => {
+                    const button = document.createElement('button');
+                    button.className = `bg-gray-700 rounded-lg px-4 py-3 btn-glow active:bg-gray-600 w-full ${boon.color}`;
+                    button.textContent = boon.text;
+                    button.addEventListener('click', (e) => {
+                        e.stopPropagation(); // Prevent modal from closing prematurely
+                        console.log('Boon selected:', boon.text);
+                        closeModal(modalMap.fortunesBtn.modal);
+                    });
+                    fortunesContent.appendChild(button);
+                });
+            };
+            
+            const showSacrifices = () => {
+                fortunePhase = 'sacrifice';
+                fortunesContent.innerHTML = ''; // Clear previous content
+
+                const title = document.createElement('h2');
+                title.className = 'text-2xl font-bold mb-4 text-purple-300';
+                title.textContent = 'SACRIFICE';
+                fortunesContent.appendChild(title);
+
+                const shuffledSacrifices = shuffle([...sacrifices]);
+                const selectedSacrifices = shuffledSacrifices.slice(0, 2);
+
+                selectedSacrifices.forEach(sacrifice => {
+                    const button = document.createElement('button');
+                    button.className = 'bg-gray-700 rounded-lg px-4 py-3 btn-glow active:bg-gray-600 w-full';
+                    button.textContent = sacrifice;
+                    button.addEventListener('click', (e) => {
+                        e.stopPropagation(); // Prevent modal from closing prematurely
+                        console.log('Sacrifice selected:', sacrifice);
+                        showBoons();
+                    });
+                    fortunesContent.appendChild(button);
+                });
             };
 
             // --- Shop Logic ---
@@ -404,10 +473,14 @@
             // --- Modal Logic ---
             const openModal = (modalToOpen) => {
                 if (!modalToOpen) return;
-                // If opening shop, render it first
+                
+                // Special handling for different modals
                 if (modalToOpen.id === 'shopModal') {
                     renderShop();
+                } else if (modalToOpen.id === 'fortunesModal') {
+                    showSacrifices(); 
                 }
+
                 allModals.forEach(m => m.classList.add('hidden')); // Close all modals first
                 modalToOpen.classList.remove('hidden');
             };
@@ -853,3 +926,4 @@
 
 </body>
 </html>
+
