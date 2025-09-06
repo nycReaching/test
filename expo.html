@@ -87,6 +87,9 @@
             <div id="enemy-container" class="relative flex justify-around items-center bg-gray-900/50 rounded-lg p-2 select-none cursor-grab active:cursor-grabbing">
                 <!-- The draggable slider window -->
                 <div id="enemy-slider" class="absolute top-0 left-0 h-full bg-white/20 border-2 border-white rounded-lg pointer-events-none" style="transition: transform 0.2s ease-out;"></div>
+                <!-- The yellow selector for battle -->
+                <div id="battle-selector" class="hidden absolute top-0 left-0 bg-yellow-400/20 border-2 border-yellow-400 rounded-lg pointer-events-none transition-transform duration-200 ease-in-out"></div>
+
 
                 <!-- Icons (z-10 to appear above the slider bg) - These will be populated by JS -->
                 <span class="text-2xl relative z-10"></span>
@@ -102,11 +105,9 @@
 
         <!-- Middle Section: Game Windows & Grid -->
         <div class="flex-grow flex flex-col my-4 gap-3">
-            <!-- Large Window Above -->
-            <div id="battle-details-window" class="bg-gray-700/50 rounded-lg flex-grow flex items-center justify-center p-4 filter blur-sm transition-all duration-300">
-                <div id="selected-enemies-display" class="flex items-center justify-center gap-4">
-                    <!-- JS will populate this -->
-                </div>
+            <!-- Large Window Above - This is now empty as requested -->
+            <div id="battle-details-window" class="bg-gray-700/50 rounded-lg flex-grow flex items-center justify-center p-4 transition-all duration-300">
+                <!-- Content removed as per request -->
             </div>
 
 
@@ -230,16 +231,15 @@
             const gameContainer = document.getElementById('game-container');
             const enemyContainer = document.getElementById('enemy-container');
             const enemySlider = document.getElementById('enemy-slider');
+            const battleSelector = document.getElementById('battle-selector');
             const reshuffleBtn = document.getElementById('reshuffleBtn');
             const enemySpans = enemyContainer.querySelectorAll('span');
-            const selectedEnemiesDisplay = document.getElementById('selected-enemies-display');
             const reelModal = document.getElementById('reelModal');
             const equipSlots = document.querySelectorAll('.equip-slot');
             const reelItems = document.querySelectorAll('.reel-item');
             const equipmentChoiceModal = document.getElementById('equipmentChoiceModal');
             const equipmentChoiceContent = document.getElementById('equipmentChoiceContent');
             const startBattleBtn = document.getElementById('start-battle-btn');
-            const battleDetailsWindow = document.getElementById('battle-details-window');
             
             const modalMap = {
                 fortunesBtn: { modal: document.getElementById('fortunesModal'), button: document.getElementById('fortunesBtn') },
@@ -265,7 +265,6 @@
             let startX;
             let initialTranslateX;
             let currentTranslateX = 0;
-            let selectedEnemyIndex = 0;
 
             // --- Modal Logic ---
             const openModal = (modalToOpen) => {
@@ -326,7 +325,7 @@
             });
 
 
-            // --- Enemy Slider & Battle Details Logic ---
+            // --- Enemy Slider Logic ---
             const calculateSliderDimensions = () => {
                 const containerWidth = enemyContainer.offsetWidth;
                 const iconWidth = containerWidth / numIcons;
@@ -335,72 +334,6 @@
                 return { containerWidth, iconWidth, sliderWidth };
             };
             
-            const updateBattleDetails = (showSelection = false) => {
-                if (!selectedEnemiesDisplay) return;
-                const { iconWidth } = calculateSliderDimensions();
-                const startIndex = Math.round(currentTranslateX / iconWidth);
-                const selectedEnemySpans = Array.from(enemySpans).slice(startIndex, startIndex + groupSize);
-                selectedEnemiesDisplay.innerHTML = '';
-
-                selectedEnemySpans.forEach((enemySpan, index) => {
-                    const enemyEmoji = enemySpan.textContent;
-                    if (!enemyEmoji.trim()) return;
-
-                    const isStamped = enemySpan.classList.contains('emoji-red-stamp');
-                    const isGift = enemySpan.classList.contains('emoji-gold-glow');
-
-                    const enemyWrapper = document.createElement('div');
-                    enemyWrapper.className = 'relative p-2 rounded-lg cursor-pointer transition-all duration-150 flex flex-col items-center';
-
-                    if (battleStarted && showSelection && index === selectedEnemyIndex) {
-                        enemyWrapper.classList.add('border-4', 'border-lime-400', 'box-border', 'scale-110');
-                    } else {
-                        enemyWrapper.classList.add('border-4', 'border-transparent', 'box-border', 'scale-100');
-                    }
-
-                    const emojiDisplaySpan = document.createElement('span');
-                    emojiDisplaySpan.className = 'text-5xl select-none';
-                    if (isStamped) emojiDisplaySpan.classList.add('emoji-red-stamp', 'pulse-animation');
-                    if (isGift) emojiDisplaySpan.classList.add('emoji-gold-glow');
-                    emojiDisplaySpan.textContent = enemyEmoji;
-                    enemyWrapper.appendChild(emojiDisplaySpan);
-
-                    let statusIcon = null;
-                    if (['🐍', '🕷️'].includes(enemyEmoji)) statusIcon = '☠️';
-                    else if (enemyEmoji === '🧛') statusIcon = '🕯️';
-                    else if (enemyEmoji === '🧟') statusIcon = '🐌';
-
-                    if (statusIcon) {
-                        const statusDiv = document.createElement('div');
-                        statusDiv.className = 'absolute top-1/2 -translate-y-1/2 -right-2 text-xl';
-                        statusDiv.innerHTML = statusIcon;
-                        enemyWrapper.appendChild(statusDiv);
-                    }
-
-                    // FIX: Only add health bars if it's not a gift
-                    if (!isGift) {
-                        const healthBarContainer = document.createElement('div');
-                        healthBarContainer.className = 'mt-2 flex flex-col gap-1 items-center';
-                        const createHealthBar = () => {
-                            const barWrapper = document.createElement('div');
-                            barWrapper.className = 'w-12 h-2 bg-black/50 rounded-full';
-                            barWrapper.innerHTML = `<div class="h-full bg-red-600 rounded-full" style="width: 100%;"></div>`;
-                            return barWrapper;
-                        };
-                        healthBarContainer.appendChild(createHealthBar());
-                        if (isStamped) healthBarContainer.appendChild(createHealthBar());
-                        enemyWrapper.appendChild(healthBarContainer);
-                    }
-
-                    enemyWrapper.addEventListener('click', () => {
-                        if (!battleStarted || isDragging) return;
-                        selectedEnemyIndex = index;
-                        updateBattleDetails(true);
-                    });
-                    selectedEnemiesDisplay.appendChild(enemyWrapper);
-                });
-            };
-
             const getEventX = (e) => e.touches ? e.touches[0].clientX : e.clientX;
 
             const dragStart = (e) => {
@@ -427,7 +360,6 @@
                 currentTranslateX = Math.max(0, Math.min(currentTranslateX, maxTranslateX));
 
                 enemySlider.style.transform = `translateX(${currentTranslateX}px)`;
-                updateBattleDetails(false);
             };
 
             const dragEnd = () => {
@@ -439,8 +371,6 @@
                 const clampedIndex = Math.min(numIcons - groupSize, Math.max(0, closestSnapIndex));
                 currentTranslateX = clampedIndex * iconWidth;
                 enemySlider.style.transform = `translateX(${currentTranslateX}px)`;
-                selectedEnemyIndex = 0;
-                updateBattleDetails(false);
 
                 document.removeEventListener('mousemove', dragMove);
                 document.removeEventListener('touchmove', dragMove);
@@ -462,16 +392,19 @@
                 const currentEnemies = shuffledPool.slice(0, 7);
                 currentEnemies.push(giftEmoji);
                 const finalEnemySet = shuffle(currentEnemies);
+                
+                // This targets the initial spans, which might not exist after battle starts.
+                const initialSpans = enemyContainer.querySelectorAll('span.relative.z-10');
 
-                enemySpans.forEach((span, index) => {
+                initialSpans.forEach((span, index) => {
                     span.textContent = finalEnemySet[index];
                     span.className = 'text-2xl relative z-10';
                 });
 
-                const giftSpan = Array.from(enemySpans).find(span => span.textContent === giftEmoji);
+                const giftSpan = Array.from(initialSpans).find(span => span.textContent === giftEmoji);
                 if (giftSpan) giftSpan.classList.add('emoji-gold-glow');
 
-                const stampableSpans = Array.from(enemySpans).filter(span => span.textContent !== giftEmoji);
+                const stampableSpans = Array.from(initialSpans).filter(span => span.textContent !== giftEmoji);
                 if (stampableSpans.length > 0) {
                     const randomEnemyToStamp = stampableSpans[Math.floor(Math.random() * stampableSpans.length)];
                     randomEnemyToStamp.classList.add('emoji-red-stamp');
@@ -481,8 +414,6 @@
             }
 
             // --- Initial Setup & Event Listeners ---
-            
-            // REFACTORED: More robust modal handling
             Object.values(modalMap).forEach(item => {
                 item.button.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -493,28 +424,86 @@
             gameContainer.addEventListener('click', (e) => {
                 const openModalInstance = allModals.find(m => !m.classList.contains('hidden'));
                 if (!openModalInstance) return;
-
-                // Clicks inside special modals (like equipment choice) should not close main modals
                 if (equipmentChoiceModal.contains(e.target) && !equipmentChoiceModal.classList.contains('hidden')) return;
-                
-                // Clicks inside the open modal content area should not close it
                 if (openModalInstance.contains(e.target)) return;
-                
                 closeModal(openModalInstance);
             });
 
+            // --- NEW: Function to position the yellow battle selector ---
+            const positionBattleSelector = (targetSpan) => {
+                 if (!targetSpan) return;
+                 const containerRect = enemyContainer.getBoundingClientRect();
+                 const targetRect = targetSpan.getBoundingClientRect();
+                 
+                 const iconWidth = targetSpan.offsetWidth;
+                 const iconHeight = targetSpan.offsetHeight;
+
+                 // Set size
+                 battleSelector.style.width = `${iconWidth + 12}px`;
+                 battleSelector.style.height = `${iconHeight + 12}px`;
+
+                 const leftOffset = targetRect.left - containerRect.left - 6; // Center the selector horizontally
+                 const topOffset = targetRect.top - containerRect.top - 6;   // Center the selector vertically
+                 
+                 // Use translate for both X and Y positioning
+                 battleSelector.style.transform = `translate(${leftOffset}px, ${topOffset}px)`;
+            }
+
             // --- Start Battle Logic ---
             startBattleBtn.addEventListener('click', () => {
+                if (battleStarted) return;
                 battleStarted = true;
-                battleDetailsWindow.classList.remove('blur-sm');
-                startBattleBtn.classList.add('opacity-0', 'pointer-events-none');
                 
+                // Disable controls
+                startBattleBtn.classList.add('opacity-50', 'pointer-events-none');
                 reshuffleBtn.disabled = true;
                 reshuffleBtn.classList.add('opacity-50', 'cursor-not-allowed');
                 enemyContainer.classList.remove('cursor-grab', 'active:cursor-grabbing');
                 enemyContainer.classList.add('cursor-default');
+                enemySlider.classList.add('hidden');
 
-                updateBattleDetails(true);
+                // 1. Get the selected enemies
+                const { iconWidth } = calculateSliderDimensions();
+                const startIndex = Math.round(currentTranslateX / iconWidth);
+                const allEnemySpans = document.querySelectorAll('#enemy-container > span');
+                const selectedEnemySpans = Array.from(allEnemySpans).slice(startIndex, startIndex + groupSize);
+                const selectedEnemiesData = selectedEnemySpans.map(span => ({
+                    emoji: span.textContent,
+                    isStamped: span.classList.contains('emoji-red-stamp'),
+                    isGift: span.classList.contains('emoji-gold-glow')
+                }));
+
+                // 2. Clear the enemy reel and re-style it
+                enemyContainer.innerHTML = ''; // Clear all children
+                enemyContainer.appendChild(battleSelector); // Re-add selector
+                enemyContainer.classList.remove('justify-around');
+                enemyContainer.classList.add('justify-center', 'gap-6');
+
+                // 3. Display the 3 selected enemies
+                selectedEnemiesData.forEach(enemyData => {
+                    const newEnemySpan = document.createElement('span');
+                    newEnemySpan.className = 'text-4xl relative z-10 cursor-pointer p-1';
+                    newEnemySpan.textContent = enemyData.emoji;
+                    if (enemyData.isStamped) newEnemySpan.classList.add('emoji-red-stamp');
+                    if (enemyData.isGift) newEnemySpan.classList.add('emoji-gold-glow');
+                    
+                    // Add click listener to move the selector
+                    newEnemySpan.addEventListener('click', () => {
+                        positionBattleSelector(newEnemySpan);
+                    });
+
+                    enemyContainer.appendChild(newEnemySpan);
+                });
+                
+                // 4. Show and position the new yellow selector
+                const firstNewEnemy = enemyContainer.querySelector('span');
+                battleSelector.classList.remove('hidden');
+                
+                // Use a short timeout to ensure the new spans have rendered and have dimensions
+                setTimeout(() => {
+                    positionBattleSelector(firstNewEnemy);
+                }, 50);
+
             });
             
             calculateSliderDimensions();
@@ -525,14 +514,11 @@
 
             reshuffleBtn.addEventListener('click', () => {
                 if (battleStarted) return;
-                selectedEnemyIndex = 0;
                 reshuffleEnemies();
-                updateBattleDetails(false);
             });
 
             // Initial game setup
             reshuffleEnemies();
-            updateBattleDetails(false);
         });
     </script>
 
