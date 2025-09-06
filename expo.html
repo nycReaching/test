@@ -38,6 +38,9 @@
         .pulse-animation {
             animation: pulse 1.5s infinite ease-in-out;
         }
+        .text-shadow {
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
@@ -101,7 +104,7 @@
                 <!-- The draggable slider window -->
                 <div id="enemy-slider" class="absolute top-0 left-0 h-full bg-white/20 border-2 border-white rounded-lg pointer-events-none" style="transition: transform 0.2s ease-out;"></div>
                 <!-- The yellow selector for battle -->
-                <div id="battle-selector" class="hidden absolute top-0 left-0 bg-yellow-400/20 border-2 border-yellow-400 rounded-lg pointer-events-none transition-transform duration-200 ease-in-out"></div>
+                <div id="battle-selector" class="hidden absolute top-0 left-0 bg-yellow-400/20 border-2 border-yellow-400 rounded-lg pointer-events-none"></div>
 
                 <!-- Reroll Animation Overlay -->
                 <div id="reroll-overlay" class="hidden absolute inset-0 bg-gray-800 z-20" style="transition: transform 3s ease-in-out;"></div>
@@ -122,7 +125,7 @@
                 <div class="flex justify-around">
                     <button id="reshuffleBtn" class="relative w-16 h-14 bg-gray-700 rounded-lg shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-gray-600 btn-glow flex items-center justify-center text-4xl">
                         🔃
-                        <span id="reshuffle-counter" class="absolute bottom-1 right-2 text-sm font-bold text-white"></span>
+                        <span id="reshuffle-counter" class="absolute bottom-1 right-2 text-sm font-bold text-white text-shadow"></span>
                     </button>
                     <button id="attackBtn" class="w-16 h-14 bg-red-600 rounded-lg shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-red-700 btn-glow flex items-center justify-center text-2xl text-white">🗡️<span id="attack-value" class="font-bold">13</span></button>
                     <button id="critBtn" class="w-16 h-14 bg-orange-600 rounded-lg shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-orange-700 btn-glow flex items-center justify-center text-white text-xl font-bold"><span id="crit-chance">10</span>%</button>
@@ -462,7 +465,7 @@
                         activeEquipSlot.appendChild(emojiSpan);
 
                         const counterSpan = document.createElement('span');
-                        counterSpan.className = 'absolute bottom-1 right-2 text-sm font-bold text-white';
+                        counterSpan.className = 'absolute bottom-1 right-2 text-sm font-bold text-white text-shadow';
                         counterSpan.textContent = '3';
                         activeEquipSlot.appendChild(counterSpan);
 
@@ -836,4 +839,5 @@
 
 </body>
 </html>
+
 
