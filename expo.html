@@ -106,9 +106,6 @@
                 <!-- The yellow selector for battle -->
                 <div id="battle-selector" class="hidden absolute top-0 left-0 bg-yellow-400/20 border-2 border-yellow-400 rounded-lg pointer-events-none"></div>
 
-                <!-- Reroll Animation Overlay -->
-                <div id="reroll-overlay" class="hidden absolute inset-0 bg-gray-800 z-20" style="transition: transform 3s ease-in-out;"></div>
-
                 <!-- Icons (z-10 to appear above the slider bg) - These will be populated by JS -->
                 <span class="text-2xl relative z-10"></span>
                 <span class="text-2xl relative z-10"></span>
@@ -228,7 +225,6 @@
             const shopItemsContainer = document.getElementById('shop-items-container');
             const enemyContainer = document.getElementById('enemy-container');
             const enemySlider = document.getElementById('enemy-slider');
-            const rerollOverlay = document.getElementById('reroll-overlay');
             const battleSelector = document.getElementById('battle-selector');
             const reshuffleBtn = document.getElementById('reshuffleBtn');
             const reelModal = document.getElementById('reelModal');
@@ -605,56 +601,64 @@
                 }
                 
                 isReshuffling = true;
-                startBattleBtn.disabled = true; // Disable start battle during animation
+                startBattleBtn.disabled = true;
                 
                 enemyContainer.classList.remove('cursor-grab', 'active:cursor-grabbing');
-                enemySlider.classList.add('hidden'); // Hide the selector during animation
+                enemySlider.classList.add('hidden');
 
-                // Show the overlay at its starting position (covering everything)
-                rerollOverlay.style.transform = 'translateX(0%)';
-                rerollOverlay.classList.remove('hidden');
-
-                // Instantly update the enemies behind the overlay
-                const shuffledPool = shuffle([...enemyPool]);
-                const currentEnemies = shuffledPool.slice(0, 7);
-                currentEnemies.push(giftEmoji);
-                const finalEnemySet = shuffle(currentEnemies);
+                // 1. Get all spans and set them to transparent for the fade-in animation
+                const enemySpans = Array.from(enemyContainer.querySelectorAll('span.relative.z-10'));
+                enemySpans.forEach(span => {
+                    span.style.opacity = '0';
+                    span.style.transition = 'opacity 0.4s ease-out';
+                });
                 
-                const initialSpans = enemyContainer.querySelectorAll('span.relative.z-10');
-                initialSpans.forEach((span, index) => {
-                    span.textContent = finalEnemySet[index];
-                    span.className = 'text-2xl relative z-10';
-                });
-
-                const giftSpan = Array.from(initialSpans).find(span => span.textContent === giftEmoji);
-                if (giftSpan) giftSpan.classList.add('emoji-gold-glow');
-
-                const stampableSpans = Array.from(initialSpans).filter(span => span.textContent !== giftEmoji);
-                if (stampableSpans.length > 0) {
-                    const randomEnemyToStamp = stampableSpans[Math.floor(Math.random() * stampableSpans.length)];
-                    randomEnemyToStamp.classList.add('emoji-red-stamp');
-                }
-                currentTranslateX = 0;
-                enemySlider.style.transform = `translateX(0px)`;
-
-                // A tiny delay to ensure the browser registers the initial state before starting the transition
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        rerollOverlay.style.transform = 'translateX(100%)'; // Animate it off-screen to the right
-                    });
-                });
-
-                // After animation, clean up
+                // A brief timeout to let the browser register the elements as transparent before we continue
                 setTimeout(() => {
-                    rerollOverlay.classList.add('hidden'); // Hide the overlay
-                    isReshuffling = false;
-                    if (!battleStarted) { // Only re-enable if not in battle
-                        enemySlider.classList.remove('hidden'); // Show the selector again
-                        updatePlayerUI(); // Updates button state
-                        enemyContainer.classList.add('cursor-grab', 'active:cursor-grabbing');
-                        startBattleBtn.disabled = false; // Re-enable start battle button
+                    // 2. Determine the new set of enemies
+                    const shuffledPool = shuffle([...enemyPool]);
+                    const currentEnemies = shuffledPool.slice(0, 7);
+                    currentEnemies.push(giftEmoji);
+                    const finalEnemySet = shuffle(currentEnemies);
+                    
+                    // 3. Update the content and classes of each enemy span (they are still invisible)
+                    enemySpans.forEach((span, index) => {
+                        span.textContent = finalEnemySet[index];
+                        span.className = 'text-2xl relative z-10'; // Reset classes
+                    });
+
+                    const giftSpan = enemySpans.find(span => span.textContent === giftEmoji);
+                    if (giftSpan) giftSpan.classList.add('emoji-gold-glow');
+
+                    const stampableSpans = enemySpans.filter(span => span.textContent !== giftEmoji);
+                    if (stampableSpans.length > 0) {
+                        const randomEnemyToStamp = stampableSpans[Math.floor(Math.random() * stampableSpans.length)];
+                        randomEnemyToStamp.classList.add('emoji-red-stamp');
                     }
-                }, 3000); // This must match the transition duration
+                    currentTranslateX = 0;
+                    enemySlider.style.transform = `translateX(0px)`;
+
+                    // 4. Fade them in from left to right over 2 seconds
+                    const totalAnimationTime = 2000;
+                    const delayBetweenFades = totalAnimationTime / enemySpans.length;
+
+                    enemySpans.forEach((span, index) => {
+                        setTimeout(() => {
+                            span.style.opacity = '1';
+                        }, index * delayBetweenFades);
+                    });
+
+                    // 5. After animation is complete, clean up and re-enable controls
+                    setTimeout(() => {
+                        isReshuffling = false;
+                        if (!battleStarted) { 
+                            enemySlider.classList.remove('hidden');
+                            updatePlayerUI();
+                            enemyContainer.classList.add('cursor-grab', 'active:cursor-grabbing');
+                            startBattleBtn.disabled = false;
+                        }
+                    }, totalAnimationTime);
+                }, 50); // Small delay
             }
 
             // --- Initial Setup & Event Listeners ---
@@ -681,8 +685,9 @@
                  if (!targetElement) return;
                  const containerRect = enemyContainer.getBoundingClientRect();
                  const targetRect = targetElement.getBoundingClientRect();
-                 const selectorWidth = 68;
-                 const selectorHeight = 80;
+                 // Adjusted selector size for smaller icons
+                 const selectorWidth = 52;
+                 const selectorHeight = 52;
                  battleSelector.style.width = `${selectorWidth}px`;
                  battleSelector.style.height = `${selectorHeight}px`;
                  const leftOffset = targetRect.left - containerRect.left + (targetRect.width - selectorWidth) / 2;
@@ -778,9 +783,11 @@
 
                 currentEnemiesInBattle.forEach((enemyData, index) => {
                     const enemyWrapper = document.createElement('div');
-                    enemyWrapper.className = 'relative cursor-pointer h-[70px] w-[60px] flex flex-col items-center justify-center';
+                    // Sized by content for consistency with pre-battle view
+                    enemyWrapper.className = 'relative cursor-pointer flex flex-col items-center justify-center';
                     const newEnemySpan = document.createElement('span');
-                    newEnemySpan.className = 'text-4xl relative z-10';
+                    // Kept icon size consistent with pre-battle view
+                    newEnemySpan.className = 'text-2xl relative z-10';
                     newEnemySpan.textContent = enemyData.emoji;
                     if (enemyData.isStamped) newEnemySpan.classList.add('emoji-red-stamp');
                     if (enemyData.isGift) newEnemySpan.classList.add('emoji-gold-glow');
@@ -788,7 +795,8 @@
                     
                     if (!enemyData.isGift) {
                         const healthBarContainer = document.createElement('div');
-                        healthBarContainer.className = 'w-12 h-2 bg-black/50 rounded-full mt-2';
+                        // Smaller health bar to maintain size consistency
+                        healthBarContainer.className = 'w-8 h-1.5 bg-black/50 rounded-full mt-1';
                         healthBarContainer.innerHTML = `<div class="h-full bg-red-600 rounded-full" style="width: 100%;"></div>`;
                         enemyWrapper.appendChild(healthBarContainer);
                     }
@@ -839,5 +847,3 @@
 
 </body>
 </html>
-
-
