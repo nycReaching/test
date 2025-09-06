@@ -47,38 +47,43 @@
 
         <!-- Top Section: Meters and Icons -->
         <div class="flex-shrink-0">
-            <!-- Meter 1 Row -->
-            <div class="flex items-center justify-between gap-2 mb-2">
-                <div class="flex items-center h-5 text-xl">
-                    <span class="text-red-500">❤️</span>
-                    <span id="health-value" class="font-bold ml-2 w-6 text-left">10</span>
-                    <span class="ml-2">🛡️</span>
-                    <span id="armor-value" class="font-bold ml-1 w-6 text-left">3</span>
-                </div>
-                <div class="flex items-center gap-1 text-base">
-                    <div class="flex items-center gap-1">
-                        <span class="text-lg">🔃</span>
-                        <span id="reshuffle-value" class="font-bold w-5 text-left">5</span>
+            <div class="flex justify-between items-start gap-2 mb-3">
+                <!-- Left Column -->
+                <div class="w-2/3 space-y-2 pt-1">
+                    <!-- HP/Armor -->
+                    <div class="flex items-center h-5 text-xl">
+                        <span class="text-red-500">❤️</span>
+                        <span id="health-value" class="font-bold ml-2 w-6 text-left">10</span>
+                        <span class="ml-2">🛡️</span>
+                        <span id="armor-value" class="font-bold ml-1 w-6 text-left">3</span>
                     </div>
-                    <div class="flex items-center gap-1">
+                    <!-- XP Bar -->
+                    <div class="bg-gray-700 rounded-full h-5 w-full border-2 border-gray-600">
+                        <div id="xp-bar" class="bg-teal-800 h-full rounded-full progress-bar-fill" style="width: 50%"></div>
+                    </div>
+                </div>
+
+                <!-- Right Column (2x2 Grid) -->
+                <div class="grid grid-cols-2 gap-x-1 gap-y-2 text-base flex-shrink-0">
+                    <!-- Kill Count -->
+                    <div class="flex items-center justify-end gap-1">
+                        <span class="text-lg">⚔️</span>
+                        <span id="kill-count-value" class="font-bold w-6 text-left">0</span>
+                    </div>
+                    <!-- Moonstone -->
+                    <div class="flex items-center justify-end gap-1">
                         <span class="text-lg">🌒</span>
-                        <span id="moonstone-value" class="font-bold w-5 text-left">3</span>
+                        <span id="moonstone-value" class="font-bold w-6 text-left">3</span>
                     </div>
-                </div>
-            </div>
-            <!-- Meter 2 Row -->
-            <div class="flex items-center justify-between gap-2 mb-3">
-                 <div class="bg-gray-700 rounded-full h-5 w-2/3 border-2 border-gray-600">
-                    <div id="xp-bar" class="bg-teal-800 h-full rounded-full progress-bar-fill" style="width: 50%"></div>
-                </div>
-                 <div class="flex items-center gap-1 text-base">
-                    <div class="flex items-center gap-1">
+                    <!-- Level -->
+                    <div class="flex items-center justify-end gap-1">
                         <span class="text-lg">📈</span>
-                        <span id="level-value" class="font-bold w-5 text-left">1</span>
+                        <span id="level-value" class="font-bold w-6 text-left">1</span>
                     </div>
-                    <div class="flex items-center gap-1">
+                    <!-- Gold -->
+                    <div class="flex items-center justify-end gap-1">
                         <span class="text-lg">💰</span>
-                        <span id="gold-value" class="font-bold w-5 text-left">25</span>
+                        <span id="gold-value" class="font-bold w-6 text-left">99</span>
                     </div>
                 </div>
             </div>
@@ -88,16 +93,18 @@
         <div class="flex-grow flex flex-col my-4 gap-3">
             <!-- Large Window Above -->
             <div id="battle-details-window" class="bg-gray-700/50 rounded-lg flex-grow flex items-center justify-center p-4 transition-all duration-300 text-center">
-                <button id="start-battle-btn" class="bg-green-600 active:bg-green-700 text-white font-bold text-lg py-3 px-10 rounded-lg shadow-lg transition-all duration-200 active:scale-95">Start Battle</button>
+                <button id="start-battle-btn" class="bg-green-600 active:bg-green-700 text-white font-bold text-lg py-3 px-10 rounded-lg shadow-lg transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">Start Battle</button>
             </div>
             
             <!-- Enemy/Battle Reel -->
-            <div id="enemy-container" class="relative flex justify-around items-center bg-gray-900/50 rounded-lg p-2 select-none cursor-grab active:cursor-grabbing">
+            <div id="enemy-container" class="relative flex justify-around items-center bg-gray-900/50 rounded-lg p-2 select-none cursor-grab active:cursor-grabbing overflow-hidden">
                 <!-- The draggable slider window -->
                 <div id="enemy-slider" class="absolute top-0 left-0 h-full bg-white/20 border-2 border-white rounded-lg pointer-events-none" style="transition: transform 0.2s ease-out;"></div>
                 <!-- The yellow selector for battle -->
                 <div id="battle-selector" class="hidden absolute top-0 left-0 bg-yellow-400/20 border-2 border-yellow-400 rounded-lg pointer-events-none transition-transform duration-200 ease-in-out"></div>
 
+                <!-- Reroll Animation Overlay -->
+                <div id="reroll-overlay" class="hidden absolute inset-0 bg-gray-800 z-20" style="transition: transform 3s ease-in-out;"></div>
 
                 <!-- Icons (z-10 to appear above the slider bg) - These will be populated by JS -->
                 <span class="text-2xl relative z-10"></span>
@@ -113,8 +120,11 @@
             <!-- Action Button Bar (Previously at the bottom) -->
             <div class="flex-shrink-0 bg-gray-900/50 rounded-lg p-2">
                 <div class="flex justify-around">
-                    <button id="reshuffleBtn" class="w-16 h-14 bg-gray-700 rounded-lg shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-gray-600 btn-glow flex items-center justify-center text-4xl">🔃</button>
-                    <button id="attackBtn" class="w-16 h-14 bg-red-600 rounded-lg shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-red-700 btn-glow flex items-center justify-center text-2xl text-white">🗡️<span id="attack-value">13</span></button>
+                    <button id="reshuffleBtn" class="relative w-16 h-14 bg-gray-700 rounded-lg shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-gray-600 btn-glow flex items-center justify-center text-4xl">
+                        🔃
+                        <span id="reshuffle-counter" class="absolute bottom-1 right-2 text-sm font-bold text-white"></span>
+                    </button>
+                    <button id="attackBtn" class="w-16 h-14 bg-red-600 rounded-lg shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-red-700 btn-glow flex items-center justify-center text-2xl text-white">🗡️<span id="attack-value" class="font-bold">13</span></button>
                     <button id="critBtn" class="w-16 h-14 bg-orange-600 rounded-lg shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-orange-700 btn-glow flex items-center justify-center text-white text-xl font-bold"><span id="crit-chance">10</span>%</button>
                 </div>
             </div>
@@ -129,9 +139,9 @@
                 <!-- 3x3 Grid -->
                 <div class="grid grid-cols-3 grid-rows-3 gap-2 w-1/2 aspect-square">
                     <!-- Row 1 (Equipment Slots) -->
-                    <button class="equip-slot bg-blue-900/50 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-blue-800/50 btn-glow text-3xl flex items-center justify-center"></button>
-                    <button class="equip-slot bg-blue-900/50 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-blue-800/50 btn-glow text-3xl flex items-center justify-center"></button>
-                    <button class="equip-slot bg-blue-900/50 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-blue-800/50 btn-glow text-3xl flex items-center justify-center"></button>
+                    <button class="equip-slot relative bg-blue-900/50 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-blue-800/50 btn-glow text-3xl flex items-center justify-center"></button>
+                    <button class="equip-slot relative bg-blue-900/50 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-blue-800/50 btn-glow text-3xl flex items-center justify-center"></button>
+                    <button class="equip-slot relative bg-blue-900/50 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-blue-800/50 btn-glow text-3xl flex items-center justify-center"></button>
                     <!-- Row 2 -->
                     <button id="flameheartBtn" class="bg-teal-800 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-teal-700 btn-glow text-3xl flex items-center justify-center">❤️‍🔥</button>
                     <button id="frostbiteBtn" class="bg-teal-800 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-teal-700 btn-glow text-3xl flex items-center justify-center">❄️</button>
@@ -174,27 +184,8 @@
 
         <!-- Shop Modal -->
         <div id="shopModal" class="hidden absolute bottom-0 left-0 w-full h-2/3 bg-gray-800 rounded-t-2xl border-t-4 border-yellow-500 p-4 flex flex-col items-center justify-center transition-transform duration-300 ease-in-out z-20">
-            <div class="w-full max-w-xs text-xl text-white space-y-2">
-                <div class="flex justify-between items-center">
-                    <span>🍶 TONIC (0)</span>
-                    <button class="bg-gray-700 rounded-lg px-3 py-1 btn-glow active:bg-gray-600">🪙5</button>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span>💎 GEM (0)</span>
-                    <button class="bg-gray-700 rounded-lg px-3 py-1 btn-glow active:bg-gray-600">🪙25</button>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span>✝️ CROSS (0)</span>
-                    <button class="bg-gray-700 rounded-lg px-3 py-1 btn-glow active:bg-gray-600">🪙15</button>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span>🧚🏼 FAIRY (0)</span>
-                    <button class="bg-gray-700 rounded-lg px-3 py-1 btn-glow active:bg-gray-600">🪙40</button>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span>🌒 MOONSTONE (3)</span>
-                    <button class="bg-gray-700 rounded-lg px-3 py-1 btn-glow active:bg-gray-600">🪙50</button>
-                </div>
+            <div id="shop-items-container" class="w-full max-w-xs text-xl text-white space-y-2">
+                <!-- Shop items will be dynamically generated here -->
             </div>
         </div>
 
@@ -202,12 +193,12 @@
         <div id="reelModal" class="hidden absolute inset-0 bg-black/50 flex items-center justify-center z-50">
             <div class="relative bg-gray-900/80 backdrop-blur-sm rounded-xl p-3 shadow-xl border border-gray-700">
                 <div id="reel-items" class="flex gap-2 text-3xl">
-                    <button class="reel-item p-1 rounded-lg transition-transform hover:scale-110 active:scale-100">☠️</button>
-                    <button class="reel-item p-1 rounded-lg transition-transform hover:scale-110 active:scale-100">🕯️</button>
-                    <button class="reel-item p-1 rounded-lg transition-transform hover:scale-110 active:scale-100">🐌</button>
-                    <button class="reel-item p-1 rounded-lg transition-transform hover:scale-110 active:scale-100">❇️</button>
-                    <button class="reel-item p-1 rounded-lg transition-transform hover:scale-110 active:scale-100">🌟</button>
-                    <button class="reel-item p-1 rounded-lg transition-transform hover:scale-110 active:scale-100">⚡</button>
+                    <button class="reel-item p-1 rounded-lg transition-transform active:scale-100">☠️</button>
+                    <button class="reel-item p-1 rounded-lg transition-transform active:scale-100">🕯️</button>
+                    <button class="reel-item p-1 rounded-lg transition-transform active:scale-100">🐌</button>
+                    <button class="reel-item p-1 rounded-lg transition-transform active:scale-100">❇️</button>
+                    <button class="reel-item p-1 rounded-lg transition-transform active:scale-100">🌟</button>
+                    <button class="reel-item p-1 rounded-lg transition-transform active:scale-100">⚡</button>
                 </div>
             </div>
         </div>
@@ -228,8 +219,13 @@
         document.addEventListener('DOMContentLoaded', () => {
             // --- DOM Elements ---
             const gameContainer = document.getElementById('game-container');
+            const goldValueEl = document.getElementById('gold-value');
+            const moonstoneValueEl = document.getElementById('moonstone-value');
+            const reshuffleCounter = document.getElementById('reshuffle-counter');
+            const shopItemsContainer = document.getElementById('shop-items-container');
             const enemyContainer = document.getElementById('enemy-container');
             const enemySlider = document.getElementById('enemy-slider');
+            const rerollOverlay = document.getElementById('reroll-overlay');
             const battleSelector = document.getElementById('battle-selector');
             const reshuffleBtn = document.getElementById('reshuffleBtn');
             const reelModal = document.getElementById('reelModal');
@@ -251,41 +247,59 @@
             };
             const allModals = Object.values(modalMap).map(item => item.modal);
             
-            // --- State ---
-            let battleStarted = false;
-            const enemyData = {
+            // --- Game Data ---
+            const shopItems = [
+                { id: 'tonic', name: '🍶 TONIC', cost: 5 },
+                { id: 'gem', name: '💎 GEM', cost: 25 },
+                { id: 'cross', name: '✝️ CROSS', cost: 15 },
+                { id: 'fairy', name: '🧚🏼 FAIRY', cost: 40 },
+                { id: 'moonstone', name: '🌒 MOONSTONE', cost: 50 },
+            ];
+             const enemyData = {
                 '🐲': { name: 'Dragon' }, '👹': { name: 'Oni' }, '👻': { name: 'Ghost' },
                 '💀': { name: 'Skeleton' }, '🕷️': { name: 'Spider' }, '🐍': { name: 'Serpent' },
                 '🧟': { name: 'Zombie' }, '🧛': { name: 'Vampire' }, '👽': { name: 'Alien' },
                 '🤖': { name: 'Robot' }, '🦂': { name: 'Scorpion' }, '👺': { name: 'Tengu' },
                 '🎁': { name: 'Gift' }
             };
-            const enemyPool = Object.keys(enemyData).filter(e => e !== '🎁');
-            const giftEmoji = '🎁';
-            const numIcons = 8;
-            const groupSize = 3;
             const equipmentOptions = {
                 weapon: [{ emoji: '🏹', name: 'Bow' }, { emoji: '🗡️', name: 'Dagger' }, { emoji: '🔨', name: 'Hammer' }],
                 armor: [{ emoji: '🧥', name: 'Leather Gear' }, { emoji: '🪨', name: 'Rock Bracer' }, { emoji: '🕸️', name: 'Cloak' }],
                 ring: [{ emoji: '💍', name: 'Eccentric Jewel' }]
             };
             const spellDescriptions = {
-                flameheart: {
-                    title: "❤️‍🔥 Flameheart:",
-                    desc1: "Deal X and heal X.",
-                    desc2: "Depletes full magic bar."
-                },
-                frostbite: {
-                    title: "❄️ Frostbite:",
-                    desc1: "Deal X and inflict X.",
-                    desc2: "Depletes half magic bar."
-                },
-                armorheart: {
-                    title: "🩶 Armorheart:",
-                    desc1: "Add current health to armor.",
-                    desc2: "Depletes full magic bar."
+                flameheart: { title: "❤️‍🔥 Flameheart:", desc1: "Deal X and heal X.", desc2: "Depletes full magic bar." },
+                frostbite: { title: "❄️ Frostbite:", desc1: "Deal X and inflict X.", desc2: "Depletes half magic bar." },
+                armorheart: { title: "🩶 Armorheart:", desc1: "Add current health to armor.", desc2: "Depletes full magic bar." }
+            };
+            const symbolDescriptions = {
+                '☠️': { title: "☠️ Poison", desc: "Inflicts damage over time.", costDesc: "Cost: 1 🌒" },
+                '🕯️': { title: "🕯️ Curse", desc: "Weakens enemy attacks.", costDesc: "Cost: 1 🌒" },
+                '🐌': { title: "🐌 Slow", desc: "Reduces enemy speed.", costDesc: "Cost: 1 🌒" },
+                '❇️': { title: "❇️ Regen", desc: "Heals you over time.", costDesc: "Cost: 1 🌒" },
+                '🌟': { title: "🌟 Blessing", desc: "Increases your damage.", costDesc: "Cost: 1 🌒" },
+                '⚡': { title: "⚡ Rush", desc: "Grants extra actions.", costDesc: "Cost: 1 🌒" }
+            };
+
+            // --- State ---
+            let playerState = {
+                gold: 99,
+                moonstones: 3,
+                rerolls: 5,
+                inventory: {
+                    tonic: 0,
+                    gem: 0,
+                    cross: 0,
+                    fairy: 0,
+                    moonstone: 3, // This should match the moonstones value for consistency
                 }
             };
+            let battleStarted = false;
+            const enemyPool = Object.keys(enemyData).filter(e => e !== '🎁');
+            const giftEmoji = '🎁';
+            const numIcons = 8;
+            const groupSize = 3;
+            let isReshuffling = false;
             let activeEquipSlot = null;
             let activeBuildSlot = null;
             let isDragging = false;
@@ -297,6 +311,20 @@
             let currentEnemiesInBattle = [];
 
             // --- UI Update Logic ---
+            const updatePlayerUI = () => {
+                goldValueEl.textContent = playerState.gold;
+                moonstoneValueEl.textContent = playerState.moonstones;
+                reshuffleCounter.textContent = playerState.rerolls;
+
+                if (playerState.rerolls <= 0) {
+                    reshuffleBtn.disabled = true;
+                    reshuffleBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                } else {
+                     reshuffleBtn.disabled = false;
+                    reshuffleBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            };
+
             const updateEnemyDisplay = (enemy) => {
                 if (!enemy) return;
                 const name = enemyData[enemy.emoji]?.name || 'Unknown';
@@ -308,22 +336,78 @@
                 `;
             };
 
+            const displayInfoInSideWindow = (title, ...descriptions) => {
+                if (battleStarted) return; // Descriptions do not display during battle mode.
+                 sideWindowLeft.innerHTML = `
+                    <div class="text-white text-sm text-left w-full">
+                        <p class="font-bold mb-1">${title}</p>
+                        ${descriptions.map(d => `<p>${d}</p>`).join('')}
+                    </div>
+                `;
+            }
+
             const displaySpellInfo = (spellKey) => {
                 const spell = spellDescriptions[spellKey];
                 if (!spell) return;
-
-                sideWindowLeft.innerHTML = `
-                    <div class="text-white text-sm text-left w-full">
-                        <p class="font-bold mb-1">${spell.title}</p>
-                        <p>${spell.desc1}</p>
-                        <p>${spell.desc2}</p>
-                    </div>
-                `;
+                displayInfoInSideWindow(spell.title, spell.desc1, spell.desc2);
             };
+
+            // --- Shop Logic ---
+            const renderShop = () => {
+                shopItemsContainer.innerHTML = '';
+                shopItems.forEach(item => {
+                    const itemOwned = playerState.inventory[item.id] || 0;
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'flex justify-between items-center';
+                    
+                    let buttonHtml;
+                    if (battleStarted) {
+                        buttonHtml = `<button data-item-id="${item.id}" class="bg-green-600 rounded-lg px-4 py-1 btn-glow active:bg-green-700 ${itemOwned > 0 ? '' : 'opacity-50 cursor-not-allowed'}" ${itemOwned === 0 ? 'disabled' : ''}>USE</button>`;
+                    } else {
+                        const canAfford = playerState.gold >= item.cost;
+                        buttonHtml = `<button data-item-id="${item.id}" class="bg-gray-700 rounded-lg px-3 py-1 btn-glow active:bg-gray-600 ${canAfford ? '' : 'opacity-50 cursor-not-allowed'}" ${!canAfford ? 'disabled' : ''}>🪙${item.cost}</button>`;
+                    }
+
+                    itemDiv.innerHTML = `
+                        <span>${item.name} (${itemOwned})</span>
+                        ${buttonHtml}
+                    `;
+                    shopItemsContainer.appendChild(itemDiv);
+                });
+            };
+
+            const buyItem = (itemId) => {
+                const item = shopItems.find(i => i.id === itemId);
+                if (!item || playerState.gold < item.cost) {
+                    return; // Cannot afford or item not found
+                }
+                playerState.gold -= item.cost;
+                playerState.inventory[item.id]++;
+                
+                if (item.id === 'moonstone') {
+                    playerState.moonstones++;
+                }
+                
+                updatePlayerUI();
+                renderShop();
+            };
+            
+            shopItemsContainer.addEventListener('click', (e) => {
+                if(battleStarted) return; // For now, only handle purchases.
+                const button = e.target.closest('button');
+                if (button && button.dataset.itemId) {
+                    e.stopPropagation(); // Prevent click from bubbling up to the container
+                    buyItem(button.dataset.itemId);
+                }
+            });
 
             // --- Modal Logic ---
             const openModal = (modalToOpen) => {
                 if (!modalToOpen) return;
+                // If opening shop, render it first
+                if (modalToOpen.id === 'shopModal') {
+                    renderShop();
+                }
                 allModals.forEach(m => m.classList.add('hidden')); // Close all modals first
                 modalToOpen.classList.remove('hidden');
             };
@@ -334,14 +418,54 @@
             // --- Equipment Reel Logic ---
             equipSlots.forEach(slot => {
                 slot.addEventListener('click', () => {
-                    activeEquipSlot = slot;
-                    reelModal.classList.remove('hidden');
+                    if (battleStarted) return; // Actions disabled during battle.
+
+                    const symbol = slot.dataset.symbol;
+                    if (symbol) {
+                        // If slot is equipped, show description
+                        const info = symbolDescriptions[symbol];
+                        if (info) {
+                            displayInfoInSideWindow(info.title, info.desc, info.costDesc);
+                        }
+                    } else {
+                        // Slot is empty, open reel to equip
+                        activeEquipSlot = slot;
+                        // Enable/disable reel items based on moonstone count
+                        reelItems.forEach(item => {
+                            if (playerState.moonstones > 0) {
+                                item.disabled = false;
+                                item.classList.remove('opacity-50', 'cursor-not-allowed');
+                            } else {
+                                item.disabled = true;
+                                item.classList.add('opacity-50', 'cursor-not-allowed');
+                            }
+                        });
+                        reelModal.classList.remove('hidden');
+                    }
                 });
             });
             reelItems.forEach(item => {
                 item.addEventListener('click', () => {
+                    // This will only fire if the button is not disabled (i.e., player has moonstones)
                     if (activeEquipSlot) {
-                        activeEquipSlot.textContent = item.textContent;
+                        playerState.moonstones--;
+                        playerState.inventory.moonstone--; // Keep inventory in sync
+                        updatePlayerUI();
+
+                        const symbol = item.textContent;
+                        activeEquipSlot.innerHTML = ''; // Clear previous content
+                        activeEquipSlot.dataset.symbol = symbol;
+                        activeEquipSlot.dataset.uses = '3';
+
+                        const emojiSpan = document.createElement('span');
+                        emojiSpan.textContent = symbol;
+                        activeEquipSlot.appendChild(emojiSpan);
+
+                        const counterSpan = document.createElement('span');
+                        counterSpan.className = 'absolute bottom-1 right-2 text-sm font-bold text-white';
+                        counterSpan.textContent = '3';
+                        activeEquipSlot.appendChild(counterSpan);
+
                         reelModal.classList.add('hidden');
                         activeEquipSlot = null;
                     }
@@ -396,7 +520,7 @@
             });
 
             const dragStart = (e) => {
-                if (battleStarted) return;
+                if (battleStarted || isReshuffling) return;
                 isDragging = true;
                 const coords = getEventCoords(e);
                 startX = coords.x;
@@ -467,9 +591,27 @@
                     [array[i], array[j]] = [array[j], array[i]];
                 }
                 return array;
-            }
+            };
 
-            const reshuffleEnemies = () => {
+            const reshuffleEnemies = (isInitial = false) => {
+                if (isReshuffling || (!isInitial && playerState.rerolls <= 0)) return;
+
+                if (!isInitial) {
+                    playerState.rerolls--;
+                    updatePlayerUI();
+                }
+                
+                isReshuffling = true;
+                startBattleBtn.disabled = true; // Disable start battle during animation
+                
+                enemyContainer.classList.remove('cursor-grab', 'active:cursor-grabbing');
+                enemySlider.classList.add('hidden'); // Hide the selector during animation
+
+                // Show the overlay at its starting position (covering everything)
+                rerollOverlay.style.transform = 'translateX(0%)';
+                rerollOverlay.classList.remove('hidden');
+
+                // Instantly update the enemies behind the overlay
                 const shuffledPool = shuffle([...enemyPool]);
                 const currentEnemies = shuffledPool.slice(0, 7);
                 currentEnemies.push(giftEmoji);
@@ -491,6 +633,25 @@
                 }
                 currentTranslateX = 0;
                 enemySlider.style.transform = `translateX(0px)`;
+
+                // A tiny delay to ensure the browser registers the initial state before starting the transition
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        rerollOverlay.style.transform = 'translateX(100%)'; // Animate it off-screen to the right
+                    });
+                });
+
+                // After animation, clean up
+                setTimeout(() => {
+                    rerollOverlay.classList.add('hidden'); // Hide the overlay
+                    isReshuffling = false;
+                    if (!battleStarted) { // Only re-enable if not in battle
+                        enemySlider.classList.remove('hidden'); // Show the selector again
+                        updatePlayerUI(); // Updates button state
+                        enemyContainer.classList.add('cursor-grab', 'active:cursor-grabbing');
+                        startBattleBtn.disabled = false; // Re-enable start battle button
+                    }
+                }, 3000); // This must match the transition duration
             }
 
             // --- Initial Setup & Event Listeners ---
@@ -579,15 +740,13 @@
 
             // --- Start Battle Logic ---
             startBattleBtn.addEventListener('click', () => {
-                if (battleStarted) return;
-
-                // --- FIX: Calculate dimensions BEFORE changing state ---
+                if (battleStarted || isReshuffling) return;
                 const { iconWidth } = calculateSliderDimensions();
                 const startIndex = Math.round(currentTranslateX / iconWidth);
 
                 battleStarted = true;
                 
-                sideWindowLeft.innerHTML = ''; // Clear side window
+                sideWindowLeft.innerHTML = ''; // Clear side window on battle start
                 
                 enemyContainer.removeEventListener('mousedown', dragStart);
                 enemyContainer.removeEventListener('touchstart', dragStart);
@@ -644,12 +803,18 @@
                 battleSelector.classList.remove('hidden');
                 
                 currentBattleTargetIndex = 0;
-                updateEnemyDisplay(currentEnemiesInBattle[0]); // Display first enemy's info
+                updateEnemyDisplay(currentEnemiesInBattle[0]);
                 
                 setTimeout(() => positionBattleSelector(firstNewEnemyWrapper), 50);
 
                 enemyContainer.addEventListener('mousedown', battleDragStart);
                 enemyContainer.addEventListener('touchstart', battleDragStart);
+                
+                // When battle starts, if the shop is open, re-render it to show 'USE'
+                const shopModal = modalMap.shopBtn.modal;
+                if (!shopModal.classList.contains('hidden')) {
+                    renderShop();
+                }
             });
             
             calculateSliderDimensions();
@@ -659,15 +824,15 @@
             enemyContainer.addEventListener('touchstart', dragStart);
 
             reshuffleBtn.addEventListener('click', () => {
-                if (battleStarted) return;
+                if (battleStarted || isReshuffling) return;
                 reshuffleEnemies();
             });
 
             // Initial game setup
-            reshuffleEnemies();
+            reshuffleEnemies(true); // First reshuffle is free and doesn't cost a reroll
+            updatePlayerUI(); // Set initial gold and moonstone display
         });
     </script>
 
 </body>
 </html>
-
