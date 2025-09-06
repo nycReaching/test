@@ -327,8 +327,9 @@
             const updateEnemyDisplay = (enemy) => {
                 if (!enemy) return;
                 const name = enemyData[enemy.emoji]?.name || 'Unknown';
+                // Add a wrapper with min-height to prevent layout shift when content changes
                 battleDetailsWindow.innerHTML = `
-                    <div>
+                    <div class="min-h-[54px] flex flex-col justify-center items-center">
                         <div class="text-xl font-bold">${enemy.emoji} ${name}</div>
                         <div class="text-base mt-1">12345</div>
                     </div>
@@ -606,25 +607,27 @@
                 enemyContainer.classList.remove('cursor-grab', 'active:cursor-grabbing');
                 enemySlider.classList.add('hidden');
 
-                // 1. Get all spans and set them to transparent for the fade-in animation
                 const enemySpans = Array.from(enemyContainer.querySelectorAll('span.relative.z-10'));
+                
+                // Instantly clear the content to prevent the "flash" of new enemies.
                 enemySpans.forEach(span => {
-                    span.style.opacity = '0';
-                    span.style.transition = 'opacity 0.4s ease-out';
+                    span.textContent = '';
                 });
                 
-                // A brief timeout to let the browser register the elements as transparent before we continue
+                // A brief timeout to let the browser register the empty state before starting the animation.
                 setTimeout(() => {
-                    // 2. Determine the new set of enemies
+                    // Determine the new set of enemies
                     const shuffledPool = shuffle([...enemyPool]);
                     const currentEnemies = shuffledPool.slice(0, 7);
                     currentEnemies.push(giftEmoji);
                     const finalEnemySet = shuffle(currentEnemies);
                     
-                    // 3. Update the content and classes of each enemy span (they are still invisible)
+                    // Update the content and classes of each enemy span (they are still invisible)
                     enemySpans.forEach((span, index) => {
                         span.textContent = finalEnemySet[index];
                         span.className = 'text-2xl relative z-10'; // Reset classes
+                        span.style.opacity = '0';
+                        span.style.transition = 'opacity 0.4s ease-out';
                     });
 
                     const giftSpan = enemySpans.find(span => span.textContent === giftEmoji);
@@ -638,7 +641,7 @@
                     currentTranslateX = 0;
                     enemySlider.style.transform = `translateX(0px)`;
 
-                    // 4. Fade them in from left to right over 2 seconds
+                    // Fade them in from left to right over 2 seconds
                     const totalAnimationTime = 2000;
                     const delayBetweenFades = totalAnimationTime / enemySpans.length;
 
@@ -648,7 +651,7 @@
                         }, index * delayBetweenFades);
                     });
 
-                    // 5. After animation is complete, clean up and re-enable controls
+                    // After animation is complete, clean up and re-enable controls
                     setTimeout(() => {
                         isReshuffling = false;
                         if (!battleStarted) { 
@@ -658,7 +661,7 @@
                             startBattleBtn.disabled = false;
                         }
                     }, totalAnimationTime);
-                }, 50); // Small delay
+                }, 50); 
             }
 
             // --- Initial Setup & Event Listeners ---
@@ -685,9 +688,8 @@
                  if (!targetElement) return;
                  const containerRect = enemyContainer.getBoundingClientRect();
                  const targetRect = targetElement.getBoundingClientRect();
-                 // Adjusted selector size for smaller icons
-                 const selectorWidth = 52;
-                 const selectorHeight = 52;
+                 const selectorWidth = 68; // Adjusted for larger 4xl icon
+                 const selectorHeight = 80; // Adjusted for larger 4xl icon
                  battleSelector.style.width = `${selectorWidth}px`;
                  battleSelector.style.height = `${selectorHeight}px`;
                  const leftOffset = targetRect.left - containerRect.left + (targetRect.width - selectorWidth) / 2;
@@ -759,7 +761,7 @@
                 enemyContainer.removeEventListener('mousedown', dragStart);
                 enemyContainer.removeEventListener('touchstart', dragStart);
 
-                startBattleBtn.remove();
+                if(startBattleBtn) startBattleBtn.remove();
                 reshuffleBtn.disabled = true;
                 reshuffleBtn.classList.add('opacity-50', 'cursor-not-allowed');
                 enemyContainer.classList.remove('cursor-grab', 'active:cursor-grabbing');
@@ -783,11 +785,11 @@
 
                 currentEnemiesInBattle.forEach((enemyData, index) => {
                     const enemyWrapper = document.createElement('div');
-                    // Sized by content for consistency with pre-battle view
-                    enemyWrapper.className = 'relative cursor-pointer flex flex-col items-center justify-center';
+                    // Give the wrapper a fixed size to contain the larger emoji without resizing the parent container
+                    enemyWrapper.className = 'relative cursor-pointer h-[70px] w-[60px] flex flex-col items-center justify-center';
                     const newEnemySpan = document.createElement('span');
-                    // Kept icon size consistent with pre-battle view
-                    newEnemySpan.className = 'text-2xl relative z-10';
+                    // Make the emoji larger in battle
+                    newEnemySpan.className = 'text-4xl relative z-10';
                     newEnemySpan.textContent = enemyData.emoji;
                     if (enemyData.isStamped) newEnemySpan.classList.add('emoji-red-stamp');
                     if (enemyData.isGift) newEnemySpan.classList.add('emoji-gold-glow');
@@ -795,8 +797,7 @@
                     
                     if (!enemyData.isGift) {
                         const healthBarContainer = document.createElement('div');
-                        // Smaller health bar to maintain size consistency
-                        healthBarContainer.className = 'w-8 h-1.5 bg-black/50 rounded-full mt-1';
+                        healthBarContainer.className = 'w-12 h-2 bg-black/50 rounded-full mt-2';
                         healthBarContainer.innerHTML = `<div class="h-full bg-red-600 rounded-full" style="width: 100%;"></div>`;
                         enemyWrapper.appendChild(healthBarContainer);
                     }
@@ -847,3 +848,4 @@
 
 </body>
 </html>
+
