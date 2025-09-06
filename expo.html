@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale-1.0">
     <title>Mobile Game Concept</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -27,6 +27,17 @@
         .emoji-gold-glow {
             filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8));
         }
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+        .pulse-animation {
+            animation: pulse 1.5s infinite ease-in-out;
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
@@ -40,18 +51,18 @@
             <div class="flex items-center justify-between gap-2 mb-2">
                 <div class="flex items-center h-5 text-xl">
                     <span class="text-red-500">❤️</span>
-                    <span class="font-bold ml-2 w-8 text-left">10</span>
-                    <span class="ml-3">🛡️</span>
-                    <span class="font-bold ml-1 w-8 text-left">3</span>
+                    <span class="font-bold ml-2 w-6 text-left">10</span>
+                    <span class="ml-2">🛡️</span>
+                    <span class="font-bold ml-1 w-6 text-left">3</span>
                 </div>
-                <div class="flex items-center gap-2 text-base">
+                <div class="flex items-center gap-1 text-base">
                     <div class="flex items-center gap-1">
                         <span class="text-lg">🔃</span>
-                        <span class="font-bold w-7 text-left">5</span>
+                        <span class="font-bold w-5 text-left">5</span>
                     </div>
                     <div class="flex items-center gap-1">
                         <span class="text-lg">🌙</span>
-                        <span class="font-bold w-7 text-left">3</span>
+                        <span class="font-bold w-5 text-left">3</span>
                     </div>
                 </div>
             </div>
@@ -60,14 +71,14 @@
                  <div class="bg-gray-700 rounded-full h-5 w-2/3 border-2 border-gray-600">
                     <div id="meter2" class="bg-teal-800 h-full rounded-full progress-bar-fill" style="width: 50%"></div>
                 </div>
-                 <div class="flex items-center gap-2 text-base">
+                 <div class="flex items-center gap-1 text-base">
                     <div class="flex items-center gap-1">
                         <span class="text-lg">📈</span>
-                        <span class="font-bold w-7 text-left">1</span>
+                        <span class="font-bold w-5 text-left">1</span>
                     </div>
                     <div class="flex items-center gap-1">
                         <span class="text-lg">💰</span>
-                        <span class="font-bold w-7 text-left">25</span>
+                        <span class="font-bold w-5 text-left">25</span>
                     </div>
                 </div>
             </div>
@@ -266,8 +277,12 @@
                     // Create emoji span and apply effects
                     const emojiDisplaySpan = document.createElement('span');
                     emojiDisplaySpan.className = 'text-5xl select-none';
-                    if (isStamped) emojiDisplaySpan.classList.add('emoji-red-stamp');
-                    if (isGift) emojiDisplaySpan.classList.add('emoji-gold-glow');
+                    if (isStamped) {
+                        emojiDisplaySpan.classList.add('emoji-red-stamp', 'pulse-animation');
+                    }
+                    if (isGift) {
+                        emojiDisplaySpan.classList.add('emoji-gold-glow');
+                    }
                     emojiDisplaySpan.textContent = enemyEmoji;
                     
                     enemyWrapper.appendChild(emojiDisplaySpan);
@@ -284,7 +299,7 @@
 
                     if (statusIcon) {
                         const statusDiv = document.createElement('div');
-                        statusDiv.className = 'absolute top-1/2 -translate-y-1/2 -right-3 text-2xl';
+                        statusDiv.className = 'absolute top-1/2 -translate-y-1/2 -right-2 text-xl';
                         statusDiv.innerHTML = statusIcon;
                         enemyWrapper.appendChild(statusDiv);
                     }
