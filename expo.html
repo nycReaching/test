@@ -159,15 +159,15 @@
             <div class="w-full max-w-xs text-xl text-white space-y-4">
                 <div class="flex justify-between items-center">
                     <span>WEAPON</span>
-                    <button class="w-24 h-14 bg-gray-700 rounded-lg btn-glow active:bg-gray-600"></button>
+                    <button data-slot-type="weapon" class="w-24 h-14 bg-gray-700 rounded-lg btn-glow active:bg-gray-600 flex items-center justify-center text-3xl"></button>
                 </div>
                 <div class="flex justify-between items-center">
                     <span>ARMOR</span>
-                    <button class="w-24 h-14 bg-gray-700 rounded-lg btn-glow active:bg-gray-600"></button>
+                    <button data-slot-type="armor" class="w-24 h-14 bg-gray-700 rounded-lg btn-glow active:bg-gray-600 flex items-center justify-center text-3xl"></button>
                 </div>
                 <div class="flex justify-between items-center">
                     <span>RING</span>
-                    <button class="w-24 h-14 bg-gray-700 rounded-lg btn-glow active:bg-gray-600"></button>
+                    <button data-slot-type="ring" class="w-24 h-14 bg-gray-700 rounded-lg btn-glow active:bg-gray-600 flex items-center justify-center text-3xl"></button>
                 </div>
             </div>
         </div>
@@ -211,6 +211,15 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Equipment Choice Modal -->
+        <div id="equipmentChoiceModal" class="hidden absolute inset-0 bg-black/50 flex items-center justify-center z-40">
+            <div class="relative bg-gray-900/80 backdrop-blur-sm rounded-xl p-4 shadow-xl border border-gray-700 w-full max-w-xs">
+                <div id="equipmentChoiceContent" class="text-xl text-white space-y-3">
+                    <!-- JS will populate this -->
+                </div>
+            </div>
+        </div>
 
 
     </div>
@@ -227,6 +236,8 @@
             const reelModal = document.getElementById('reelModal');
             const equipSlots = document.querySelectorAll('.equip-slot');
             const reelItems = document.querySelectorAll('.reel-item');
+            const equipmentChoiceModal = document.getElementById('equipmentChoiceModal');
+            const equipmentChoiceContent = document.getElementById('equipmentChoiceContent');
             const modalMap = {
                 'fortunesBtn': { modal: document.getElementById('fortunesModal') },
                 'buildBtn': { modal: document.getElementById('buildModal') },
@@ -239,7 +250,23 @@
             const giftEmoji = '🎁';
             const numIcons = 8;
             const groupSize = 3;
+            const equipmentOptions = {
+                weapon: [
+                    { emoji: '🏹', name: 'Bow' },
+                    { emoji: '🗡️', name: 'Dagger' },
+                    { emoji: '🔨', name: 'Hammer' }
+                ],
+                armor: [
+                    { emoji: '🧥', name: 'Leather Gear' },
+                    { emoji: '🪨', name: 'Rock Bracer' },
+                    { emoji: '🕸️', name: 'Cloak' }
+                ],
+                ring: [
+                    { emoji: '💍', name: 'Eccentric Jewel' }
+                ]
+            };
             let activeEquipSlot = null;
+            let activeBuildSlot = null;
             let isDragging = false;
             let startX;
             let initialTranslateX;
@@ -275,6 +302,42 @@
             reelModal.addEventListener('click', (e) => {
                 if (e.target === reelModal) reelModal.classList.add('hidden');
             });
+
+            // --- Build Menu & Equipment Choice Logic ---
+            const openEquipmentChoiceModal = (slotType) => {
+                equipmentChoiceContent.innerHTML = ''; // Clear previous options
+                const options = equipmentOptions[slotType];
+
+                options.forEach(item => {
+                    const itemButton = document.createElement('button');
+                    itemButton.className = 'bg-gray-700 rounded-lg px-4 py-3 btn-glow active:bg-gray-600 w-full text-left flex items-center';
+                    itemButton.innerHTML = `<span class="text-2xl w-10">${item.emoji}</span> <span>${item.name}</span>`;
+                    itemButton.addEventListener('click', (e) => {
+                        e.stopPropagation(); // Prevent the click from bubbling up to the game container
+                        if (activeBuildSlot) {
+                            activeBuildSlot.innerHTML = item.emoji;
+                        }
+                        equipmentChoiceModal.classList.add('hidden');
+                    });
+                    equipmentChoiceContent.appendChild(itemButton);
+                });
+
+                equipmentChoiceModal.classList.remove('hidden');
+            };
+            
+            document.querySelectorAll('[data-slot-type]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    activeBuildSlot = btn;
+                    openEquipmentChoiceModal(btn.dataset.slotType);
+                });
+            });
+
+            equipmentChoiceModal.addEventListener('click', (e) => {
+                if (e.target === equipmentChoiceModal) {
+                    equipmentChoiceModal.classList.add('hidden');
+                }
+            });
+
 
             // --- Enemy Slider & Battle Details Logic ---
             const calculateSliderDimensions = () => {
@@ -465,10 +528,19 @@
                 if (button) button.addEventListener('click', () => openModal(modalMap[btnId].modal));
             }
             gameContainer.addEventListener('click', (e) => {
+                // If the equipment choice modal is open and the click is inside it, let its own handlers work.
+                if (!equipmentChoiceModal.classList.contains('hidden') && equipmentChoiceModal.contains(e.target)) {
+                    return;
+                }
+                
                 const openModal = allModals.find(m => !m.classList.contains('hidden'));
                 if (!openModal) return;
+
+                // Close the main modal if the click is outside of it AND not on a button that opens a modal
                 const isButton = Object.keys(modalMap).some(btnId => document.getElementById(btnId).contains(e.target));
-                if (!openModal.contains(e.target) && !isButton) closeModal(openModal);
+                if (!openModal.contains(e.target) && !isButton) {
+                    closeModal(openModal);
+                }
             });
             
             calculateSliderDimensions();
@@ -491,4 +563,5 @@
 
 </body>
 </html>
+
 
