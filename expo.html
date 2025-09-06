@@ -103,7 +103,7 @@
         <!-- Middle Section: Game Windows & Grid -->
         <div class="flex-grow flex flex-col my-4 gap-3">
             <!-- Large Window Above -->
-            <div id="battle-details-window" class="bg-gray-700/50 rounded-lg flex-grow flex items-center justify-center p-4">
+            <div id="battle-details-window" class="bg-gray-700/50 rounded-lg flex-grow flex items-center justify-center p-4 filter blur-sm transition-all duration-300">
                 <div id="selected-enemies-display" class="flex items-center justify-center gap-4">
                     <!-- JS will populate this -->
                 </div>
@@ -113,8 +113,8 @@
             <!-- Lower area with side window and grid -->
             <div class="flex gap-3">
                 <!-- Window to the left -->
-                <div class="bg-gray-700/50 rounded-lg w-1/2 p-4 flex flex-col items-center justify-center text-gray-400 gap-2">
-                     <span class="text-sm">Info Panel</span>
+                <div class="bg-gray-700/50 rounded-lg w-1/2 p-2 flex flex-col items-center justify-center">
+                     <button id="start-battle-btn" class="w-full h-2/3 bg-green-600 hover:bg-green-700 text-white font-bold text-lg rounded-lg shadow-lg transition-all duration-200 active:scale-95 flex items-center justify-center">Start Battle</button>
                 </div>
 
                 <!-- 3x3 Grid -->
@@ -140,7 +140,7 @@
             <div class="flex justify-around">
                 <button id="reshuffleBtn" class="w-16 h-14 bg-gray-700 rounded-lg shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-gray-600 btn-glow flex items-center justify-center text-4xl">🔃</button>
                 <button class="w-16 h-14 bg-red-600 rounded-lg shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-red-700 btn-glow flex items-center justify-center text-2xl text-white">🗡️13</button>
-                <button class="w-16 h-14 bg-gray-700 rounded-lg shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-gray-600 btn-glow"></button>
+                <button class="w-16 h-14 bg-orange-600 rounded-lg shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-orange-700 btn-glow flex items-center justify-center text-white text-xl font-bold">10%</button>
             </div>
         </div>
 
@@ -238,32 +238,26 @@
             const reelItems = document.querySelectorAll('.reel-item');
             const equipmentChoiceModal = document.getElementById('equipmentChoiceModal');
             const equipmentChoiceContent = document.getElementById('equipmentChoiceContent');
+            const startBattleBtn = document.getElementById('start-battle-btn');
+            const battleDetailsWindow = document.getElementById('battle-details-window');
+            
             const modalMap = {
-                'fortunesBtn': { modal: document.getElementById('fortunesModal') },
-                'buildBtn': { modal: document.getElementById('buildModal') },
-                'shopBtn': { modal: document.getElementById('shopModal') }
+                fortunesBtn: { modal: document.getElementById('fortunesModal'), button: document.getElementById('fortunesBtn') },
+                buildBtn: { modal: document.getElementById('buildModal'), button: document.getElementById('buildBtn') },
+                shopBtn: { modal: document.getElementById('shopModal'), button: document.getElementById('shopBtn') }
             };
             const allModals = Object.values(modalMap).map(item => item.modal);
             
             // --- State ---
+            let battleStarted = false;
             const enemyPool = ['🐲', '👹', '👻', '💀', '🕷️', '🐍', '🧟', '🧛', '👽', '🤖', '🦂', '👺'];
             const giftEmoji = '🎁';
             const numIcons = 8;
             const groupSize = 3;
             const equipmentOptions = {
-                weapon: [
-                    { emoji: '🏹', name: 'Bow' },
-                    { emoji: '🗡️', name: 'Dagger' },
-                    { emoji: '🔨', name: 'Hammer' }
-                ],
-                armor: [
-                    { emoji: '🧥', name: 'Leather Gear' },
-                    { emoji: '🪨', name: 'Rock Bracer' },
-                    { emoji: '🕸️', name: 'Cloak' }
-                ],
-                ring: [
-                    { emoji: '💍', name: 'Eccentric Jewel' }
-                ]
+                weapon: [{ emoji: '🏹', name: 'Bow' }, { emoji: '🗡️', name: 'Dagger' }, { emoji: '🔨', name: 'Hammer' }],
+                armor: [{ emoji: '🧥', name: 'Leather Gear' }, { emoji: '🪨', name: 'Rock Bracer' }, { emoji: '🕸️', name: 'Cloak' }],
+                ring: [{ emoji: '💍', name: 'Eccentric Jewel' }]
             };
             let activeEquipSlot = null;
             let activeBuildSlot = null;
@@ -271,16 +265,16 @@
             let startX;
             let initialTranslateX;
             let currentTranslateX = 0;
-            let selectedEnemyIndex = 0; // 0, 1, or 2 for the selected enemy in the group
+            let selectedEnemyIndex = 0;
 
             // --- Modal Logic ---
-            const openModal = (modal) => {
-                if (!modal) return;
-                allModals.forEach(m => m.classList.add('hidden'));
-                modal.classList.remove('hidden');
+            const openModal = (modalToOpen) => {
+                if (!modalToOpen) return;
+                allModals.forEach(m => m.classList.add('hidden')); // Close all modals first
+                modalToOpen.classList.remove('hidden');
             };
-            const closeModal = (modal) => {
-                if (modal) modal.classList.add('hidden');
+            const closeModal = (modalToClose) => {
+                if (modalToClose) modalToClose.classList.add('hidden');
             };
 
             // --- Equipment Reel Logic ---
@@ -305,23 +299,19 @@
 
             // --- Build Menu & Equipment Choice Logic ---
             const openEquipmentChoiceModal = (slotType) => {
-                equipmentChoiceContent.innerHTML = ''; // Clear previous options
+                equipmentChoiceContent.innerHTML = '';
                 const options = equipmentOptions[slotType];
-
                 options.forEach(item => {
                     const itemButton = document.createElement('button');
                     itemButton.className = 'bg-gray-700 rounded-lg px-4 py-3 btn-glow active:bg-gray-600 w-full text-left flex items-center';
                     itemButton.innerHTML = `<span class="text-2xl w-10">${item.emoji}</span> <span>${item.name}</span>`;
                     itemButton.addEventListener('click', (e) => {
-                        e.stopPropagation(); // Prevent the click from bubbling up to the game container
-                        if (activeBuildSlot) {
-                            activeBuildSlot.innerHTML = item.emoji;
-                        }
+                        e.stopPropagation();
+                        if (activeBuildSlot) activeBuildSlot.innerHTML = item.emoji;
                         equipmentChoiceModal.classList.add('hidden');
                     });
                     equipmentChoiceContent.appendChild(itemButton);
                 });
-
                 equipmentChoiceModal.classList.remove('hidden');
             };
             
@@ -331,11 +321,8 @@
                     openEquipmentChoiceModal(btn.dataset.slotType);
                 });
             });
-
             equipmentChoiceModal.addEventListener('click', (e) => {
-                if (e.target === equipmentChoiceModal) {
-                    equipmentChoiceModal.classList.add('hidden');
-                }
+                if (e.target === equipmentChoiceModal) equipmentChoiceModal.classList.add('hidden');
             });
 
 
@@ -350,17 +337,14 @@
             
             const updateBattleDetails = (showSelection = false) => {
                 if (!selectedEnemiesDisplay) return;
-
                 const { iconWidth } = calculateSliderDimensions();
                 const startIndex = Math.round(currentTranslateX / iconWidth);
-                const allEnemySpans = Array.from(enemySpans);
-                const selectedEnemySpans = allEnemySpans.slice(startIndex, startIndex + groupSize);
-
-                selectedEnemiesDisplay.innerHTML = ''; // Clear previous details
+                const selectedEnemySpans = Array.from(enemySpans).slice(startIndex, startIndex + groupSize);
+                selectedEnemiesDisplay.innerHTML = '';
 
                 selectedEnemySpans.forEach((enemySpan, index) => {
                     const enemyEmoji = enemySpan.textContent;
-                    if (!enemyEmoji.trim()) return; // Skip empty spans
+                    if (!enemyEmoji.trim()) return;
 
                     const isStamped = enemySpan.classList.contains('emoji-red-stamp');
                     const isGift = enemySpan.classList.contains('emoji-gold-glow');
@@ -368,35 +352,23 @@
                     const enemyWrapper = document.createElement('div');
                     enemyWrapper.className = 'relative p-2 rounded-lg cursor-pointer transition-all duration-150 flex flex-col items-center';
 
-                    // Add selection highlight
-                    if (showSelection && index === selectedEnemyIndex) {
-                        enemyWrapper.classList.add('bg-blue-500/30', 'scale-110');
+                    if (battleStarted && showSelection && index === selectedEnemyIndex) {
+                        enemyWrapper.classList.add('border-4', 'border-lime-400', 'box-border', 'scale-110');
                     } else {
-                        enemyWrapper.classList.add('scale-100');
+                        enemyWrapper.classList.add('border-4', 'border-transparent', 'box-border', 'scale-100');
                     }
 
-                    // Create emoji span and apply effects
                     const emojiDisplaySpan = document.createElement('span');
                     emojiDisplaySpan.className = 'text-5xl select-none';
-                    if (isStamped) {
-                        emojiDisplaySpan.classList.add('emoji-red-stamp', 'pulse-animation');
-                    }
-                    if (isGift) {
-                        emojiDisplaySpan.classList.add('emoji-gold-glow');
-                    }
+                    if (isStamped) emojiDisplaySpan.classList.add('emoji-red-stamp', 'pulse-animation');
+                    if (isGift) emojiDisplaySpan.classList.add('emoji-gold-glow');
                     emojiDisplaySpan.textContent = enemyEmoji;
-                    
                     enemyWrapper.appendChild(emojiDisplaySpan);
 
-                    // Add status icons for specific enemies
                     let statusIcon = null;
-                    if (['🐍', '🕷️'].includes(enemyEmoji)) {
-                        statusIcon = '☠️';
-                    } else if (enemyEmoji === '🧛') {
-                        statusIcon = '🕯️';
-                    } else if (enemyEmoji === '🧟') {
-                        statusIcon = '🐌';
-                    }
+                    if (['🐍', '🕷️'].includes(enemyEmoji)) statusIcon = '☠️';
+                    else if (enemyEmoji === '🧛') statusIcon = '🕯️';
+                    else if (enemyEmoji === '🧟') statusIcon = '🐌';
 
                     if (statusIcon) {
                         const statusDiv = document.createElement('div');
@@ -405,33 +377,26 @@
                         enemyWrapper.appendChild(statusDiv);
                     }
 
-                    // Create health bar(s)
-                    const healthBarContainer = document.createElement('div');
-                    healthBarContainer.className = 'mt-2 flex flex-col gap-1 items-center';
-
-                    const createHealthBar = () => {
-                        const barWrapper = document.createElement('div');
-                        barWrapper.className = 'w-12 h-2 bg-black/50 rounded-full';
-                        barWrapper.innerHTML = `<div class="h-full bg-red-600 rounded-full" style="width: 100%;"></div>`;
-                        return barWrapper;
-                    };
-                    
-                    // Add health bar(s) if not a gift
+                    // FIX: Only add health bars if it's not a gift
                     if (!isGift) {
+                        const healthBarContainer = document.createElement('div');
+                        healthBarContainer.className = 'mt-2 flex flex-col gap-1 items-center';
+                        const createHealthBar = () => {
+                            const barWrapper = document.createElement('div');
+                            barWrapper.className = 'w-12 h-2 bg-black/50 rounded-full';
+                            barWrapper.innerHTML = `<div class="h-full bg-red-600 rounded-full" style="width: 100%;"></div>`;
+                            return barWrapper;
+                        };
                         healthBarContainer.appendChild(createHealthBar());
-                        if (isStamped) {
-                            healthBarContainer.appendChild(createHealthBar());
-                        }
+                        if (isStamped) healthBarContainer.appendChild(createHealthBar());
+                        enemyWrapper.appendChild(healthBarContainer);
                     }
-                    
-                    enemyWrapper.appendChild(healthBarContainer);
 
                     enemyWrapper.addEventListener('click', () => {
-                        if (isDragging) return;
+                        if (!battleStarted || isDragging) return;
                         selectedEnemyIndex = index;
-                        updateBattleDetails(true); // Redraw with new selection
+                        updateBattleDetails(true);
                     });
-
                     selectedEnemiesDisplay.appendChild(enemyWrapper);
                 });
             };
@@ -439,6 +404,7 @@
             const getEventX = (e) => e.touches ? e.touches[0].clientX : e.clientX;
 
             const dragStart = (e) => {
+                if (battleStarted) return;
                 isDragging = true;
                 startX = getEventX(e);
                 enemySlider.style.transition = 'none';
@@ -461,23 +427,20 @@
                 currentTranslateX = Math.max(0, Math.min(currentTranslateX, maxTranslateX));
 
                 enemySlider.style.transform = `translateX(${currentTranslateX}px)`;
-                updateBattleDetails(false); // Update display while sliding, no selection box
+                updateBattleDetails(false);
             };
 
             const dragEnd = () => {
                 if (!isDragging) return;
                 isDragging = false;
                 enemySlider.style.transition = 'transform 0.2s ease-out';
-
                 const { iconWidth } = calculateSliderDimensions();
                 const closestSnapIndex = Math.round(currentTranslateX / iconWidth);
                 const clampedIndex = Math.min(numIcons - groupSize, Math.max(0, closestSnapIndex));
-                
                 currentTranslateX = clampedIndex * iconWidth;
                 enemySlider.style.transform = `translateX(${currentTranslateX}px)`;
-                
-                selectedEnemyIndex = 0; // Default selection to the first enemy
-                updateBattleDetails(true); // Update with selection box
+                selectedEnemyIndex = 0;
+                updateBattleDetails(false);
 
                 document.removeEventListener('mousemove', dragMove);
                 document.removeEventListener('touchmove', dragMove);
@@ -486,61 +449,72 @@
             };
             
             // --- Enemy Reshuffle Logic ---
-            function shuffle(array) {
-                let currentIndex = array.length, randomIndex;
-                while (currentIndex > 0) {
-                    randomIndex = Math.floor(Math.random() * currentIndex);
-                    currentIndex--;
-                    [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            const shuffle = (array) => {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
                 }
                 return array;
             }
 
-            function reshuffleEnemies() {
+            const reshuffleEnemies = () => {
                 const shuffledPool = shuffle([...enemyPool]);
                 const currentEnemies = shuffledPool.slice(0, 7);
                 currentEnemies.push(giftEmoji);
-                
                 const finalEnemySet = shuffle(currentEnemies);
 
                 enemySpans.forEach((span, index) => {
                     span.textContent = finalEnemySet[index];
-                    span.className = 'text-2xl relative z-10'; // Reset classes
+                    span.className = 'text-2xl relative z-10';
                 });
 
-                const allSpans = Array.from(enemyContainer.querySelectorAll('span'));
-                const giftSpan = allSpans.find(span => span.textContent === giftEmoji);
+                const giftSpan = Array.from(enemySpans).find(span => span.textContent === giftEmoji);
                 if (giftSpan) giftSpan.classList.add('emoji-gold-glow');
 
-                const stampableSpans = allSpans.filter(span => span.textContent !== giftEmoji);
+                const stampableSpans = Array.from(enemySpans).filter(span => span.textContent !== giftEmoji);
                 if (stampableSpans.length > 0) {
                     const randomEnemyToStamp = stampableSpans[Math.floor(Math.random() * stampableSpans.length)];
                     randomEnemyToStamp.classList.add('emoji-red-stamp');
                 }
-                // Reset slider position visually and internally
                 currentTranslateX = 0;
                 enemySlider.style.transform = `translateX(0px)`;
             }
 
             // --- Initial Setup & Event Listeners ---
-            for (const btnId in modalMap) {
-                const button = document.getElementById(btnId);
-                if (button) button.addEventListener('click', () => openModal(modalMap[btnId].modal));
-            }
-            gameContainer.addEventListener('click', (e) => {
-                // If the equipment choice modal is open and the click is inside it, let its own handlers work.
-                if (!equipmentChoiceModal.classList.contains('hidden') && equipmentChoiceModal.contains(e.target)) {
-                    return;
-                }
-                
-                const openModal = allModals.find(m => !m.classList.contains('hidden'));
-                if (!openModal) return;
+            
+            // REFACTORED: More robust modal handling
+            Object.values(modalMap).forEach(item => {
+                item.button.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openModal(item.modal);
+                });
+            });
 
-                // Close the main modal if the click is outside of it AND not on a button that opens a modal
-                const isButton = Object.keys(modalMap).some(btnId => document.getElementById(btnId).contains(e.target));
-                if (!openModal.contains(e.target) && !isButton) {
-                    closeModal(openModal);
-                }
+            gameContainer.addEventListener('click', (e) => {
+                const openModalInstance = allModals.find(m => !m.classList.contains('hidden'));
+                if (!openModalInstance) return;
+
+                // Clicks inside special modals (like equipment choice) should not close main modals
+                if (equipmentChoiceModal.contains(e.target) && !equipmentChoiceModal.classList.contains('hidden')) return;
+                
+                // Clicks inside the open modal content area should not close it
+                if (openModalInstance.contains(e.target)) return;
+                
+                closeModal(openModalInstance);
+            });
+
+            // --- Start Battle Logic ---
+            startBattleBtn.addEventListener('click', () => {
+                battleStarted = true;
+                battleDetailsWindow.classList.remove('blur-sm');
+                startBattleBtn.classList.add('opacity-0', 'pointer-events-none');
+                
+                reshuffleBtn.disabled = true;
+                reshuffleBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                enemyContainer.classList.remove('cursor-grab', 'active:cursor-grabbing');
+                enemyContainer.classList.add('cursor-default');
+
+                updateBattleDetails(true);
             });
             
             calculateSliderDimensions();
@@ -549,19 +523,19 @@
             enemyContainer.addEventListener('mousedown', dragStart);
             enemyContainer.addEventListener('touchstart', dragStart);
 
-            if (reshuffleBtn && enemySpans.length > 0) {
-                reshuffleBtn.addEventListener('click', () => {
-                   selectedEnemyIndex = 0;
-                   reshuffleEnemies();
-                   updateBattleDetails(true);
-                });
+            reshuffleBtn.addEventListener('click', () => {
+                if (battleStarted) return;
+                selectedEnemyIndex = 0;
                 reshuffleEnemies();
-                updateBattleDetails(true); // Initial call
-            }
+                updateBattleDetails(false);
+            });
+
+            // Initial game setup
+            reshuffleEnemies();
+            updateBattleDetails(false);
         });
     </script>
 
 </body>
 </html>
-
 
