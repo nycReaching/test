@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale-1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mobile Game Concept</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -61,7 +61,7 @@
                         <span class="font-bold w-5 text-left">5</span>
                     </div>
                     <div class="flex items-center gap-1">
-                        <span class="text-lg">🌙</span>
+                        <span class="text-lg">🌒</span>
                         <span class="font-bold w-5 text-left">3</span>
                     </div>
                 </div>
@@ -147,17 +147,55 @@
         <!-- MODAL WINDOWS -->
         <!-- Fortunes Modal -->
         <div id="fortunesModal" class="hidden absolute bottom-0 left-0 w-full h-2/3 bg-gray-800 rounded-t-2xl border-t-4 border-purple-500 p-4 flex flex-col justify-center items-center transition-transform duration-300 ease-in-out z-20">
-            <!-- Content Cleared -->
+            <div class="w-full max-w-xs text-xl text-white space-y-4">
+                <button class="bg-gray-700 rounded-lg px-4 py-3 btn-glow active:bg-gray-600 w-full">🩸 Blood Pact</button>
+                <button class="bg-gray-700 rounded-lg px-4 py-3 btn-glow active:bg-gray-600 w-full">🦶🏼 Broken Ankle</button>
+                <button class="bg-gray-700 rounded-lg px-4 py-3 btn-glow active:bg-gray-600 w-full">🎭 Unstable Mind</button>
+            </div>
         </div>
 
         <!-- Build Modal -->
-        <div id="buildModal" class="hidden absolute bottom-0 left-0 w-full h-2/3 bg-gray-800 rounded-t-2xl border-t-4 border-gray-500 p-4 flex flex-col items-center transition-transform duration-300 ease-in-out z-20">
-            <!-- Content Cleared -->
+        <div id="buildModal" class="hidden absolute bottom-0 left-0 w-full h-2/3 bg-gray-800 rounded-t-2xl border-t-4 border-gray-500 p-4 flex flex-col items-center justify-center transition-transform duration-300 ease-in-out z-20">
+            <div class="w-full max-w-xs text-xl text-white space-y-4">
+                <div class="flex justify-between items-center">
+                    <span>WEAPON</span>
+                    <button class="w-24 h-14 bg-gray-700 rounded-lg btn-glow active:bg-gray-600"></button>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span>ARMOR</span>
+                    <button class="w-24 h-14 bg-gray-700 rounded-lg btn-glow active:bg-gray-600"></button>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span>RING</span>
+                    <button class="w-24 h-14 bg-gray-700 rounded-lg btn-glow active:bg-gray-600"></button>
+                </div>
+            </div>
         </div>
 
         <!-- Shop Modal -->
-        <div id="shopModal" class="hidden absolute bottom-0 left-0 w-full h-2/3 bg-gray-800 rounded-t-2xl border-t-4 border-yellow-500 p-4 flex flex-col transition-transform duration-300 ease-in-out z-20">
-            <!-- Content Cleared -->
+        <div id="shopModal" class="hidden absolute bottom-0 left-0 w-full h-2/3 bg-gray-800 rounded-t-2xl border-t-4 border-yellow-500 p-4 flex flex-col items-center justify-center transition-transform duration-300 ease-in-out z-20">
+            <div class="w-full max-w-xs text-xl text-white space-y-2">
+                <div class="flex justify-between items-center">
+                    <span>🍶 TONIC (0)</span>
+                    <button class="bg-gray-700 rounded-lg px-3 py-1 btn-glow active:bg-gray-600">🪙5</button>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span>💎 GEM (0)</span>
+                    <button class="bg-gray-700 rounded-lg px-3 py-1 btn-glow active:bg-gray-600">🪙25</button>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span>✝️ CROSS (0)</span>
+                    <button class="bg-gray-700 rounded-lg px-3 py-1 btn-glow active:bg-gray-600">🪙15</button>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span>🧚🏼 FAIRY (0)</span>
+                    <button class="bg-gray-700 rounded-lg px-3 py-1 btn-glow active:bg-gray-600">🪙40</button>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span>🌒 MOONSTONE (3)</span>
+                    <button class="bg-gray-700 rounded-lg px-3 py-1 btn-glow active:bg-gray-600">🪙50</button>
+                </div>
+            </div>
         </div>
 
         <!-- Equipment Reel Modal -->
