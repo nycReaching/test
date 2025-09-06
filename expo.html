@@ -6,16 +6,13 @@
     <title>Mobile Game Concept</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Custom styles for a more game-like feel */
         body {
             font-family: 'Inter', sans-serif;
             touch-action: manipulation; /* Disables double-tap zoom on mobile */
-        }
-        .font-anton {
-            font-family: 'Anton', sans-serif;
         }
         .btn-glow:active {
             box-shadow: 0 0 20px rgba(59, 130, 246, 0.7);
@@ -24,8 +21,8 @@
             transition: width 0.3s ease-in-out;
         }
         .emoji-red-stamp {
-            /* This filter chain converts the emoji into a red silhouette and adds a glow */
-            filter: grayscale(100%) brightness(40%) sepia(100%) hue-rotate(-50deg) saturate(600%) contrast(0.8) drop-shadow(0 0 8px rgba(139, 0, 0, 0.9));
+            /* This filter chain converts the emoji into a red silhouette and adds a brighter glow */
+            filter: grayscale(100%) brightness(80%) sepia(100%) hue-rotate(-50deg) saturate(800%) contrast(1) drop-shadow(0 0 10px rgba(255, 50, 50, 1));
         }
         .emoji-gold-glow {
             filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8));
@@ -35,7 +32,7 @@
 <body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
 
     <!-- Mobile Screen Container -->
-    <div class="w-full max-w-sm h-[80vh] max-h-[700px] bg-gray-800 rounded-3xl shadow-2xl p-4 flex flex-col justify-between relative overflow-hidden">
+    <div id="game-container" class="w-full max-w-sm h-[80vh] max-h-[700px] bg-gray-800 rounded-3xl shadow-2xl p-4 flex flex-col justify-between relative overflow-hidden">
 
         <!-- Top Section: Meters and Icons -->
         <div class="flex-shrink-0">
@@ -76,7 +73,7 @@
             <!-- Icon Row -->
             <div id="enemy-container" class="relative flex justify-around items-center bg-gray-900/50 rounded-lg p-2 select-none cursor-grab active:cursor-grabbing">
                 <!-- The draggable slider window -->
-                <div id="enemy-slider" class="absolute top-0 left-0 h-full bg-blue-500/20 border-2 border-blue-400 rounded-lg pointer-events-none" style="transition: transform 0.2s ease-out;"></div>
+                <div id="enemy-slider" class="absolute top-0 left-0 h-full bg-white/20 border-2 border-white rounded-lg pointer-events-none" style="transition: transform 0.2s ease-out;"></div>
 
                 <!-- Icons (z-10 to appear above the slider bg) - These will be populated by JS -->
                 <span class="text-2xl relative z-10"></span>
@@ -107,9 +104,9 @@
                 <!-- 3x3 Grid -->
                 <div class="grid grid-cols-3 grid-rows-3 gap-2 w-1/2 aspect-square">
                     <!-- Row 1 (Equipment Slots) -->
-                    <button class="equip-slot bg-blue-900 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-blue-800 btn-glow text-3xl flex items-center justify-center"></button>
-                    <button class="equip-slot bg-blue-900 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-blue-800 btn-glow text-3xl flex items-center justify-center"></button>
-                    <button class="equip-slot bg-blue-900 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-blue-800 btn-glow text-3xl flex items-center justify-center"></button>
+                    <button class="equip-slot bg-blue-900/50 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-blue-800/50 btn-glow text-3xl flex items-center justify-center"></button>
+                    <button class="equip-slot bg-blue-900/50 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-blue-800/50 btn-glow text-3xl flex items-center justify-center"></button>
+                    <button class="equip-slot bg-blue-900/50 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-blue-800/50 btn-glow text-3xl flex items-center justify-center"></button>
                     <!-- Row 2 -->
                     <button class="bg-teal-800 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-teal-700 btn-glow text-3xl flex items-center justify-center">❤️‍🔥</button>
                     <button class="bg-teal-800 rounded-lg shadow-md focus:outline-none transition duration-150 ease-in-out active:bg-teal-700 btn-glow text-3xl flex items-center justify-center">❄️</button>
@@ -126,116 +123,26 @@
         <div class="flex-shrink-0 bg-gray-900/50 rounded-lg p-2">
             <div class="flex justify-around">
                 <button id="reshuffleBtn" class="w-16 h-14 bg-gray-700 rounded-lg shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-gray-600 btn-glow flex items-center justify-center text-4xl">🔃</button>
-                <button class="w-16 h-14 bg-red-600 rounded-lg shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-red-700 btn-glow flex items-center justify-center text-2xl text-white font-anton">🗡️13</button>
+                <button class="w-16 h-14 bg-red-600 rounded-lg shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-red-700 btn-glow flex items-center justify-center text-2xl text-white">🗡️13</button>
                 <button class="w-16 h-14 bg-gray-700 rounded-lg shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-gray-600 btn-glow"></button>
             </div>
         </div>
 
         <!-- MODAL WINDOWS -->
         <!-- Fortunes Modal -->
-        <div id="fortunesModal" class="hidden absolute bottom-0 left-0 w-full h-1/2 bg-gray-800 rounded-t-2xl border-t-4 border-purple-500 p-4 flex flex-col justify-between items-center transition-transform duration-300 ease-in-out">
-            <h2 class="text-2xl font-bold text-purple-400">Fortunes</h2>
-            <div class="text-gray-300">Your fortunes await...</div>
-            <button id="closeFortunes" class="bg-red-500 rounded-full w-12 h-12 flex items-center justify-center text-2xl shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-red-600 btn-glow">❌</button>
+        <div id="fortunesModal" class="hidden absolute bottom-0 left-0 w-full h-2/3 bg-gray-800 rounded-t-2xl border-t-4 border-purple-500 p-4 flex flex-col justify-center items-center transition-transform duration-300 ease-in-out z-20">
+            <!-- Content Cleared -->
         </div>
 
         <!-- Build Modal -->
-        <div id="buildModal" class="hidden absolute bottom-0 left-0 w-full h-2/3 bg-gray-800 rounded-t-2xl border-t-4 border-gray-500 p-4 flex flex-col items-center transition-transform duration-300 ease-in-out">
-            <h2 class="text-xl font-bold text-gray-300 mb-3">Build Equipment</h2>
-            <div class="flex flex-col gap-4 w-full max-w-xs">
-                <!-- Weapon Slot -->
-                <div class="bg-gray-900 rounded-lg flex items-center justify-center p-3 w-full border-2 border-gray-600">
-                    <span class="text-2xl mr-3">🗡️</span>
-                    <span class="font-anton text-white tracking-wider text-lg">DAGGER</span>
-                </div>
-                <!-- Armor Slot -->
-                <div class="bg-gray-900 rounded-lg flex items-center justify-center p-3 w-full border-2 border-gray-600">
-                    <span class="text-2xl mr-3">🧥</span>
-                    <span class="font-anton text-white tracking-wider text-lg">LEATHERS</span>
-                </div>
-                <!-- Ring Slot -->
-                <div class="bg-gray-900 rounded-lg flex items-center justify-center p-3 w-full border-2 border-gray-600">
-                    <span class="text-2xl mr-3">💍</span>
-                    <span class="font-anton text-white tracking-wider text-lg">CONJURE STONE</span>
-                </div>
-            </div>
-            <button id="closeBuild" class="absolute bottom-4 bg-red-500 rounded-full w-10 h-10 flex items-center justify-center text-xl shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-red-600 btn-glow">❌</button>
+        <div id="buildModal" class="hidden absolute bottom-0 left-0 w-full h-2/3 bg-gray-800 rounded-t-2xl border-t-4 border-gray-500 p-4 flex flex-col items-center transition-transform duration-300 ease-in-out z-20">
+            <!-- Content Cleared -->
         </div>
 
         <!-- Shop Modal -->
-        <div id="shopModal" class="hidden absolute bottom-0 left-0 w-full h-2/3 bg-gray-800 rounded-t-2xl border-t-4 border-yellow-500 p-4 flex flex-col transition-transform duration-300 ease-in-out">
-            <h2 class="text-lg font-bold text-yellow-400 mb-2 text-center flex-shrink-0">Shop</h2>
-            <div class="flex-grow w-full max-w-xs mx-auto flex flex-col justify-around">
-                <!-- Shop Item 1 -->
-                <div class="flex justify-between items-center py-1.5 border-b border-gray-700">
-                    <span class="text-xl">❤️</span>
-                    <div class="flex-grow px-2">
-                        <div class="font-semibold text-sm">Health Potion</div>
-                        <div class="text-gray-400 text-xs">In Stock: 5</div>
-                    </div>
-                    <button class="bg-yellow-500 text-gray-900 font-bold text-xs px-2 py-1 rounded-full shadow-md hover:bg-yellow-400 active:bg-yellow-600 transition-all duration-150">
-                        10 🪙
-                    </button>
-                </div>
-                <!-- Shop Item 2 -->
-                <div class="flex justify-between items-center py-1.5 border-b border-gray-700">
-                    <span class="text-xl">💣</span>
-                    <div class="flex-grow px-2">
-                        <div class="font-semibold text-sm">Bomb</div>
-                        <div class="text-gray-400 text-xs">In Stock: 2</div>
-                    </div>
-                    <button class="bg-yellow-500 text-gray-900 font-bold text-xs px-2 py-1 rounded-full shadow-md hover:bg-yellow-400 active:bg-yellow-600 transition-all duration-150">
-                        25 🪙
-                    </button>
-                </div>
-                <!-- Shop Item 3 -->
-                <div class="flex justify-between items-center py-1.5 border-b border-gray-700">
-                    <span class="text-xl">🔑</span>
-                    <div class="flex-grow px-2">
-                        <div class="font-semibold text-sm">Dungeon Key</div>
-                        <div class="text-gray-400 text-xs">In Stock: 1</div>
-                    </div>
-                    <button class="bg-yellow-500 text-gray-900 font-bold text-xs px-2 py-1 rounded-full shadow-md hover:bg-yellow-400 active:bg-yellow-600 transition-all duration-150">
-                        50 🪙
-                    </button>
-                </div>
-                <!-- Shop Item 4 -->
-                <div class="flex justify-between items-center py-1.5 border-b border-gray-700">
-                    <span class="text-xl">💎</span>
-                    <div class="flex-grow px-2">
-                        <div class="font-semibold text-sm">Gem</div>
-                        <div class="text-gray-400 text-xs">In Stock: 0</div>
-                    </div>
-                    <button class="bg-gray-600 text-gray-400 font-bold text-xs px-2 py-1 rounded-full shadow-md cursor-not-allowed" disabled>
-                        100 🪙
-                    </button>
-                </div>
-                <!-- Shop Item 5 -->
-                <div class="flex justify-between items-center py-1.5 border-b border-gray-700">
-                    <span class="text-xl">📜</span>
-                    <div class="flex-grow px-2">
-                        <div class="font-semibold text-sm">Scroll</div>
-                        <div class="text-gray-400 text-xs">In Stock: 10</div>
-                    </div>
-                    <button class="bg-yellow-500 text-gray-900 font-bold text-xs px-2 py-1 rounded-full shadow-md hover:bg-yellow-400 active:bg-yellow-600 transition-all duration-150">
-                        15 🪙
-                    </button>
-                </div>
-                <!-- Shop Item 6 -->
-                <div class="flex justify-between items-center py-1.5">
-                    <span class="text-xl">🎲</span>
-                    <div class="flex-grow px-2">
-                        <div class="font-semibold text-sm">Lucky Dice</div>
-                        <div class="text-gray-400 text-xs">In Stock: 3</div>
-                    </div>
-                    <button class="bg-yellow-500 text-gray-900 font-bold text-xs px-2 py-1 rounded-full shadow-md hover:bg-yellow-400 active:bg-yellow-600 transition-all duration-150">
-                        30 🪙
-                    </button>
-                </div>
-            </div>
-            <button id="closeShop" class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-red-500 rounded-full w-10 h-10 flex items-center justify-center text-xl shadow-lg focus:outline-none transition duration-150 ease-in-out active:bg-red-600 btn-glow">❌</button>
+        <div id="shopModal" class="hidden absolute bottom-0 left-0 w-full h-2/3 bg-gray-800 rounded-t-2xl border-t-4 border-yellow-500 p-4 flex flex-col transition-transform duration-300 ease-in-out z-20">
+            <!-- Content Cleared -->
         </div>
-
 
         <!-- Equipment Reel Modal -->
         <div id="reelModal" class="hidden absolute inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -248,7 +155,6 @@
                     <button class="reel-item p-1 rounded-lg transition-transform hover:scale-110 active:scale-100">🌟</button>
                     <button class="reel-item p-1 rounded-lg transition-transform hover:scale-110 active:scale-100">⚡</button>
                 </div>
-                <button id="closeReel" class="absolute -top-3 -right-3 bg-red-600 rounded-full w-8 h-8 flex items-center justify-center text-lg font-bold transition-transform hover:scale-110 active:scale-100 shadow-lg">❌</button>
             </div>
         </div>
 
@@ -257,39 +163,50 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Button and Modal mapping
+            const gameContainer = document.getElementById('game-container');
+            
+            // --- Modal Logic ---
             const modalMap = {
-                'fortunesBtn': { modal: document.getElementById('fortunesModal'), close: document.getElementById('closeFortunes') },
-                'buildBtn': { modal: document.getElementById('buildModal'), close: document.getElementById('closeBuild') },
-                'shopBtn': { modal: document.getElementById('shopModal'), close: document.getElementById('closeShop') }
+                'fortunesBtn': { modal: document.getElementById('fortunesModal') },
+                'buildBtn': { modal: document.getElementById('buildModal') },
+                'shopBtn': { modal: document.getElementById('shopModal') }
             };
+            const allModals = Object.values(modalMap).map(item => item.modal);
 
-            // Function to open a modal
             const openModal = (modal) => {
-                if (modal) modal.classList.remove('hidden');
+                if (!modal) return;
+                allModals.forEach(m => m.classList.add('hidden')); // Close all others
+                modal.classList.remove('hidden');
             };
 
-            // Function to close a modal
             const closeModal = (modal) => {
                 if (modal) modal.classList.add('hidden');
             };
 
-            // Set up event listeners for all buttons
+            // Setup button listeners to open modals
             for (const btnId in modalMap) {
                 const button = document.getElementById(btnId);
-                const { modal, close } = modalMap[btnId];
-                
                 if (button) {
-                    button.addEventListener('click', () => openModal(modal));
-                }
-                if (close) {
-                    close.addEventListener('click', () => closeModal(modal));
+                    button.addEventListener('click', () => openModal(modalMap[btnId].modal));
                 }
             }
+
+            // Listener to close modals when clicking outside
+            gameContainer.addEventListener('click', (e) => {
+                const openModal = allModals.find(m => !m.classList.contains('hidden'));
+                if (!openModal) return;
+
+                // Check if the click is on a button that opens a modal
+                const isButton = Object.keys(modalMap).some(btnId => document.getElementById(btnId).contains(e.target));
+
+                // If the click is not inside the modal and not on a modal-opening button, close it.
+                if (!openModal.contains(e.target) && !isButton) {
+                    closeModal(openModal);
+                }
+            });
             
             // --- Equipment Reel Logic ---
             const reelModal = document.getElementById('reelModal');
-            const closeReelBtn = document.getElementById('closeReel');
             const equipSlots = document.querySelectorAll('.equip-slot');
             const reelItems = document.querySelectorAll('.reel-item');
             let activeEquipSlot = null;
@@ -302,32 +219,21 @@
                 });
             });
 
-            // Function to close the reel
-            const closeReel = () => {
-                reelModal.classList.add('hidden');
-                activeEquipSlot = null;
-            }
-            closeReelBtn.addEventListener('click', closeReel);
+            // Close reel when clicking outside of the item list
+            reelModal.addEventListener('click', (e) => {
+                if (e.target === reelModal) {
+                    reelModal.classList.add('hidden');
+                }
+            });
 
             // Handle selecting an item from the reel
             reelItems.forEach(item => {
                 item.addEventListener('click', () => {
                     if (activeEquipSlot) {
-                        // Check if another slot already has this item
-                        let alreadyEquipped = false;
-                        equipSlots.forEach(s => {
-                            if (s.textContent === item.textContent && s !== activeEquipSlot) {
-                                alreadyEquipped = true;
-                            }
-                        });
-
-                        if (!alreadyEquipped) {
-                             activeEquipSlot.textContent = item.textContent;
-                             closeReel();
-                        } else {
-                            // Optional: provide feedback that item is already equipped
-                            console.log("Item already equipped in another slot.");
-                        }
+                        // Per request, removed the check that prevents equipping duplicate symbols.
+                        activeEquipSlot.textContent = item.textContent;
+                        reelModal.classList.add('hidden');
+                        activeEquipSlot = null;
                     }
                 });
             });
@@ -343,7 +249,6 @@
             let initialTranslateX;
             let currentTranslateX = 0;
 
-            // Function to calculate dimensions and positions
             const calculateSliderDimensions = () => {
                 const containerWidth = enemyContainer.offsetWidth;
                 const iconWidth = containerWidth / numIcons;
@@ -351,9 +256,7 @@
                 enemySlider.style.width = `${sliderWidth}px`;
                 return { containerWidth, iconWidth, sliderWidth };
             };
-            calculateSliderDimensions(); // Initial calculation
-            
-            // Recalculate on window resize
+            calculateSliderDimensions();
             window.addEventListener('resize', calculateSliderDimensions);
 
             const getEventX = (e) => e.touches ? e.touches[0].clientX : e.clientX;
@@ -361,7 +264,7 @@
             const dragStart = (e) => {
                 isDragging = true;
                 startX = getEventX(e);
-                enemySlider.style.transition = 'none'; // Disable transition while dragging
+                enemySlider.style.transition = 'none';
                 initialTranslateX = currentTranslateX;
                 document.addEventListener('mousemove', dragMove);
                 document.addEventListener('touchmove', dragMove);
@@ -376,7 +279,6 @@
                 const deltaX = currentX - startX;
                 currentTranslateX = initialTranslateX + deltaX;
                 
-                // Clamp the movement within bounds
                 const { containerWidth, sliderWidth } = calculateSliderDimensions();
                 const maxTranslateX = containerWidth - sliderWidth;
                 currentTranslateX = Math.max(0, Math.min(currentTranslateX, maxTranslateX));
@@ -387,12 +289,10 @@
             const dragEnd = () => {
                 if (!isDragging) return;
                 isDragging = false;
-                enemySlider.style.transition = 'transform 0.2s ease-out'; // Re-enable transition for snapping
+                enemySlider.style.transition = 'transform 0.2s ease-out';
 
                 const { iconWidth } = calculateSliderDimensions();
-                // Find the closest snap point (which icon index we are closest to)
                 const closestSnapIndex = Math.round(currentTranslateX / iconWidth);
-                // Clamp snap index to possible values (0 to 5 for 8 icons in groups of 3)
                 const clampedIndex = Math.min(numIcons - groupSize, Math.max(0, closestSnapIndex));
                 
                 currentTranslateX = clampedIndex * iconWidth;
@@ -411,11 +311,9 @@
             const reshuffleBtn = document.getElementById('reshuffleBtn');
             const enemySpans = enemyContainer.querySelectorAll('span');
             
-            // A larger pool of enemies to pull from for variety
             const enemyPool = ['🐲', '👹', '👻', '💀', '🕷️', '🐍', '🧟', '🧛', '👽', '🤖', '🦂', '👺'];
             const giftEmoji = '🎁';
 
-            // Fisher-Yates shuffle function to randomize array order
             function shuffle(array) {
                 let currentIndex = array.length, randomIndex;
                 while (currentIndex > 0) {
@@ -427,30 +325,23 @@
             }
 
             function reshuffleEnemies() {
-                // 1. Create a new set of 7 random enemies from the pool
                 const shuffledPool = shuffle([...enemyPool]);
                 const currentEnemies = shuffledPool.slice(0, 7);
-                // 2. Add the gift, so we always have one
                 currentEnemies.push(giftEmoji);
                 
-                // 3. Shuffle the final set of 8 that will be displayed
                 const finalEnemySet = shuffle(currentEnemies);
 
-                // 4. Update the spans with the new emojis and reset their styles
                 enemySpans.forEach((span, index) => {
                     span.textContent = finalEnemySet[index];
                     span.className = 'text-2xl relative z-10'; // Reset classes
                 });
 
                 const allSpans = Array.from(enemyContainer.querySelectorAll('span'));
-
-                // 5. Always apply the gold glow style to the gift emoji
                 const giftSpan = allSpans.find(span => span.textContent === giftEmoji);
                 if (giftSpan) {
                     giftSpan.classList.add('emoji-gold-glow');
                 }
 
-                // 6. Filter out the gift, then pick one random enemy to make red
                 const stampableSpans = allSpans.filter(span => span.textContent !== giftEmoji);
                 if (stampableSpans.length > 0) {
                     const randomEnemyToStamp = stampableSpans[Math.floor(Math.random() * stampableSpans.length)];
@@ -459,10 +350,7 @@
             }
 
             if (reshuffleBtn && enemySpans.length > 0) {
-                // Add the click listener to the reshuffle button
                 reshuffleBtn.addEventListener('click', reshuffleEnemies);
-                
-                // Perform an initial shuffle on page load
                 reshuffleEnemies();
             }
         });
