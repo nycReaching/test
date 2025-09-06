@@ -87,8 +87,8 @@
         <!-- Middle Section: Game Windows & Grid -->
         <div class="flex-grow flex flex-col my-4 gap-3">
             <!-- Large Window Above -->
-            <div id="battle-details-window" class="bg-gray-700/50 rounded-lg flex-grow flex items-center justify-center p-4 transition-all duration-300">
-                <button id="start-battle-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold text-lg py-3 px-10 rounded-lg shadow-lg transition-all duration-200 active:scale-95">Start Battle</button>
+            <div id="battle-details-window" class="bg-gray-700/50 rounded-lg flex-grow flex items-center justify-center p-4 transition-all duration-300 text-center">
+                <button id="start-battle-btn" class="bg-green-600 active:bg-green-700 text-white font-bold text-lg py-3 px-10 rounded-lg shadow-lg transition-all duration-200 active:scale-95">Start Battle</button>
             </div>
             
             <!-- Enemy/Battle Reel -->
@@ -239,6 +239,7 @@
             const equipmentChoiceContent = document.getElementById('equipmentChoiceContent');
             const startBattleBtn = document.getElementById('start-battle-btn');
             const sideWindowLeft = document.getElementById('side-window-left');
+            const battleDetailsWindow = document.getElementById('battle-details-window');
             const flameheartBtn = document.getElementById('flameheartBtn');
             const frostbiteBtn = document.getElementById('frostbiteBtn');
             const armorheartBtn = document.getElementById('armorheartBtn');
@@ -252,7 +253,14 @@
             
             // --- State ---
             let battleStarted = false;
-            const enemyPool = ['🐲', '👹', '👻', '💀', '🕷️', '🐍', '🧟', '🧛', '👽', '🤖', '🦂', '👺'];
+            const enemyData = {
+                '🐲': { name: 'Dragon' }, '👹': { name: 'Oni' }, '👻': { name: 'Ghost' },
+                '💀': { name: 'Skeleton' }, '🕷️': { name: 'Spider' }, '🐍': { name: 'Serpent' },
+                '🧟': { name: 'Zombie' }, '🧛': { name: 'Vampire' }, '👽': { name: 'Alien' },
+                '🤖': { name: 'Robot' }, '🦂': { name: 'Scorpion' }, '👺': { name: 'Tengu' },
+                '🎁': { name: 'Gift' }
+            };
+            const enemyPool = Object.keys(enemyData).filter(e => e !== '🎁');
             const giftEmoji = '🎁';
             const numIcons = 8;
             const groupSize = 3;
@@ -286,8 +294,20 @@
             let currentTranslateX = 0;
             let dragStartTime;
             let currentBattleTargetIndex = 0;
+            let currentEnemiesInBattle = [];
 
-            // --- Spell Description Logic ---
+            // --- UI Update Logic ---
+            const updateEnemyDisplay = (enemy) => {
+                if (!enemy) return;
+                const name = enemyData[enemy.emoji]?.name || 'Unknown';
+                battleDetailsWindow.innerHTML = `
+                    <div>
+                        <div class="text-xl font-bold">${enemy.emoji} ${name}</div>
+                        <div class="text-base mt-1">12345</div>
+                    </div>
+                `;
+            };
+
             const displaySpellInfo = (spellKey) => {
                 const spell = spellDescriptions[spellKey];
                 if (!spell) return;
@@ -362,6 +382,7 @@
 
             // --- Enemy Slider Interaction Logic ---
             const calculateSliderDimensions = () => {
+                if(battleStarted) return {};
                 const containerWidth = enemyContainer.offsetWidth;
                 const iconWidth = containerWidth / numIcons;
                 const sliderWidth = iconWidth * groupSize;
@@ -530,12 +551,10 @@
 
                 const enemyWrappers = Array.from(enemyContainer.querySelectorAll('div.relative'));
 
-                // Find which enemy is under the cursor
                 let targetIndex = -1;
                 for (let i = 0; i < enemyWrappers.length; i++) {
                     const wrapper = enemyWrappers[i];
                     const wrapperRect = wrapper.getBoundingClientRect();
-                    // Check if the cursor's X is within the bounds of the enemy wrapper
                     if (coords.x >= wrapperRect.left && coords.x <= wrapperRect.right) {
                         targetIndex = i;
                         break;
@@ -545,6 +564,7 @@
                 if (targetIndex !== -1 && targetIndex !== currentBattleTargetIndex) {
                     currentBattleTargetIndex = targetIndex;
                     positionBattleSelector(enemyWrappers[currentBattleTargetIndex]);
+                    updateEnemyDisplay(currentEnemiesInBattle[currentBattleTargetIndex]);
                 }
             };
             
@@ -554,16 +574,20 @@
                 document.removeEventListener('mouseup', battleDragEnd);
                 document.removeEventListener('touchend', battleDragEnd);
 
-                // Using a timeout to prevent click event firing immediately after drag
-                setTimeout(() => {
-                    isDragging = false;
-                }, 50);
+                setTimeout(() => { isDragging = false; }, 50);
             };
 
             // --- Start Battle Logic ---
             startBattleBtn.addEventListener('click', () => {
                 if (battleStarted) return;
+
+                // --- FIX: Calculate dimensions BEFORE changing state ---
+                const { iconWidth } = calculateSliderDimensions();
+                const startIndex = Math.round(currentTranslateX / iconWidth);
+
                 battleStarted = true;
+                
+                sideWindowLeft.innerHTML = ''; // Clear side window
                 
                 enemyContainer.removeEventListener('mousedown', dragStart);
                 enemyContainer.removeEventListener('touchstart', dragStart);
@@ -575,11 +599,10 @@
                 enemyContainer.classList.add('cursor-default');
                 enemySlider.classList.add('hidden');
 
-                const { iconWidth } = calculateSliderDimensions();
-                const startIndex = Math.round(currentTranslateX / iconWidth);
                 const allEnemySpans = document.querySelectorAll('#enemy-container > span');
                 const selectedEnemySpans = Array.from(allEnemySpans).slice(startIndex, startIndex + groupSize);
-                const selectedEnemiesData = selectedEnemySpans.map(span => ({
+                
+                currentEnemiesInBattle = selectedEnemySpans.map(span => ({
                     emoji: span.textContent,
                     isStamped: span.classList.contains('emoji-red-stamp'),
                     isGift: span.classList.contains('emoji-gold-glow')
@@ -591,7 +614,7 @@
                 enemyContainer.classList.add('justify-center', 'gap-4');
 
 
-                selectedEnemiesData.forEach((enemyData, index) => {
+                currentEnemiesInBattle.forEach((enemyData, index) => {
                     const enemyWrapper = document.createElement('div');
                     enemyWrapper.className = 'relative cursor-pointer h-[70px] w-[60px] flex flex-col items-center justify-center';
                     const newEnemySpan = document.createElement('span');
@@ -612,6 +635,7 @@
                         if (isDragging) return;
                         currentBattleTargetIndex = index;
                         positionBattleSelector(enemyWrapper);
+                        updateEnemyDisplay(currentEnemiesInBattle[index]);
                     });
                     enemyContainer.appendChild(enemyWrapper);
                 });
@@ -620,9 +644,10 @@
                 battleSelector.classList.remove('hidden');
                 
                 currentBattleTargetIndex = 0;
+                updateEnemyDisplay(currentEnemiesInBattle[0]); // Display first enemy's info
+                
                 setTimeout(() => positionBattleSelector(firstNewEnemyWrapper), 50);
 
-                // Add listeners for battle mode
                 enemyContainer.addEventListener('mousedown', battleDragStart);
                 enemyContainer.addEventListener('touchstart', battleDragStart);
             });
@@ -645,3 +670,4 @@
 
 </body>
 </html>
+
