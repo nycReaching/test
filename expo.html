@@ -14,6 +14,14 @@
             font-family: 'Inter', sans-serif;
             touch-action: manipulation; /* Disables double-tap zoom on mobile */
         }
+        /* Hide scrollbars */
+        * {
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none;  /* IE and Edge */
+        }
+        *::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, and Opera */
+        }
         .btn-glow:active {
             box-shadow: 0 0 20px rgba(59, 130, 246, 0.7);
         }
@@ -40,6 +48,41 @@
         }
         .text-shadow {
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+        }
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+          20%, 40%, 60%, 80% { transform: translateX(2px); }
+        }
+        .shake-animation {
+          animation: shake 0.3s ease-in-out;
+        }
+        @keyframes float-up {
+          to {
+            transform: translateY(-40px) translateX(-50%);
+            opacity: 0;
+          }
+        }
+        .damage-number {
+          position: absolute;
+          font-size: 1.5rem;
+          font-weight: bold;
+          color: white;
+          text-shadow: 0 1px 2px black;
+          pointer-events: none;
+          animation: float-up 1s ease-out forwards;
+        }
+
+        @keyframes flip-horizontal {
+          50% {
+            transform: scaleX(-1);
+          }
+          100% {
+            transform: scaleX(1);
+          }
+        }
+        .flip-animation {
+          animation: flip-horizontal 0.5s ease-in-out;
         }
     </style>
 </head>
@@ -132,7 +175,7 @@
             <!-- Lower area with side window and grid -->
             <div class="flex gap-3">
                 <!-- Window to the left -->
-                <div id="side-window-left" class="bg-gray-700/50 rounded-lg w-1/2 p-2 flex flex-col-reverse items-start justify-start overflow-y-auto">
+                <div id="side-window-left" class="bg-gray-700/50 rounded-lg w-1/2 p-2 flex flex-col items-start overflow-hidden">
                      <!-- Spell descriptions / Battle Log will appear here -->
                 </div>
 
@@ -157,14 +200,14 @@
         <!-- MODAL WINDOWS -->
         <!-- Fortunes Modal -->
         <div id="fortunesModal" class="hidden absolute bottom-0 left-0 w-full h-2/3 bg-gray-800 rounded-t-2xl border-t-4 border-purple-500 p-4 flex flex-col justify-start items-center transition-transform duration-300 ease-in-out z-20 pt-8">
-            <div id="fortunes-content" class="w-full max-w-xs text-xl text-white space-y-4 text-center">
+            <div id="fortunes-content" class="w-full max-w-xs text-lg text-white space-y-4 text-center">
                 <!-- Dynamically populated -->
             </div>
         </div>
 
         <!-- Build Modal -->
         <div id="buildModal" class="hidden absolute bottom-0 left-0 w-full h-2/3 bg-gray-800 rounded-t-2xl border-t-4 border-gray-500 p-4 flex flex-col items-center justify-center transition-transform duration-300 ease-in-out z-20">
-            <div class="w-full max-w-xs text-xl text-white space-y-4">
+            <div class="w-full max-w-xs text-lg text-white space-y-4">
                 <div class="flex justify-between items-center">
                     <span>WEAPON</span>
                     <button data-slot-type="weapon" class="w-24 h-14 bg-gray-700 rounded-lg btn-glow active:bg-gray-600 flex items-center justify-center text-3xl"></button>
@@ -182,7 +225,7 @@
 
         <!-- Shop Modal -->
         <div id="shopModal" class="hidden absolute bottom-0 left-0 w-full h-2/3 bg-gray-800 rounded-t-2xl border-t-4 border-yellow-500 p-4 flex flex-col items-center justify-center transition-transform duration-300 ease-in-out z-20">
-            <div id="shop-items-container" class="w-full max-w-xs text-xl text-white space-y-2">
+            <div id="shop-items-container" class="w-full max-w-xs text-lg text-white space-y-2">
                 <!-- Shop items will be dynamically generated here -->
             </div>
         </div>
@@ -204,7 +247,7 @@
         <!-- Equipment Choice Modal -->
         <div id="equipmentChoiceModal" class="hidden absolute inset-0 bg-black/50 flex items-center justify-center z-40">
             <div class="relative bg-gray-900/80 backdrop-blur-sm rounded-xl p-4 shadow-xl border border-gray-700 w-full max-w-xs">
-                <div id="equipmentChoiceContent" class="text-xl text-white space-y-3">
+                <div id="equipmentChoiceContent" class="text-lg text-white space-y-3">
                     <!-- JS will populate this -->
                 </div>
             </div>
@@ -241,6 +284,7 @@
             const attackBtn = document.getElementById('attackBtn');
             const attackValueEl = document.getElementById('attack-value');
             const armorValueEl = document.getElementById('armor-value');
+            const healthValueEl = document.getElementById('health-value');
             
             const modalMap = {
                 fortunesBtn: { modal: document.getElementById('fortunesModal'), button: document.getElementById('fortunesBtn') },
@@ -307,7 +351,9 @@
                 moonstones: 3,
                 rerolls: 5,
                 killCount: 0,
+                health: 10,
                 armor: 3,
+                maxArmor: 3,
                 inventory: {
                     tonic: 0,
                     gem: 0,
@@ -332,16 +378,39 @@
             let currentBattleTargetIndex = 0;
             let currentEnemiesInBattle = [];
             let fortunePhase = 'sacrifice'; 
+            let battleLogElements = []; // To hold references to log <p> tags
+            
+            const delay = ms => new Promise(res => setTimeout(res, ms));
 
-            // --- Battle Log ---
+            // --- Battle Log & Animations ---
             const logToBattleWindow = (message) => {
-                const logEntry = document.createElement('p');
-                logEntry.className = 'text-sm text-gray-300 px-1';
-                logEntry.textContent = `> ${message}`;
-                sideWindowLeft.prepend(logEntry);
-                while (sideWindowLeft.children.length > 8) {
-                    sideWindowLeft.removeChild(sideWindowLeft.lastChild);
+                if (battleLogElements.length === 0) return;
+                for (let i = battleLogElements.length - 1; i > 0; i--) {
+                    battleLogElements[i].textContent = battleLogElements[i - 1].textContent;
                 }
+                battleLogElements[0].textContent = `> ${message}`;
+            };
+
+            const showDamageNumber = (damage, element) => {
+                const damageEl = document.createElement('div');
+                damageEl.textContent = damage;
+                damageEl.className = 'damage-number';
+                
+                const rect = element.getBoundingClientRect();
+                const gameRect = gameContainer.getBoundingClientRect();
+                
+                const top = rect.top - gameRect.top;
+                const left = rect.left - gameRect.left + (rect.width / 2);
+
+                damageEl.style.top = `${top}px`;
+                damageEl.style.left = `${left}px`;
+                damageEl.style.transform = 'translateX(-50%)';
+                
+                gameContainer.appendChild(damageEl);
+                
+                setTimeout(() => {
+                    damageEl.remove();
+                }, 1000);
             };
 
             // --- UI Update Logic ---
@@ -351,6 +420,7 @@
                 reshuffleCounter.textContent = playerState.rerolls;
                 killCountValueEl.textContent = playerState.killCount;
                 armorValueEl.textContent = playerState.armor;
+                healthValueEl.textContent = playerState.health;
 
                 if (playerState.rerolls <= 0 || battleStarted) {
                     reshuffleBtn.disabled = true;
@@ -403,7 +473,7 @@
 
                 selectedBoons.forEach(boon => {
                     const button = document.createElement('button');
-                    button.className = `bg-gray-700 rounded-lg px-4 py-3 btn-glow active:bg-gray-600 w-full ${boon.color}`;
+                    button.className = `bg-gray-700 rounded-lg px-4 py-3 btn-glow active:bg-gray-600 w-full whitespace-normal leading-tight ${boon.color}`;
                     button.textContent = boon.text;
                     button.addEventListener('click', (e) => {
                         e.stopPropagation(); 
@@ -428,7 +498,7 @@
 
                 selectedSacrifices.forEach(sacrifice => {
                     const button = document.createElement('button');
-                    button.className = 'bg-gray-700 rounded-lg px-4 py-3 btn-glow active:bg-gray-600 w-full';
+                    button.className = 'bg-gray-700 rounded-lg px-4 py-3 btn-glow active:bg-gray-600 w-full whitespace-normal leading-tight';
                     button.textContent = sacrifice;
                     button.addEventListener('click', (e) => {
                         e.stopPropagation(); 
@@ -456,7 +526,7 @@
                     }
 
                     itemDiv.innerHTML = `
-                        <span>${item.name} (${itemOwned})</span>
+                        <span class="whitespace-normal">${item.name} (${itemOwned})</span>
                         ${buttonHtml}
                     `;
                     shopItemsContainer.appendChild(itemDiv);
@@ -567,7 +637,7 @@
                 const options = equipmentOptions[slotType];
                 options.forEach(item => {
                     const itemButton = document.createElement('button');
-                    itemButton.className = 'bg-gray-700 rounded-lg px-4 py-3 btn-glow active:bg-gray-600 w-full text-left flex items-center';
+                    itemButton.className = 'bg-gray-700 rounded-lg px-4 py-3 btn-glow active:bg-gray-600 w-full text-left flex items-center whitespace-normal';
                     itemButton.innerHTML = `<span class="text-2xl w-10">${item.emoji}</span> <span>${item.name}</span>`;
                     itemButton.addEventListener('click', (e) => {
                         e.stopPropagation();
@@ -724,7 +794,7 @@
                     currentTranslateX = 0;
                     if (enemySlider) enemySlider.style.transform = `translateX(0px)`;
 
-                    const totalRevealTime = 1000; // Faster reveal
+                    const totalRevealTime = 1000;
                     const delayBetweenFades = totalRevealTime / enemySpans.length;
 
                     enemySpans.forEach((span, index) => {
@@ -808,7 +878,7 @@
                 let targetIndex = -1;
                 for (let i = 0; i < enemyWrappers.length; i++) {
                     const wrapper = enemyWrappers[i];
-                    if (wrapper.style.opacity === '0.4') continue; // Skip defeated enemies
+                    if (wrapper.style.opacity === '0.4') continue; 
                     const wrapperRect = wrapper.getBoundingClientRect();
                     if (coords.x >= wrapperRect.left && coords.x <= wrapperRect.right) {
                         targetIndex = i;
@@ -833,9 +903,64 @@
             };
 
             // --- BATTLE LOGIC ---
+
+            const playerTakesDamage = (damage) => {
+                const damageAbsorbed = Math.min(playerState.armor, damage);
+                playerState.armor -= damageAbsorbed;
+
+                const remainingDamage = damage - damageAbsorbed;
+                if (remainingDamage > 0) {
+                    playerState.health = Math.max(0, playerState.health - remainingDamage);
+                }
+
+                updatePlayerUI();
+                if (playerState.health <= 0) {
+                    logToBattleWindow("DEFEATED!");
+                    attackBtn.disabled = true;
+                }
+            };
+
+            const enemyAttackPhase = async () => {
+                if (playerState.health <= 0) return;
+                
+                attackBtn.disabled = true;
+                logToBattleWindow("--- Enemy Turn ---");
+                await delay(400);
+
+                const livingEnemies = currentEnemiesInBattle.filter(enemy => !enemy.isDefeated && !enemy.isGift);
+
+                for (const enemy of livingEnemies) {
+                    if (playerState.health <= 0) break;
+                    
+                    const enemyWrapper = enemy.ref;
+                    const enemyName = enemyData[enemy.emoji].name;
+                    const attacks = enemy.isStamped ? 3 : 1;
+                    
+                    enemyWrapper.classList.add('flip-animation');
+                    setTimeout(() => enemyWrapper.classList.remove('flip-animation'), 500);
+                    await delay(250);
+
+                    for (let i = 0; i < attacks; i++) {
+                         if (playerState.health <= 0) break;
+                         await delay(200);
+                         logToBattleWindow(`${enemyName} deals 1 damage.`);
+                         playerTakesDamage(1);
+                    }
+                     await delay(400);
+                }
+
+                if (playerState.health > 0) {
+                    logToBattleWindow("--- Player Turn ---");
+                    attackBtn.disabled = false;
+                }
+            };
+
             const endBattle = () => {
                 battleStarted = false;
                 currentEnemiesInBattle = [];
+                playerState.armor = playerState.maxArmor;
+                battleLogElements = []; 
+                sideWindowLeft.innerHTML = ''; 
 
                 enemyContainer.innerHTML = `
                     <div id="enemy-slider" class="absolute top-0 left-0 h-full bg-white/20 border-2 border-white rounded-lg pointer-events-none" style="transition: transform 0.2s ease-out;"></div>
@@ -872,48 +997,59 @@
             };
             
             attackBtn.addEventListener('click', () => {
-                if (!battleStarted) return;
+                if (!battleStarted || playerState.health <= 0 || attackBtn.disabled) return;
 
                 const targetEnemy = currentEnemiesInBattle[currentBattleTargetIndex];
                 if (!targetEnemy || targetEnemy.isDefeated) return;
+                
+                const enemyWrapper = targetEnemy.ref;
+                enemyWrapper.classList.add('shake-animation');
+                setTimeout(() => enemyWrapper.classList.remove('shake-animation'), 300);
+
                 const enemyName = enemyData[targetEnemy.emoji].name;
 
                 if (targetEnemy.isGift) {
                     targetEnemy.isDefeated = true;
                     targetEnemy.ref.style.opacity = '0.4';
                     playerState.armor += 1;
+                    playerState.maxArmor += 1;
                     updatePlayerUI();
                     logToBattleWindow(`Gift grants +1 Armor!`);
                     updateEnemyDisplay(targetEnemy);
-                    checkBattleEnd();
-                    return;
-                }
+                } else {
+                    const attackPower = parseInt(attackValueEl.textContent, 10);
+                    showDamageNumber(attackPower, enemyWrapper);
+                    targetEnemy.hp = Math.max(0, targetEnemy.hp - attackPower);
+                    logToBattleWindow(`Hit ${enemyName} for ${attackPower}.`);
 
-                const attackPower = parseInt(attackValueEl.textContent, 10);
-                targetEnemy.hp = Math.max(0, targetEnemy.hp - attackPower);
-                logToBattleWindow(`Hit ${enemyName} for ${attackPower}.`);
-
-                const healthBarFill = targetEnemy.ref.querySelector('.bg-red-600');
-                if (healthBarFill) {
-                    const healthPercentage = (targetEnemy.hp / targetEnemy.maxHp) * 100;
-                    healthBarFill.style.width = `${healthPercentage}%`;
-                }
-                
-                updateEnemyDisplay(targetEnemy);
-
-                if (targetEnemy.hp <= 0) {
-                    targetEnemy.isDefeated = true;
-                    targetEnemy.ref.style.opacity = '0.4'; 
-                    logToBattleWindow(`${enemyName} defeated!`);
-                    
-                    if (targetEnemy.isStamped) {
-                        playerState.killCount += 3;
-                    } else {
-                        playerState.killCount += 1;
+                    const healthBarFill = targetEnemy.ref.querySelector('.bg-red-600');
+                    if (healthBarFill) {
+                        const healthPercentage = (targetEnemy.hp / targetEnemy.maxHp) * 100;
+                        healthBarFill.style.width = `${healthPercentage}%`;
                     }
-                    updatePlayerUI();
+                    
+                    updateEnemyDisplay(targetEnemy);
 
+                    if (targetEnemy.hp <= 0) {
+                        targetEnemy.isDefeated = true;
+                        targetEnemy.ref.style.opacity = '0.4'; 
+                        logToBattleWindow(`${enemyName} defeated!`);
+                        
+                        if (targetEnemy.isStamped) {
+                            playerState.killCount += 3;
+                        } else {
+                            playerState.killCount += 1;
+                        }
+                        updatePlayerUI();
+                    }
+                }
+
+                const battleIsOver = currentEnemiesInBattle.every(e => e.isDefeated);
+    
+                if (battleIsOver) {
                     checkBattleEnd();
+                } else {
+                    enemyAttackPhase();
                 }
             });
 
@@ -926,6 +1062,14 @@
                 battleStarted = true;
                 
                 sideWindowLeft.innerHTML = ''; 
+                battleLogElements = []; 
+                for (let i = 0; i < 5; i++) {
+                    const p = document.createElement('p');
+                    p.className = 'text-xs whitespace-normal'; 
+                    sideWindowLeft.appendChild(p);
+                    battleLogElements.push(p);
+                }
+                logToBattleWindow("--- Battle Start ---");
                 
                 enemyContainer.removeEventListener('mousedown', dragStart);
                 enemyContainer.removeEventListener('touchstart', dragStart);
@@ -1004,7 +1148,7 @@
                 setTimeout(() => positionBattleSelector(firstNewEnemyWrapper), 50);
 
                 enemyContainer.addEventListener('mousedown', battleDragStart);
-                enemyContainer.addEventListener('touchstart', battleDragStart);
+                enemyContainer.addEventListener('touchstart', dragStart);
                 
                 const shopModal = modalMap.shopBtn.modal;
                 if (!shopModal.classList.contains('hidden')) {
@@ -1033,4 +1177,3 @@
 
 </body>
 </html>
-
