@@ -109,29 +109,29 @@
                             <span id="armor-value" class="font-bold ml-1 w-6 text-left">3</span>
                         </div>
                         <div id="player-status-effects" class="flex items-center text-base space-x-1">
-                            <div class="relative">
+                            <div class="relative status-effect-icon hidden" data-effect="☠️">
                                 <span>☠️</span>
-                                <span class="absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-gray-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none">2</span>
+                                <span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-gray-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span>
                             </div>
-                            <div class="relative">
+                            <div class="relative status-effect-icon hidden" data-effect="🕯️">
                                 <span>🕯️</span>
-                                <span class="absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-gray-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none">2</span>
+                                <span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-gray-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span>
                             </div>
-                            <div class="relative">
+                            <div class="relative status-effect-icon hidden" data-effect="🐌">
                                 <span>🐌</span>
-                                <span class="absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-gray-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none">2</span>
+                                <span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-gray-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span>
                             </div>
-                            <div class="relative">
+                            <div class="relative status-effect-icon hidden" data-effect="❇️">
                                 <span>❇️</span>
-                                <span class="absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-gray-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none">2</span>
+                                <span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-gray-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span>
                             </div>
-                            <div class="relative">
+                            <div class="relative status-effect-icon hidden" data-effect="🌟">
                                 <span>🌟</span>
-                                <span class="absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-gray-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none">2</span>
+                                <span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-gray-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span>
                             </div>
-                            <div class="relative">
+                            <div class="relative status-effect-icon hidden" data-effect="⚡">
                                 <span>⚡</span>
-                                <span class="absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-gray-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none">2</span>
+                                <span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-gray-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span>
                             </div>
                         </div>
                     </div>
@@ -406,7 +406,8 @@
                     cross: 0,
                     fairy: 0,
                     moonstone: 3, 
-                }
+                },
+                statusEffects: { '☠️': 0, '🕯️': 0, '🐌': 0, '❇️': 0, '🌟': 0, '⚡': 0 }
             };
             let waveCount = 1;
             let battleStarted = false;
@@ -463,6 +464,20 @@
             };
 
             // --- UI Update Logic ---
+            const updateStatusEffectsUI = () => {
+                const statusEffectIcons = document.querySelectorAll('.status-effect-icon');
+                statusEffectIcons.forEach(icon => {
+                    const effect = icon.dataset.effect;
+                    const stacks = playerState.statusEffects[effect];
+                    if (stacks > 0) {
+                        icon.classList.remove('hidden');
+                        icon.querySelector('.stack-counter').textContent = stacks;
+                    } else {
+                        icon.classList.add('hidden');
+                    }
+                });
+            };
+
             const updatePlayerUI = () => {
                 goldValueEl.textContent = playerState.gold;
                 moonstoneValueEl.textContent = playerState.moonstones;
@@ -677,8 +692,30 @@
             // --- Equipment Reel Logic ---
             equipSlots.forEach(slot => {
                 slot.addEventListener('click', () => {
-                    if (battleStarted) return; 
+                    // --- BATTLE-ONLY LOGIC ---
+                    if (battleStarted) {
+                        const symbol = slot.dataset.symbol;
+                        let uses = parseInt(slot.dataset.uses || '0', 10);
+                        const playerBuffs = ['❇️', '🌟', '⚡'];
 
+                        if (playerBuffs.includes(symbol) && uses > 0) {
+                            uses--;
+                            slot.dataset.uses = uses;
+                            const counterSpan = slot.querySelector('.text-shadow');
+                            if (counterSpan) {
+                                counterSpan.textContent = uses;
+                            }
+                            if (uses <= 0) {
+                                slot.style.opacity = '0.5'; 
+                            }
+                            playerState.statusEffects[symbol] = 1;
+                            updateStatusEffectsUI();
+                            logToBattleWindow(`Player gained ${symbolDescriptions[symbol].title}.`);
+                        }
+                        return; 
+                    }
+                    
+                    // --- PRE-BATTLE LOGIC ---
                     const symbol = slot.dataset.symbol;
                     if (symbol) {
                         const info = symbolDescriptions[symbol];
@@ -1043,6 +1080,15 @@
                     logToBattleWindow(`player takes ${damage} damage.`);
                     playerTakesDamage(damage);
                     
+                    // Apply enemy special debuffs
+                    const enemyInfo = enemyData[enemy.emoji];
+                    const enemyDebuffs = ['☠️', '🕯️', '🐌'];
+                    if (enemyInfo.special && enemyDebuffs.includes(enemyInfo.special)) {
+                        playerState.statusEffects[enemyInfo.special] = 1; 
+                        updateStatusEffectsUI();
+                        logToBattleWindow(`Player afflicted by ${enemyInfo.name}'s ${symbolDescriptions[enemyInfo.special].title}.`);
+                    }
+
                     await delay(400);
                 }
 
@@ -1057,6 +1103,8 @@
                 playerState.armor = playerState.maxArmor;
                 battleLogElements = []; 
                 sideWindowLeft.innerHTML = ''; 
+                playerState.statusEffects = { '☠️': 0, '🕯️': 0, '🐌': 0, '❇️': 0, '🌟': 0, '⚡': 0 };
+                updateStatusEffectsUI();
 
                 waveCount++;
                 updateWaveCounterUI();
@@ -1271,8 +1319,10 @@
             reshuffleEnemies(true);
             updatePlayerUI(); 
             updateWaveCounterUI();
+            updateStatusEffectsUI();
         });
     </script>
 
 </body>
 </html>
+
