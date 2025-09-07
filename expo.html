@@ -301,11 +301,24 @@
                 { id: 'fairy', name: '🧚🏼 FAIRY', cost: 40 },
                 { id: 'moonstone', name: '🌒 MOONSTONE', cost: 50 },
             ];
-             const enemyData = {
-                '🐲': { name: 'Dragon' }, '👹': { name: 'Oni' }, '👻': { name: 'Ghost' },
-                '💀': { name: 'Skeleton' }, '🕷️': { name: 'Spider' }, '🐍': { name: 'Serpent' },
-                '🧟': { name: 'Zombie' }, '🧛': { name: 'Vampire' }, '👽': { name: 'Alien' },
-                '🤖': { name: 'Robot' }, '🦂': { name: 'Scorpion' }, '👺': { name: 'Tengu' },
+            const enemyData = {
+                '💀': { name: 'Skeleton' },
+                '🐺': { name: 'Wolf' },
+                '🐸': { name: 'Frog', special: '☠️' },
+                '🦄': { name: 'Unicorn', special: '❇️' },
+                '🐲': { name: 'Dragon' },
+                '🐍': { name: 'Serpent', special: '☠️' },
+                '🐀': { name: 'Rat' },
+                '🐦‍⬛': { name: 'Crow', special: '🕯️' },
+                '🕷️': { name: 'Spider', special: '☠️' },
+                '🦂': { name: 'Scorpion' },
+                '🦟': { name: 'Mosquito', special: '🐌' },
+                '🧟': { name: 'Zombie', special: '🐌' },
+                '🧞': { name: 'Genie', special: '❇️' },
+                '🧌': { name: 'Troll' },
+                '🥷': { name: 'Ninja', special: '🫳' },
+                '🧛': { name: 'Vampire', special: '🕯️' },
+                '🦹': { name: 'Supervillain' },
                 '🎁': { name: 'Gift' }
             };
             const equipmentOptions = {
@@ -435,11 +448,22 @@
 
             const updateEnemyDisplay = (enemy) => {
                 if (!enemy) return;
-                const name = enemyData[enemy.emoji]?.name || 'Unknown';
+                const data = enemyData[enemy.emoji];
+                const name = data?.name || 'Unknown';
+                
+                let statsHtml = '<div class="h-4"></div>'; // Placeholder for spacing when no stats
+                if (!enemy.isGift) {
+                    const hp = enemy.isStamped ? '20' : '10';
+                    const dmg = enemy.isStamped ? '2' : '1';
+                    const specialIcon = data.special ? ` ${data.special}` : '';
+                    
+                    statsHtml = `<div class="text-sm text-gray-300 mt-1">❤️ ${hp} 💥 ${dmg}${specialIcon}</div>`;
+                }
+
                 battleDetailsWindow.innerHTML = `
-                    <div class="min-h-[54px] flex flex-col justify-center items-center">
+                    <div class="h-[60px] flex flex-col justify-center items-center">
                         <div class="text-xl font-bold">${enemy.emoji} ${name}</div>
-                        ${!enemy.isGift ? `<div class="text-base mt-1">${enemy.hp} / ${enemy.maxHp}</div>` : ''}
+                        ${statsHtml}
                     </div>
                 `;
             };
@@ -452,7 +476,7 @@
                         ${descriptions.map(d => `<p>${d}</p>`).join('')}
                     </div>
                 `;
-            }
+            };
 
             const displaySpellInfo = (spellKey) => {
                 const spell = spellDescriptions[spellKey];
@@ -895,7 +919,7 @@
                 document.addEventListener('mousemove', battleDragMove);
                 document.addEventListener('touchmove', battleDragMove, { passive: false });
                 document.addEventListener('mouseup', battleDragEnd);
-                document.addEventListener('touchend', battleDragEnd);
+                document.addEventListener('touchend', dragEnd);
             };
 
             const battleDragMove = (e) => {
@@ -972,7 +996,9 @@
                     
                     enemyWrapper.classList.add('flip-animation');
                     setTimeout(() => enemyWrapper.classList.remove('flip-animation'), 500);
-                    await delay(250);
+                    
+                    // Wait for animation to complete before logging and dealing damage
+                    await delay(500); 
 
                     logToBattleWindow(`player takes ${damage} damage.`);
                     playerTakesDamage(damage);
@@ -1026,7 +1052,7 @@
                 }
             };
             
-            attackBtn.addEventListener('click', () => {
+            attackBtn.addEventListener('click', async () => {
                 if (!battleStarted || playerState.health <= 0 || attackBtn.disabled) return;
 
                 const targetEnemy = currentEnemiesInBattle[currentBattleTargetIndex];
@@ -1079,7 +1105,7 @@
                 if (battleIsOver) {
                     checkBattleEnd();
                 } else {
-                    enemyAttackPhase();
+                    await enemyAttackPhase();
                 }
             });
 
