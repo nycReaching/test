@@ -96,6 +96,10 @@
             <div class="flex justify-between items-start gap-2 mb-3">
                 <!-- Left Column -->
                 <div class="w-2/3 space-y-2 pt-1">
+                    <!-- XP/Magic Bar -->
+                    <div class="bg-gray-700 rounded-full h-5 w-full border-2 border-gray-600">
+                        <div id="xp-bar" class="bg-teal-800 h-full rounded-full progress-bar-fill" style="width: 100%"></div>
+                    </div>
                     <!-- HP/Armor -->
                     <div class="flex items-center h-5 text-xl">
                         <span class="text-red-500">❤️</span>
@@ -103,24 +107,10 @@
                         <span class="ml-2">🛡️</span>
                         <span id="armor-value" class="font-bold ml-1 w-6 text-left">3</span>
                     </div>
-                    <!-- XP/Magic Bar -->
-                    <div class="bg-gray-700 rounded-full h-5 w-full border-2 border-gray-600">
-                        <div id="xp-bar" class="bg-teal-800 h-full rounded-full progress-bar-fill" style="width: 100%"></div>
-                    </div>
                 </div>
 
                 <!-- Right Column (2x2 Grid) -->
                 <div class="grid grid-cols-2 gap-x-1 gap-y-2 text-base flex-shrink-0">
-                    <!-- Kill Count -->
-                    <div class="flex items-center justify-end gap-1">
-                        <span class="text-lg">⚔️</span>
-                        <span id="kill-count-value" class="font-bold w-6 text-left">0</span>
-                    </div>
-                    <!-- Moonstone -->
-                    <div class="flex items-center justify-end gap-1">
-                        <span class="text-lg">🌒</span>
-                        <span id="moonstone-value" class="font-bold w-6 text-left">3</span>
-                    </div>
                     <!-- Level -->
                     <div class="flex items-center justify-end gap-1">
                         <span class="text-lg">📈</span>
@@ -131,6 +121,16 @@
                         <span class="text-lg">💰</span>
                         <span id="gold-value" class="font-bold w-6 text-left">99</span>
                     </div>
+                    <!-- Kill Count -->
+                    <div class="flex items-center justify-end gap-1">
+                        <span class="text-lg">⚔️</span>
+                        <span id="kill-count-value" class="font-bold w-6 text-left">0</span>
+                    </div>
+                    <!-- Moonstone -->
+                    <div class="flex items-center justify-end gap-1">
+                        <span class="text-lg">🌒</span>
+                        <span id="moonstone-value" class="font-bold w-6 text-left">3</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -138,7 +138,7 @@
         <!-- Middle Section: Game Windows & Grid -->
         <div class="flex-grow flex flex-col my-4 gap-3">
             <!-- Large Window Above -->
-            <div id="battle-details-window" class="bg-gray-700/50 rounded-lg flex-grow flex items-center justify-center p-4 transition-all duration-300 text-center">
+            <div id="battle-details-window" class="bg-gray-700/50 rounded-lg h-[90px] flex items-center justify-center p-4 transition-all duration-300 text-center">
                 <button id="start-battle-btn" class="bg-green-600 active:bg-green-700 text-white font-bold text-lg py-3 px-10 rounded-lg shadow-lg transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">Start Battle</button>
             </div>
             
@@ -453,7 +453,7 @@
                 
                 let statsHtml = '<div class="h-4"></div>'; // Placeholder for spacing when no stats
                 if (!enemy.isGift) {
-                    const hp = enemy.isStamped ? '20' : '10';
+                    const hp = enemy.hp;
                     const dmg = enemy.isStamped ? '2' : '1';
                     const specialIcon = data.special ? ` ${data.special}` : '';
                     
@@ -461,7 +461,7 @@
                 }
 
                 battleDetailsWindow.innerHTML = `
-                    <div class="h-[60px] flex flex-col justify-center items-center">
+                    <div class="h-full flex flex-col justify-center items-center">
                         <div class="text-xl font-bold">${enemy.emoji} ${name}</div>
                         ${statsHtml}
                     </div>
@@ -1232,4 +1232,3 @@
 
 </body>
 </html>
-
