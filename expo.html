@@ -119,29 +119,29 @@
                             <span class="ml-2">🛡️</span>
                             <span id="armor-value" class="font-bold ml-1 w-6 text-left">3</span>
                         </div>
-                        <div id="player-status-effects" class="flex items-center text-base space-x-1">
-                            <div class="relative status-effect-icon hidden" data-effect="☠️">
-                                <span>☠️</span>
-                                <span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-gray-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span>
-                            </div>
-                            <div class="relative status-effect-icon hidden" data-effect="🕯️">
-                                <span>🕯️</span>
-                                <span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-gray-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span>
-                            </div>
-                            <div class="relative status-effect-icon hidden" data-effect="🐌">
-                                <span>🐌</span>
-                                <span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-gray-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span>
-                            </div>
-                            <div class="relative status-effect-icon hidden" data-effect="❇️">
-                                <span>❇️</span>
+                        <div id="player-status-effects" class="flex flex-row-reverse items-center text-base space-x-1 space-x-reverse">
+                            <div class="relative status-effect-icon hidden" data-effect="⚡">
+                                <span>⚡</span>
                                 <span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-gray-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span>
                             </div>
                             <div class="relative status-effect-icon hidden" data-effect="🌟">
                                 <span>🌟</span>
                                 <span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-gray-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span>
                             </div>
-                            <div class="relative status-effect-icon hidden" data-effect="⚡">
-                                <span>⚡</span>
+                             <div class="relative status-effect-icon hidden" data-effect="❇️">
+                                <span>❇️</span>
+                                <span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-gray-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span>
+                            </div>
+                            <div class="relative status-effect-icon hidden" data-effect="🐌">
+                                <span>🐌</span>
+                                <span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-gray-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span>
+                            </div>
+                            <div class="relative status-effect-icon hidden" data-effect="🕯️">
+                                <span>🕯️</span>
+                                <span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-gray-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span>
+                            </div>
+                            <div class="relative status-effect-icon hidden" data-effect="☠️">
+                                <span>☠️</span>
                                 <span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-gray-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span>
                             </div>
                         </div>
@@ -340,8 +340,8 @@
             // --- Game Data ---
             const shopItems = [
                 { id: 'tonic', name: '🍶 TONIC', cost: 5 },
-                { id: 'gem', name: '💎 GEM', cost: 25 },
                 { id: 'cross', name: '✝️ CROSS', cost: 15 },
+                { id: 'gem', name: '💎 GEM', cost: 25 },
                 { id: 'fairy', name: '🧚🏼 FAIRY', cost: 40 },
                 { id: 'moonstone', name: '🌒 MOONSTONE', cost: 50 },
             ];
@@ -442,21 +442,12 @@
             let currentBattleTargetIndex = 0;
             let currentEnemiesInBattle = [];
             let fortunePhase = 'sacrifice'; 
-            let battleLogElements = []; // To hold references to log <p> tags
             let selectedFortunes = [];
             let currentSacrifice = null;
             
             const delay = ms => new Promise(res => setTimeout(res, ms));
 
-            // --- Battle Log & Animations ---
-            const logToBattleWindow = (message) => {
-                if (battleLogElements.length === 0) return;
-                for (let i = battleLogElements.length - 1; i > 0; i--) {
-                    battleLogElements[i].textContent = battleLogElements[i - 1].textContent;
-                }
-                battleLogElements[0].textContent = message;
-            };
-
+            // --- Battle Animations ---
             const showDamageNumber = (damage, element) => {
                 const damageEl = document.createElement('div');
                 damageEl.textContent = damage;
@@ -485,9 +476,15 @@
                 statusEffectIcons.forEach(icon => {
                     const effect = icon.dataset.effect;
                     const stacks = playerState.statusEffects[effect];
+                    const wasHidden = icon.classList.contains('hidden');
+
                     if (stacks > 0) {
                         icon.classList.remove('hidden');
                         icon.querySelector('.stack-counter').textContent = stacks;
+                        if (wasHidden) { // Animate only when it first appears
+                            icon.classList.add('damage-flash-animation');
+                            setTimeout(() => icon.classList.remove('damage-flash-animation'), 400);
+                        }
                     } else {
                         icon.classList.add('hidden');
                     }
@@ -726,7 +723,6 @@
                             }
                             playerState.statusEffects[symbol] = 1;
                             updateStatusEffectsUI();
-                            logToBattleWindow(`Player gained ${symbolDescriptions[symbol].title}.`);
                         }
                         return; 
                     }
@@ -753,6 +749,7 @@
                     }
                 });
             });
+
             reelItems.forEach(item => {
                 item.addEventListener('click', () => {
                     if (activeEquipSlot) {
@@ -1093,7 +1090,6 @@
 
                 updatePlayerUI();
                 if (playerState.health <= 0) {
-                    logToBattleWindow("player defeated.");
                     attackBtn.disabled = true;
                 }
             };
@@ -1119,7 +1115,6 @@
                     // Wait for animation to complete before logging and dealing damage
                     await delay(500); 
 
-                    logToBattleWindow(`player takes ${damage} damage.`);
                     playerTakesDamage(damage);
                     
                     // Apply enemy special debuffs
@@ -1128,7 +1123,6 @@
                     if (enemyInfo.special && enemyDebuffs.includes(enemyInfo.special)) {
                         playerState.statusEffects[enemyInfo.special] = 1; 
                         updateStatusEffectsUI();
-                        logToBattleWindow(`Player afflicted by ${enemyInfo.name}'s ${symbolDescriptions[enemyInfo.special].title}.`);
                     }
 
                     await delay(400);
@@ -1143,7 +1137,6 @@
                 battleStarted = false;
                 currentEnemiesInBattle = [];
                 playerState.armor = playerState.maxArmor;
-                battleLogElements = []; 
                 sideWindowLeft.innerHTML = ''; 
                 playerState.statusEffects = { '☠️': 0, '🕯️': 0, '🐌': 0, '❇️': 0, '🌟': 0, '⚡': 0 };
                 updateStatusEffectsUI();
@@ -1180,7 +1173,6 @@
             const checkBattleEnd = () => {
                 const allEnemiesDefeated = currentEnemiesInBattle.every(enemy => enemy.isDefeated);
                 if (allEnemiesDefeated) {
-                    logToBattleWindow('battle won!');
                     setTimeout(endBattle, 1500); 
                 }
             };
@@ -1203,13 +1195,11 @@
                     playerState.armor += 1;
                     playerState.maxArmor += 1;
                     updatePlayerUI();
-                    logToBattleWindow(`gift grants +1 armor.`);
                     updateEnemyDisplay(targetEnemy);
                 } else {
                     const attackPower = parseInt(attackValueEl.textContent, 10);
                     showDamageNumber(attackPower, enemyWrapper);
                     targetEnemy.hp = Math.max(0, targetEnemy.hp - attackPower);
-                    logToBattleWindow(`${enemyName} takes ${attackPower} damage.`);
 
                     const healthBarFill = targetEnemy.ref.querySelector('.bg-red-600');
                     if (healthBarFill) {
@@ -1222,7 +1212,6 @@
                     if (targetEnemy.hp <= 0) {
                         targetEnemy.isDefeated = true;
                         targetEnemy.ref.style.opacity = '0.4'; 
-                        logToBattleWindow(`${enemyName} defeated.`);
                         
                         if (targetEnemy.isStamped) {
                             playerState.killCount += 3;
@@ -1251,13 +1240,6 @@
                 battleStarted = true;
                 
                 sideWindowLeft.innerHTML = ''; 
-                battleLogElements = []; 
-                for (let i = 0; i < 5; i++) {
-                    const p = document.createElement('p');
-                    p.className = 'text-xs whitespace-nowrap overflow-hidden text-ellipsis'; 
-                    sideWindowLeft.appendChild(p);
-                    battleLogElements.push(p);
-                }
                 
                 enemyContainer.removeEventListener('mousedown', dragStart);
                 enemyContainer.removeEventListener('touchstart', dragStart);
@@ -1367,3 +1349,5 @@
 
 </body>
 </html>
+
+
