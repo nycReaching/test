@@ -116,7 +116,26 @@
             50% { box-shadow: 0 0 25px rgba(250, 204, 21, 0.8); }
         }
         #battle-selector {
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             animation: selector-pulse 2s infinite ease-in-out;
+        }
+
+        /* --- NEW ANIMATIONS --- */
+        @keyframes fade-out-and-shrink {
+          to {
+            transform: scale(0.5);
+            opacity: 0;
+          }
+        }
+        .enemy-fade-out {
+          animation: fade-out-and-shrink 0.4s ease-out forwards;
+        }
+        .enemy-defeated {
+            transition: width 0.3s ease-out, padding 0.3s ease-out, margin 0.3s ease-out;
+            width: 0px !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            overflow: hidden;
         }
 
     </style>
@@ -126,41 +145,41 @@
     <!-- Mobile Screen Container -->
     <div id="game-container" class="w-full max-w-sm h-[80vh] max-h-[700px] bg-slate-800 rounded-3xl shadow-2xl p-4 flex flex-col justify-between relative overflow-hidden border-2 border-slate-700 transition-colors duration-500">
         <div id="screen-flash-overlay" class="screen-flash"></div>
-        <!-- Top Section: Meters and Icons -->
-        <div class="flex-shrink-0">
-            <div class="flex justify-between items-start gap-2 mb-3">
-                <!-- Left Column -->
-                <div class="w-2/3 space-y-2 pt-1">
-                    <!-- XP/Magic Bar -->
-                    <div class="bg-slate-700 rounded-full h-5 w-full border-2 border-slate-600 shadow-inner shadow-black/20">
-                        <div id="xp-bar" class="bg-fuchsia-500 h-full rounded-full progress-bar-fill" style="width: 100%; box-shadow: 0 0 10px rgba(217, 70, 239, 0.7);"></div>
-                    </div>
-                    <!-- HP/Armor & Buffs/Debuffs -->
-                    <div class="flex justify-between items-center h-5">
-                        <div class="flex items-center text-xl">
-                            <span class="text-red-500">❤️</span>
-                            <span id="health-value" class="font-bold ml-2 w-6 text-left">10</span>
-                            <span class="ml-2">🛡️</span>
-                            <span id="armor-value" class="font-bold ml-1 w-6 text-left">3</span>
-                        </div>
-                        <div id="player-status-effects" class="flex flex-row-reverse items-center text-base space-x-1 space-x-reverse">
-                             <!-- Status effect icons will be populated by JS -->
-                            <div class="relative status-effect-icon hidden" data-effect="⚡"><span>⚡</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-slate-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span></div>
-                            <div class="relative status-effect-icon hidden" data-effect="🌟"><span>🌟</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-slate-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span></div>
-                            <div class="relative status-effect-icon hidden" data-effect="❇️"><span>❇️</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-slate-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span></div>
-                            <div class="relative status-effect-icon hidden" data-effect="🐌"><span>🐌</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-slate-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span></div>
-                            <div class="relative status-effect-icon hidden" data-effect="🕯️"><span>🕯️</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-slate-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span></div>
-                            <div class="relative status-effect-icon hidden" data-effect="☠️"><span>☠️</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-slate-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span></div>
-                        </div>
+        
+        <!-- Top Section: Meters and Icons (REVISED LAYOUT) -->
+        <div class="flex-shrink-0 space-y-2 mb-3">
+            <!-- Combined Magic/Kill bar -->
+            <div class="flex w-full gap-2">
+                <div class="w-1/2 bg-slate-700 rounded-full h-5 border-2 border-slate-600 shadow-inner shadow-black/20">
+                    <div id="magic-bar" class="bg-fuchsia-500 h-full rounded-full progress-bar-fill" style="width: 100%; box-shadow: 0 0 10px rgba(217, 70, 239, 0.7);"></div>
+                </div>
+                <div class="w-1/2 bg-slate-700 rounded-full h-5 border-2 border-slate-600 shadow-inner shadow-black/20">
+                    <div id="kill-bar" class="bg-rose-600 h-full rounded-full progress-bar-fill" style="width: 0%; box-shadow: 0 0 10px rgba(225, 29, 72, 0.7);"></div>
+                </div>
+            </div>
+    
+            <!-- Player Stats and Currency -->
+            <div class="flex justify-between items-center h-5">
+                <!-- HP/Armor & Status -->
+                <div class="flex items-center text-xl">
+                     <span class="text-red-500">❤️</span>
+                    <span id="health-value" class="font-bold ml-2 w-6 text-left">10</span>
+                    <span class="ml-2">🛡️</span>
+                    <span id="armor-value" class="font-bold ml-1 w-6 text-left">3</span>
+                     <div id="player-status-effects" class="flex flex-row-reverse items-center text-base space-x-1 space-x-reverse ml-4">
+                        <div class="relative status-effect-icon hidden" data-effect="⚡"><span>⚡</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-slate-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span></div>
+                        <div class="relative status-effect-icon hidden" data-effect="🌟"><span>🌟</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-slate-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span></div>
+                        <div class="relative status-effect-icon hidden" data-effect="❇️"><span>❇️</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-slate-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span></div>
+                        <div class="relative status-effect-icon hidden" data-effect="🐌"><span>🐌</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-slate-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span></div>
+                        <div class="relative status-effect-icon hidden" data-effect="🕯️"><span>🕯️</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-slate-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span></div>
+                        <div class="relative status-effect-icon hidden" data-effect="☠️"><span>☠️</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-slate-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span></div>
                     </div>
                 </div>
-
-                <!-- Right Column (2x2 Grid) -->
-                <div class="grid grid-cols-2 gap-x-1 gap-y-2 text-base flex-shrink-0">
-                    <div class="flex items-center justify-end gap-1"><span class="text-lg">📈</span><span id="level-value" class="font-bold w-6 text-left">1</span></div>
-                    <div class="flex items-center justify-end gap-1"><span class="text-lg">💰</span><span id="gold-value" class="font-bold w-6 text-left">99</span></div>
-                    <div class="flex items-center justify-end gap-1"><span class="text-lg">⚔️</span><span id="kill-count-value" class="font-bold w-6 text-left">0</span></div>
-                    <div class="flex items-center justify-end gap-1"><span class="text-lg">🌒</span><span id="moonstone-value" class="font-bold w-6 text-left">3</span></div>
+    
+                <!-- Currency -->
+                <div class="flex items-center gap-4 text-base">
+                    <div class="flex items-center justify-end gap-1"><span class="text-lg">💰</span><span id="gold-value" class="font-bold w-8 text-left">99</span></div>
+                    <div class="flex items-center justify-end gap-1"><span class="text-lg">🌒</span><span id="moonstone-value" class="font-bold w-8 text-left">3</span></div>
                 </div>
             </div>
         </div>
@@ -296,11 +315,11 @@
             const frostbiteBtn = document.getElementById('frostbiteBtn');
             const armorheartBtn = document.getElementById('armorheartBtn');
             const fortunesContent = document.getElementById('fortunes-content');
-            const killCountValueEl = document.getElementById('kill-count-value');
             const attackBtn = document.getElementById('attackBtn');
             const attackValueEl = document.getElementById('attack-value');
             const armorValueEl = document.getElementById('armor-value');
             const healthValueEl = document.getElementById('health-value');
+            const killBarEl = document.getElementById('kill-bar'); // New kill bar element
             
             const modalMap = {
                 fortunesBtn: { modal: document.getElementById('fortunesModal'), button: document.getElementById('fortunesBtn') },
@@ -380,7 +399,7 @@
                 setTimeout(() => { damageEl.remove(); }, 1000);
             };
 
-            // --- UI Update Logic (Unchanged) ---
+            // --- UI Update Logic (MODIFIED) ---
             const updateStatusEffectsUI = () => {
                 const statusEffectIcons = document.querySelectorAll('.status-effect-icon');
                 statusEffectIcons.forEach(icon => {
@@ -403,9 +422,13 @@
                 goldValueEl.textContent = playerState.gold;
                 moonstoneValueEl.textContent = playerState.moonstones;
                 reshuffleCounter.textContent = playerState.rerolls;
-                killCountValueEl.textContent = playerState.killCount;
                 armorValueEl.textContent = playerState.armor;
                 healthValueEl.textContent = playerState.health;
+
+                // Update new kill bar
+                const killPercentage = Math.min((playerState.killCount / 10) * 100, 100);
+                killBarEl.style.width = `${killPercentage}%`;
+                
                 if (playerState.rerolls <= 0 || battleStarted) {
                     reshuffleBtn.disabled = true;
                     reshuffleBtn.classList.add('opacity-50', 'cursor-not-allowed');
@@ -446,7 +469,7 @@
                 displayInfoInSideWindow(spell.title, spell.desc1, spell.desc2);
             };
 
-            // --- Fortunes Modal Logic (Unchanged logic, updated styling) ---
+            // --- Fortunes Modal Logic ---
             const showFortunes = () => {
                 fortunePhase = 'fortune';
                 fortunesContent.innerHTML = ''; 
@@ -512,7 +535,7 @@
                 }
             };
 
-            // --- Shop Logic (Unchanged logic, updated styling) ---
+            // --- Shop Logic ---
             const renderShop = () => {
                 shopItemsContainer.innerHTML = '';
                 shopItems.forEach(item => {
@@ -548,7 +571,7 @@
                 }
             });
 
-            // --- Modal, Equipment & Build Logic (Unchanged) ---
+            // --- Modal, Equipment & Build Logic ---
             const openModal = (modalToOpen) => {
                 if (!modalToOpen) return;
                 if (modalToOpen.id === 'shopModal') renderShop();
@@ -648,7 +671,7 @@
             });
             equipmentChoiceModal.addEventListener('click', (e) => { if (e.target === equipmentChoiceModal) equipmentChoiceModal.classList.add('hidden'); });
 
-            // --- Enemy Slider & Reshuffle Logic (Unchanged) ---
+            // --- Enemy Slider & Reshuffle Logic ---
             const calculateSliderDimensions = () => {
                 if(battleStarted) return {};
                 const containerWidth = enemyContainer.offsetWidth;
@@ -753,11 +776,8 @@
                     e.stopPropagation();
                     openModal(item.modal);
                 });
-                // Add backdrop click listener to close
                 item.modal.addEventListener('click', (e) => {
-                    if (e.target === item.modal) {
-                        closeModal(item.modal);
-                    }
+                    if (e.target === item.modal) closeModal(item.modal);
                 });
             });
 
@@ -773,24 +793,24 @@
                  battleSelector.style.transform = `translate(${leftOffset}px, ${topOffset}px)`;
             };
             
-            // --- Battle Mode Interaction (Unchanged) ---
+            // --- Battle Mode Interaction (Tappable/Slidable) ---
             const battleDragStart = (e) => {
                 const coords = getEventCoords(e); startX = coords.x; startY = coords.y; dragStartTime = Date.now(); isDragging = false; 
                 document.addEventListener('mousemove', battleDragMove);
                 document.addEventListener('touchmove', battleDragMove, { passive: false });
                 document.addEventListener('mouseup', battleDragEnd);
-                document.addEventListener('touchend', dragEnd);
+                document.addEventListener('touchend', battleDragEnd);
             };
             const battleDragMove = (e) => {
                 const coords = getEventCoords(e);
                 if (!isDragging && Math.abs(coords.x - startX) > 10) isDragging = true;
                 if (!isDragging) return;
                 e.preventDefault();
-                const enemyWrappers = Array.from(enemyContainer.querySelectorAll('div.relative'));
+                const enemyWrappers = currentEnemiesInBattle.map(e => e.ref);
                 let targetIndex = -1;
                 for (let i = 0; i < enemyWrappers.length; i++) {
                     const wrapper = enemyWrappers[i];
-                    if (wrapper.style.opacity === '0.4') continue; 
+                    if (currentEnemiesInBattle[i].isDefeated) continue;
                     const wrapperRect = wrapper.getBoundingClientRect();
                     if (coords.x >= wrapperRect.left && coords.x <= wrapperRect.right) { targetIndex = i; break; }
                 }
@@ -808,9 +828,8 @@
                 setTimeout(() => { isDragging = false; }, 50);
             };
 
-            // --- BATTLE LOGIC ---
+            // --- BATTLE LOGIC (MODIFIED) ---
 
-            // **MODIFIED** playerTakesDamage to add low health warning
             const playerTakesDamage = (damage) => {
                 const damageAbsorbed = Math.min(playerState.armor, damage);
                 if (damageAbsorbed > 0) {
@@ -824,15 +843,12 @@
                     healthValueEl.classList.add('damage-flash-animation');
                     setTimeout(() => healthValueEl.classList.remove('damage-flash-animation'), 400);
                 }
-
-                // Low health visual feedback
                 if (playerState.health <= 5 && playerState.health > 0) {
                     gameContainer.classList.add('border-pulse-animation', 'border-red-500');
                 } else {
                     gameContainer.classList.remove('border-pulse-animation', 'border-red-500');
-                    gameContainer.style.borderColor = ''; // Revert to stylesheet color
+                    gameContainer.style.borderColor = '';
                 }
-
                 updatePlayerUI();
                 if (playerState.health <= 0) {
                     attackBtn.disabled = true;
@@ -878,6 +894,58 @@
             };
             const checkBattleEnd = () => { if (currentEnemiesInBattle.every(enemy => enemy.isDefeated)) setTimeout(endBattle, 1500); };
             
+            // --- NEW: Helper function to find next target ---
+            const findNextTarget = (startIndex) => {
+                const numEnemies = currentEnemiesInBattle.length;
+                if (currentEnemiesInBattle.every(e => e.isDefeated)) {
+                    return -1;
+                }
+                let nextIndex = startIndex;
+                do {
+                    nextIndex = (nextIndex + 1) % numEnemies;
+                } while (currentEnemiesInBattle[nextIndex].isDefeated);
+                return nextIndex;
+            };
+
+            // --- NEW: Helper function to handle enemy defeat ---
+            const handleEnemyDefeat = (defeatedIndex) => {
+                const enemy = currentEnemiesInBattle[defeatedIndex];
+                if (!enemy || enemy.isDefeated) return;
+
+                enemy.isDefeated = true;
+                const enemyWrapper = enemy.ref;
+                enemyWrapper.style.pointerEvents = 'none';
+                enemyWrapper.classList.add('enemy-fade-out'); // Animation takes 0.4s
+
+                if (enemy.isGift) {
+                    playerState.armor += 1;
+                    playerState.maxArmor += 1;
+                } else {
+                    playerState.killCount += enemy.isStamped ? 3 : 1;
+                }
+                updatePlayerUI();
+                
+                // Find the next target right away
+                const nextTargetIndex = findNextTarget(defeatedIndex);
+
+                // After the fade animation is complete...
+                setTimeout(() => {
+                    enemyWrapper.classList.add('enemy-defeated'); // Start the collapse transition
+                    
+                    // As the collapse starts, move the selector to the new target
+                    if (nextTargetIndex !== -1) {
+                        currentBattleTargetIndex = nextTargetIndex;
+                        const nextTargetWrapper = currentEnemiesInBattle[nextTargetIndex].ref;
+                        positionBattleSelector(nextTargetWrapper);
+                        updateEnemyDisplay(currentEnemiesInBattle[nextTargetIndex]);
+                    } else {
+                        battleSelector.classList.add('hidden');
+                    }
+                }, 400); // Wait for the fade animation to finish
+
+                checkBattleEnd();
+            };
+
             attackBtn.addEventListener('click', async () => {
                 if (!battleStarted || playerState.health <= 0 || attackBtn.disabled) return;
                 const targetEnemy = currentEnemiesInBattle[currentBattleTargetIndex];
@@ -885,9 +953,9 @@
                 const enemyWrapper = targetEnemy.ref;
                 enemyWrapper.classList.add('shake-animation');
                 setTimeout(() => enemyWrapper.classList.remove('shake-animation'), 300);
+
                 if (targetEnemy.isGift) {
-                    targetEnemy.isDefeated = true; enemyWrapper.style.opacity = '0.4'; playerState.armor += 1; playerState.maxArmor += 1;
-                    updatePlayerUI(); updateEnemyDisplay(targetEnemy);
+                    handleEnemyDefeat(currentBattleTargetIndex);
                 } else {
                     const attackPower = parseInt(attackValueEl.textContent, 10);
                     showDamageNumber(attackPower, enemyWrapper);
@@ -896,26 +964,22 @@
                     if (healthBarFill) healthBarFill.style.width = `${(targetEnemy.hp / targetEnemy.maxHp) * 100}%`;
                     updateEnemyDisplay(targetEnemy);
                     if (targetEnemy.hp <= 0) {
-                        targetEnemy.isDefeated = true; enemyWrapper.style.opacity = '0.4'; 
-                        playerState.killCount += targetEnemy.isStamped ? 3 : 1;
-                        updatePlayerUI();
+                        handleEnemyDefeat(currentBattleTargetIndex);
                     }
                 }
-                if (currentEnemiesInBattle.every(e => e.isDefeated)) checkBattleEnd();
-                else await enemyAttackPhase();
+
+                if (!currentEnemiesInBattle.every(e => e.isDefeated)) {
+                    await enemyAttackPhase();
+                }
             });
 
-            // **MODIFIED** startBattle to add screen flash
             const startBattle = () => {
                 if (battleStarted || isReshuffling) return;
-
-                // Screen flash visual feedback
                 const flashOverlay = document.getElementById('screen-flash-overlay');
                 if (flashOverlay) {
                     flashOverlay.classList.add('flash-animation');
                     setTimeout(() => flashOverlay.classList.remove('flash-animation'), 300);
                 }
-
                 const { iconWidth } = calculateSliderDimensions();
                 const startIndex = Math.round(currentTranslateX / iconWidth);
                 battleStarted = true; sideWindowLeft.innerHTML = ''; 
@@ -954,13 +1018,14 @@
                     });
                     enemyContainer.appendChild(enemyWrapper);
                 });
-                const firstNewEnemyWrapper = enemyContainer.querySelector('div.relative');
+                const firstLivingEnemyIndex = currentEnemiesInBattle.findIndex(e => !e.isDefeated);
+                const firstEnemyWrapper = currentEnemiesInBattle[firstLivingEnemyIndex].ref;
                 battleSelector.classList.remove('hidden');
-                currentBattleTargetIndex = 0;
-                updateEnemyDisplay(currentEnemiesInBattle[0]);
-                setTimeout(() => positionBattleSelector(firstNewEnemyWrapper), 50);
+                currentBattleTargetIndex = firstLivingEnemyIndex;
+                updateEnemyDisplay(currentEnemiesInBattle[firstLivingEnemyIndex]);
+                setTimeout(() => positionBattleSelector(firstEnemyWrapper), 50);
                 enemyContainer.addEventListener('mousedown', battleDragStart);
-                enemyContainer.addEventListener('touchstart', dragStart);
+                enemyContainer.addEventListener('touchstart', battleDragStart);
                 if (!modalMap.shopBtn.modal.classList.contains('hidden')) renderShop();
             };
             
@@ -980,3 +1045,4 @@
 
 </body>
 </html>
+
