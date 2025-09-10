@@ -137,6 +137,23 @@
             margin: 0 !important;
             overflow: hidden;
         }
+        @keyframes pulse-orange {
+            50% {
+                background-color: #f97316; /* orange-500 */
+                box-shadow: 0 0 20px rgba(249, 115, 22, 0.9);
+            }
+        }
+        .pulse-orange-animation {
+            animation: pulse-orange 1.5s infinite ease-in-out;
+        }
+        @keyframes glow-orange-text {
+            50% {
+                filter: drop-shadow(0 0 8px #f97316);
+            }
+        }
+        .glow-orange-text-animation {
+             animation: glow-orange-text 1.5s infinite ease-in-out;
+        }
 
     </style>
 </head>
@@ -151,10 +168,10 @@
             <!-- Combined Magic/Kill bar -->
             <div class="flex w-full gap-2">
                 <div class="w-1/2 bg-slate-700 rounded-full h-5 border-2 border-slate-600 shadow-inner shadow-black/20">
-                    <div id="magic-bar" class="bg-fuchsia-500 h-full rounded-full progress-bar-fill" style="width: 100%; box-shadow: 0 0 10px rgba(217, 70, 239, 0.7);"></div>
+                    <div id="magic-bar" class="bg-cyan-500 h-full rounded-full progress-bar-fill" style="width: 100%; box-shadow: 0 0 10px rgba(6, 182, 212, 0.7);"></div>
                 </div>
                 <div class="w-1/2 bg-slate-700 rounded-full h-5 border-2 border-slate-600 shadow-inner shadow-black/20">
-                    <div id="kill-bar" class="bg-rose-600 h-full rounded-full progress-bar-fill" style="width: 0%; box-shadow: 0 0 10px rgba(225, 29, 72, 0.7);"></div>
+                    <div id="kill-bar" class="bg-red-800 h-full rounded-full progress-bar-fill" style="width: 0%; box-shadow: 0 0 10px rgba(153, 27, 27, 0.7);"></div>
                 </div>
             </div>
     
@@ -162,7 +179,7 @@
             <div class="flex justify-between items-center h-5">
                 <!-- HP/Armor & Status -->
                 <div class="flex items-center text-xl">
-                     <span class="text-red-500">❤️</span>
+                     <span id="health-icon" class="text-red-500 cursor-pointer transition-transform duration-200">❤️</span>
                     <span id="health-value" class="font-bold ml-2 w-6 text-left">10</span>
                     <span class="ml-2">🛡️</span>
                     <span id="armor-value" class="font-bold ml-1 w-6 text-left">3</span>
@@ -319,7 +336,10 @@
             const attackValueEl = document.getElementById('attack-value');
             const armorValueEl = document.getElementById('armor-value');
             const healthValueEl = document.getElementById('health-value');
-            const killBarEl = document.getElementById('kill-bar'); // New kill bar element
+            const killBarEl = document.getElementById('kill-bar');
+            const healthIconEl = document.getElementById('health-icon');
+            const critBtn = document.getElementById('critBtn');
+            const critChanceEl = document.getElementById('crit-chance');
             
             const modalMap = {
                 fortunesBtn: { modal: document.getElementById('fortunesModal'), button: document.getElementById('fortunesBtn') },
@@ -357,10 +377,17 @@
                 { text: 'Efficient Magic', color: 'text-sky-400' },{ text: 'Bartering Edge', color: 'text-sky-400' },{ text: 'Archer\'s Edge', color: 'text-amber-400' },{ text: 'Enchantment', color: 'text-amber-400' },{ text: 'Battle Grace', color: 'text-amber-400' },{ text: 'Prolonged Torment', color: 'text-pink-400' },{ text: 'Thief Strike', color: 'text-pink-400' },{ text: 'Toxic Decay', color: 'text-pink-400' }
             ];
 
-            // --- State (Unchanged) ---
+            // --- State (MODIFIED) ---
             let playerState = {
-                gold: 99, moonstones: 3, rerolls: 5, killCount: 0, health: 10, armor: 3, maxArmor: 3, equipment: { weapon: null, armor: null, ring: null }, inventory: { tonic: 0, gem: 0, cross: 0, fairy: 0, moonstone: 3, }, statusEffects: { '☠️': 0, '🕯️': 0, '🐌': 0, '❇️': 0, '🌟': 0, '⚡': 0 }
+                gold: 99, moonstones: 3, rerolls: 5, killCount: 0, 
+                maxHealth: 10, health: 10, armor: 3, maxArmor: 3, 
+                baseCritChance: 10,
+                equipment: { weapon: null, armor: null, ring: null }, 
+                inventory: { tonic: 0, gem: 0, cross: 0, fairy: 0, moonstone: 3, }, 
+                statusEffects: { '☠️': 0, '🕯️': 0, '🐌': 0, '❇️': 0, '🌟': 0, '⚡': 0 }
             };
+            playerState.health = playerState.maxHealth; // Ensure health starts at max
+
             let waveCount = 1;
             let battleStarted = false;
             const enemyPool = Object.keys(enemyData).filter(e => e !== '🎁');
@@ -424,10 +451,26 @@
                 reshuffleCounter.textContent = playerState.rerolls;
                 armorValueEl.textContent = playerState.armor;
                 healthValueEl.textContent = playerState.health;
+                critChanceEl.textContent = playerState.baseCritChance;
 
-                // Update new kill bar
-                const killPercentage = Math.min((playerState.killCount / 10) * 100, 100);
-                killBarEl.style.width = `${killPercentage}%`;
+                const isCharged = playerState.killCount >= 10;
+                
+                if (isCharged) {
+                    killBarEl.style.width = '100%';
+                    killBarEl.classList.remove('bg-red-800');
+                    killBarEl.classList.add('bg-orange-500', 'pulse-orange-animation');
+                    killBarEl.style.boxShadow = '0 0 10px rgba(249, 115, 22, 0.7)';
+                    critBtn.classList.add('glow-orange-text-animation');
+                    healthIconEl.classList.add('glow-orange-text-animation');
+                } else {
+                    const killPercentage = (playerState.killCount / 10) * 100;
+                    killBarEl.style.width = `${killPercentage}%`;
+                    killBarEl.classList.add('bg-red-800');
+                    killBarEl.classList.remove('bg-orange-500', 'pulse-orange-animation');
+                    killBarEl.style.boxShadow = '0 0 10px rgba(153, 27, 27, 0.7)';
+                    critBtn.classList.remove('glow-orange-text-animation');
+                    healthIconEl.classList.remove('glow-orange-text-animation');
+                }
                 
                 if (playerState.rerolls <= 0 || battleStarted) {
                     reshuffleBtn.disabled = true;
@@ -894,7 +937,6 @@
             };
             const checkBattleEnd = () => { if (currentEnemiesInBattle.every(enemy => enemy.isDefeated)) setTimeout(endBattle, 1500); };
             
-            // --- NEW: Helper function to find next target ---
             const findNextTarget = (startIndex) => {
                 const numEnemies = currentEnemiesInBattle.length;
                 if (currentEnemiesInBattle.every(e => e.isDefeated)) {
@@ -907,7 +949,6 @@
                 return nextIndex;
             };
 
-            // --- NEW: Helper function to handle enemy defeat ---
             const handleEnemyDefeat = (defeatedIndex) => {
                 const enemy = currentEnemiesInBattle[defeatedIndex];
                 if (!enemy || enemy.isDefeated) return;
@@ -925,14 +966,11 @@
                 }
                 updatePlayerUI();
                 
-                // Find the next target right away
                 const nextTargetIndex = findNextTarget(defeatedIndex);
 
-                // After the fade animation is complete...
                 setTimeout(() => {
-                    enemyWrapper.classList.add('enemy-defeated'); // Start the collapse transition
+                    enemyWrapper.classList.add('enemy-defeated'); 
                     
-                    // As the collapse starts, move the selector to the new target
                     if (nextTargetIndex !== -1) {
                         currentBattleTargetIndex = nextTargetIndex;
                         const nextTargetWrapper = currentEnemiesInBattle[nextTargetIndex].ref;
@@ -941,7 +979,7 @@
                     } else {
                         battleSelector.classList.add('hidden');
                     }
-                }, 400); // Wait for the fade animation to finish
+                }, 400);
 
                 checkBattleEnd();
             };
@@ -970,6 +1008,23 @@
 
                 if (!currentEnemiesInBattle.every(e => e.isDefeated)) {
                     await enemyAttackPhase();
+                }
+            });
+
+            critBtn.addEventListener('click', () => {
+                if (playerState.killCount >= 10) {
+                    playerState.baseCritChance = 15;
+                    playerState.killCount = 0;
+                    updatePlayerUI();
+                }
+            });
+
+            healthIconEl.addEventListener('click', () => {
+                if (playerState.killCount >= 10) {
+                    playerState.maxHealth++;
+                    playerState.health = playerState.maxHealth;
+                    playerState.killCount = 0;
+                    updatePlayerUI();
                 }
             });
 
