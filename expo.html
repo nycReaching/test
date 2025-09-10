@@ -380,6 +380,7 @@
             const armorValueEl = document.getElementById('armor-value');
             const healthValueEl = document.getElementById('health-value');
             const killBarEl = document.getElementById('kill-bar');
+            const magicBarEl = document.getElementById('magic-bar');
             const healthIconEl = document.getElementById('health-icon');
             const critBtn = document.getElementById('critBtn');
             const critChanceEl = document.getElementById('crit-chance');
@@ -410,9 +411,9 @@
                 ring: [{ emoji: '💍', name: 'Eccentric Jewel' }]
             };
             const spellDescriptions = {
-                flameheart: { title: "❤️‍🔥 Flameheart:", desc1: "Deal X and heal X.", desc2: "Depletes full magic bar." },
-                frostbite: { title: "❄️ Frostbite:", desc1: "Deal X and inflict X.", desc2: "Depletes half magic bar." },
-                armorheart: { title: "🩶 Armorheart:", desc1: "Add current health to armor.", desc2: "Depletes full magic bar." }
+                flameheart: { title: "❤️‍🔥 Flameheart:", desc1: "Deal 5 and heal 5 HP.", desc2: "Depletes half magic bar." },
+                frostbite: { title: "❄️ Frostbite:", desc1: "Deal 5 damage.", desc2: "Depletes half magic bar." },
+                armorheart: { title: "🩶 Armorheart:", desc1: "Add current health to armor.", desc2: "Depletes half magic bar." }
             };
             const symbolDescriptions = {
                 '☠️': { title: "☠️ Poison", desc: "Inflicts damage over time.", costDesc: "Cost: 1 🌒" },'🕯️': { title: "🕯️ Curse", desc: "Weakens enemy attacks.", costDesc: "Cost: 1 🌒" },'🐌': { title: "🐌 Slow", desc: "Reduces enemy speed.", costDesc: "Cost: 1 🌒" },'❇️': { title: "❇️ Regen", desc: "Heals you over time.", costDesc: "Cost: 1 🌒" },'🌟': { title: "🌟 Blessing", desc: "Increases your damage.", costDesc: "Cost: 1 🌒" },'⚡': { title: "⚡ Rush", desc: "Grants extra actions.", costDesc: "Cost: 1 🌒" }
@@ -425,7 +426,8 @@
             // --- State (MODIFIED) ---
             let playerState = {
                 gold: 99, moonstones: 3, rerolls: 5, killCount: 0, 
-                maxHealth: 10, health: 10, armor: 3, maxArmor: 3, 
+                maxHealth: 10, health: 10, armor: 3, maxArmor: 3,
+                magic: 100, maxMagic: 100,
                 baseCritChance: 10,
                 equipment: { weapon: null, armor: null, ring: null }, 
                 inventory: { tonic: 0, gem: 0, cross: 0, fairy: 0, moonstone: 3, }, 
@@ -497,6 +499,12 @@
                 armorValueEl.textContent = playerState.armor;
                 healthValueEl.textContent = playerState.health;
                 critChanceEl.textContent = playerState.baseCritChance;
+                
+                if(magicBarEl) {
+                    const magicPercentage = (playerState.magic / playerState.maxMagic) * 100;
+                    magicBarEl.style.width = `${magicPercentage}%`;
+                }
+
 
                 const isCharged = playerState.killCount >= 10;
                 
@@ -854,10 +862,85 @@
                 }, fadeOutDuration);
             };
 
+            // --- Spell Logic ---
+            const executeSpell = (spellKey) => {
+                if (!battleStarted || playerState.magic < 50) return; // Not enough magic or not in battle
+
+                playerState.magic -= 50;
+                updatePlayerUI(); // Updates magic bar as well
+
+                const targetEnemy = currentEnemiesInBattle[currentBattleTargetIndex];
+                const enemyWrapper = targetEnemy?.ref;
+
+                switch (spellKey) {
+                    case 'flameheart':
+                        // Deal 5 damage
+                        if (targetEnemy && !targetEnemy.isDefeated && !targetEnemy.isGift) {
+                            const damage = 5;
+                            showDamageNumber(damage, enemyWrapper);
+                            targetEnemy.hp = Math.max(0, targetEnemy.hp - damage);
+                            const healthBarFill = enemyWrapper.querySelector('.bg-rose-600');
+                            if (healthBarFill) healthBarFill.style.width = `${(targetEnemy.hp / targetEnemy.maxHp) * 100}%`;
+                            updateEnemyDisplay(targetEnemy);
+                            if (targetEnemy.hp <= 0) {
+                                handleEnemyDefeat(currentBattleTargetIndex);
+                            }
+                        }
+                        // Heal 5 HP
+                        playerState.health = Math.min(playerState.maxHealth, playerState.health + 5);
+                        healthValueEl.classList.add('damage-flash-animation'); // Use existing flash for feedback
+                        setTimeout(() => healthValueEl.classList.remove('damage-flash-animation'), 400);
+                        updatePlayerUI();
+                        break;
+
+                    case 'frostbite':
+                        // Deal 5 damage
+                        if (targetEnemy && !targetEnemy.isDefeated && !targetEnemy.isGift) {
+                            const damage = 5;
+                            showDamageNumber(damage, enemyWrapper);
+                            targetEnemy.hp = Math.max(0, targetEnemy.hp - damage);
+                            const healthBarFill = enemyWrapper.querySelector('.bg-rose-600');
+                            if (healthBarFill) healthBarFill.style.width = `${(targetEnemy.hp / targetEnemy.maxHp) * 100}%`;
+                            updateEnemyDisplay(targetEnemy);
+                            if (targetEnemy.hp <= 0) {
+                                handleEnemyDefeat(currentBattleTargetIndex);
+                            }
+                        }
+                        // Future: inflict 🐌
+                        break;
+
+                    case 'armorheart':
+                        // Add current health to armor
+                        playerState.armor += playerState.health;
+                        updatePlayerUI();
+                        armorValueEl.classList.add('damage-flash-animation');
+                        setTimeout(() => armorValueEl.classList.remove('damage-flash-animation'), 400);
+                        break;
+                }
+            };
+
             // --- Initial Setup & Listeners ---
-            flameheartBtn.addEventListener('click', () => displaySpellInfo('flameheart'));
-            frostbiteBtn.addEventListener('click', () => displaySpellInfo('frostbite'));
-            armorheartBtn.addEventListener('click', () => displaySpellInfo('armorheart'));
+            flameheartBtn.addEventListener('click', () => {
+                if (battleStarted) {
+                    executeSpell('flameheart');
+                } else {
+                    displaySpellInfo('flameheart');
+                }
+            });
+            frostbiteBtn.addEventListener('click', () => {
+                if (battleStarted) {
+                    executeSpell('frostbite');
+                } else {
+                    displaySpellInfo('frostbite');
+                }
+            });
+            armorheartBtn.addEventListener('click', () => {
+                if (battleStarted) {
+                    executeSpell('armorheart');
+                } else {
+                    displaySpellInfo('armorheart');
+                }
+            });
 
             Object.values(modalMap).forEach(item => {
                 item.button.addEventListener('click', (e) => {
@@ -967,6 +1050,7 @@
             };
             const endBattle = () => {
                 battleStarted = false; currentEnemiesInBattle = []; playerState.armor = playerState.maxArmor; sideWindowLeft.innerHTML = ''; 
+                playerState.magic = playerState.maxMagic;
                 playerState.statusEffects = { '☠️': 0, '🕯️': 0, '🐌': 0, '❇️': 0, '🌟': 0, '⚡': 0 };
                 updateStatusEffectsUI(); waveCount++; updateWaveCounterUI();
                 enemyContainer.innerHTML = `<div id="enemy-slider" class="absolute top-0 left-0 h-full bg-white/10 border-2 border-white/50 rounded-lg pointer-events-none" style="transition: transform 0.2s ease-out;"></div><div id="battle-selector" class="hidden absolute top-0 left-0 bg-amber-400/20 border-2 border-amber-400 rounded-lg pointer-events-none"></div>${Array(numIcons).fill('<span class="text-2xl relative z-10"></span>').join('')}`;
@@ -1147,7 +1231,7 @@
 
             critBtn.addEventListener('click', () => {
                 if (playerState.killCount >= 10) {
-                    playerState.baseCritChance = 15;
+                    playerState.baseCritChance += 5;
                     playerState.killCount = 0;
                     updatePlayerUI();
                 }
@@ -1234,5 +1318,3 @@
 
 </body>
 </html>
-
-
