@@ -154,6 +154,28 @@
         .glow-orange-text-animation {
              animation: glow-orange-text 1.5s infinite ease-in-out;
         }
+        
+        /* Gift Modal Animation */
+        @keyframes reward-highlight {
+            50% { 
+                border-color: #ef4444; /* red-500 */
+                box-shadow: 0 0 15px rgba(251, 191, 36, 0.8); /* gold */
+                transform: scale(1.03);
+            }
+        }
+        .reward-highlight-anim {
+            animation: reward-highlight 0.5s ease-in-out;
+        }
+        .reward-selected {
+            border-color: #ef4444 !important; /* red-500 */
+            box-shadow: 0 0 25px rgba(251, 191, 36, 1) !important;
+            transform: scale(1.08) !important;
+            cursor: pointer;
+        }
+        .reward-fade-out {
+            opacity: 0.3;
+            transform: scale(0.95);
+        }
 
     </style>
 </head>
@@ -303,6 +325,27 @@
             </div>
         </div>
 
+        <!-- Gift Reward Modal -->
+        <div id="giftModal" class="hidden absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div class="relative bg-slate-900/80 rounded-xl p-6 shadow-xl border border-red-500 w-full max-w-xs text-center">
+                <h2 class="text-2xl font-bold mb-4 text-amber-300">A Gift!</h2>
+                <div id="gift-rewards" class="space-y-3 mb-6">
+                    <div data-reward="armor" class="gift-reward-item bg-slate-800 p-3 rounded-lg border-2 border-transparent transition-all duration-400 flex items-center justify-center">
+                        <span class="text-2xl">🛡️</span>
+                        <span class="ml-2 font-semibold text-lg">+1 Max Armor</span>
+                    </div>
+                    <div data-reward="gold" class="gift-reward-item bg-slate-800 p-3 rounded-lg border-2 border-transparent transition-all duration-400 flex items-center justify-center">
+                        <span class="text-2xl">💰</span>
+                        <span class="ml-2 font-semibold text-lg">+15 Gold</span>
+                    </div>
+                    <div data-reward="crit" class="gift-reward-item bg-slate-800 p-3 rounded-lg border-2 border-transparent transition-all duration-400 flex items-center justify-center">
+                        <span class="text-2xl">💥</span>
+                        <span class="ml-2 font-semibold text-lg">+1% Crit Chance</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
     </div>
 
@@ -340,6 +383,8 @@
             const healthIconEl = document.getElementById('health-icon');
             const critBtn = document.getElementById('critBtn');
             const critChanceEl = document.getElementById('crit-chance');
+            const giftModal = document.getElementById('giftModal');
+            let giftRewardItems = document.querySelectorAll('.gift-reward-item');
             
             const modalMap = {
                 fortunesBtn: { modal: document.getElementById('fortunesModal'), button: document.getElementById('fortunesBtn') },
@@ -935,7 +980,11 @@
                 enemyContainer.addEventListener('mousedown', dragStart); enemyContainer.addEventListener('touchstart', dragStart);
                 reshuffleEnemies(); calculateSliderDimensions();
             };
-            const checkBattleEnd = () => { if (currentEnemiesInBattle.every(enemy => enemy.isDefeated)) setTimeout(endBattle, 1500); };
+            const checkBattleEnd = () => {
+                if (currentEnemiesInBattle.every(enemy => enemy.isDefeated)) {
+                    setTimeout(endBattle, 1500);
+                }
+            };
             
             const findNextTarget = (startIndex) => {
                 const numEnemies = currentEnemiesInBattle.length;
@@ -956,12 +1005,10 @@
                 enemy.isDefeated = true;
                 const enemyWrapper = enemy.ref;
                 enemyWrapper.style.pointerEvents = 'none';
-                enemyWrapper.classList.add('enemy-fade-out'); // Animation takes 0.4s
+                enemyWrapper.classList.add('enemy-fade-out');
 
-                if (enemy.isGift) {
-                    playerState.armor += 1;
-                    playerState.maxArmor += 1;
-                } else {
+                // Gift reward is handled by the new popup, so we only update kill count for non-gifts.
+                if (!enemy.isGift) {
                     playerState.killCount += enemy.isStamped ? 3 : 1;
                 }
                 updatePlayerUI();
@@ -984,6 +1031,90 @@
                 checkBattleEnd();
             };
 
+            // --- Gift Modal Logic ---
+            const awardGiftBuff = (rewardType) => {
+                switch (rewardType) {
+                    case 'armor':
+                        playerState.maxArmor += 1;
+                        playerState.armor += 1;
+                        break;
+                    case 'gold':
+                        playerState.gold += 15;
+                        break;
+                    case 'crit':
+                        playerState.baseCritChance += 1;
+                        break;
+                }
+                updatePlayerUI();
+            };
+
+            const startGiftRandomizer = () => {
+                const rewards = Array.from(giftRewardItems);
+                const numRewards = rewards.length;
+                const rewardTypes = ['armor', 'gold', 'crit'];
+                const winningIndex = Math.floor(Math.random() * numRewards);
+                const winningReward = rewardTypes[winningIndex];
+
+                let delayMs = 150; 
+                const totalSpins = 10 + winningIndex; // Quicker resolution
+                let spinCount = 0;
+                
+                // We define this function here so it can be removed later.
+                const continueGameHandler = async () => {
+                    giftModal.classList.add('hidden');
+                     // The event listener is {once: true}, so it removes itself.
+                    // No need to clone or manually remove.
+                    handleEnemyDefeat(currentBattleTargetIndex);
+                    if (!currentEnemiesInBattle.every(e => e.isDefeated)) {
+                        await enemyAttackPhase();
+                    } else if (playerState.health > 0) {
+                        attackBtn.disabled = false;
+                    }
+                };
+
+                const spin = () => {
+                    if (spinCount >= totalSpins) {
+                        rewards.forEach(r => r.classList.remove('reward-highlight-anim'));
+                        
+                        // Fade out losers, highlight winner
+                        rewards.forEach((rewardEl, index) => {
+                            if (index === winningIndex) {
+                                rewardEl.classList.add('reward-selected');
+                                rewardEl.style.cursor = 'pointer';
+                                rewardEl.addEventListener('click', continueGameHandler, { once: true });
+                            } else {
+                                rewardEl.classList.add('reward-fade-out');
+                            }
+                        });
+
+                        awardGiftBuff(winningReward);
+                        return;
+                    }
+
+                    rewards.forEach(r => r.classList.remove('reward-highlight-anim', 'reward-selected'));
+                    const highlightIndex = spinCount % numRewards;
+                    rewards[highlightIndex].classList.add('reward-highlight-anim');
+                    
+                    if (spinCount > 5) delayMs += 50; // Quicker ramp-down
+                    
+                    spinCount++;
+                    setTimeout(spin, delayMs);
+                };
+                spin();
+            };
+
+            const showGiftPopup = () => {
+                attackBtn.disabled = true;
+                giftModal.classList.remove('hidden');
+                 // Re-query the elements each time to prevent issues with stale references
+                giftRewardItems = document.querySelectorAll('.gift-reward-item');
+                giftRewardItems.forEach(item => {
+                    item.classList.remove('reward-selected', 'reward-highlight-anim', 'reward-fade-out');
+                    item.style.cursor = 'default';
+                });
+                startGiftRandomizer();
+            };
+
             attackBtn.addEventListener('click', async () => {
                 if (!battleStarted || playerState.health <= 0 || attackBtn.disabled) return;
                 const targetEnemy = currentEnemiesInBattle[currentBattleTargetIndex];
@@ -992,8 +1123,11 @@
                 enemyWrapper.classList.add('shake-animation');
                 setTimeout(() => enemyWrapper.classList.remove('shake-animation'), 300);
 
+                let giftOpened = false;
+
                 if (targetEnemy.isGift) {
-                    handleEnemyDefeat(currentBattleTargetIndex);
+                    giftOpened = true;
+                    showGiftPopup();
                 } else {
                     const attackPower = parseInt(attackValueEl.textContent, 10);
                     showDamageNumber(attackPower, enemyWrapper);
@@ -1006,7 +1140,7 @@
                     }
                 }
 
-                if (!currentEnemiesInBattle.every(e => e.isDefeated)) {
+                if (!giftOpened && !currentEnemiesInBattle.every(e => e.isDefeated)) {
                     await enemyAttackPhase();
                 }
             });
@@ -1100,4 +1234,5 @@
 
 </body>
 </html>
+
 
