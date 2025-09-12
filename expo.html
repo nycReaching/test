@@ -196,11 +196,13 @@
                 </div>
 
                 <!-- Bottom part: Enemy Reel -->
-                <div id="enemy-container" class="relative flex justify-around items-center select-none cursor-grab active:cursor-grabbing overflow-hidden h-24 retro-panel-inset">
-                    <div id="enemy-slider" class="absolute top-0 left-0 h-full bg-black/20 border-2 border-black/30 pointer-events-none" style="transition: transform 0.2s ease-out;"></div>
-                    <div id="battle-selector" class="hidden absolute top-0 left-0 pointer-events-none"></div>
-                    <!-- Icons populated by JS -->
-                    <span class="text-3xl relative z-10"></span><span class="text-3xl relative z-10"></span><span class="text-3xl relative z-10"></span><span class="text-3xl relative z-10"></span><span class="text-3xl relative z-10"></span><span class="text-3xl relative z-10"></span><span class="text-3xl relative z-10"></span><span class="text-3xl relative z-10"></span>
+                <div id="enemy-container" class="relative flex items-center select-none cursor-grab active:cursor-grabbing overflow-hidden h-24 retro-panel-inset">
+                    <div id="enemy-slider" class="absolute top-0 left-0 h-full bg-black/20 border-2 border-black/30 pointer-events-none z-10" style="transition: transform 0.2s ease-out;"></div>
+                    <div id="battle-selector" class="hidden absolute top-0 left-0 pointer-events-none z-30"></div>
+                    <div id="enemy-list" class="absolute inset-0 flex items-center justify-between pl-1 pr-3 z-20">
+                        <!-- Icons populated by JS -->
+                        <span class="text-3xl"></span><span class="text-3xl"></span><span class="text-3xl"></span><span class="text-3xl"></span><span class="text-3xl"></span><span class="text-3xl"></span><span class="text-3xl"></span><span class="text-3xl"></span>
+                    </div>
                 </div>
             </div>
             
@@ -884,11 +886,24 @@
             // --- Enemy Slider & Reshuffle Logic ---
             const calculateSliderDimensions = () => {
                 if(battleStarted) return {};
-                const containerWidth = enemyContainer.offsetWidth;
-                const iconWidth = containerWidth / numIcons;
-                const sliderWidth = iconWidth * groupSize;
+                const enemyList = document.getElementById('enemy-list');
+                if (!enemyList) return { iconWidth: 0, sliderWidth: 0, listPaddingLeft: 0, maxTranslateX: 0 };
+
+                const spans = enemyList.querySelectorAll('span');
+                if (spans.length < 2) return { iconWidth: 0, sliderWidth: 0, listPaddingLeft: 0, maxTranslateX: 0 };
+
+                const listPaddingLeft = parseFloat(getComputedStyle(enemyList).paddingLeft);
+
+                const firstRect = spans[0].getBoundingClientRect();
+                const secondRect = spans[1].getBoundingClientRect();
+                const iconWidth = secondRect.left - firstRect.left;
+
+                const sliderWidth = iconWidth * (groupSize - 1) + firstRect.width;
                 enemySlider.style.width = `${sliderWidth}px`;
-                return { containerWidth, iconWidth, sliderWidth };
+                
+                const maxTranslateX = (numIcons - groupSize) * iconWidth;
+
+                return { iconWidth, sliderWidth, listPaddingLeft, maxTranslateX };
             };
             const getEventCoords = (e) => ({ x: e.touches ? e.touches[0].clientX : e.clientX, y: e.touches ? e.touches[0].clientY : e.clientY });
             const dragStart = (e) => {
@@ -907,11 +922,13 @@
                 if (!isDragging) return;
                 e.preventDefault();
                 const deltaX = getEventCoords(e).x - startX;
-                currentTranslateX = initialTranslateX + deltaX;
-                const { containerWidth, sliderWidth } = calculateSliderDimensions();
-                const maxTranslateX = containerWidth - sliderWidth;
-                currentTranslateX = Math.max(0, Math.min(currentTranslateX, maxTranslateX));
-                enemySlider.style.transform = `translateX(${currentTranslateX}px)`;
+                const newLogicalPos = initialTranslateX + deltaX;
+
+                const { listPaddingLeft, maxTranslateX } = calculateSliderDimensions();
+                
+                const clampedLogicalPos = Math.max(0, Math.min(newLogicalPos, maxTranslateX));
+                
+                enemySlider.style.transform = `translateX(${clampedLogicalPos + listPaddingLeft}px)`;
             };
             const dragEnd = (e) => {
                 if (!isDragging) return;
@@ -923,17 +940,25 @@
                 document.removeEventListener('mouseup', dragEnd);
                 document.removeEventListener('touchend', dragEnd);
                 enemySlider.style.transition = 'transform 0.2s ease-out';
-                const { iconWidth } = calculateSliderDimensions();
+                const { iconWidth, listPaddingLeft } = calculateSliderDimensions();
+
+                const transformMatrix = new WebKitCSSMatrix(getComputedStyle(enemySlider).transform);
+                const finalVisualTranslateX = transformMatrix.m41;
+                const logicalTranslateX = finalVisualTranslateX - listPaddingLeft;
+                
                 if (deltaTime < 250 && Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10) {
-                    const tappedIndex = Math.floor((endCoords.clientX - enemyContainer.getBoundingClientRect().left) / iconWidth);
+                    const tappedX = endCoords.clientX - enemyContainer.getBoundingClientRect().left;
+                    const logicalTappedX = tappedX - listPaddingLeft;
+                    const tappedIndex = Math.floor(logicalTappedX / iconWidth);
                     const targetIndex = Math.max(0, Math.min(numIcons - groupSize, tappedIndex - 1));
                     currentTranslateX = targetIndex * iconWidth;
                 } else { 
-                    const closestSnapIndex = Math.round(currentTranslateX / iconWidth);
+                    const closestSnapIndex = Math.round(logicalTranslateX / iconWidth);
                     const clampedIndex = Math.min(numIcons - groupSize, Math.max(0, closestSnapIndex));
                     currentTranslateX = clampedIndex * iconWidth;
                 }
-                enemySlider.style.transform = `translateX(${currentTranslateX}px)`;
+                const finalTransform = currentTranslateX + listPaddingLeft;
+                enemySlider.style.transform = `translateX(${finalTransform}px)`;
             };
             const shuffle = (array) => {
                 for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [array[i], array[j]] = [array[j], array[i]]; }
@@ -946,25 +971,29 @@
                 if(startBattleBtn) startBattleBtn.disabled = true;
                 enemyContainer.classList.remove('cursor-grab', 'active:cursor-grabbing');
                 if (enemySlider) enemySlider.classList.add('hidden');
-                const enemySpans = Array.from(enemyContainer.querySelectorAll('span.relative.z-10'));
+                const enemySpans = Array.from(document.querySelectorAll('#enemy-list > span'));
                 const fadeOutDuration = isInitial ? 0 : 200; 
                 enemySpans.forEach(span => { span.style.transition = `opacity ${fadeOutDuration}ms ease-out`; span.style.opacity = '0'; });
                 setTimeout(() => {
                     const finalEnemySet = shuffle([...shuffle([...enemyPool]).slice(0, 7), giftEmoji]);
                     enemySpans.forEach((span, index) => {
                         span.textContent = finalEnemySet[index];
-                        span.className = 'text-3xl relative z-10'; 
+                        span.className = 'text-3xl'; 
                         span.style.transition = 'opacity 0.4s ease-out';
                     });
                     const giftSpan = enemySpans.find(span => span.textContent === giftEmoji);
                     if (giftSpan) giftSpan.classList.add('emoji-gold-glow');
                     const stampableSpans = enemySpans.filter(span => span.textContent !== giftEmoji);
                     if (stampableSpans.length > 0) stampableSpans[Math.floor(Math.random() * stampableSpans.length)].classList.add('emoji-red-stamp');
-                    currentTranslateX = 0;
-                    if (enemySlider) enemySlider.style.transform = `translateX(0px)`;
+                    
                     const totalRevealTime = 1000;
                     enemySpans.forEach((span, index) => { setTimeout(() => { span.style.opacity = '1'; }, index * (totalRevealTime / enemySpans.length)); });
+                    
                     setTimeout(() => {
+                        const { listPaddingLeft } = calculateSliderDimensions();
+                        currentTranslateX = 0; // Logical position
+                        if (enemySlider) enemySlider.style.transform = `translateX(${listPaddingLeft}px)`;
+
                         isReshuffling = false;
                         if (!battleStarted) { 
                             if (enemySlider) enemySlider.classList.remove('hidden');
@@ -1179,10 +1208,14 @@
                 playerState.magic = playerState.maxMagic;
                 playerState.statusEffects = { '☠️': 0, '🕯️': 0, '🐌': 0, '❇️': 0, '🌟': 0, '⚡': 0 };
                 updateStatusEffectsUI(); waveCount++; updateWaveCounterUI();
-                enemyContainer.innerHTML = `<div id="enemy-slider" class="absolute top-0 left-0 h-full bg-black/20 border-2 border-black/30 pointer-events-none" style="transition: transform 0.2s ease-out;"></div><div id="battle-selector" class="hidden absolute top-0 left-0 pointer-events-none"></div>${Array(numIcons).fill('<span class="text-3xl relative z-10"></span>').join('')}`;
+                enemyContainer.innerHTML = `<div id="enemy-slider" class="absolute top-0 left-0 h-full bg-black/20 border-2 border-black/30 pointer-events-none z-10" style="transition: transform 0.2s ease-out;"></div>
+        <div id="battle-selector" class="hidden absolute top-0 left-0 pointer-events-none z-30"></div>
+        <div id="enemy-list" class="absolute inset-0 flex items-center justify-between pl-1 pr-3 z-20">
+            ${Array(numIcons).fill('<span class="text-3xl"></span>').join('')}
+        </div>`;
                 enemySlider = document.getElementById('enemy-slider'); battleSelector = document.getElementById('battle-selector');
                 enemyContainer.classList.remove('justify-center', 'gap-4', 'cursor-default');
-                enemyContainer.classList.add('justify-around', 'cursor-grab', 'active:cursor-grabbing');
+                enemyContainer.classList.add('cursor-grab', 'active:cursor-grabbing');
                 battleDetailsContentEl.innerHTML = '<button id="start-battle-btn" class="retro-btn bg-green-500 text-black text-xl py-2 px-6 disabled:opacity-50 disabled:cursor-not-allowed">Start Battle</button>';
                 startBattleBtn = document.getElementById('start-battle-btn');
                 if (startBattleBtn) startBattleBtn.addEventListener('click', startBattle);
@@ -1450,7 +1483,7 @@
                 if(startBattleBtn) startBattleBtn.remove();
                 updatePlayerUI(); 
                 enemyContainer.classList.remove('cursor-grab', 'active:cursor-grabbing'); enemyContainer.classList.add('cursor-default'); enemySlider.classList.add('hidden');
-                const selectedEnemySpans = Array.from(document.querySelectorAll('#enemy-container > span')).slice(startIndex, startIndex + groupSize);
+                const selectedEnemySpans = Array.from(document.querySelectorAll('#enemy-list > span')).slice(startIndex, startIndex + groupSize);
                 currentEnemiesInBattle = selectedEnemySpans.map(span => {
                     const isStamped = span.classList.contains('emoji-red-stamp'), isGift = span.classList.contains('emoji-gold-glow');
                     const hp = isGift ? 1 : (isStamped ? 20 : 10);
@@ -1513,6 +1546,8 @@
             window.addEventListener('resize', calculateSliderDimensions);
             enemyContainer.addEventListener('mousedown', dragStart);
             enemyContainer.addEventListener('touchstart', dragStart);
+            document.addEventListener('mouseup', dragEnd);
+            document.addEventListener('touchend', dragEnd);
             reshuffleBtn.addEventListener('click', () => { if (!battleStarted && !isReshuffling) reshuffleEnemies(); });
             reshuffleEnemies(true);
             updatePlayerUI(); 
@@ -1523,3 +1558,5 @@
 
 </body>
 </html>
+
+
