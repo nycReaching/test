@@ -139,18 +139,33 @@
             cursor: pointer;
         }
         .reward-fade-out { opacity: 0.3; transform: scale(0.95); }
+
+        /* --- NEW STYLES for Stronger Edges --- */
+        .panel-raised {
+            background-color: #27272a; /* zinc-800 */
+            border: 1px solid rgba(0,0,0,0.8);
+            /* A subtle gradient and shadows to give a raised 3D effect */
+            background-image: linear-gradient(to bottom, #3f3f46, #27272a);
+            box-shadow: inset 0px 1px 1px rgba(255, 255, 255, 0.05), 0px 1px 3px rgba(0,0,0,0.5);
+        }
+        .panel-inset {
+            background-color: #131316; /* Darker than zinc-900 */
+            /* Inset shadow is key for the sunken effect */
+            box-shadow: inset 0px 2px 5px rgba(0, 0, 0, 0.7);
+            border: 1px solid #000;
+        }
     </style>
 </head>
 <body class="bg-zinc-900 text-zinc-300 flex items-center justify-center min-h-screen p-2">
 
     <!-- Mobile Screen Container -->
-    <div id="game-container" class="w-full max-w-sm h-[95vh] max-h-[850px] bg-zinc-800 rounded-3xl shadow-2xl p-3 flex flex-col gap-3 relative overflow-hidden border-2 border-zinc-700 transition-colors duration-500">
+    <div id="game-container" class="w-full max-w-sm h-[95vh] max-h-[850px] bg-zinc-800 rounded-3xl shadow-2xl p-3 flex flex-col gap-3 relative overflow-hidden border-2 border-black transition-colors duration-500">
         <div id="screen-flash-overlay" class="screen-flash"></div>
         
         <!-- =================================================================== -->
         <!-- Top Section: Player Stats & Info (RESTRUCTURED) -->
         <!-- =================================================================== -->
-        <div class="flex-shrink-0 bg-black/20 rounded-xl p-2 border border-zinc-700 shadow-inner">
+        <div class="flex-shrink-0 panel-raised rounded-xl p-2">
             <!-- Row 1: HP, Armor, Status Effects -->
             <div class="flex items-center justify-between h-8">
                 <div class="flex items-center text-2xl gap-2">
@@ -189,10 +204,10 @@
         <!-- =================================================================== -->
         <!-- Main Game Area (RESTRUCTURED) -->
         <!-- =================================================================== -->
-        <div class="flex-grow flex flex-col gap-3 bg-black/20 rounded-xl p-2 border border-zinc-700 shadow-inner">
+        <div class="flex-grow flex flex-col gap-3 panel-raised rounded-xl p-2">
             
             <!-- Info Display Window (Consolidated) -->
-            <div id="battle-details-window" class="relative flex-shrink-0 bg-zinc-900/70 rounded-lg h-16 flex items-center justify-center p-2 text-center border border-black/50 shadow-inner">
+            <div id="battle-details-window" class="relative flex-shrink-0 h-16 flex items-center justify-center p-2 text-center panel-inset rounded-lg">
                 <div id="wave-counter" class="absolute top-1.5 left-2.5 text-xs font-bold text-zinc-500 italic"></div>
                 <div id="battle-details-content" class="w-full h-full flex items-center justify-center">
                     <button id="start-battle-btn" class="bg-emerald-600 text-white font-bold text-base py-2.5 px-8 rounded-lg transition-all duration-200 border border-emerald-800 btn-pressable disabled:opacity-50 disabled:cursor-not-allowed">Start Battle</button>
@@ -200,7 +215,7 @@
             </div>
 
             <!-- Enemy/Battle Reel -->
-            <div id="enemy-container" class="relative flex justify-around items-center bg-zinc-900/70 rounded-lg p-2 select-none cursor-grab active:cursor-grabbing overflow-hidden h-24 border border-black/50 shadow-inner">
+            <div id="enemy-container" class="relative flex justify-around items-center panel-inset rounded-lg p-2 select-none cursor-grab active:cursor-grabbing overflow-hidden h-24">
                 <div id="enemy-slider" class="absolute top-0 left-0 h-full bg-white/10 border-2 border-white/30 rounded-lg pointer-events-none" style="transition: transform 0.2s ease-out;"></div>
                 <div id="battle-selector" class="hidden absolute top-0 left-0 bg-amber-500/20 border-2 border-amber-500 rounded-lg pointer-events-none"></div>
                 <!-- Icons populated by JS -->
@@ -220,7 +235,7 @@
             <!-- Lower Interaction Area -->
             <div class="flex-grow flex gap-3">
                 <!-- Side Window / Spell Info -->
-                <div id="side-window-left" class="w-1/2 flex flex-col items-center justify-center bg-zinc-900/70 rounded-lg p-2 border border-black/50 shadow-inner overflow-hidden">
+                <div id="side-window-left" class="w-1/2 flex flex-col items-center justify-center panel-inset rounded-lg p-2 overflow-hidden">
                     <!-- Spell descriptions / Battle Log will appear here -->
                 </div>
 
@@ -1313,3 +1328,4 @@
 
 </body>
 </html>
+
