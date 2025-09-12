@@ -194,7 +194,7 @@
             </div>
 
             <!-- Row 3: Player Status Effects -->
-            <div id="player-status-effects" class="flex items-center justify-end text-xl gap-1 h-6">
+            <div id="player-status-effects" class="flex items-center justify-start text-xl gap-1 h-6">
                 <!-- Status icons will be managed by JS -->
                 <div class="relative status-effect-icon hidden" data-effect="⚡"><span>⚡</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-black/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span></div>
                 <div class="relative status-effect-icon hidden" data-effect="🌟"><span>🌟</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-black/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span></div>
@@ -388,8 +388,8 @@
                 '💀': { name: 'Skeleton' },'🐺': { name: 'Wolf' },'🐸': { name: 'Frog', special: '☠️' },'🦄': { name: 'Unicorn', special: '❇️' },'🐲': { name: 'Dragon' },'🐍': { name: 'Serpent', special: '☠️' },'🐀': { name: 'Rat' },'🐦‍⬛': { name: 'Crow', special: '🕯️' },'🕷️': { name: 'Spider', special: '☠️' },'🦂': { name: 'Scorpion' },'🦟': { name: 'Mosquito', special: '🐌' },'🧟': { name: 'Zombie', special: '🐌' },'🧞': { name: 'Genie', special: '❇️' },'🧌': { name: 'Troll' },'🥷': { name: 'Ninja', special: '🫳' },'🧛': { name: 'Vampire', special: '🕯️' },'🦹': { name: 'Supervillain' },'🎁': { name: 'Gift' }
             };
             const equipmentOptions = {
-                weapon: [{ emoji: '🏹', name: 'Bow' }, { emoji: '🗡️', name: 'Dagger' }, { emoji: '🔨', name: 'Hammer' }],
-                armor: [{ emoji: '🧥', name: 'Leather Gear' }, { emoji: '🪨', name: 'Rock Bracer' }, { emoji: '🕸️', name: 'Cloak' }],
+                weapon: [{ emoji: '🏹', name: 'Bow (+1 💥)' }, { emoji: '🗡️', name: 'Dagger (+1 💥)' }, { emoji: '🔨', name: 'Hammer (+1 💥)' }],
+                armor: [{ emoji: '🧥', name: 'Leather Gear (+1 🛡️)' }, { emoji: '🪨', name: 'Rock Bracer (+1 🛡️)' }, { emoji: '🕸️', name: 'Cloak (+1 🛡️)' }],
                 ring: [{ emoji: '💍', name: 'Eccentric Jewel' }]
             };
             const spellDescriptions = {
@@ -1390,6 +1390,3 @@
 
 </body>
 </html>
-
-
-
