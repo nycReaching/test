@@ -2,88 +2,23 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Loot Grab RPG</title>
-    <!-- Thematic Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* --- THEME & VISUALS --- */
+        /* --- VISUAL ENHANCEMENT STYLES --- */
         :root {
-            /* A darker, more thematic color palette for a roguelike feel */
-            --color-bg-deep: #0a0a0a; /* Deepest black for background */
-            --color-bg-primary: #18181b; /* zinc-900 for main container */
-            --color-bg-secondary: #27272a; /* zinc-800 for panels */
-            --color-border-primary: #3f3f46; /* zinc-700 */
-            --color-border-secondary: #52525b; /* zinc-600 */
-            --color-text-primary: #e4e4e7; /* zinc-200 */
-            --color-text-secondary: #a1a1aa; /* zinc-400 */
-            
-            /* Accent colors for actions and highlights */
-            --color-accent-magic: #8b5cf6; /* violet-500 */
-            --color-accent-attack: #dc2626; /* red-600 */
-            --color-accent-crit: #f59e0b; /* amber-500 */
-            --color-accent-special: #10b981; /* emerald-500 */
-            --color-accent-gold: #facc15; /* yellow-400 */
-            
-            /* Define glow colors based on accents */
-            --glow-color-magic: rgba(139, 92, 246, 0.7);
-            --glow-color-attack: rgba(220, 38, 38, 0.7);
+            --glow-color: rgba(71, 85, 105, 0.7); /* slate-500 */
+            --border-color: #334155; /* slate-700 */
         }
-
         body {
             font-family: 'Inter', sans-serif;
-            touch-action: manipulation; /* Prevents double-tap zoom on mobile */
-            background-color: var(--color-bg-deep);
-            color: var(--color-text-primary);
+            touch-action: manipulation;
+            background-color: #0f172a; /* slate-900 */
         }
-        
-        /* Custom font for titles/headers */
-        .font-title {
-            font-family: 'Cinzel', serif;
-        }
-
-        /* --- LAYOUT & STRUCTURE --- */
-        /* Main game container styling */
-        #game-container {
-            background: linear-gradient(145deg, var(--color-bg-primary), #202024);
-            border: 2px solid var(--color-border-primary);
-            box-shadow: 0 0 40px rgba(0,0,0,0.8), inset 0 0 15px rgba(0,0,0,0.5);
-        }
-
-        /* General purpose panel for UI sections */
-        .ui-panel {
-            background-color: var(--color-bg-secondary);
-            border: 1px solid var(--color-border-primary);
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.4);
-            border-radius: 0.5rem; /* 8px */
-        }
-
-        /* Make buttons feel more tactile and responsive */
-        .action-button {
-            border-width: 1px;
-            border-bottom-width: 3px;
-            transition: all 0.1s ease-in-out;
-        }
-        .action-button:active:not(:disabled) {
-            transform: translateY(2px);
-            border-bottom-width: 1px;
-            filter: brightness(0.9);
-        }
-        .action-button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            filter: grayscale(50%);
-        }
-
-        /* Custom progress bar fill transition */
-        .progress-bar-fill {
-            transition: width 0.3s ease-in-out;
-        }
-        
-        /* Improved scrollbar hiding */
         * {
             scrollbar-width: none;
             -ms-overflow-style: none;
@@ -91,129 +26,215 @@
         *::-webkit-scrollbar {
             display: none;
         }
+        .btn-glow:active {
+            box-shadow: 0 0 15px var(--glow-color);
+        }
+        .text-shadow {
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+        }
+        .progress-bar-fill {
+            transition: width 0.3s ease-in-out;
+        }
 
-        /* --- EMOJI & ANIMATION STYLES (Largely unchanged, with color tweaks) --- */
+        /* --- ENEMY/ITEM STYLES --- */
         .emoji-red-stamp {
             filter: grayscale(100%) brightness(80%) sepia(100%) hue-rotate(-50deg) saturate(800%) contrast(1) drop-shadow(0 0 10px rgba(255, 50, 50, 1));
         }
         .emoji-gold-glow {
-            filter: drop-shadow(0 0 8px var(--color-accent-gold));
+            filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.9)); /* amber-400 */
         }
-        
-        .text-shadow { text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9); }
-        .damage-number { position: absolute; font-size: 1.75rem; font-weight: bold; color: white; text-shadow: 0 2px 4px black; pointer-events: none; animation: float-up 1s ease-out forwards; }
-        
-        @keyframes float-up { to { transform: translateY(-50px) translateX(-50%); opacity: 0; } }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-3px); } 20%, 40%, 60%, 80% { transform: translateX(3px); } }
-        .shake-animation { animation: shake 0.3s ease-in-out; }
-        @keyframes flip-horizontal { 50% { transform: scaleX(-1); } 100% { transform: scaleX(1); } }
-        .flip-animation { animation: flip-horizontal 0.5s ease-in-out; }
-        
-        @keyframes damage-flash { 50% { transform: scale(1.7); color: var(--color-accent-gold); } }
-        .damage-flash-animation { animation: damage-flash 0.4s ease-in-out; }
-        
-        @keyframes border-pulse { 50% { border-color: var(--color-accent-attack); } }
-        .border-pulse-animation { animation: border-pulse 1s infinite; }
-        
-        .screen-flash { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: white; opacity: 0; pointer-events: none; z-index: 999; }
-        @keyframes screen-flash-anim { from { opacity: 0.4; } to { opacity: 0; } }
-        .flash-animation { animation: screen-flash-anim 0.3s ease-out; }
-        
-        @keyframes selector-pulse {
-            0%, 100% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.5); border-color: rgba(245, 158, 11, 0.7); }
-            50% { box-shadow: 0 0 25px rgba(245, 158, 11, 0.9); border-color: rgba(245, 158, 11, 1); }
+
+        /* --- ANIMATIONS --- */
+        @keyframes pulse {
+            50% { transform: scale(1.05); }
         }
-        #battle-selector { transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); animation: selector-pulse 2s infinite ease-in-out; }
-
-        @keyframes fade-out-and-shrink { to { transform: scale(0.5); opacity: 0; } }
-        .enemy-fade-out { animation: fade-out-and-shrink 0.4s ease-out forwards; }
-        .enemy-defeated { transition: width 0.3s ease-out, padding 0.3s ease-out, margin 0.3s ease-out; width: 0px !important; padding: 0 !important; margin: 0 !important; overflow: hidden; }
-
-        @keyframes pulse-orange {
+        .pulse-animation {
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          10%, 30%, 50%, 70%, 90% { transform: translateX(-3px); }
+          20%, 40%, 60%, 80% { transform: translateX(3px); }
+        }
+        .shake-animation {
+          animation: shake 0.3s ease-in-out;
+        }
+        @keyframes float-up {
+          to {
+            transform: translateY(-50px) translateX(-50%);
+            opacity: 0;
+          }
+        }
+        .damage-number {
+          position: absolute;
+          font-size: 1.75rem; /* Larger text */
+          font-weight: bold;
+          color: white;
+          text-shadow: 0 2px 4px black;
+          pointer-events: none;
+          animation: float-up 1s ease-out forwards;
+        }
+        @keyframes flip-horizontal {
+          50% { transform: scaleX(-1); }
+          100% { transform: scaleX(1); }
+        }
+        .flip-animation {
+          animation: flip-horizontal 0.5s ease-in-out;
+        }
+        @keyframes damage-flash {
             50% {
-                background-color: var(--color-accent-crit);
-                box-shadow: 0 0 20px var(--color-accent-crit);
+                transform: scale(1.7); /* Increased scale for a bigger pop */
+                color: #facc15; /* yellow-400 */
             }
         }
-        .pulse-orange-animation { animation: pulse-orange 1.5s infinite ease-in-out; }
+        .damage-flash-animation {
+            animation: damage-flash 0.4s ease-in-out;
+        }
+        @keyframes border-pulse {
+            50% { border-color: #ef4444; } /* red-500 */
+        }
+        .border-pulse-animation {
+            animation: border-pulse 1s infinite;
+        }
+        .screen-flash {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: white;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 999;
+        }
+        @keyframes screen-flash-anim {
+            from { opacity: 0.4; }
+            to { opacity: 0; }
+        }
+        .flash-animation {
+            animation: screen-flash-anim 0.3s ease-out;
+        }
+        @keyframes selector-pulse {
+            0%, 100% { box-shadow: 0 0 15px rgba(250, 204, 21, 0.5); } /* yellow-400 */
+            50% { box-shadow: 0 0 25px rgba(250, 204, 21, 0.8); }
+        }
+        #battle-selector {
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: selector-pulse 2s infinite ease-in-out;
+        }
 
-        @keyframes glow-orange-text { 50% { filter: drop-shadow(0 0 8px var(--color-accent-crit)); } }
-        .glow-orange-text-animation { animation: glow-orange-text 1.5s infinite ease-in-out; }
+        /* --- NEW ANIMATIONS --- */
+        @keyframes fade-out-and-shrink {
+          to {
+            transform: scale(0.5);
+            opacity: 0;
+          }
+        }
+        .enemy-fade-out {
+          animation: fade-out-and-shrink 0.4s ease-out forwards;
+        }
+        .enemy-defeated {
+            transition: width 0.3s ease-out, padding 0.3s ease-out, margin 0.3s ease-out;
+            width: 0px !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            overflow: hidden;
+        }
+        @keyframes pulse-orange {
+            50% {
+                background-color: #f97316; /* orange-500 */
+                box-shadow: 0 0 20px rgba(249, 115, 22, 0.9);
+            }
+        }
+        .pulse-orange-animation {
+            animation: pulse-orange 1.5s infinite ease-in-out;
+        }
+        @keyframes glow-orange-text {
+            50% {
+                filter: drop-shadow(0 0 8px #f97316);
+            }
+        }
+        .glow-orange-text-animation {
+             animation: glow-orange-text 1.5s infinite ease-in-out;
+        }
         
+        /* Gift Modal Animation */
         @keyframes reward-highlight {
             50% { 
-                border-color: var(--color-accent-attack);
-                box-shadow: 0 0 15px var(--color-accent-gold);
+                border-color: #ef4444; /* red-500 */
+                box-shadow: 0 0 15px rgba(251, 191, 36, 0.8); /* gold */
                 transform: scale(1.03);
             }
         }
-        .reward-highlight-anim { animation: reward-highlight 0.5s ease-in-out; }
-        .reward-selected { border-color: var(--color-accent-attack) !important; box-shadow: 0 0 25px var(--color-accent-gold) !important; transform: scale(1.08) !important; cursor: pointer; }
-        .reward-fade-out { opacity: 0.3; transform: scale(0.95); }
+        .reward-highlight-anim {
+            animation: reward-highlight 0.5s ease-in-out;
+        }
+        .reward-selected {
+            border-color: #ef4444 !important; /* red-500 */
+            box-shadow: 0 0 25px rgba(251, 191, 36, 1) !important;
+            transform: scale(1.08) !important;
+            cursor: pointer;
+        }
+        .reward-fade-out {
+            opacity: 0.3;
+            transform: scale(0.95);
+        }
 
     </style>
 </head>
-<body class="bg-zinc-950 flex items-center justify-center min-h-screen p-2">
+<body class="bg-slate-900 text-white flex items-center justify-center min-h-screen">
 
     <!-- Mobile Screen Container -->
-    <div id="game-container" class="w-full max-w-sm h-[95vh] max-h-[800px] rounded-3xl p-4 flex flex-col justify-between relative overflow-hidden">
+    <div id="game-container" class="w-full max-w-sm h-[90vh] max-h-[800px] bg-slate-800 rounded-3xl shadow-2xl p-4 flex flex-col justify-between relative overflow-hidden border-2 border-slate-700 transition-colors duration-500">
         <div id="screen-flash-overlay" class="screen-flash"></div>
         
-        <!-- Top Section: Meters and Icons -->
-        <header class="flex-shrink-0 space-y-3">
+        <!-- Top Section: Meters and Icons (REVISED LAYOUT) -->
+        <div class="flex-shrink-0 space-y-2 mb-3">
             <!-- Combined Magic/Kill bar -->
             <div class="flex w-full gap-2">
-                <div class="w-1/2 bg-black/30 rounded-full h-4 border border-zinc-700 shadow-inner">
-                    <div id="magic-bar" class="bg-violet-500 h-full rounded-full progress-bar-fill" style="width: 100%; box-shadow: 0 0 10px var(--glow-color-magic);"></div>
+                <div class="w-1/2 bg-slate-700 rounded-full h-5 border-2 border-slate-600 shadow-inner shadow-black/20">
+                    <div id="magic-bar" class="bg-cyan-500 h-full rounded-full progress-bar-fill" style="width: 100%; box-shadow: 0 0 10px rgba(6, 182, 212, 0.7);"></div>
                 </div>
-                <div class="w-1/2 bg-black/30 rounded-full h-4 border border-zinc-700 shadow-inner">
-                    <div id="kill-bar" class="bg-rose-800 h-full rounded-full progress-bar-fill" style="width: 0%; box-shadow: 0 0 10px rgba(153, 27, 27, 0.7);"></div>
+                <div class="w-1/2 bg-slate-700 rounded-full h-5 border-2 border-slate-600 shadow-inner shadow-black/20">
+                    <div id="kill-bar" class="bg-red-800 h-full rounded-full progress-bar-fill" style="width: 0%; box-shadow: 0 0 10px rgba(153, 27, 27, 0.7);"></div>
                 </div>
             </div>
     
             <!-- Player Stats and Currency -->
-            <div class="flex justify-between items-center h-8 text-zinc-200 ui-panel p-2">
+            <div class="flex items-center h-5">
                 <!-- HP/Armor & Status -->
-                <div class="flex items-center text-lg gap-2">
-                    <div class="flex items-center">
-                        <span id="health-icon" class="text-red-500 cursor-pointer transition-transform duration-200">❤️</span>
-                        <span id="health-value" class="font-bold ml-1 w-6 text-left">10</span>
-                    </div>
-                    <div class="flex items-center">
-                        <span class="text-zinc-400">🛡️</span>
-                        <span id="armor-value" class="font-bold ml-1 w-6 text-left">3</span>
-                    </div>
-                     <div id="player-status-effects" class="flex flex-row-reverse items-center text-base space-x-1 space-x-reverse ml-2">
-                        <!-- Status effect icons populated by JS -->
-                        <div class="relative status-effect-icon hidden" data-effect="⚡"><span>⚡</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-zinc-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span></div>
-                        <div class="relative status-effect-icon hidden" data-effect="🌟"><span>🌟</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-zinc-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span></div>
-                        <div class="relative status-effect-icon hidden" data-effect="❇️"><span>❇️</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-zinc-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span></div>
-                        <div class="relative status-effect-icon hidden" data-effect="🐌"><span>🐌</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-zinc-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span></div>
-                        <div class="relative status-effect-icon hidden" data-effect="🕯️"><span>🕯️</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-zinc-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span></div>
-                        <div class="relative status-effect-icon hidden" data-effect="☠️"><span>☠️</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-zinc-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span></div>
+                <div class="flex items-center text-xl">
+                     <span id="health-icon" class="text-red-500 cursor-pointer transition-transform duration-200">❤️</span>
+                    <span id="health-value" class="font-bold ml-2 w-6 text-left">10</span>
+                    <span class="ml-2">🛡️</span>
+                    <span id="armor-value" class="font-bold ml-1 w-6 text-left">3</span>
+                     <div id="player-status-effects" class="flex flex-row-reverse items-center text-base space-x-1 space-x-reverse ml-4">
+                        <div class="relative status-effect-icon hidden" data-effect="⚡"><span>⚡</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-slate-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span></div>
+                        <div class="relative status-effect-icon hidden" data-effect="🌟"><span>🌟</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-slate-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span></div>
+                        <div class="relative status-effect-icon hidden" data-effect="❇️"><span>❇️</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-slate-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span></div>
+                        <div class="relative status-effect-icon hidden" data-effect="🐌"><span>🐌</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-slate-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span></div>
+                        <div class="relative status-effect-icon hidden" data-effect="🕯️"><span>🕯️</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-slate-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span></div>
+                        <div class="relative status-effect-icon hidden" data-effect="☠️"><span>☠️</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold text-shadow bg-slate-900/70 rounded-full w-3.5 h-3.5 flex items-center justify-center leading-none"></span></div>
                     </div>
                 </div>
     
                 <!-- Currency -->
-                <div class="flex items-center gap-3 text-sm">
-                    <div class="flex items-center justify-end gap-1 bg-zinc-900/50 px-2 py-1 rounded-md border border-zinc-700"><span class="text-lg">💰</span><span id="gold-value" class="font-bold w-8 text-left">99</span></div>
-                    <div class="flex items-center justify-end gap-1 bg-zinc-900/50 px-2 py-1 rounded-md border border-zinc-700"><span class="text-lg">🌒</span><span id="moonstone-value" class="font-bold w-8 text-left">3</span></div>
+                <div class="flex items-center gap-2 text-base ml-auto">
+                    <div class="flex items-center justify-end gap-1"><span class="text-lg">💰</span><span id="gold-value" class="font-bold w-8 text-left">99</span></div>
+                    <div class="flex items-center justify-end gap-1"><span class="text-lg">🌒</span><span id="moonstone-value" class="font-bold w-8 text-left">3</span></div>
                 </div>
             </div>
-        </header>
+        </div>
 
         <!-- Middle Section: Game Windows & Grid -->
-        <main class="flex-grow flex flex-col my-4 gap-3">
+        <div class="flex-grow flex flex-col my-4 gap-3">
             <!-- Large Window Above -->
-            <div id="battle-details-window" class="relative ui-panel min-h-[90px] flex items-center justify-center p-4 transition-all duration-300 text-center">
-                <div id="wave-counter" class="absolute top-1 left-3 text-xs font-bold text-zinc-500 italic font-title tracking-wider"></div>
+            <div id="battle-details-window" class="relative bg-slate-900/50 rounded-lg h-[90px] flex items-center justify-center p-4 transition-all duration-300 text-center border border-slate-700 shadow-inner shadow-black/20">
+                <div id="wave-counter" class="absolute top-2 left-3 text-sm font-bold text-slate-400 italic"></div>
                 <div id="battle-details-content" class="w-full h-full flex items-center justify-center">
-                    <button id="start-battle-btn" class="bg-emerald-600 border-emerald-800 border-b-emerald-900 hover:bg-emerald-500 text-white font-bold text-lg py-3 px-10 rounded-lg shadow-lg transition-all duration-200 action-button font-title tracking-widest">Start Battle</button>
+                    <button id="start-battle-btn" class="bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white font-bold text-lg py-3 px-10 rounded-lg shadow-lg transition-all duration-200 active:scale-95 active:brightness-90 disabled:opacity-50 disabled:cursor-not-allowed border border-emerald-400">Start Battle</button>
                 </div>
             </div>
             
             <!-- Enemy/Battle Reel -->
-            <div id="enemy-container" class="relative flex justify-around items-center ui-panel p-2 select-none cursor-grab active:cursor-grabbing overflow-hidden h-24">
+            <div id="enemy-container" class="relative flex justify-around items-center bg-slate-900/50 rounded-lg p-2 select-none cursor-grab active:cursor-grabbing overflow-hidden h-24 border border-slate-700 shadow-inner shadow-black/20">
                 <div id="enemy-slider" class="absolute top-0 left-0 h-full bg-white/10 border-2 border-white/50 rounded-lg pointer-events-none" style="transition: transform 0.2s ease-out;"></div>
                 <div id="battle-selector" class="hidden absolute top-0 left-0 bg-amber-400/20 border-2 border-amber-400 rounded-lg pointer-events-none"></div>
                 <!-- Icons will be populated by JS -->
@@ -221,64 +242,73 @@
             </div>
 
             <!-- Action Button Bar -->
-            <div class="flex-shrink-0 ui-panel p-2">
+            <div class="flex-shrink-0 bg-slate-900/50 rounded-lg p-2 border border-slate-700">
                 <div class="flex justify-around">
-                    <button id="reshuffleBtn" class="action-button relative w-16 h-14 bg-sky-600 border-sky-800 rounded-lg shadow-lg focus:outline-none flex items-center justify-center text-4xl">
+                    <button id="reshuffleBtn" class="relative w-16 h-14 bg-sky-600 rounded-lg shadow-lg focus:outline-none transition-all duration-150 ease-in-out active:bg-sky-700 active:scale-95 active:brightness-90 active:translate-y-px btn-glow flex items-center justify-center text-4xl border border-sky-400">
                         🔃
                         <span id="reshuffle-counter" class="absolute bottom-1 right-2 text-sm font-bold text-white text-shadow"></span>
                     </button>
-                    <button id="attackBtn" class="action-button w-16 h-14 bg-rose-700 border-rose-900 rounded-lg shadow-lg focus:outline-none flex items-center justify-center text-2xl text-white">🗡️<span id="attack-value" class="font-bold">10</span></button>
-                    <button id="critBtn" class="action-button w-16 h-14 bg-amber-600 border-amber-800 rounded-lg shadow-lg focus:outline-none flex items-center justify-center text-white text-xl font-bold"><span id="crit-chance">10</span>%</button>
+                    <button id="attackBtn" class="w-16 h-14 bg-rose-600 rounded-lg shadow-lg focus:outline-none transition-all duration-150 ease-in-out active:bg-rose-700 active:scale-95 active:brightness-90 active:translate-y-px btn-glow flex items-center justify-center text-2xl text-white border border-rose-400">🗡️<span id="attack-value" class="font-bold">10</span></button>
+                    <button id="critBtn" class="w-16 h-14 bg-orange-500 rounded-lg shadow-lg focus:outline-none transition-all duration-150 ease-in-out active:bg-orange-600 active:scale-95 active:brightness-90 active:translate-y-px btn-glow flex items-center justify-center text-white text-xl font-bold border border-orange-300"><span id="crit-chance">10</span>%</button>
                 </div>
             </div>
 
             <!-- Lower area with side window and grid -->
-            <div class="flex-grow flex gap-3">
-                <!-- Window to the left -->
-                <div id="side-window-left" class="ui-panel w-1/2 p-2 flex flex-col items-start overflow-y-auto text-zinc-400">
-                     <p class="p-1 text-xs italic">Select an item or spell to see details.</p>
-                </div>
-
-                <!-- 3x3 Grid -->
-                <div class="grid grid-cols-3 grid-rows-3 gap-2 w-1/2 aspect-square">
-                    <!-- Base button styles -->
-                    <button class="equip-slot action-button relative bg-black/30 border-violet-800 rounded-lg shadow-md text-3xl flex items-center justify-center"></button>
-                    <button class="equip-slot action-button relative bg-black/30 border-violet-800 rounded-lg shadow-md text-3xl flex items-center justify-center"></button>
-                    <button class="equip-slot action-button relative bg-black/30 border-violet-800 rounded-lg shadow-md text-3xl flex items-center justify-center"></button>
-                    
-                    <button id="flameheartBtn" class="action-button bg-rose-900 border-rose-950 rounded-lg shadow-md text-3xl flex items-center justify-center">❤️‍🔥</button>
-                    <button id="frostbiteBtn" class="action-button bg-cyan-800 border-cyan-950 rounded-lg shadow-md text-3xl flex items-center justify-center">❄️</button>
-                    <button id="armorheartBtn" class="action-button bg-gray-600 border-gray-800 rounded-lg shadow-md text-3xl flex items-center justify-center">🩶</button>
-                    
-                    <button id="fortunesBtn" class="action-button bg-violet-700 border-violet-900 rounded-lg text-3xl shadow-lg flex items-center justify-center">🔮</button>
-                    <button id="buildBtn" class="action-button bg-stone-600 border-stone-800 rounded-lg text-3xl shadow-lg flex items-center justify-center">🔨</button>
-                    <button id="shopBtn" class="action-button bg-amber-600 border-amber-800 rounded-lg text-3xl shadow-lg flex items-center justify-center">🪙</button>
+            <div class="flex-grow flex flex-col bg-slate-900/50 rounded-lg p-2 border border-slate-700 shadow-inner shadow-black/20">
+                <div class="flex gap-3 h-full">
+                    <!-- Window to the left -->
+                    <div id="side-window-left" class="w-1/2 flex flex-col items-start overflow-hidden">
+                         <!-- Spell descriptions / Battle Log will appear here -->
+                    </div>
+    
+                    <!-- 3x3 Grid -->
+                    <div class="grid grid-cols-3 grid-rows-3 gap-2 w-1/2 aspect-square">
+                        <!-- Base button styles -->
+                        <button class="equip-slot relative bg-blue-900/50 rounded-lg shadow-md focus:outline-none transition-all duration-150 active:bg-blue-800/50 active:scale-95 active:brightness-90 active:translate-y-px btn-glow text-3xl flex items-center justify-center border border-blue-600"></button>
+                        <button class="equip-slot relative bg-blue-900/50 rounded-lg shadow-md focus:outline-none transition-all duration-150 active:bg-blue-800/50 active:scale-95 active:brightness-90 active:translate-y-px btn-glow text-3xl flex items-center justify-center border border-blue-600"></button>
+                        <button class="equip-slot relative bg-blue-900/50 rounded-lg shadow-md focus:outline-none transition-all duration-150 active:bg-blue-800/50 active:scale-95 active:brightness-90 active:translate-y-px btn-glow text-3xl flex items-center justify-center border border-blue-600"></button>
+                        
+                        <button id="flameheartBtn" class="bg-cyan-700 rounded-lg shadow-md focus:outline-none transition-all duration-150 active:bg-cyan-800 active:scale-95 active:brightness-90 active:translate-y-px btn-glow text-3xl flex items-center justify-center border border-cyan-500">❤️‍🔥</button>
+                        <button id="frostbiteBtn" class="bg-cyan-700 rounded-lg shadow-md focus:outline-none transition-all duration-150 active:bg-cyan-800 active:scale-95 active:brightness-90 active:translate-y-px btn-glow text-3xl flex items-center justify-center border border-cyan-500">❄️</button>
+                        <button id="armorheartBtn" class="bg-cyan-700 rounded-lg shadow-md focus:outline-none transition-all duration-150 active:bg-cyan-800 active:scale-95 active:brightness-90 active:translate-y-px btn-glow text-3xl flex items-center justify-center border border-cyan-500">🩶</button>
+                        
+                        <button id="fortunesBtn" class="bg-violet-600 rounded-lg text-3xl shadow-lg focus:outline-none transition-all duration-150 active:bg-violet-700 active:scale-95 active:brightness-90 active:translate-y-px btn-glow flex items-center justify-center border border-violet-400">🔮</button>
+                        <button id="buildBtn" class="bg-slate-500 rounded-lg text-3xl shadow-lg focus:outline-none transition-all duration-150 active:bg-slate-600 active:scale-95 active:brightness-90 active:translate-y-px btn-glow flex items-center justify-center border border-slate-400">🔨</button>
+                        <button id="shopBtn" class="bg-amber-500 rounded-lg text-3xl shadow-lg focus:outline-none transition-all duration-150 active:bg-amber-600 active:scale-95 active:brightness-90 active:translate-y-px btn-glow flex items-center justify-center border border-amber-300">🪙</button>
+                    </div>
                 </div>
             </div>
-        </main>
+        </div>
 
-        <!-- MODAL WINDOWS (Restyled for consistency) -->
-        <div class="modal-backdrop hidden absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-30 p-4" id="fortunesModal">
-            <div class="relative ui-panel p-4 shadow-xl border-violet-500 w-full max-w-xs">
+        <!-- MODAL WINDOWS -->
+        <!-- Fortunes Modal -->
+        <div id="fortunesModal" class="hidden absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-30 p-4">
+            <div class="relative bg-slate-900/80 rounded-xl p-4 shadow-xl border border-violet-500 w-full max-w-xs">
                 <div id="fortunes-content" class="w-full text-lg text-white space-y-4 text-center"></div>
             </div>
         </div>
-        <div class="modal-backdrop hidden absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-30 p-4" id="buildModal">
-            <div class="relative ui-panel p-4 shadow-xl border-stone-500 w-full max-w-xs">
+
+        <!-- Build Modal -->
+        <div id="buildModal" class="hidden absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-30 p-4">
+            <div class="relative bg-slate-900/80 rounded-xl p-4 shadow-xl border border-slate-500 w-full max-w-xs">
                 <div class="w-full text-lg text-white space-y-4">
-                    <div class="flex justify-between items-center"><span class="font-semibold text-zinc-300">WEAPON</span><button data-slot-type="weapon" class="action-button w-24 h-14 bg-zinc-700 border-zinc-900 rounded-lg flex items-center justify-center text-3xl"></button></div>
-                    <div class="flex justify-between items-center"><span class="font-semibold text-zinc-300">ARMOR</span><button data-slot-type="armor" class="action-button w-24 h-14 bg-zinc-700 border-zinc-900 rounded-lg flex items-center justify-center text-3xl"></button></div>
-                    <div class="flex justify-between items-center"><span class="font-semibold text-zinc-300">RING</span><button data-slot-type="ring" class="action-button w-24 h-14 bg-zinc-700 border-zinc-900 rounded-lg flex items-center justify-center text-3xl"></button></div>
+                    <div class="flex justify-between items-center"><span class="font-semibold text-slate-300">WEAPON</span><button data-slot-type="weapon" class="w-24 h-14 bg-slate-700 rounded-lg btn-glow active:bg-slate-600 flex items-center justify-center text-3xl border border-slate-600"></button></div>
+                    <div class="flex justify-between items-center"><span class="font-semibold text-slate-300">ARMOR</span><button data-slot-type="armor" class="w-24 h-14 bg-slate-700 rounded-lg btn-glow active:bg-slate-600 flex items-center justify-center text-3xl border border-slate-600"></button></div>
+                    <div class="flex justify-between items-center"><span class="font-semibold text-slate-300">RING</span><button data-slot-type="ring" class="w-24 h-14 bg-slate-700 rounded-lg btn-glow active:bg-slate-600 flex items-center justify-center text-3xl border border-slate-600"></button></div>
                 </div>
             </div>
         </div>
-        <div class="modal-backdrop hidden absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-30 p-4" id="shopModal">
-            <div class="relative ui-panel p-4 shadow-xl border-amber-500 w-full max-w-xs">
+
+        <!-- Shop Modal -->
+        <div id="shopModal" class="hidden absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-30 p-4">
+            <div class="relative bg-slate-900/80 rounded-xl p-4 shadow-xl border border-amber-500 w-full max-w-xs">
                 <div id="shop-items-container" class="w-full max-w-xs text-lg text-white space-y-2"></div>
             </div>
         </div>
-        <div class="modal-backdrop hidden absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50" id="reelModal">
-            <div class="relative ui-panel p-3 shadow-xl">
+
+        <!-- Equipment Reel Modal -->
+        <div id="reelModal" class="hidden absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+            <div class="relative bg-slate-900/80 rounded-xl p-3 shadow-xl border border-slate-700">
                 <div id="reel-items" class="flex gap-2 text-3xl">
                     <button class="reel-item p-1 rounded-lg transition-transform active:scale-95">☠️</button>
                     <button class="reel-item p-1 rounded-lg transition-transform active:scale-95">🕯️</button>
@@ -289,34 +319,39 @@
                 </div>
             </div>
         </div>
-        <div class="modal-backdrop hidden absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-40" id="equipmentChoiceModal">
-            <div class="relative ui-panel p-4 shadow-xl w-full max-w-xs">
+        
+        <!-- Equipment Choice Modal -->
+        <div id="equipmentChoiceModal" class="hidden absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-40">
+            <div class="relative bg-slate-900/80 rounded-xl p-4 shadow-xl border border-slate-700 w-full max-w-xs">
                 <div id="equipmentChoiceContent" class="text-lg text-white space-y-3"></div>
             </div>
         </div>
-        <div class="modal-backdrop hidden absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4" id="giftModal">
-            <div class="relative ui-panel p-6 shadow-xl border border-red-500 w-full max-w-xs text-center">
-                <h2 class="text-2xl font-bold mb-4 text-amber-300 font-title">A Gift!</h2>
+
+        <!-- Gift Reward Modal -->
+        <div id="giftModal" class="hidden absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div class="relative bg-slate-900/80 rounded-xl p-6 shadow-xl border border-red-500 w-full max-w-xs text-center">
+                <h2 class="text-2xl font-bold mb-4 text-amber-300">A Gift!</h2>
                 <div id="gift-rewards" class="space-y-3 mb-6">
-                    <div data-reward="armor" class="gift-reward-item bg-zinc-800 p-3 rounded-lg border-2 border-transparent transition-all duration-400 flex items-center justify-center">
-                        <span class="text-2xl">🛡️</span><span class="ml-2 font-semibold text-lg">+1 Max Armor</span>
+                    <div data-reward="armor" class="gift-reward-item bg-slate-800 p-3 rounded-lg border-2 border-transparent transition-all duration-400 flex items-center justify-center">
+                        <span class="text-2xl">🛡️</span>
+                        <span class="ml-2 font-semibold text-lg">+1 Max Armor</span>
                     </div>
-                    <div data-reward="gold" class="gift-reward-item bg-zinc-800 p-3 rounded-lg border-2 border-transparent transition-all duration-400 flex items-center justify-center">
-                        <span class="text-2xl">💰</span><span class="ml-2 font-semibold text-lg">+15 Gold</span>
+                    <div data-reward="gold" class="gift-reward-item bg-slate-800 p-3 rounded-lg border-2 border-transparent transition-all duration-400 flex items-center justify-center">
+                        <span class="text-2xl">💰</span>
+                        <span class="ml-2 font-semibold text-lg">+15 Gold</span>
                     </div>
-                    <div data-reward="crit" class="gift-reward-item bg-zinc-800 p-3 rounded-lg border-2 border-transparent transition-all duration-400 flex items-center justify-center">
-                        <span class="text-2xl">💥</span><span class="ml-2 font-semibold text-lg">+1% Crit Chance</span>
+                    <div data-reward="crit" class="gift-reward-item bg-slate-800 p-3 rounded-lg border-2 border-transparent transition-all duration-400 flex items-center justify-center">
+                        <span class="text-2xl">💥</span>
+                        <span class="ml-2 font-semibold text-lg">+1% Crit Chance</span>
                     </div>
                 </div>
             </div>
         </div>
 
+
     </div>
 
     <script>
-        // --- JAVASCRIPT LOGIC (UNCHANGED) ---
-        // I have not modified your gameplay logic, functions, or variables.
-        // All changes are purely related to HTML structure and CSS classes for the new design.
         document.addEventListener('DOMContentLoaded', () => {
             // --- DOM Elements ---
             const gameContainer = document.getElementById('game-container');
@@ -390,7 +425,7 @@
                 { text: 'Efficient Magic', color: 'text-sky-400' },{ text: 'Bartering Edge', color: 'text-sky-400' },{ text: 'Archer\'s Edge', color: 'text-amber-400' },{ text: 'Enchantment', color: 'text-amber-400' },{ text: 'Battle Grace', color: 'text-amber-400' },{ text: 'Prolonged Torment', color: 'text-pink-400' },{ text: 'Thief Strike', color: 'text-pink-400' },{ text: 'Toxic Decay', color: 'text-pink-400' }
             ];
 
-            // --- State (Unchanged) ---
+            // --- State (MODIFIED) ---
             let playerState = {
                 gold: 99, moonstones: 3, rerolls: 5, killCount: 0, 
                 maxHealth: 10, health: 10, armor: 3, maxArmor: 3,
@@ -400,7 +435,7 @@
                 inventory: { tonic: 0, gem: 0, cross: 0, fairy: 0, moonstone: 3, }, 
                 statusEffects: { '☠️': 0, '🕯️': 0, '🐌': 0, '❇️': 0, '🌟': 0, '⚡': 0 }
             };
-            playerState.health = playerState.maxHealth; 
+            playerState.health = playerState.maxHealth; // Ensure health starts at max
 
             let waveCount = 1;
             let battleStarted = false;
@@ -440,7 +475,7 @@
                 setTimeout(() => { damageEl.remove(); }, 1000);
             };
 
-            // --- UI Update Logic (Unchanged) ---
+            // --- UI Update Logic (MODIFIED) ---
             const updateStatusEffectsUI = () => {
                 const statusEffectIcons = document.querySelectorAll('.status-effect-icon');
                 statusEffectIcons.forEach(icon => {
@@ -477,22 +512,28 @@
                 
                 if (isCharged) {
                     killBarEl.style.width = '100%';
-                    killBarEl.classList.remove('bg-rose-800');
-                    killBarEl.classList.add('bg-amber-500', 'pulse-orange-animation');
-                    killBarEl.style.boxShadow = '0 0 10px var(--color-accent-crit)';
+                    killBarEl.classList.remove('bg-red-800');
+                    killBarEl.classList.add('bg-orange-500', 'pulse-orange-animation');
+                    killBarEl.style.boxShadow = '0 0 10px rgba(249, 115, 22, 0.7)';
                     critBtn.classList.add('glow-orange-text-animation');
                     healthIconEl.classList.add('glow-orange-text-animation');
                 } else {
                     const killPercentage = (playerState.killCount / 10) * 100;
                     killBarEl.style.width = `${killPercentage}%`;
-                    killBarEl.classList.add('bg-rose-800');
-                    killBarEl.classList.remove('bg-amber-500', 'pulse-orange-animation');
+                    killBarEl.classList.add('bg-red-800');
+                    killBarEl.classList.remove('bg-orange-500', 'pulse-orange-animation');
                     killBarEl.style.boxShadow = '0 0 10px rgba(153, 27, 27, 0.7)';
                     critBtn.classList.remove('glow-orange-text-animation');
                     healthIconEl.classList.remove('glow-orange-text-animation');
                 }
                 
-                reshuffleBtn.disabled = playerState.rerolls <= 0 || battleStarted;
+                if (playerState.rerolls <= 0 || battleStarted) {
+                    reshuffleBtn.disabled = true;
+                    reshuffleBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                } else {
+                     reshuffleBtn.disabled = false;
+                    reshuffleBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
             };
             const updateWaveCounterUI = () => { if (waveCounterEl) waveCounterEl.textContent = `Wave ${waveCount}`; };
             const updateEnemyDisplay = (enemy) => {
@@ -504,19 +545,19 @@
                     const hp = enemy.hp;
                     const dmg = enemy.isStamped ? '2' : '1';
                     const specialIcon = data.special ? ` ${data.special}` : '';
-                    statsHtml = `<div class="text-sm text-zinc-300 mt-1">❤️ ${hp} 💥 ${dmg}${specialIcon}</div>`;
+                    statsHtml = `<div class="text-sm text-slate-300 mt-1">❤️ ${hp} 💥 ${dmg}${specialIcon}</div>`;
                 }
                 battleDetailsContentEl.innerHTML = `
                     <div class="h-full flex flex-col justify-center items-center">
-                        <div class="text-xl font-bold text-shadow">${enemy.emoji} ${name}</div>
+                        <div class="text-xl font-bold">${enemy.emoji} ${name}</div>
                         ${statsHtml}
                     </div>`;
             };
             const displayInfoInSideWindow = (title, ...descriptions) => {
                 if (battleStarted) return; 
                  sideWindowLeft.innerHTML = `
-                    <div class="text-zinc-200 text-sm text-left w-full p-1">
-                        <p class="font-bold mb-1 text-white">${title}</p>
+                    <div class="text-white text-sm text-left w-full p-1">
+                        <p class="font-bold mb-1">${title}</p>
                         ${descriptions.map(d => `<p>${d}</p>`).join('')}
                     </div>`;
             };
@@ -526,19 +567,19 @@
                 displayInfoInSideWindow(spell.title, spell.desc1, spell.desc2);
             };
 
-            // --- Fortunes Modal Logic (Unchanged) ---
+            // --- Fortunes Modal Logic ---
             const showFortunes = () => {
                 fortunePhase = 'fortune';
                 fortunesContent.innerHTML = ''; 
                 const title = document.createElement('h2');
-                title.className = 'text-2xl font-bold mb-4 text-violet-300 font-title';
+                title.className = 'text-2xl font-bold mb-4 text-violet-300';
                 title.textContent = 'FORTUNE';
                 fortunesContent.appendChild(title);
                 const shuffled = shuffle([...fortunes]);
                 const options = shuffled.slice(0, 3);
                 options.forEach(fortune => {
                     const button = document.createElement('button');
-                    button.className = `action-button bg-zinc-700 border-zinc-900 rounded-lg px-4 py-3 w-full whitespace-normal leading-tight ${fortune.color}`;
+                    button.className = `bg-slate-700 rounded-lg px-4 py-3 btn-glow active:bg-slate-600 w-full whitespace-normal leading-tight ${fortune.color} border border-slate-600`;
                     button.textContent = fortune.text;
                     button.addEventListener('click', (e) => {
                         e.stopPropagation(); 
@@ -554,14 +595,14 @@
                 fortunesContent.innerHTML = ''; 
                 if (selectedFortunes.length < 4) {
                     const title = document.createElement('h2');
-                    title.className = 'text-2xl font-bold mb-4 text-violet-300 font-title';
+                    title.className = 'text-2xl font-bold mb-4 text-violet-300';
                     title.textContent = 'SACRIFICE';
                     fortunesContent.appendChild(title);
                     const shuffledSacrifices = shuffle([...sacrifices]);
                     const selectedSacrifices = shuffledSacrifices.slice(0, 2);
                     selectedSacrifices.forEach(sacrifice => {
                         const button = document.createElement('button');
-                        button.className = 'action-button bg-zinc-700 border-zinc-900 rounded-lg px-4 py-3 w-full whitespace-normal leading-tight';
+                        button.className = 'bg-slate-700 rounded-lg px-4 py-3 btn-glow active:bg-slate-600 w-full whitespace-normal leading-tight border border-slate-600';
                         button.textContent = sacrifice;
                         button.addEventListener('click', (e) => {
                             e.stopPropagation(); 
@@ -572,18 +613,18 @@
                     });
                 } else {
                     const fullMessage = document.createElement('p');
-                    fullMessage.className = 'text-lg text-zinc-300';
+                    fullMessage.className = 'text-lg text-slate-300';
                     fullMessage.textContent = "Your destiny is sealed.";
                     fortunesContent.appendChild(fullMessage);
                 }
                 if (selectedFortunes.length > 0) {
                     const fortuneListContainer = document.createElement('div');
-                    fortuneListContainer.className = 'mt-6 pt-4 border-t border-zinc-600 w-full';
+                    fortuneListContainer.className = 'mt-6 pt-4 border-t border-slate-600 w-full';
                     const fortuneList = document.createElement('div');
-                    fortuneList.className = 'flex flex-wrap justify-center gap-2 text-xs text-zinc-400 text-center';
+                    fortuneList.className = 'flex flex-wrap justify-center gap-2 text-xs text-slate-400 text-center';
                     selectedFortunes.forEach(sf => {
                         const fortuneEntry = document.createElement('div');
-                        fortuneEntry.className = 'p-2 bg-zinc-900/50 rounded w-2/5';
+                        fortuneEntry.className = 'p-2 bg-slate-900/50 rounded w-2/5';
                         fortuneEntry.innerHTML = `<p class="font-semibold">${sf.sacrifice}</p><p>${sf.fortune}</p>`;
                         fortuneList.appendChild(fortuneEntry);
                     });
@@ -592,7 +633,7 @@
                 }
             };
 
-            // --- Shop Logic (Unchanged) ---
+            // --- Shop Logic ---
             const renderShop = () => {
                 shopItemsContainer.innerHTML = '';
                 shopItems.forEach(item => {
@@ -601,10 +642,10 @@
                     itemDiv.className = 'flex justify-between items-center';
                     let buttonHtml;
                     if (battleStarted) {
-                        buttonHtml = `<button data-item-id="${item.id}" class="action-button bg-emerald-600 border-emerald-800 rounded-lg px-4 py-1" ${itemOwned > 0 ? '' : 'disabled'}>USE</button>`;
+                        buttonHtml = `<button data-item-id="${item.id}" class="bg-emerald-600 rounded-lg px-4 py-1 btn-glow active:bg-emerald-700 border border-emerald-400 ${itemOwned > 0 ? '' : 'opacity-50 cursor-not-allowed'}" ${itemOwned === 0 ? 'disabled' : ''}>USE</button>`;
                     } else {
                         const canAfford = playerState.gold >= item.cost;
-                        buttonHtml = `<button data-item-id="${item.id}" class="action-button bg-zinc-700 border-zinc-900 rounded-lg px-3 py-1" ${!canAfford ? 'disabled' : ''}>🪙${item.cost}</button>`;
+                        buttonHtml = `<button data-item-id="${item.id}" class="bg-slate-700 rounded-lg px-3 py-1 btn-glow active:bg-slate-600 border border-slate-600 ${canAfford ? '' : 'opacity-50 cursor-not-allowed'}" ${!canAfford ? 'disabled' : ''}>🪙${item.cost}</button>`;
                     }
                     itemDiv.innerHTML = `<span class="whitespace-normal">${item.name} (${itemOwned})</span>${buttonHtml}`;
                     shopItemsContainer.appendChild(itemDiv);
@@ -628,7 +669,7 @@
                 }
             });
 
-            // --- Modal, Equipment & Build Logic (Unchanged) ---
+            // --- Modal, Equipment & Build Logic ---
             const openModal = (modalToOpen) => {
                 if (!modalToOpen) return;
                 if (modalToOpen.id === 'shopModal') renderShop();
@@ -691,11 +732,12 @@
                     }
                 });
             });
+            reelModal.addEventListener('click', (e) => { if (e.target === reelModal) reelModal.classList.add('hidden'); });
             const openEquipmentChoiceModal = (slotType) => {
                 equipmentChoiceContent.innerHTML = '';
                 equipmentOptions[slotType].forEach(item => {
                     const itemButton = document.createElement('button');
-                    itemButton.className = 'action-button bg-zinc-700 border-zinc-900 rounded-lg px-4 py-3 w-full text-left flex items-center whitespace-normal';
+                    itemButton.className = 'bg-slate-700 rounded-lg px-4 py-3 btn-glow active:bg-slate-600 w-full text-left flex items-center whitespace-normal border border-slate-600';
                     itemButton.innerHTML = `<span class="text-2xl w-10">${item.emoji}</span> <span>${item.name}</span>`;
                     itemButton.addEventListener('click', (e) => {
                         e.stopPropagation();
@@ -725,8 +767,9 @@
                     openEquipmentChoiceModal(btn.dataset.slotType);
                 });
             });
-            
-            // --- Enemy Slider & Reshuffle Logic (Unchanged) ---
+            equipmentChoiceModal.addEventListener('click', (e) => { if (e.target === equipmentChoiceModal) equipmentChoiceModal.classList.add('hidden'); });
+
+            // --- Enemy Slider & Reshuffle Logic ---
             const calculateSliderDimensions = () => {
                 if(battleStarted) return {};
                 const containerWidth = enemyContainer.offsetWidth;
@@ -821,18 +864,19 @@
                 }, fadeOutDuration);
             };
 
-            // --- Spell Logic (Unchanged) ---
+            // --- Spell Logic ---
             const executeSpell = (spellKey) => {
-                if (!battleStarted || playerState.magic < 50) return; 
+                if (!battleStarted || playerState.magic < 50) return; // Not enough magic or not in battle
 
                 playerState.magic -= 50;
-                updatePlayerUI();
+                updatePlayerUI(); // Updates magic bar as well
 
                 const targetEnemy = currentEnemiesInBattle[currentBattleTargetIndex];
                 const enemyWrapper = targetEnemy?.ref;
 
                 switch (spellKey) {
                     case 'flameheart':
+                        // Deal 5 damage
                         if (targetEnemy && !targetEnemy.isDefeated && !targetEnemy.isGift) {
                             const damage = 5;
                             showDamageNumber(damage, enemyWrapper);
@@ -844,12 +888,15 @@
                                 handleEnemyDefeat(currentBattleTargetIndex);
                             }
                         }
+                        // Heal 5 HP
                         playerState.health = Math.min(playerState.maxHealth, playerState.health + 5);
-                        healthValueEl.classList.add('damage-flash-animation');
+                        healthValueEl.classList.add('damage-flash-animation'); // Use existing flash for feedback
                         setTimeout(() => healthValueEl.classList.remove('damage-flash-animation'), 400);
                         updatePlayerUI();
                         break;
+
                     case 'frostbite':
+                        // Deal 5 damage
                         if (targetEnemy && !targetEnemy.isDefeated && !targetEnemy.isGift) {
                             const damage = 5;
                             showDamageNumber(damage, enemyWrapper);
@@ -861,8 +908,11 @@
                                 handleEnemyDefeat(currentBattleTargetIndex);
                             }
                         }
+                        // Future: inflict 🐌
                         break;
+
                     case 'armorheart':
+                        // Add current health to armor
                         playerState.armor += playerState.health;
                         updatePlayerUI();
                         armorValueEl.classList.add('damage-flash-animation');
@@ -871,20 +921,29 @@
                 }
             };
 
-            // --- Initial Setup & Listeners (Unchanged) ---
+            // --- Initial Setup & Listeners ---
             flameheartBtn.addEventListener('click', () => {
-                if (battleStarted) executeSpell('flameheart');
-                else displaySpellInfo('flameheart');
+                if (battleStarted) {
+                    executeSpell('flameheart');
+                } else {
+                    displaySpellInfo('flameheart');
+                }
             });
             frostbiteBtn.addEventListener('click', () => {
-                if (battleStarted) executeSpell('frostbite');
-                else displaySpellInfo('frostbite');
+                if (battleStarted) {
+                    executeSpell('frostbite');
+                } else {
+                    displaySpellInfo('frostbite');
+                }
             });
             armorheartBtn.addEventListener('click', () => {
-                if (battleStarted) executeSpell('armorheart');
-                else displaySpellInfo('armorheart');
+                if (battleStarted) {
+                    executeSpell('armorheart');
+                } else {
+                    displaySpellInfo('armorheart');
+                }
             });
-            
+
             Object.values(modalMap).forEach(item => {
                 item.button.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -907,7 +966,7 @@
                  battleSelector.style.transform = `translate(${leftOffset}px, ${topOffset}px)`;
             };
             
-            // --- Battle Mode Interaction (Unchanged) ---
+            // --- Battle Mode Interaction (Tappable/Slidable) ---
             const battleDragStart = (e) => {
                 const coords = getEventCoords(e); startX = coords.x; startY = coords.y; dragStartTime = Date.now(); isDragging = false; 
                 document.addEventListener('mousemove', battleDragMove);
@@ -942,7 +1001,8 @@
                 setTimeout(() => { isDragging = false; }, 50);
             };
 
-            // --- BATTLE LOGIC (Unchanged) ---
+            // --- BATTLE LOGIC (MODIFIED) ---
+
             const playerTakesDamage = (damage) => {
                 const damageAbsorbed = Math.min(playerState.armor, damage);
                 if (damageAbsorbed > 0) {
@@ -968,6 +1028,7 @@
                     gameContainer.classList.remove('border-pulse-animation', 'border-red-500');
                 }
             };
+
             const enemyAttackPhase = async () => {
                 if (playerState.health <= 0) return;
                 attackBtn.disabled = true;
@@ -990,7 +1051,7 @@
                 if (playerState.health > 0) attackBtn.disabled = false;
             };
             const endBattle = () => {
-                battleStarted = false; currentEnemiesInBattle = []; playerState.armor = playerState.maxArmor; sideWindowLeft.innerHTML = '<p class="p-1 text-xs italic text-zinc-400">Select an item or spell to see details.</p>'; 
+                battleStarted = false; currentEnemiesInBattle = []; playerState.armor = playerState.maxArmor; sideWindowLeft.innerHTML = ''; 
                 playerState.magic = playerState.maxMagic;
                 playerState.statusEffects = { '☠️': 0, '🕯️': 0, '🐌': 0, '❇️': 0, '🌟': 0, '⚡': 0 };
                 updateStatusEffectsUI(); waveCount++; updateWaveCounterUI();
@@ -998,7 +1059,7 @@
                 enemySlider = document.getElementById('enemy-slider'); battleSelector = document.getElementById('battle-selector');
                 enemyContainer.classList.remove('justify-center', 'gap-4', 'cursor-default');
                 enemyContainer.classList.add('justify-around', 'cursor-grab', 'active:cursor-grabbing');
-                battleDetailsContentEl.innerHTML = '<button id="start-battle-btn" class="bg-emerald-600 border-emerald-800 border-b-emerald-900 hover:bg-emerald-500 text-white font-bold text-lg py-3 px-10 rounded-lg shadow-lg transition-all duration-200 action-button font-title tracking-widest">Start Battle</button>';
+                battleDetailsContentEl.innerHTML = '<button id="start-battle-btn" class="bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white font-bold text-lg py-3 px-10 rounded-lg shadow-lg transition-all duration-200 active:scale-95 active:brightness-90 disabled:opacity-50 disabled:cursor-not-allowed border border-emerald-400">Start Battle</button>';
                 startBattleBtn = document.getElementById('start-battle-btn');
                 if (startBattleBtn) startBattleBtn.addEventListener('click', startBattle);
                 updatePlayerUI();
@@ -1010,25 +1071,39 @@
                     setTimeout(endBattle, 1500);
                 }
             };
+            
             const findNextTarget = (startIndex) => {
                 const numEnemies = currentEnemiesInBattle.length;
-                if (currentEnemiesInBattle.every(e => e.isDefeated)) { return -1; }
+                if (currentEnemiesInBattle.every(e => e.isDefeated)) {
+                    return -1;
+                }
                 let nextIndex = startIndex;
-                do { nextIndex = (nextIndex + 1) % numEnemies; } while (currentEnemiesInBattle[nextIndex].isDefeated);
+                do {
+                    nextIndex = (nextIndex + 1) % numEnemies;
+                } while (currentEnemiesInBattle[nextIndex].isDefeated);
                 return nextIndex;
             };
+
             const handleEnemyDefeat = (defeatedIndex) => {
                 const enemy = currentEnemiesInBattle[defeatedIndex];
                 if (!enemy || enemy.isDefeated) return;
+
                 enemy.isDefeated = true;
                 const enemyWrapper = enemy.ref;
                 enemyWrapper.style.pointerEvents = 'none';
                 enemyWrapper.classList.add('enemy-fade-out');
-                if (!enemy.isGift) { playerState.killCount += enemy.isStamped ? 3 : 1; }
+
+                // Gift reward is handled by the new popup, so we only update kill count for non-gifts.
+                if (!enemy.isGift) {
+                    playerState.killCount += enemy.isStamped ? 3 : 1;
+                }
                 updatePlayerUI();
+                
                 const nextTargetIndex = findNextTarget(defeatedIndex);
+
                 setTimeout(() => {
                     enemyWrapper.classList.add('enemy-defeated'); 
+                    
                     if (nextTargetIndex !== -1) {
                         currentBattleTargetIndex = nextTargetIndex;
                         const nextTargetWrapper = currentEnemiesInBattle[nextTargetIndex].ref;
@@ -1038,26 +1113,47 @@
                         battleSelector.classList.add('hidden');
                     }
                 }, 400);
+
                 checkBattleEnd();
             };
-            // --- Gift Modal Logic (Unchanged) ---
-            const awardGiftBuff = (rewardType) => {
+
+            // --- Gift Modal Logic ---
+            const getTieredReward = (baseValue) => {
+                const rand = Math.random();
+                if (rand < 0.5) { // 50% chance
+                    return { value: baseValue, color: 'text-sky-400' };
+                } else if (rand < 0.85) { // 35% chance
+                    return { value: baseValue * 2, color: 'text-amber-400' };
+                } else { // 15% chance
+                    return { value: baseValue * 4, color: 'text-pink-400' };
+                }
+            };
+
+            const awardGiftBuff = (rewardType, amount) => {
                 switch (rewardType) {
-                    case 'armor': playerState.maxArmor += 1; playerState.armor += 1; break;
-                    case 'gold': playerState.gold += 15; break;
-                    case 'crit': playerState.baseCritChance += 1; break;
+                    case 'armor':
+                        playerState.maxArmor += amount;
+                        playerState.armor += amount;
+                        break;
+                    case 'gold':
+                        playerState.gold += amount;
+                        break;
+                    case 'crit':
+                        playerState.baseCritChance += amount;
+                        break;
                 }
                 updatePlayerUI();
             };
+
             const startGiftRandomizer = () => {
                 const rewards = Array.from(giftRewardItems);
                 const numRewards = rewards.length;
-                const rewardTypes = ['armor', 'gold', 'crit'];
                 const winningIndex = Math.floor(Math.random() * numRewards);
-                const winningReward = rewardTypes[winningIndex];
-                let delayMs = 150; 
+
+                let delayMs = 150;
                 const totalSpins = 10 + winningIndex;
                 let spinCount = 0;
+
                 const continueGameHandler = async () => {
                     giftModal.classList.add('hidden');
                     handleEnemyDefeat(currentBattleTargetIndex);
@@ -1067,9 +1163,11 @@
                         attackBtn.disabled = false;
                     }
                 };
+
                 const spin = () => {
                     if (spinCount >= totalSpins) {
                         rewards.forEach(r => r.classList.remove('reward-highlight-anim'));
+                        
                         rewards.forEach((rewardEl, index) => {
                             if (index === winningIndex) {
                                 rewardEl.classList.add('reward-selected');
@@ -1079,28 +1177,64 @@
                                 rewardEl.classList.add('reward-fade-out');
                             }
                         });
-                        awardGiftBuff(winningReward);
+                        
+                        const winningElement = rewards[winningIndex];
+                        const winningRewardType = winningElement.dataset.reward;
+                        const winningValue = parseInt(winningElement.dataset.value, 10);
+                        awardGiftBuff(winningRewardType, winningValue);
                         return;
                     }
+
                     rewards.forEach(r => r.classList.remove('reward-highlight-anim', 'reward-selected'));
                     const highlightIndex = spinCount % numRewards;
                     rewards[highlightIndex].classList.add('reward-highlight-anim');
-                    if (spinCount > 5) delayMs += 50; 
+
+                    if (spinCount > 5) delayMs += 50;
+
                     spinCount++;
                     setTimeout(spin, delayMs);
                 };
                 spin();
             };
+
             const showGiftPopup = () => {
                 attackBtn.disabled = true;
                 giftModal.classList.remove('hidden');
                 giftRewardItems = document.querySelectorAll('.gift-reward-item');
+
+                const rewardTiers = {
+                    armor: getTieredReward(1),
+                    gold: getTieredReward(15),
+                    crit: getTieredReward(1),
+                };
+
                 giftRewardItems.forEach(item => {
+                    const rewardType = item.dataset.reward;
+                    const rewardData = rewardTiers[rewardType];
+                    
+                    item.dataset.value = rewardData.value;
+
+                    const textSpan = item.querySelector('.font-semibold');
+                    
+                    // Remove previous color classes and add the new one
+                    textSpan.classList.remove('text-sky-400', 'text-amber-400', 'text-pink-400', 'text-white');
+                    textSpan.classList.add(rewardData.color);
+
+                    if (rewardType === 'armor') {
+                        textSpan.textContent = `+${rewardData.value} Max Armor`;
+                    } else if (rewardType === 'gold') {
+                        textSpan.textContent = `+${rewardData.value} Gold`;
+                    } else if (rewardType === 'crit') {
+                        textSpan.textContent = `+${rewardData.value}% Crit Chance`;
+                    }
+
                     item.classList.remove('reward-selected', 'reward-highlight-anim', 'reward-fade-out');
                     item.style.cursor = 'default';
                 });
+
                 startGiftRandomizer();
             };
+
             attackBtn.addEventListener('click', async () => {
                 if (!battleStarted || playerState.health <= 0 || attackBtn.disabled) return;
                 const targetEnemy = currentEnemiesInBattle[currentBattleTargetIndex];
@@ -1108,7 +1242,9 @@
                 const enemyWrapper = targetEnemy.ref;
                 enemyWrapper.classList.add('shake-animation');
                 setTimeout(() => enemyWrapper.classList.remove('shake-animation'), 300);
+
                 let giftOpened = false;
+
                 if (targetEnemy.isGift) {
                     giftOpened = true;
                     showGiftPopup();
@@ -1123,10 +1259,12 @@
                         handleEnemyDefeat(currentBattleTargetIndex);
                     }
                 }
+
                 if (!giftOpened && !currentEnemiesInBattle.every(e => e.isDefeated)) {
                     await enemyAttackPhase();
                 }
             });
+
             critBtn.addEventListener('click', () => {
                 if (playerState.killCount >= 10) {
                     playerState.baseCritChance += 5;
@@ -1134,6 +1272,7 @@
                     updatePlayerUI();
                 }
             });
+
             healthIconEl.addEventListener('click', () => {
                 if (playerState.killCount >= 10) {
                     playerState.maxHealth++;
@@ -1142,6 +1281,7 @@
                     updatePlayerUI();
                 }
             });
+
             const startBattle = () => {
                 if (battleStarted || isReshuffling) return;
                 const flashOverlay = document.getElementById('screen-flash-overlay');
@@ -1174,7 +1314,7 @@
                     enemyWrapper.appendChild(newEnemySpan);
                     if (!enemy.isGift) {
                         const healthBarContainer = document.createElement('div');
-                        healthBarContainer.className = 'w-12 h-2 bg-black/50 rounded-full mt-2 border border-zinc-900';
+                        healthBarContainer.className = 'w-12 h-2 bg-black/50 rounded-full mt-2 border border-slate-900';
                         healthBarContainer.innerHTML = `<div class="h-full bg-rose-600 rounded-full transition-all duration-300" style="width: 100%;"></div>`;
                         enemyWrapper.appendChild(healthBarContainer);
                     }
@@ -1198,7 +1338,7 @@
                 if (!modalMap.shopBtn.modal.classList.contains('hidden')) renderShop();
             };
             
-            // --- Final Setup (Unchanged) ---
+            // --- Final Setup ---
             if(startBattleBtn) startBattleBtn.addEventListener('click', startBattle);
             calculateSliderDimensions();
             window.addEventListener('resize', calculateSliderDimensions);
@@ -1211,6 +1351,8 @@
             updateStatusEffectsUI();
         });
     </script>
+
 </body>
 </html>
+
 
