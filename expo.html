@@ -394,7 +394,7 @@
             };
             const spellDescriptions = {
                 flameheart: { title: "❤️‍🔥 Flameheart:", desc1: "Deal 5 and heal 5 HP.", desc2: "Depletes half magic bar." },
-                frostbite: { title: "❄️ Frostbite:", desc1: "Deal 5 damage.", desc2: "Depletes half magic bar." },
+                frostbite: { title: "❄️ Frostbite:", desc1: "Deal 5 damage & inflict 🐌.", desc2: "Depletes half magic bar." },
                 armorheart: { title: "🩶 Armorheart:", desc1: "Add current health to armor.", desc2: "Depletes half magic bar." }
             };
             const symbolDescriptions = {
@@ -927,12 +927,19 @@
                             targetEnemy.hp = Math.max(0, targetEnemy.hp - damage);
                             const healthBarFill = enemyWrapper.querySelector('.health-bar-fill');
                             if (healthBarFill) healthBarFill.style.width = `${(targetEnemy.hp / targetEnemy.maxHp) * 100}%`;
+                            
+                            // Inflict slow
+                            if (!targetEnemy.statusEffects.includes('🐌')) {
+                                targetEnemy.statusEffects.push('🐌');
+                            }
+                            targetEnemy.lastDebuff = '🐌';
+                            updateEnemyStatusUI(currentBattleTargetIndex);
+
                             updateEnemyDisplay(targetEnemy);
                             if (targetEnemy.hp <= 0) {
                                 handleEnemyDefeat(currentBattleTargetIndex);
                             }
                         }
-                        // Future: inflict 🐌
                         break;
 
                     case 'armorheart':
