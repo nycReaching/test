@@ -84,7 +84,8 @@
         }
         /* --- EMOJI & ANIMATION STYLES (Tweaked for Retro Feel) --- */
         .emoji-gold-glow { filter: none; outline: 2px dotted #FFFF00; outline-offset: 2px; }
-        .emoji-red-stamp { filter: none; color: #FF0000; }
+        /* UPDATED: Changed from color to outline to prevent layout shift */
+        .emoji-red-stamp { outline: 2px solid #FF0000; outline-offset: 2px; }
         @keyframes pulse { 50% { transform: scale(1.05); } }
         .pulse-animation { animation: pulse 1.5s infinite ease-in-out; }
         @keyframes shake {
@@ -143,7 +144,7 @@
             <div class="flex items-center justify-between">
                 <div class="flex items-center text-3xl gap-4">
                     <div class="flex items-center gap-1.5">
-                        <span id="health-icon" class="cursor-pointer transition-transform duration-200">❤️</span>
+                        <span id="health-icon" class="transition-transform duration-200">❤️</span>
                         <span id="health-value" class="w-8 text-left text-2xl">10</span>
                     </div>
                     <div class="flex items-center gap-1.5">
@@ -310,10 +311,25 @@
                 </div>
             </div>
         </div>
+        <!-- ADDED: Kill Meter Upgrade Modal -->
+        <div id="killMeterModal" class="hidden absolute inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+            <div class="relative retro-modal-content p-6 w-full max-w-xs text-center">
+                <h2 class="text-3xl mb-6 text-orange-600">UPGRADE!</h2>
+                <div id="kill-meter-rewards" class="space-y-4">
+                    <button data-upgrade="health" class="retro-btn w-full p-4 text-xl flex items-center justify-center gap-3 bg-slate-400">
+                        <span>❤️</span>
+                        <span>+1 Max Health</span>
+                    </button>
+                    <button data-upgrade="crit" class="retro-btn w-full p-4 text-xl flex items-center justify-center gap-3 bg-slate-400">
+                        <span>💥</span>
+                        <span>+5% Crit Chance</span>
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        // Game Logic remains unchanged.
         document.addEventListener('DOMContentLoaded', () => {
             // --- DOM Elements ---
             const gameContainer = document.getElementById('game-container');
@@ -352,6 +368,8 @@
             const critChanceEl = document.getElementById('crit-chance');
             const giftModal = document.getElementById('giftModal');
             let giftRewardItems = document.querySelectorAll('.gift-reward-item');
+            const killMeterModal = document.getElementById('killMeterModal');
+            const killMeterRewards = document.getElementById('kill-meter-rewards');
             
             const modalMap = {
                 fortunesBtn: { modal: document.getElementById('fortunesModal'), button: document.getElementById('fortunesBtn') },
@@ -487,16 +505,16 @@
                     killBarEl.style.width = '100%';
                     killBarEl.classList.remove('bg-red-600');
                     killBarEl.classList.add('bg-orange-500', 'pulse-orange-animation');
-                    critBtn.classList.add('glow-orange-text-animation');
-                    healthIconEl.classList.add('glow-orange-text-animation');
                 } else {
                     const killPercentage = (playerState.killCount / 10) * 100;
                     killBarEl.style.width = `${killPercentage}%`;
                     killBarEl.classList.add('bg-red-600');
                     killBarEl.classList.remove('bg-orange-500', 'pulse-orange-animation');
-                    critBtn.classList.remove('glow-orange-text-animation');
-                    healthIconEl.classList.remove('glow-orange-text-animation');
                 }
+                
+                // REMOVED glow from buttons when charged
+                critBtn.classList.remove('glow-orange-text-animation');
+                healthIconEl.classList.remove('glow-orange-text-animation');
                 
                 if (playerState.rerolls <= 0 || battleStarted) {
                     reshuffleBtn.disabled = true;
@@ -1190,17 +1208,28 @@
                 return nextIndex;
             };
 
+            const showKillMeterUpgradeModal = () => {
+                killMeterModal.classList.remove('hidden');
+                attackBtn.disabled = true; // Disable attacks while modal is open
+            };
+
             const handleEnemyDefeat = (defeatedIndex) => {
                 const enemy = currentEnemiesInBattle[defeatedIndex];
-                if (!enemy || enemy.isDefeated) return;
+                if (!enemy || enemy.isDefeated) return false;
 
                 enemy.isDefeated = true;
                 const enemyWrapper = enemy.ref;
                 enemyWrapper.style.pointerEvents = 'none';
                 enemyWrapper.classList.add('enemy-fade-out');
 
+                let upgradeTriggered = false;
                 if (!enemy.isGift) {
                     playerState.killCount += enemy.isStamped ? 3 : 1;
+                    if (playerState.killCount >= 10) {
+                        playerState.killCount = 10;
+                        showKillMeterUpgradeModal();
+                        upgradeTriggered = true;
+                    }
                 }
                 updatePlayerUI();
                 
@@ -1220,6 +1249,7 @@
                 }, 400);
 
                 checkBattleEnd();
+                return upgradeTriggered;
             };
 
             // --- Gift Modal Logic ---
@@ -1348,6 +1378,7 @@
                 setTimeout(() => enemyWrapper.classList.remove('shake-animation'), 300);
 
                 let giftOpened = false;
+                let upgradeTriggered = false;
 
                 if (targetEnemy.isGift) {
                     giftOpened = true;
@@ -1360,29 +1391,48 @@
                     if (healthBarFill) healthBarFill.style.width = `${(targetEnemy.hp / targetEnemy.maxHp) * 100}%`;
                     updateEnemyDisplay(targetEnemy);
                     if (targetEnemy.hp <= 0) {
-                        handleEnemyDefeat(currentBattleTargetIndex);
+                        upgradeTriggered = handleEnemyDefeat(currentBattleTargetIndex);
                     }
                 }
 
-                if (!giftOpened && !currentEnemiesInBattle.every(e => e.isDefeated)) {
+                if (!giftOpened && !currentEnemiesInBattle.every(e => e.isDefeated) && !upgradeTriggered) {
                     await enemyAttackPhase();
                 }
             });
 
+            // UPDATED: Removed old upgrade logic from these listeners
             critBtn.addEventListener('click', () => {
-                if (playerState.killCount >= 10) {
-                    playerState.baseCritChance += 5;
-                    playerState.killCount = 0;
-                    updatePlayerUI();
-                }
+                // No action on click anymore for upgrade
             });
 
             healthIconEl.addEventListener('click', () => {
-                if (playerState.killCount >= 10) {
+                // No action on click anymore for upgrade
+            });
+            
+            // ADDED: Listener for the new kill meter modal
+            killMeterRewards.addEventListener('click', (e) => {
+                const button = e.target.closest('button');
+                if (!button) return;
+
+                const upgradeType = button.dataset.upgrade;
+                
+                if (upgradeType === 'health') {
                     playerState.maxHealth++;
                     playerState.health = playerState.maxHealth;
-                    playerState.killCount = 0;
-                    updatePlayerUI();
+                } else if (upgradeType === 'crit') {
+                    playerState.baseCritChance += 5;
+                }
+                
+                playerState.killCount = 0;
+                updatePlayerUI();
+                killMeterModal.classList.add('hidden');
+                
+                // If the battle isn't over, proceed with the enemy's turn
+                if (battleStarted && !currentEnemiesInBattle.every(e => e.isDefeated)) {
+                    enemyAttackPhase();
+                } else if (playerState.health > 0) {
+                    // Re-enable attack button if battle is not over and it's player's turn again
+                    attackBtn.disabled = false;
                 }
             });
 
