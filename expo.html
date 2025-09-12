@@ -83,9 +83,21 @@
             box-shadow: 5px 5px 0px #000;
         }
         /* --- EMOJI & ANIMATION STYLES (Tweaked for Retro Feel) --- */
-        .emoji-gold-glow { filter: none; outline: 2px dotted #FFFF00; outline-offset: 2px; }
-        /* UPDATED: Changed from color to outline to prevent layout shift */
-        .emoji-red-stamp { outline: 2px solid #FF0000; outline-offset: 2px; }
+        /* UPDATED: Replaced border/outline styles with modern glow effects */
+        @keyframes glow-yellow {
+            0%, 100% { filter: drop-shadow(0 0 4px #fef08a) drop-shadow(0 0 8px #facc15); }
+            50% { filter: drop-shadow(0 0 8px #fef08a) drop-shadow(0 0 12px #facc15); }
+        }
+        @keyframes glow-red {
+            0%, 100% { filter: drop-shadow(0 0 4px #fca5a5) drop-shadow(0 0 8px #ef4444); }
+            50% { filter: drop-shadow(0 0 8px #fca5a5) drop-shadow(0 0 12px #ef4444); }
+        }
+        .emoji-gold-glow {
+            animation: glow-yellow 1.5s infinite ease-in-out;
+        }
+        .emoji-red-stamp {
+            animation: glow-red 1.5s infinite ease-in-out;
+        }
         @keyframes pulse { 50% { transform: scale(1.05); } }
         .pulse-animation { animation: pulse 1.5s infinite ease-in-out; }
         @keyframes shake {
@@ -769,6 +781,8 @@
                 modalToOpen.classList.remove('hidden');
             };
             const closeModal = (modalToClose) => { if (modalToClose) modalToClose.classList.add('hidden'); };
+            
+            // UPDATED: equip-slot logic to clear the slot when uses run out
             equipSlots.forEach(slot => {
                 slot.addEventListener('click', () => {
                     if (battleStarted) {
@@ -780,9 +794,15 @@
                         if (playerBuffs.includes(symbol) && uses > 0) {
                             uses--;
                             slot.dataset.uses = uses;
-                            const counterSpan = slot.querySelector('.text-shadow');
+                            const counterSpan = slot.querySelector('.absolute');
                             if (counterSpan) counterSpan.textContent = uses;
-                            if (uses <= 0) slot.style.opacity = '0.5'; 
+                            
+                            if (uses <= 0) {
+                                slot.innerHTML = '';
+                                delete slot.dataset.symbol;
+                                delete slot.dataset.uses;
+                            }
+                            
                             playerState.statusEffects[symbol] = 1;
                             updateStatusEffectsUI();
                         } else if (enemyDebuffs.includes(symbol) && uses > 0) {
@@ -790,9 +810,14 @@
                             if (targetEnemy && !targetEnemy.isDefeated && !targetEnemy.isGift) {
                                 uses--;
                                 slot.dataset.uses = uses;
-                                const counterSpan = slot.querySelector('.text-shadow');
+                                const counterSpan = slot.querySelector('.absolute');
                                 if (counterSpan) counterSpan.textContent = uses;
-                                if (uses <= 0) slot.style.opacity = '0.5';
+                                
+                                if (uses <= 0) {
+                                    slot.innerHTML = '';
+                                    delete slot.dataset.symbol;
+                                    delete slot.dataset.uses;
+                                }
 
                                 if (!targetEnemy.statusEffects.includes(symbol)) {
                                     targetEnemy.statusEffects.push(symbol);
@@ -818,6 +843,7 @@
                     }
                 });
             });
+
             reelItems.forEach(item => {
                 item.addEventListener('click', () => {
                     if (activeEquipSlot) {
@@ -1558,5 +1584,3 @@
 
 </body>
 </html>
-
-
