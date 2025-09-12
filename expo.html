@@ -675,7 +675,11 @@
                     itemDiv.className = 'flex justify-between items-center py-1';
                     let buttonHtml;
                     if (battleStarted) {
-                        buttonHtml = `<button data-item-id="${item.id}" class="bg-emerald-600 rounded-lg px-4 py-1 active:bg-emerald-700 border border-emerald-800 btn-pressable ${itemOwned > 0 ? '' : 'opacity-50 cursor-not-allowed'}" ${itemOwned === 0 ? 'disabled' : ''}>USE</button>`;
+                         if (item.id === 'moonstone') {
+                            buttonHtml = `<button data-item-id="${item.id}" class="bg-zinc-700 rounded-lg px-4 py-1 border border-zinc-800 opacity-50 cursor-not-allowed" disabled>PASSIVE</button>`;
+                        } else {
+                            buttonHtml = `<button data-item-id="${item.id}" class="bg-emerald-600 rounded-lg px-4 py-1 active:bg-emerald-700 border border-emerald-800 btn-pressable ${itemOwned > 0 ? '' : 'opacity-50 cursor-not-allowed'}" ${itemOwned === 0 ? 'disabled' : ''}>USE</button>`;
+                        }
                     } else {
                         const canAfford = playerState.gold >= item.cost;
                         buttonHtml = `<button data-item-id="${item.id}" class="bg-slate-700 rounded-lg px-3 py-1 active:bg-slate-600 border border-slate-800 btn-pressable ${canAfford ? '' : 'opacity-50 cursor-not-allowed'}" ${!canAfford ? 'disabled' : ''}>🪙${item.cost}</button>`;
@@ -698,12 +702,68 @@
                 updatePlayerUI();
                 renderShop();
             };
+
+            const useItem = (itemId) => {
+                if (playerState.inventory[itemId] <= 0) return;
+
+                const item = shopItems.find(i => i.id === itemId);
+                if (!item || item.id === 'moonstone') return;
+
+                playerState.inventory[itemId]--;
+
+                switch (itemId) {
+                    case 'tonic':
+                        playerState.health = Math.min(playerState.maxHealth, playerState.health + 6);
+                        healthValueEl.classList.add('damage-flash-animation');
+                        setTimeout(() => healthValueEl.classList.remove('damage-flash-animation'), 400);
+                        break;
+                    case 'cross':
+                        if (playerState.statusEffects['🕯️'] > 0) {
+                            playerState.statusEffects['🕯️'] = 0;
+                            updateStatusEffectsUI();
+                        }
+                        playerState.maxHealth++;
+                        playerState.health++;
+                        break;
+                    case 'gem':
+                        // Receive a random buff
+                        const playerBuffs = ['❇️', '🌟', '⚡'];
+                        const randomBuff = playerBuffs[Math.floor(Math.random() * playerBuffs.length)];
+                        playerState.statusEffects[randomBuff]++;
+                        updateStatusEffectsUI();
+                        
+                        // Deal a random debuff
+                        const enemyDebuffs = ['☠️', '🕯️', '🐌'];
+                        const randomDebuff = enemyDebuffs[Math.floor(Math.random() * enemyDebuffs.length)];
+                        const targetEnemy = currentEnemiesInBattle[currentBattleTargetIndex];
+                        if (targetEnemy && !targetEnemy.isDefeated && !targetEnemy.isGift) {
+                            if (!targetEnemy.statusEffects.includes(randomDebuff)) {
+                                targetEnemy.statusEffects.push(randomDebuff);
+                            }
+                            targetEnemy.lastDebuff = randomDebuff;
+                            updateEnemyStatusUI(currentBattleTargetIndex);
+                        }
+                        break;
+                    case 'fairy':
+                        playerState.magic = playerState.maxMagic;
+                        break;
+                }
+
+                updatePlayerUI();
+                renderShop(); // To update inventory count
+            };
+
             shopItemsContainer.addEventListener('click', (e) => {
-                if(battleStarted) return; 
                 const button = e.target.closest('button');
-                if (button && button.dataset.itemId) {
-                    e.stopPropagation(); 
-                    buyItem(button.dataset.itemId);
+                if (!button || !button.dataset.itemId) return;
+                
+                e.stopPropagation(); 
+                const itemId = button.dataset.itemId;
+
+                if (battleStarted) {
+                    useItem(itemId);
+                } else {
+                    buyItem(itemId);
                 }
             });
 
