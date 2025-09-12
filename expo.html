@@ -95,8 +95,8 @@
         .flash-animation { animation: screen-flash-anim 0.3s ease-out; }
         
         @keyframes selector-pulse {
-            0%, 100% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.5); } /* amber-500 */
-            50% { box-shadow: 0 0 25px rgba(245, 158, 11, 0.8); }
+            0%, 100% { box-shadow: 0 0 8px rgba(245, 158, 11, 0.4); } /* amber-500 */
+            50% { box-shadow: 0 0 12px rgba(245, 158, 11, 0.6); }
         }
         #battle-selector {
             transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -332,8 +332,6 @@
     </div>
 
     <script>
-        // ALL JAVASCRIPT LOGIC IS PRESERVED FROM THE ORIGINAL FILE
-        // NO CHANGES WERE MADE TO GAMEPLAY MECHANICS.
         document.addEventListener('DOMContentLoaded', () => {
             // --- DOM Elements ---
             const gameContainer = document.getElementById('game-container');
@@ -489,7 +487,6 @@
                     magicBarEl.style.width = `${magicPercentage}%`;
                 }
 
-
                 const isCharged = playerState.killCount >= 10;
                 
                 if (isCharged) {
@@ -517,6 +514,33 @@
                     reshuffleBtn.classList.remove('opacity-50', 'cursor-not-allowed');
                 }
             };
+            const updateEnemyStatusUI = (enemyIndex) => {
+                const enemy = currentEnemiesInBattle[enemyIndex];
+                if (!enemy || !enemy.ref) return;
+
+                const enemyWrapper = enemy.ref;
+                const healthBarFill = enemyWrapper.querySelector('.health-bar-fill');
+
+                if (!healthBarFill) return;
+
+                // Update health bar color
+                const debuffColors = {
+                    '☠️': 'bg-purple-600',
+                    '🐌': 'bg-amber-800', // For brown
+                    '🕯️': 'bg-gray-500'
+                };
+
+                // Remove all potential color classes
+                healthBarFill.classList.remove('bg-rose-600', 'bg-purple-600', 'bg-amber-800', 'bg-gray-500');
+
+                const newColor = debuffColors[enemy.lastDebuff] || 'bg-rose-600';
+                healthBarFill.classList.add(newColor);
+                
+                // Update the info display if the affected enemy is the current target
+                if (enemyIndex === currentBattleTargetIndex) {
+                    updateEnemyDisplay(enemy);
+                }
+            };
             const updateWaveCounterUI = () => { if (waveCounterEl) waveCounterEl.textContent = `Wave ${waveCount}`; };
             const updateEnemyDisplay = (enemy) => {
                 if (!enemy) return;
@@ -526,8 +550,9 @@
                 if (!enemy.isGift) {
                     const hp = enemy.hp;
                     const dmg = enemy.isStamped ? '2' : '1';
-                    const specialIcon = data.special ? ` ${data.special}` : '';
-                    statsHtml = `<div class="text-sm text-zinc-400 mt-1">❤️ ${hp} 💥 ${dmg}${specialIcon}</div>`;
+                    const specialIcon = data.special ? ` (${data.special})` : '';
+                    const statusIcons = enemy.statusEffects.map(s => `<span class="text-base">${s}</span>`).join('');
+                    statsHtml = `<div class="text-sm text-zinc-400 mt-1 flex justify-center items-center gap-1.5">${statusIcons} <span class="text-red-500">❤️</span> ${hp} 💥 ${dmg}${specialIcon}</div>`;
                 }
                 battleDetailsContentEl.innerHTML = `
                     <div class="h-full flex flex-col justify-center items-center">
@@ -666,6 +691,8 @@
                         const symbol = slot.dataset.symbol;
                         let uses = parseInt(slot.dataset.uses || '0', 10);
                         const playerBuffs = ['❇️', '🌟', '⚡'];
+                        const enemyDebuffs = ['☠️', '🕯️', '🐌'];
+
                         if (playerBuffs.includes(symbol) && uses > 0) {
                             uses--;
                             slot.dataset.uses = uses;
@@ -674,6 +701,21 @@
                             if (uses <= 0) slot.style.opacity = '0.5'; 
                             playerState.statusEffects[symbol] = 1;
                             updateStatusEffectsUI();
+                        } else if (enemyDebuffs.includes(symbol) && uses > 0) {
+                            const targetEnemy = currentEnemiesInBattle[currentBattleTargetIndex];
+                            if (targetEnemy && !targetEnemy.isDefeated && !targetEnemy.isGift) {
+                                uses--;
+                                slot.dataset.uses = uses;
+                                const counterSpan = slot.querySelector('.text-shadow');
+                                if (counterSpan) counterSpan.textContent = uses;
+                                if (uses <= 0) slot.style.opacity = '0.5';
+
+                                if (!targetEnemy.statusEffects.includes(symbol)) {
+                                    targetEnemy.statusEffects.push(symbol);
+                                }
+                                targetEnemy.lastDebuff = symbol;
+                                updateEnemyStatusUI(currentBattleTargetIndex);
+                            }
                         }
                         return; 
                     }
@@ -863,7 +905,7 @@
                             const damage = 5;
                             showDamageNumber(damage, enemyWrapper);
                             targetEnemy.hp = Math.max(0, targetEnemy.hp - damage);
-                            const healthBarFill = enemyWrapper.querySelector('.bg-rose-600');
+                            const healthBarFill = enemyWrapper.querySelector('.health-bar-fill');
                             if (healthBarFill) healthBarFill.style.width = `${(targetEnemy.hp / targetEnemy.maxHp) * 100}%`;
                             updateEnemyDisplay(targetEnemy);
                             if (targetEnemy.hp <= 0) {
@@ -883,7 +925,7 @@
                             const damage = 5;
                             showDamageNumber(damage, enemyWrapper);
                             targetEnemy.hp = Math.max(0, targetEnemy.hp - damage);
-                            const healthBarFill = enemyWrapper.querySelector('.bg-rose-600');
+                            const healthBarFill = enemyWrapper.querySelector('.health-bar-fill');
                             if (healthBarFill) healthBarFill.style.width = `${(targetEnemy.hp / targetEnemy.maxHp) * 100}%`;
                             updateEnemyDisplay(targetEnemy);
                             if (targetEnemy.hp <= 0) {
@@ -1231,7 +1273,7 @@
                     const attackPower = parseInt(attackValueEl.textContent, 10);
                     showDamageNumber(attackPower, enemyWrapper);
                     targetEnemy.hp = Math.max(0, targetEnemy.hp - attackPower);
-                    const healthBarFill = enemyWrapper.querySelector('.bg-rose-600');
+                    const healthBarFill = enemyWrapper.querySelector('.health-bar-fill');
                     if (healthBarFill) healthBarFill.style.width = `${(targetEnemy.hp / targetEnemy.maxHp) * 100}%`;
                     updateEnemyDisplay(targetEnemy);
                     if (targetEnemy.hp <= 0) {
@@ -1279,7 +1321,17 @@
                 currentEnemiesInBattle = selectedEnemySpans.map(span => {
                     const isStamped = span.classList.contains('emoji-red-stamp'), isGift = span.classList.contains('emoji-gold-glow');
                     const hp = isGift ? 1 : (isStamped ? 20 : 10);
-                    return { emoji: span.textContent, isStamped, isGift, hp, maxHp: hp, isDefeated: false, ref: null };
+                    return { 
+                        emoji: span.textContent, 
+                        isStamped, 
+                        isGift, 
+                        hp, 
+                        maxHp: hp, 
+                        isDefeated: false, 
+                        ref: null,
+                        statusEffects: [],
+                        lastDebuff: null 
+                    };
                 });
                 enemyContainer.innerHTML = ''; enemyContainer.appendChild(battleSelector);
                 enemyContainer.classList.remove('justify-around'); enemyContainer.classList.add('justify-center', 'gap-4');
@@ -1294,7 +1346,12 @@
                     if (!enemy.isGift) {
                         const healthBarContainer = document.createElement('div');
                         healthBarContainer.className = 'w-12 h-2 bg-black/50 rounded-full mt-2 border border-zinc-900';
-                        healthBarContainer.innerHTML = `<div class="h-full bg-rose-600 rounded-full transition-all duration-300" style="width: 100%;"></div>`;
+                        
+                        const healthBarFill = document.createElement('div');
+                        healthBarFill.className = 'health-bar-fill h-full bg-rose-600 rounded-full transition-all duration-300';
+                        healthBarFill.style.width = '100%';
+                        healthBarContainer.appendChild(healthBarFill);
+
                         enemyWrapper.appendChild(healthBarContainer);
                     }
                     enemy.ref = enemyWrapper; 
@@ -1333,3 +1390,6 @@
 
 </body>
 </html>
+
+
+
