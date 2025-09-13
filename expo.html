@@ -437,8 +437,14 @@
                 frostbite: { title: "❄️ Frostbite:", desc1: "Deal 5 damage & inflict 🐌.", desc2: "Depletes half magic bar." },
                 armorheart: { title: "🩶 Armorheart:", desc1: "Add current health to armor.", desc2: "Depletes half magic bar." }
             };
+            // --- STATUS EFFECT CHANGE: Descriptions updated ---
             const symbolDescriptions = {
-                '☠️': { title: "☠️ Poison", desc: "Inflicts damage over time." },'🕯️': { title: "🕯️ Curse", desc: "Weakens enemy attacks." },'🐌': { title: "🐌 Slow", desc: "Reduces enemy speed." },'❇️': { title: "❇️ Regen", desc: "Heals you over time." },'🌟': { title: "🌟 Blessing", desc: "Increases your damage." },'⚡': { title: "⚡ Rush", desc: "Grants extra actions." }
+                '☠️': { title: "☠️ Poison", desc: "Deals 1 damage directly to HP per turn." },
+                '🕯️': { title: "🕯️ Curse", desc: "Attacks deal half damage and inflict the other half on you." },
+                '🐌': { title: "🐌 Sluggish", desc: "50% chance your or an enemy's action has no effect." },
+                '❇️': { title: "❇️ Regen", desc: "Heals 1 HP per turn." },
+                '🌟': { title: "🌟 Blessing", desc: "Adds armor value to attack damage." },
+                '⚡': { title: "⚡ Rush", desc: "Grants 2 actions per turn." }
             };
             const sacrifices = [
                 { title: '🩸 Blood Pact', desc: '-3 Max HP' },
@@ -476,6 +482,7 @@
 
             let waveCount = 1;
             let battleStarted = false;
+            let playerActionsTaken = 0; // --- STATUS EFFECT CHANGE: For Rush ---
             const enemyPool = Object.keys(enemyData).filter(e => e !== '🎁');
             const giftEmoji = '🎁';
             const numIcons = 8;
@@ -516,6 +523,32 @@
                 gameContainer.appendChild(damageEl);
                 setTimeout(() => { damageEl.remove(); }, 1000);
             };
+            
+            // --- STATUS EFFECT CHANGE: Action processing helpers ---
+            const isActionSluggish = () => {
+                if (playerState.statusEffects['🐌'] > 0 && Math.random() < 0.5) {
+                    sideWindowLeft.innerHTML = `<div class="w-full p-1"><p class="text-2xl text-center">SLUGGISH!<br>No effect!</p></div>`;
+                    return true;
+                }
+                return false;
+            };
+
+            async function processEndOfPlayerAction(options = {}) {
+                const { giftOpened = false, upgradeTriggered = false } = options;
+                playerActionsTaken++;
+                const maxActions = playerState.statusEffects['⚡'] > 0 ? 2 : 1;
+
+                if (playerActionsTaken >= maxActions) {
+                    attackBtn.disabled = true; // Disable until next player turn
+                    if (!giftOpened && !currentEnemiesInBattle.every(e => e.isDefeated) && !upgradeTriggered) {
+                        await enemyAttackPhase();
+                    }
+                } else {
+                    sideWindowLeft.innerHTML = `<div class="w-full p-1"><p class="text-2xl text-center">RUSH!<br>Another action!</p></div>`;
+                    if(playerState.health > 0) attackBtn.disabled = false; // Ensure enabled for next action
+                }
+            }
+
 
             // --- UI Update Logic ---
             const updateStatusEffectsUI = () => {
@@ -544,7 +577,23 @@
                         icon.classList.add('hidden');
                     }
                 });
+                // --- STATUS EFFECT CHANGE: Blessing needs to update attack value ---
+                updateAttackValueUI();
             };
+            
+            // --- STATUS EFFECT CHANGE: New function for Blessing ---
+            const updateAttackValueUI = () => {
+                const BASE_ATTACK = 10;
+                let attackPower = BASE_ATTACK;
+                if (playerState.equipment.weapon) {
+                    attackPower += 1;
+                }
+                if (playerState.statusEffects['🌟'] > 0) {
+                    attackPower += playerState.armor;
+                }
+                attackValueEl.textContent = attackPower;
+            };
+
             const updatePlayerUI = () => {
                 goldValueEl.textContent = playerState.gold;
                 moonstoneValueEl.textContent = playerState.moonstones;
@@ -552,6 +601,9 @@
                 armorValueEl.textContent = playerState.armor;
                 healthValueEl.textContent = playerState.health;
                 luckValueEl.textContent = playerState.luck;
+                
+                // --- STATUS EFFECT CHANGE: Call new attack value updater ---
+                updateAttackValueUI();
                 
                 if(magicBarEl) {
                     const magicPercentage = (playerState.magic / playerState.maxMagic) * 100;
@@ -617,7 +669,6 @@
                     const dmg = enemy.isStamped ? '2' : '1';
                     const specialIcon = data.special ? ` (${data.special})` : '';
                     
-                    // FORTUNE: Display enemy status stacks based on active fortunes
                     const statusIcons = Object.entries(enemy.statusEffects)
                         .filter(([_, value]) => value > 0)
                         .map(([key, value]) => {
@@ -800,7 +851,6 @@
                     itemDiv.className = 'flex justify-between items-center py-1';
                     let buttonHtml;
 
-                    // FORTUNE: Apply Bartering Edge discount
                     let currentCost = item.cost;
                     if (hasFortune('Bartering Edge')) {
                         currentCost = Math.round(item.cost * 0.85);
@@ -831,7 +881,6 @@
                 const item = shopItems.find(i => i.id === itemId);
                 if (!item) return;
 
-                // FORTUNE: Apply Bartering Edge discount to purchase
                 let currentCost = item.cost;
                 if (hasFortune('Bartering Edge')) {
                     currentCost = Math.round(item.cost * 0.85);
@@ -853,6 +902,14 @@
 
                 const item = shopItems.find(i => i.id === itemId);
                 if (!item || item.id === 'moonstone') return;
+                
+                if (isActionSluggish()) {
+                    // Resource is still consumed for sluggish actions
+                    playerState.inventory[itemId]--;
+                    renderShop();
+                    processEndOfPlayerAction();
+                    return;
+                }
 
                 playerState.inventory[itemId]--;
 
@@ -881,48 +938,42 @@
                     case 'cross':
                         if (playerState.statusEffects['🕯️'] > 0) {
                             playerState.statusEffects['🕯️'] = 0;
-                            updateStatusEffectsUI();
                         }
                         playerState.maxHealth++;
                         playerState.health++;
                         break;
                     case 'gem':
-                        // Receive a random buff
                         const playerBuffs = ['❇️', '🌟', '⚡'];
                         const randomBuff = playerBuffs[Math.floor(Math.random() * playerBuffs.length)];
                         
                         if (['🌟', '⚡'].includes(randomBuff)) {
                             playerState.statusEffects[randomBuff] = 3;
-                        } else { // For ❇️
-                            playerState.statusEffects[randomBuff] = 1;
+                        } else {
+                            playerState.statusEffects[randomBuff] = 1; // Lasts all battle
                         }
 
-                        // FORTUNE: Battle Grace restores armor on buff
                         if(hasFortune('Battle Grace')) {
                             playerState.armor = Math.min(playerState.maxArmor, playerState.armor + 1);
                         }
-                        updateStatusEffectsUI();
                         
-                        // Deal a random debuff
                         const enemyDebuffs = ['☠️', '🕯️', '🐌'];
                         const randomDebuff = enemyDebuffs[Math.floor(Math.random() * enemyDebuffs.length)];
                         applyDebuffToEnemy(currentBattleTargetIndex, randomDebuff);
                         break;
                     case 'fairy':
                         playerState.magic = playerState.maxMagic;
-                        // FORTUNE: Enchantment also grants regen
                         if (hasFortune('Enchantment')) {
                            playerState.statusEffects['❇️'] = 1;
                            if(hasFortune('Battle Grace')) {
                                 playerState.armor = Math.min(playerState.maxArmor, playerState.armor + 1);
                            }
-                           updateStatusEffectsUI();
                         }
                         break;
                 }
-
+                updateStatusEffectsUI();
                 updatePlayerUI();
-                renderShop(); // To update inventory count
+                renderShop(); 
+                processEndOfPlayerAction();
             };
 
             shopItemsContainer.addEventListener('click', (e) => {
@@ -948,17 +999,17 @@
                     const duration = hasFortune('Prolonged Torment') ? 6 : 3;
                     enemy.statusEffects[debuff] = duration;
                 } 
-                // FORTUNE: Toxic Decay adds stacking poison
                 else if (debuff === '☠️') {
                      if (hasFortune('Toxic Decay')) {
                         playerState.poisonInflictions++;
                         enemy.statusEffects[debuff] = Math.min(9, playerState.poisonInflictions);
                      } else {
-                        enemy.statusEffects[debuff] = 1; // Non-stacking poison
+                        enemy.statusEffects[debuff] = 1;
                      }
                 }
 
                 enemy.lastDebuff = debuff;
+                updateEnemyDisplay(enemy);
                 updateEnemyStatusUI(enemyIndex);
             };
 
@@ -978,55 +1029,60 @@
                     if (battleStarted) {
                         const symbol = slot.dataset.symbol;
                         let uses = parseInt(slot.dataset.uses || '0', 10);
+                        if (!symbol || uses <= 0) return;
+                        
+                        const magicCost = 0; // Assuming status stones don't cost magic
+                        if (isActionSluggish()) {
+                            // Consume use even on fail
+                            uses--;
+                            slot.dataset.uses = uses;
+                            const counterSpan = slot.querySelector('.absolute');
+                            if (counterSpan) counterSpan.textContent = uses;
+                            if (uses <= 0) {
+                                slot.innerHTML = '';
+                                delete slot.dataset.symbol;
+                                delete slot.dataset.uses;
+                            }
+                            await processEndOfPlayerAction();
+                            return;
+                        }
+
                         const playerBuffs = ['❇️', '🌟', '⚡'];
                         const enemyDebuffs = ['☠️', '🕯️', '🐌'];
                         let turnConsumed = false;
 
                         if (playerBuffs.includes(symbol) && uses > 0) {
                             uses--;
-                            slot.dataset.uses = uses;
-                            const counterSpan = slot.querySelector('.absolute');
-                            if (counterSpan) counterSpan.textContent = uses;
-                            
-                            if (uses <= 0) {
-                                slot.innerHTML = '';
-                                delete slot.dataset.symbol;
-                                delete slot.dataset.uses;
-                            }
-                            
                             if (['🌟', '⚡'].includes(symbol)) {
                                 playerState.statusEffects[symbol] = 3;
-                            } else { // For ❇️
+                            } else {
                                 playerState.statusEffects[symbol] = 1;
                             }
-
-                            // FORTUNE: Battle Grace
                             if (hasFortune('Battle Grace')) {
                                 playerState.armor = Math.min(playerState.maxArmor, playerState.armor + 1);
                                 updatePlayerUI();
                             }
-                            updateStatusEffectsUI();
                             turnConsumed = true;
                         } else if (enemyDebuffs.includes(symbol) && uses > 0) {
                             const targetEnemy = currentEnemiesInBattle[currentBattleTargetIndex];
                             if (targetEnemy && !targetEnemy.isDefeated && !targetEnemy.isGift) {
                                 uses--;
-                                slot.dataset.uses = uses;
-                                const counterSpan = slot.querySelector('.absolute');
-                                if (counterSpan) counterSpan.textContent = uses;
-                                
-                                if (uses <= 0) {
-                                    slot.innerHTML = '';
-                                    delete slot.dataset.symbol;
-                                    delete slot.dataset.uses;
-                                }
                                 applyDebuffToEnemy(currentBattleTargetIndex, symbol);
                                 turnConsumed = true;
                             }
                         }
 
                         if (turnConsumed) {
-                            await enemyAttackPhase();
+                            slot.dataset.uses = uses;
+                            const counterSpan = slot.querySelector('.absolute');
+                            if (counterSpan) counterSpan.textContent = uses;
+                            if (uses <= 0) {
+                                slot.innerHTML = '';
+                                delete slot.dataset.symbol;
+                                delete slot.dataset.uses;
+                            }
+                            updateStatusEffectsUI();
+                            await processEndOfPlayerAction();
                         }
                         
                         return;
@@ -1057,7 +1113,6 @@
                         const symbol = item.textContent;
                         activeEquipSlot.innerHTML = ''; 
                         activeEquipSlot.dataset.symbol = symbol;
-                        // FORTUNE: Durable Stones
                         const stoneUses = hasFortune('Durable Stones') ? 4 : 3;
                         activeEquipSlot.dataset.uses = stoneUses;
                         const emojiSpan = document.createElement('span');
@@ -1103,15 +1158,10 @@
                             
                             if (currentSlotType === 'weapon') {
                                 document.getElementById('attack-icon').textContent = item.emoji;
-                                if (!wasEquipped) {
-                                    attackValueEl.textContent = parseInt(attackValueEl.textContent, 10) + 1;
-                                }
-                            } else if (currentSlotType === 'armor') {
+                            } else if (currentSlotType === 'armor' && !wasEquipped) {
                                 document.getElementById('armor-icon').textContent = item.emoji;
-                                if (!wasEquipped) {
-                                    playerState.maxArmor += 1;
-                                    playerState.armor += 1;
-                                }
+                                playerState.maxArmor += 1;
+                                playerState.armor += 1;
                             }
                             
                             updatePlayerUI();
@@ -1253,13 +1303,18 @@
 
             // --- Spell Logic ---
             const executeSpell = (spellKey) => {
-                // FORTUNE: Efficient Magic halves MP cost
                 const magicCost = hasFortune('Efficient Magic') ? 25 : 50;
                 if (!battleStarted || playerState.magic < magicCost) return false;
-
+                
+                // Sluggish consumes MP even if it fails.
                 playerState.magic -= magicCost;
                 updatePlayerUI();
 
+                if (isActionSluggish()) {
+                    processEndOfPlayerAction();
+                    return;
+                }
+                
                 const targetEnemy = currentEnemiesInBattle[currentBattleTargetIndex];
                 const enemyWrapper = targetEnemy?.ref;
                 let upgradeTriggered = false;
@@ -1305,39 +1360,30 @@
                         setTimeout(() => armorValueEl.classList.remove('damage-flash-animation'), 400);
                         break;
                 }
-                return upgradeTriggered;
+                processEndOfPlayerAction({ upgradeTriggered });
             };
 
             // --- Initial Setup & Listeners ---
-            flameheartBtn.addEventListener('click', async () => {
+            flameheartBtn.addEventListener('click', () => {
                 const magicCost = hasFortune('Efficient Magic') ? 25 : 50;
                 if (battleStarted && playerState.magic >= magicCost) {
-                    const upgradeTriggered = executeSpell('flameheart');
-                    if (!currentEnemiesInBattle.every(e => e.isDefeated) && !upgradeTriggered) {
-                        await enemyAttackPhase();
-                    }
+                    executeSpell('flameheart');
                 } else if (!battleStarted) {
                     displaySpellInfo('flameheart');
                 }
             });
-            frostbiteBtn.addEventListener('click', async () => {
+            frostbiteBtn.addEventListener('click', () => {
                  const magicCost = hasFortune('Efficient Magic') ? 25 : 50;
                 if (battleStarted && playerState.magic >= magicCost) {
-                    const upgradeTriggered = executeSpell('frostbite');
-                    if (!currentEnemiesInBattle.every(e => e.isDefeated) && !upgradeTriggered) {
-                        await enemyAttackPhase();
-                    }
+                    executeSpell('frostbite');
                 } else if (!battleStarted) {
                     displaySpellInfo('frostbite');
                 }
             });
-            armorheartBtn.addEventListener('click', async () => {
+            armorheartBtn.addEventListener('click', () => {
                  const magicCost = hasFortune('Efficient Magic') ? 25 : 50;
                 if (battleStarted && playerState.magic >= magicCost) {
                     executeSpell('armorheart');
-                    if (!currentEnemiesInBattle.every(e => e.isDefeated)) {
-                        await enemyAttackPhase();
-                    }
                 } else if (!battleStarted) {
                     displaySpellInfo('armorheart');
                 }
@@ -1437,9 +1483,10 @@
             const tickdownPlayerStatusEffects = () => {
                 if (playerState.health <= 0) return;
 
-                // Apply per-turn effects
+                // --- STATUS EFFECT CHANGE: Poison & Regen logic ---
                 if (playerState.statusEffects['☠️'] > 0) {
-                    playerTakesDamage(1);
+                    playerState.health = Math.max(0, playerState.health - 1);
+                    showDamageNumber(1, healthIconEl);
                 }
                 if (playerState.statusEffects['❇️'] > 0) {
                     playerState.health = Math.min(playerState.maxHealth, playerState.health + 1);
@@ -1447,7 +1494,6 @@
                     setTimeout(() => healthValueEl.classList.remove('damage-flash-animation'), 400);
                 }
 
-                // Countdown timed effects
                 if (playerState.statusEffects['🕯️'] > 0) playerState.statusEffects['🕯️']--;
                 if (playerState.statusEffects['🐌'] > 0) playerState.statusEffects['🐌']--;
                 if (playerState.statusEffects['🌟'] > 0) playerState.statusEffects['🌟']--;
@@ -1464,29 +1510,33 @@
                 const livingEnemies = currentEnemiesInBattle.filter(enemy => !enemy.isDefeated && !enemy.isGift);
                 for (const enemy of livingEnemies) {
                     if (playerState.health <= 0) break;
-                    const enemyWrapper = enemy.ref;
-                    enemyWrapper.classList.add('flip-animation');
-                    setTimeout(() => enemyWrapper.classList.remove('flip-animation'), 500);
-                    await delay(500); 
-                    playerTakesDamage(enemy.isStamped ? 2 : 1);
-                    const enemyInfo = enemyData[enemy.emoji];
-                    if (enemyInfo.special) {
-                        if (['🕯️', '🐌'].includes(enemyInfo.special)) {
-                            playerState.statusEffects[enemyInfo.special] = 3;
-                        } else if (enemyInfo.special === '☠️') {
-                            playerState.statusEffects[enemyInfo.special] = 1;
+                    
+                    // --- STATUS EFFECT CHANGE: Enemy Sluggish check ---
+                    if (enemy.statusEffects['🐌'] > 0 && Math.random() < 0.5) {
+                        // Skip attack but still tick down debuffs
+                    } else {
+                        const enemyWrapper = enemy.ref;
+                        enemyWrapper.classList.add('flip-animation');
+                        setTimeout(() => enemyWrapper.classList.remove('flip-animation'), 500);
+                        await delay(500); 
+                        playerTakesDamage(enemy.isStamped ? 2 : 1);
+                        const enemyInfo = enemyData[enemy.emoji];
+                        if (enemyInfo.special) {
+                            if (['🕯️', '🐌'].includes(enemyInfo.special)) {
+                                playerState.statusEffects[enemyInfo.special] = 3;
+                            } else if (enemyInfo.special === '☠️') {
+                                playerState.statusEffects[enemyInfo.special] = 1; // Lasts all battle
+                            }
+                            updateStatusEffectsUI();
                         }
-                        updateStatusEffectsUI();
                     }
 
-                    // Debuff countdown logic
                     if (enemy.statusEffects['🕯️'] > 0) enemy.statusEffects['🕯️']--;
                     if (enemy.statusEffects['🐌'] > 0) enemy.statusEffects['🐌']--;
 
-                    // Update UI for the enemy that just attacked
                     const enemyIndex = currentEnemiesInBattle.findIndex(e => e === enemy);
                     if (enemyIndex !== -1) {
-                         updateEnemyStatusUI(enemyIndex);
+                         updateEnemyDisplay(currentEnemiesInBattle[enemyIndex]);
                     }
 
                     await delay(400);
@@ -1494,7 +1544,10 @@
                 
                 tickdownPlayerStatusEffects();
 
-                if (playerState.health > 0) attackBtn.disabled = false;
+                playerActionsTaken = 0; // Reset for player's turn
+                if (playerState.health > 0) {
+                    attackBtn.disabled = false;
+                }
             };
             const endBattle = () => {
                 battleStarted = false; currentEnemiesInBattle = []; playerState.armor = playerState.maxArmor; sideWindowLeft.innerHTML = ''; 
@@ -1502,13 +1555,22 @@
                 flameheartBtn.classList.remove('opacity-50', 'cursor-not-allowed');
                 armorheartBtn.disabled = false;
                 armorheartBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                playerState.statusEffects = { '☠️': 0, '🕯️': 0, '🐌': 0, '❇️': 0, '🌟': 0, '⚡': 0 };
-                updateStatusEffectsUI(); waveCount++; updateWaveCounterUI();
+                // --- STATUS EFFECT CHANGE: Reset all status effects ---
+                playerState.statusEffects = Object.keys(playerState.statusEffects).reduce((acc, key) => {
+                    // Poison and Regen last all battle, so they don't reset unless we explicitly do it here.
+                    // The guide says "lasts all battle", so they should be cleared after.
+                    acc[key] = 0;
+                    return acc;
+                }, {});
+                
+                updateStatusEffectsUI(); 
+                waveCount++; 
+                updateWaveCounterUI();
                 enemyContainer.innerHTML = `<div id="enemy-slider" class="absolute top-0 left-0 h-full bg-black/20 border-2 border-black/30 pointer-events-none z-10" style="transition: transform 0.2s ease-out;"></div>
-        <div id="battle-selector" class="hidden absolute top-0 left-0 pointer-events-none z-30"></div>
-        <div id="enemy-list" class="absolute inset-0 flex items-center justify-between pl-1 pr-3 z-20">
-            ${Array(numIcons).fill('<span class="text-3xl"></span>').join('')}
-        </div>`;
+                <div id="battle-selector" class="hidden absolute top-0 left-0 pointer-events-none z-30"></div>
+                <div id="enemy-list" class="absolute inset-0 flex items-center justify-between pl-1 pr-3 z-20">
+                    ${Array(numIcons).fill('<span class="text-3xl"></span>').join('')}
+                </div>`;
                 enemySlider = document.getElementById('enemy-slider'); battleSelector = document.getElementById('battle-selector');
                 enemyContainer.classList.remove('justify-center', 'gap-4', 'cursor-default');
                 enemyContainer.classList.add('cursor-grab', 'active:cursor-grabbing');
@@ -1539,7 +1601,7 @@
 
             const showKillMeterUpgradeModal = () => {
                 killMeterModal.classList.remove('hidden');
-                attackBtn.disabled = true; // Disable attacks while modal is open
+                attackBtn.disabled = true;
             };
 
             const handleEnemyDefeat = (defeatedIndex) => {
@@ -1620,12 +1682,8 @@
 
                 const continueGameHandler = async () => {
                     giftModal.classList.add('hidden');
-                    handleEnemyDefeat(giftIndex);
-                    if (!currentEnemiesInBattle.every(e => e.isDefeated)) {
-                        await enemyAttackPhase();
-                    } else if (playerState.health > 0) {
-                        attackBtn.disabled = false;
-                    }
+                    const upgradeTriggered = handleEnemyDefeat(giftIndex);
+                    await processEndOfPlayerAction({ giftOpened: true, upgradeTriggered });
                 };
 
                 const spin = () => {
@@ -1700,6 +1758,12 @@
 
             attackBtn.addEventListener('click', async () => {
                 if (!battleStarted || playerState.health <= 0 || attackBtn.disabled) return;
+                attackBtn.disabled = true; // Prevent double-clicks during processing
+
+                if (isActionSluggish()) {
+                    await processEndOfPlayerAction();
+                    return;
+                }
 
                 let giftOpened = false;
                 let upgradeTriggered = false;
@@ -1715,17 +1779,24 @@
                     setTimeout(() => enemyWrapper.classList.remove('shake-animation'), 300);
 
                     if (enemy.isGift) {
-                        if (giftOpened) return false; // Prevent opening multiple gifts
+                        if (giftOpened) return false;
                         giftOpened = true;
                         showGiftPopup(index);
-                        return false;
+                        return false; // Gift handling has its own end-of-action call
                     }
 
-                    const attackPower = parseInt(attackValueEl.textContent, 10);
+                    let attackPower = parseInt(attackValueEl.textContent, 10);
+                    
+                    // --- STATUS EFFECT CHANGE: Curse logic ---
+                    if (playerState.statusEffects['🕯️'] > 0) {
+                        const selfDamage = Math.floor(attackPower / 2);
+                        attackPower = attackPower - selfDamage; // deals the other "half"
+                        playerTakesDamage(selfDamage);
+                    }
+
                     showDamageNumber(attackPower, enemyWrapper);
                     enemy.hp = Math.max(0, enemy.hp - attackPower);
                     
-                    // FORTUNE: Thief Strike logic moved here
                     if (isThief) {
                         playerState.gold += 2;
                         updatePlayerUI();
@@ -1747,19 +1818,20 @@
                 if (isArcher) {
                     const livingEnemies = currentEnemiesInBattle.map((e, i) => ({enemy: e, index: i})).filter(item => !item.enemy.isDefeated);
                     for (const {enemy, index} of livingEnemies) {
+                        if (giftOpened) break; // Don't attack other enemies if a gift was opened
                         upgradeTriggered = performAttack(enemy, index) || upgradeTriggered;
-                        if (upgradeTriggered) break; // Only break if an upgrade is triggered, not for a gift
+                        if (upgradeTriggered) break; 
                         await delay(150);
                     }
                 } else {
                     const targetEnemy = currentEnemiesInBattle[currentBattleTargetIndex];
-                    if (targetEnemy) { // Ensure target exists
+                    if (targetEnemy) {
                        upgradeTriggered = performAttack(targetEnemy, currentBattleTargetIndex);
                     }
                 }
 
-                if (!giftOpened && !currentEnemiesInBattle.every(e => e.isDefeated) && !upgradeTriggered) {
-                    await enemyAttackPhase();
+                if (!giftOpened) {
+                    await processEndOfPlayerAction({ upgradeTriggered });
                 }
             });
 
@@ -1809,15 +1881,13 @@
                 updatePlayerUI();
                 killMeterModal.classList.add('hidden');
                 
-                if (battleStarted && !currentEnemiesInBattle.every(e => e.isDefeated)) {
-                    enemyAttackPhase();
-                } else if (playerState.health > 0) {
-                    attackBtn.disabled = false;
-                }
+                // After upgrade, process end of player's turn (which is what triggered this)
+                processEndOfPlayerAction({ upgradeTriggered: true });
             });
 
             const startBattle = () => {
                 if (battleStarted || isReshuffling) return;
+                playerActionsTaken = 0; // Reset actions at start of battle
                 const flashOverlay = document.getElementById('screen-flash-overlay');
                 if (flashOverlay) {
                     flashOverlay.classList.add('flash-animation');
@@ -1846,13 +1916,7 @@
                     const isStamped = span.classList.contains('emoji-red-stamp'), isGift = span.textContent === giftEmoji;
                     const hp = isGift ? 1 : (isStamped ? 20 : 10);
                     return { 
-                        emoji: span.textContent, 
-                        isStamped, 
-                        isGift, 
-                        hp, 
-                        maxHp: hp, 
-                        isDefeated: false, 
-                        ref: null,
+                        emoji: span.textContent, isStamped, isGift, hp, maxHp: hp, isDefeated: false, ref: null,
                         statusEffects: {'☠️': 0, '🕯️': 0, '🐌': 0},
                         lastDebuff: null 
                     };
@@ -1915,7 +1979,3 @@
 
 </body>
 </html>
-
-
-
-
