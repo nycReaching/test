@@ -438,7 +438,7 @@
                 armorheart: { title: "🩶 Armorheart:", desc1: "Add current health to armor.", desc2: "Depletes half magic bar." }
             };
             const symbolDescriptions = {
-                '☠️': { title: "☠️ Poison", desc: "Inflicts damage over time.", costDesc: "Cost: 1 🌒" },'🕯️': { title: "🕯️ Curse", desc: "Weakens enemy attacks.", costDesc: "Cost: 1 🌒" },'🐌': { title: "🐌 Slow", desc: "Reduces enemy speed.", costDesc: "Cost: 1 🌒" },'❇️': { title: "❇️ Regen", desc: "Heals you over time.", costDesc: "Cost: 1 🌒" },'🌟': { title: "🌟 Blessing", desc: "Increases your damage.", costDesc: "Cost: 1 🌒" },'⚡': { title: "⚡ Rush", desc: "Grants extra actions.", costDesc: "Cost: 1 🌒" }
+                '☠️': { title: "☠️ Poison", desc: "Inflicts damage over time." },'🕯️': { title: "🕯️ Curse", desc: "Weakens enemy attacks." },'🐌': { title: "🐌 Slow", desc: "Reduces enemy speed." },'❇️': { title: "❇️ Regen", desc: "Heals you over time." },'🌟': { title: "🌟 Blessing", desc: "Increases your damage." },'⚡': { title: "⚡ Rush", desc: "Grants extra actions." }
             };
             const sacrifices = [
                 { title: '🩸 Blood Pact', desc: '-3 Max HP' },
@@ -585,9 +585,9 @@
                 };
 
                 // Remove all potential color classes
-                healthBarFill.classList.remove('bg-red-900', 'bg-purple-600', 'bg-yellow-800', 'bg-gray-500');
+                healthBarFill.classList.remove('bg-red-600', 'bg-purple-600', 'bg-yellow-800', 'bg-gray-500');
 
-                const newColor = debuffColors[enemy.lastDebuff] || 'bg-red-900';
+                const newColor = debuffColors[enemy.lastDebuff] || 'bg-red-600';
                 healthBarFill.classList.add(newColor);
                 
                 // Update the info display if the affected enemy is the current target
@@ -946,7 +946,7 @@
                     const symbol = slot.dataset.symbol;
                     if (symbol) {
                         const info = symbolDescriptions[symbol];
-                        if (info) displayInfoInSideWindow(info.title, info.desc, info.costDesc);
+                        if (info) displayInfoInSideWindow(info.title, info.desc);
                     } else {
                         activeEquipSlot = slot;
                         reelItems.forEach(item => {
@@ -1614,9 +1614,26 @@
             });
 
             luckModal.addEventListener('click', (e) => {
-                // Close if the overlay is clicked, or if a button inside is clicked for now
-                if (e.target === luckModal || e.target.closest('button')) {
-                    luckModal.classList.add('hidden');
+                const button = e.target.closest('button[data-luck]');
+                
+                // If a luck option button was clicked
+                if (button) {
+                    const luckOptions = luckModal.querySelectorAll('button[data-luck]');
+                    // Disable all buttons to "lock" the choice
+                    luckOptions.forEach(opt => {
+                        opt.disabled = true;
+                        opt.classList.add('opacity-50');
+                    });
+                    // Highlight the selected one in green
+                    button.classList.remove('bg-slate-400', 'opacity-50');
+                    button.classList.add('bg-green-600', 'text-white');
+                }
+
+                // Close if the overlay is clicked, or if a button was clicked (after a delay)
+                if (e.target === luckModal || button) {
+                    setTimeout(() => {
+                        luckModal.classList.add('hidden');
+                    }, 400); // Short delay to show selection
                 }
             });
 
@@ -1705,7 +1722,7 @@
                         healthBarContainer.className = 'w-12 h-3 bg-black/50 mt-2 border border-zinc-900';
                         
                         const healthBarFill = document.createElement('div');
-                        healthBarFill.className = 'health-bar-fill h-full bg-red-900 transition-all duration-300';
+                        healthBarFill.className = 'health-bar-fill h-full bg-red-600 transition-all duration-300';
                         healthBarFill.style.width = '100%';
                         healthBarContainer.appendChild(healthBarFill);
 
@@ -1749,4 +1766,5 @@
 
 </body>
 </html>
+
 
