@@ -419,14 +419,14 @@
             };
             const equipmentOptions = {
                 weapon: [
-                    { emoji: '🏹', name: 'Bow (+1 💥)', desc: 'Durable, useful item.' }, 
-                    { emoji: '🗡️', name: 'Dagger (+1 💥)', desc: 'Durable, useful item.' }, 
-                    { emoji: '🔨', name: 'Hammer (+1 💥)', desc: 'Durable, useful item.' }
+                    { emoji: '🏹', name: 'Bow (+1 💥)', desc: 'Durable, useful item.', bonus: 1 }, 
+                    { emoji: '🗡️', name: 'Dagger (+2 💥)', desc: 'Durable, useful item.', bonus: 2 }, 
+                    { emoji: '🔨', name: 'Hammer (+5 💥)', desc: 'Durable, useful item.', bonus: 5 }
                 ],
                 armor: [
-                    { emoji: '🧥', name: 'Leather Gear (+1 🛡️)', desc: 'Durable, useful item.' }, 
-                    { emoji: '🪨', name: 'Rock Bracer (+1 🛡️)', desc: 'Durable, useful item.' }, 
-                    { emoji: '🕸️', name: 'Cloak (+1 🛡️)', desc: 'Durable, useful item.' }
+                    { emoji: '🧥', name: 'Leather Gear (+2 🛡️)', desc: 'Durable, useful item.', bonus: 2 }, 
+                    { emoji: '🪨', name: 'Rock Bracer (+4 🛡️)', desc: 'Durable, useful item.', bonus: 4 }, 
+                    { emoji: '🕸️', name: 'Cloak (+15% 🍀)', desc: 'Durable, useful item.', luckBonus: 15 }
                 ],
                 ring: [
                     { emoji: '💍', name: 'Eccentric Jewel', desc: 'Durable, useful item.' }
@@ -586,7 +586,7 @@
                 const BASE_ATTACK = 10;
                 let attackPower = BASE_ATTACK;
                 if (playerState.equipment.weapon) {
-                    attackPower += 1;
+                    attackPower += playerState.equipment.weapon.bonus || 0;
                 }
                 if (playerState.statusEffects['🌟'] > 0) {
                     attackPower += playerState.armor;
@@ -862,7 +862,11 @@
                          if (item.id === 'moonstone') {
                             buttonHtml = `<button data-item-id="${item.id}" class="retro-btn bg-gray-400 px-4 py-1 opacity-50 cursor-not-allowed" disabled>PASSIVE</button>`;
                         } else {
-                            buttonHtml = `<button data-item-id="${item.id}" class="retro-btn bg-green-500 px-4 py-1 ${itemOwned > 0 ? '' : 'opacity-50 cursor-not-allowed'}" ${itemOwned === 0 ? 'disabled' : ''}>USE</button>`;
+                            let canUse = itemOwned > 0;
+                            if (item.id === 'cross') {
+                                canUse = canUse && playerState.statusEffects['🕯️'] > 0;
+                            }
+                            buttonHtml = `<button data-item-id="${item.id}" class="retro-btn bg-green-500 px-4 py-1 ${canUse ? '' : 'opacity-50 cursor-not-allowed'}" ${!canUse ? 'disabled' : ''}>USE</button>`;
                         }
                     } else {
                         const canAfford = playerState.gold >= currentCost;
@@ -903,6 +907,8 @@
                 const item = shopItems.find(i => i.id === itemId);
                 if (!item || item.id === 'moonstone') return;
                 
+                if (item.id === 'cross' && playerState.statusEffects['🕯️'] <= 0) return;
+
                 if (isActionSluggish()) {
                     // Resource is still consumed for sluggish actions
                     playerState.inventory[itemId]--;
@@ -936,9 +942,7 @@
                         }
                         break;
                     case 'cross':
-                        if (playerState.statusEffects['🕯️'] > 0) {
-                            playerState.statusEffects['🕯️'] = 0;
-                        }
+                        playerState.statusEffects['🕯️'] = 0;
                         playerState.maxHealth++;
                         playerState.health++;
                         break;
@@ -1152,16 +1156,29 @@
                         e.stopPropagation();
                         if (activeBuildSlot) {
                             const currentSlotType = activeBuildSlot.dataset.slotType;
-                            const wasEquipped = !!playerState.equipment[currentSlotType];
+                            const oldItem = playerState.equipment[currentSlotType]; // Store old item
                             playerState.equipment[currentSlotType] = item;
                             activeBuildSlot.innerHTML = item.emoji;
                             
                             if (currentSlotType === 'weapon') {
                                 document.getElementById('attack-icon').textContent = item.emoji;
-                            } else if (currentSlotType === 'armor' && !wasEquipped) {
+                            } else if (currentSlotType === 'armor') {
                                 document.getElementById('armor-icon').textContent = item.emoji;
-                                playerState.maxArmor += 1;
-                                playerState.armor += 1;
+                                
+                                // Unequip old item's stats
+                                if (oldItem) {
+                                    playerState.maxArmor -= oldItem.bonus || 0;
+                                    playerState.armor -= oldItem.bonus || 0;
+                                    playerState.luck -= oldItem.luckBonus || 0;
+                                }
+
+                                // Equip new item's stats
+                                playerState.maxArmor += item.bonus || 0;
+                                playerState.armor += item.bonus || 0;
+                                playerState.luck += item.luckBonus || 0;
+
+                                // Clamp values
+                                playerState.armor = Math.max(0, Math.min(playerState.armor, playerState.maxArmor));
                             }
                             
                             updatePlayerUI();
@@ -1979,3 +1996,4 @@
 
 </body>
 </html>
+
