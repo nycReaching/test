@@ -83,20 +83,8 @@
             box-shadow: 5px 5px 0px #000;
         }
         /* --- EMOJI & ANIMATION STYLES (Tweaked for Retro Feel) --- */
-        /* UPDATED: Replaced border/outline styles with modern glow effects */
-        @keyframes glow-yellow {
-            0%, 100% { filter: drop-shadow(0 0 4px #fef08a) drop-shadow(0 0 8px #facc15); }
-            50% { filter: drop-shadow(0 0 8px #fef08a) drop-shadow(0 0 12px #facc15); }
-        }
-        @keyframes glow-red {
-            0%, 100% { filter: drop-shadow(0 0 4px #fca5a5) drop-shadow(0 0 8px #ef4444); }
-            50% { filter: drop-shadow(0 0 8px #fca5a5) drop-shadow(0 0 12px #ef4444); }
-        }
-        .emoji-gold-glow {
-            animation: glow-yellow 1.5s infinite ease-in-out;
-        }
         .emoji-red-stamp {
-            animation: glow-red 1.5s infinite ease-in-out;
+            filter: drop-shadow(0 0 3px #ef4444) drop-shadow(0 0 5px #b91c1c); /* Red glow for strong enemy */
         }
         @keyframes pulse { 50% { transform: scale(1.05); } }
         .pulse-animation { animation: pulse 1.5s infinite ease-in-out; }
@@ -203,7 +191,7 @@
                 <div id="battle-details-window" class="relative flex-shrink-0 h-16 flex items-center justify-center text-center">
                     <div id="wave-counter" class="absolute top-0 left-1.5 text-base italic text-gray-700"></div>
                     <div id="battle-details-content" class="w-full h-full flex items-center justify-center">
-                        <button id="start-battle-btn" class="retro-btn bg-green-500 text-black text-xl py-2 px-6 disabled:opacity-50 disabled:cursor-not-allowed">Start Battle</button>
+                        <button id="start-battle-btn" class="retro-btn bg-amber-800 text-white text-xl py-2 px-6 disabled:opacity-50 disabled:cursor-not-allowed">Start Battle</button>
                     </div>
                 </div>
 
@@ -225,7 +213,7 @@
                     <span id="reshuffle-counter" class="absolute bottom-1 right-2 text-lg text-black"></span>
                 </button>
                 <button id="attackBtn" class="w-1/3 h-14 bg-red-500 focus:outline-none flex items-center justify-center text-3xl text-black retro-btn"><span id="attack-icon">💥</span><span id="attack-value" class="text-2xl">10</span></button>
-                <button id="critBtn" class="w-1/3 h-14 bg-orange-400 focus:outline-none flex items-center justify-center text-black text-xl retro-btn"><span id="crit-chance">10</span>%</button>
+                <button id="luckBtn" class="w-1/3 h-14 bg-green-400 focus:outline-none flex items-center justify-center text-black text-xl retro-btn gap-1"><span class="text-3xl">🍀</span><span id="luck-value">10</span>%</button>
             </div>
             
             <!-- Lower Interaction Area -->
@@ -318,9 +306,9 @@
                         <span class="text-3xl">💰</span>
                         <span class="ml-2 text-xl">+15 Gold</span>
                     </div>
-                    <div data-reward="crit" class="gift-reward-item retro-panel-inset p-3 border-2 border-transparent transition-all duration-400 flex items-center justify-center">
-                        <span class="text-3xl">💥</span>
-                        <span class="ml-2 text-xl">+1% Crit Chance</span>
+                    <div data-reward="luck" class="gift-reward-item retro-panel-inset p-3 border-2 border-transparent transition-all duration-400 flex items-center justify-center">
+                        <span class="text-3xl">🍀</span>
+                        <span class="ml-2 text-xl">+1% Luck</span>
                     </div>
                 </div>
             </div>
@@ -334,9 +322,29 @@
                         <span>❤️</span>
                         <span>+1 Max Health</span>
                     </button>
-                    <button data-upgrade="crit" class="retro-btn w-full p-4 text-xl flex items-center justify-center gap-3 bg-slate-400">
+                    <button data-upgrade="luck" class="retro-btn w-full p-4 text-xl flex items-center justify-center gap-3 bg-slate-400">
+                        <span>🍀</span>
+                        <span>+5% Luck</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- ADDED: Luck Modal -->
+        <div id="luckModal" class="hidden absolute inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+            <div class="relative retro-modal-content p-6 w-full max-w-xs text-center">
+                <h2 class="text-3xl mb-6 text-green-700">LUCK</h2>
+                <div id="luck-options" class="space-y-4">
+                    <button data-luck="attack" class="retro-btn w-full p-4 text-xl flex items-center justify-center gap-3 bg-slate-400">
                         <span>💥</span>
-                        <span>+5% Crit Chance</span>
+                        <span>Attack</span>
+                    </button>
+                    <button data-luck="magic" class="retro-btn w-full p-4 text-xl flex items-center justify-center gap-3 bg-slate-400">
+                        <span>✨</span>
+                        <span>Magic</span>
+                    </button>
+                    <button data-luck="choices" class="retro-btn w-full p-4 text-xl flex items-center justify-center gap-3 bg-slate-400">
+                        <span>🎲</span>
+                        <span>Choices</span>
                     </button>
                 </div>
             </div>
@@ -378,12 +386,13 @@
             const killBarEl = document.getElementById('kill-bar');
             const magicBarEl = document.getElementById('magic-bar');
             const healthIconEl = document.getElementById('health-icon');
-            const critBtn = document.getElementById('critBtn');
-            const critChanceEl = document.getElementById('crit-chance');
+            const luckBtn = document.getElementById('luckBtn');
+            const luckValueEl = document.getElementById('luck-value');
             const giftModal = document.getElementById('giftModal');
             let giftRewardItems = document.querySelectorAll('.gift-reward-item');
             const killMeterModal = document.getElementById('killMeterModal');
             const killMeterRewards = document.getElementById('kill-meter-rewards');
+            const luckModal = document.getElementById('luckModal');
             
             const modalMap = {
                 fortunesBtn: { modal: document.getElementById('fortunesModal'), button: document.getElementById('fortunesBtn') },
@@ -427,9 +436,24 @@
             const symbolDescriptions = {
                 '☠️': { title: "☠️ Poison", desc: "Inflicts damage over time.", costDesc: "Cost: 1 🌒" },'🕯️': { title: "🕯️ Curse", desc: "Weakens enemy attacks.", costDesc: "Cost: 1 🌒" },'🐌': { title: "🐌 Slow", desc: "Reduces enemy speed.", costDesc: "Cost: 1 🌒" },'❇️': { title: "❇️ Regen", desc: "Heals you over time.", costDesc: "Cost: 1 🌒" },'🌟': { title: "🌟 Blessing", desc: "Increases your damage.", costDesc: "Cost: 1 🌒" },'⚡': { title: "⚡ Rush", desc: "Grants extra actions.", costDesc: "Cost: 1 🌒" }
             };
-            const sacrifices = ['🩸 Blood Pact','🦶🏼 Broken Ankle','💔 Heartbreak','📜 Gambling Debt','🫳🏽 Clumsy','🎭 Unstable Mind'];
+            const sacrifices = [
+                { title: '🩸 Blood Pact', desc: '-3 Max HP' },
+                { title: '🦶🏼 Broken Ankle', desc: '-10% Luck' },
+                { title: '💔 Heartbreak', desc: '❤️‍🔥 or 🩶 per battle' },
+                { title: '📜 Gambling Debt', desc: '-30 Gold' },
+                { title: '🫳🏽 Clumsy', desc: 'Lose 1 🌘' },
+                { title: '🎭 Unstable Mind', desc: 'Share 🍶 with enemy' }
+            ];
             const fortunes = [
-                { text: 'Efficient Magic', color: 'text-sky-600' },{ text: 'Bartering Edge', color: 'text-sky-600' },{ text: 'Archer\'s Edge', color: 'text-amber-600' },{ text: 'Enchantment', color: 'text-amber-600' },{ text: 'Battle Grace', color: 'text-amber-600' },{ text: 'Prolonged Torment', color: 'text-pink-600' },{ text: 'Thief Strike', color: 'text-pink-600' },{ text: 'Toxic Decay', color: 'text-pink-600' }
+                { text: 'Durable Stones', rarity: '🔵', desc: '+1 Status stone use', color: 'text-sky-600' },
+                { text: 'Efficient Magic', rarity: '🔵', desc: '1/2 MP cost', color: 'text-sky-600' },
+                { text: 'Bartering Edge', rarity: '🔵', desc: '15% shop discount', color: 'text-sky-600' },
+                { text: 'Archer\'s Edge', rarity: '🟡', desc: 'Attacks all with 🏹', color: 'text-amber-600' },
+                { text: 'Enchantment', rarity: '🟡', desc: '🧚🏼also grants ❇️', color: 'text-amber-600' },
+                { text: 'Battle Grace', rarity: '🟡', desc: 'Buffs restore 1 🛡️', color: 'text-amber-600' },
+                { text: 'Prolonged Torment', rarity: '🎉', desc: '2x Debuff durations', color: 'text-pink-600' },
+                { text: 'Thief Strike', rarity: '🎉', desc: 'Steal 2 gold with 🗡️', color: 'text-pink-600' },
+                { text: 'Toxic Decay', rarity: '🎉', desc: '☠️ can stack', color: 'text-pink-600' }
             ];
 
             // --- State ---
@@ -437,7 +461,7 @@
                 gold: 99, moonstones: 3, rerolls: 5, killCount: 0, 
                 maxHealth: 10, health: 10, armor: 3, maxArmor: 3,
                 magic: 100, maxMagic: 100,
-                baseCritChance: 10,
+                luck: 10,
                 equipment: { weapon: null, armor: null, ring: null }, 
                 inventory: { tonic: 0, gem: 0, cross: 0, fairy: 0, moonstone: 3, infinityRing: 0 }, 
                 statusEffects: { '☠️': 0, '🕯️': 0, '🐌': 0, '❇️': 0, '🌟': 0, '⚡': 0 }
@@ -507,7 +531,7 @@
                 reshuffleCounter.textContent = playerState.rerolls;
                 armorValueEl.textContent = playerState.armor;
                 healthValueEl.textContent = playerState.health;
-                critChanceEl.textContent = playerState.baseCritChance;
+                luckValueEl.textContent = playerState.luck;
                 
                 if(magicBarEl) {
                     const magicPercentage = (playerState.magic / playerState.maxMagic) * 100;
@@ -528,7 +552,7 @@
                 }
                 
                 // REMOVED glow from buttons when charged
-                critBtn.classList.remove('glow-orange-text-animation');
+                luckBtn.classList.remove('glow-orange-text-animation');
                 healthIconEl.classList.remove('glow-orange-text-animation');
                 
                 if (playerState.rerolls <= 0 || battleStarted) {
@@ -611,11 +635,16 @@
                 const options = shuffled.slice(0, 3);
                 options.forEach(fortune => {
                     const button = document.createElement('button');
-                    button.className = `retro-btn bg-slate-400 px-4 py-3 w-full whitespace-normal leading-tight ${fortune.color}`;
-                    button.textContent = fortune.text;
+                    button.className = `retro-btn bg-slate-400 px-4 py-2 w-full whitespace-normal leading-tight flex flex-col items-center`;
+                    button.innerHTML = `
+                        <span class="${fortune.color}">${fortune.rarity} ${fortune.text}</span>
+                        <span class="text-base font-normal text-black">${fortune.desc}</span>
+                    `;
                     button.addEventListener('click', (e) => {
                         e.stopPropagation(); 
-                        if (currentSacrifice && selectedFortunes.length < 4) selectedFortunes.push({ sacrifice: currentSacrifice, fortune: fortune.text });
+                        if (currentSacrifice && selectedFortunes.length < 4) {
+                            selectedFortunes.push({ sacrifice: currentSacrifice, fortune: fortune });
+                        }
                         currentSacrifice = null;
                         closeModal(modalMap.fortunesBtn.modal);
                     });
@@ -634,11 +663,14 @@
                     const selectedSacrifices = shuffledSacrifices.slice(0, 2);
                     selectedSacrifices.forEach(sacrifice => {
                         const button = document.createElement('button');
-                        button.className = 'retro-btn bg-slate-400 px-4 py-3 w-full whitespace-normal leading-tight';
-                        button.textContent = sacrifice;
+                        button.className = 'retro-btn bg-slate-400 px-4 py-2 w-full whitespace-normal leading-tight flex flex-col items-center';
+                        button.innerHTML = `
+                            <span>${sacrifice.title}</span>
+                            <span class="text-base font-normal">${sacrifice.desc}</span>
+                        `;
                         button.addEventListener('click', (e) => {
                             e.stopPropagation(); 
-                            currentSacrifice = sacrifice;
+                            currentSacrifice = sacrifice.title;
                             showFortunes();
                         });
                         fortunesContent.appendChild(button);
@@ -657,11 +689,13 @@
                     selectedFortunes.forEach(sf => {
                         const fortuneEntry = document.createElement('div');
                         fortuneEntry.className = 'p-2 bg-slate-300 retro-panel-inset w-2/5 cursor-pointer';
-                        fortuneEntry.innerHTML = `<p class="pointer-events-none">${sf.sacrifice}</p><p class="pointer-events-none">${sf.fortune}</p>`;
+                        fortuneEntry.innerHTML = `<p class="pointer-events-none">${sf.sacrifice}</p><p class="pointer-events-none ${sf.fortune.color}">${sf.fortune.rarity} ${sf.fortune.text}</p>`;
                         fortuneEntry.addEventListener('click', () => {
                             fortuneDetailContent.innerHTML = `
-                                <h3 class="text-2xl text-violet-800">${sf.fortune}</h3>
-                                <p>${sf.fortune}</p>
+                                <h3 class="text-2xl ${sf.fortune.color}">${sf.fortune.rarity} ${sf.fortune.text}</h3>
+                                <p class="mt-2 text-lg">${sf.fortune.desc}</p>
+                                <hr class="my-2 border-gray-500">
+                                <p class="text-base text-gray-700">Sacrifice: ${sf.sacrifice}</p>
                             `;
                             fortuneDetailModal.classList.remove('hidden');
                         });
@@ -1028,8 +1062,6 @@
                         span.className = 'text-3xl'; 
                         span.style.transition = 'opacity 0.4s ease-out';
                     });
-                    const giftSpan = enemySpans.find(span => span.textContent === giftEmoji);
-                    if (giftSpan) giftSpan.classList.add('emoji-gold-glow');
                     const stampableSpans = enemySpans.filter(span => span.textContent !== giftEmoji);
                     if (stampableSpans.length > 0) stampableSpans[Math.floor(Math.random() * stampableSpans.length)].classList.add('emoji-red-stamp');
                     
@@ -1263,7 +1295,7 @@
                 enemySlider = document.getElementById('enemy-slider'); battleSelector = document.getElementById('battle-selector');
                 enemyContainer.classList.remove('justify-center', 'gap-4', 'cursor-default');
                 enemyContainer.classList.add('cursor-grab', 'active:cursor-grabbing');
-                battleDetailsContentEl.innerHTML = '<button id="start-battle-btn" class="retro-btn bg-green-500 text-black text-xl py-2 px-6 disabled:opacity-50 disabled:cursor-not-allowed">Start Battle</button>';
+                battleDetailsContentEl.innerHTML = '<button id="start-battle-btn" class="retro-btn bg-amber-800 text-white text-xl py-2 px-6 disabled:opacity-50 disabled:cursor-not-allowed">Start Battle</button>';
                 startBattleBtn = document.getElementById('start-battle-btn');
                 if (startBattleBtn) startBattleBtn.addEventListener('click', startBattle);
                 updatePlayerUI();
@@ -1353,8 +1385,8 @@
                     case 'gold':
                         playerState.gold += amount;
                         break;
-                    case 'crit':
-                        playerState.baseCritChance += amount;
+                    case 'luck':
+                        playerState.luck += amount;
                         break;
                 }
                 updatePlayerUI();
@@ -1420,7 +1452,7 @@
                 const rewardTiers = {
                     armor: getTieredReward(1),
                     gold: getTieredReward(15),
-                    crit: getTieredReward(1),
+                    luck: getTieredReward(1),
                 };
 
                 giftRewardItems.forEach(item => {
@@ -1438,8 +1470,8 @@
                         textSpan.textContent = `+${rewardData.value} Max Armor`;
                     } else if (rewardType === 'gold') {
                         textSpan.textContent = `+${rewardData.value} Gold`;
-                    } else if (rewardType === 'crit') {
-                        textSpan.textContent = `+${rewardData.value}% Crit Chance`;
+                    } else if (rewardType === 'luck') {
+                        textSpan.textContent = `+${rewardData.value}% Luck`;
                     }
 
                     item.classList.remove('reward-selected', 'reward-highlight-anim', 'reward-fade-out');
@@ -1480,8 +1512,18 @@
                 }
             });
 
-            critBtn.addEventListener('click', () => {
-                // No action on click anymore for upgrade
+            luckBtn.addEventListener('click', () => {
+                if (!battleStarted) {
+                    luckModal.classList.remove('hidden');
+                }
+                // No action during battle
+            });
+
+            luckModal.addEventListener('click', (e) => {
+                // Close if the overlay is clicked, or if a button inside is clicked for now
+                if (e.target === luckModal || e.target.closest('button')) {
+                    luckModal.classList.add('hidden');
+                }
             });
 
             healthIconEl.addEventListener('click', () => {
@@ -1497,8 +1539,8 @@
                 if (upgradeType === 'health') {
                     playerState.maxHealth++;
                     playerState.health = playerState.maxHealth;
-                } else if (upgradeType === 'crit') {
-                    playerState.baseCritChance += 5;
+                } else if (upgradeType === 'luck') {
+                    playerState.luck += 5;
                 }
                 
                 playerState.killCount = 0;
@@ -1530,7 +1572,7 @@
                 enemyContainer.classList.remove('cursor-grab', 'active:cursor-grabbing'); enemyContainer.classList.add('cursor-default'); enemySlider.classList.add('hidden');
                 const selectedEnemySpans = Array.from(document.querySelectorAll('#enemy-list > span')).slice(startIndex, startIndex + groupSize);
                 currentEnemiesInBattle = selectedEnemySpans.map(span => {
-                    const isStamped = span.classList.contains('emoji-red-stamp'), isGift = span.classList.contains('emoji-gold-glow');
+                    const isStamped = span.classList.contains('emoji-red-stamp'), isGift = span.textContent === giftEmoji;
                     const hp = isGift ? 1 : (isStamped ? 20 : 10);
                     return { 
                         emoji: span.textContent, 
@@ -1552,7 +1594,6 @@
                     const newEnemySpan = document.createElement('span');
                     newEnemySpan.className = 'text-5xl relative z-10'; newEnemySpan.textContent = enemy.emoji;
                     if (enemy.isStamped) newEnemySpan.classList.add('emoji-red-stamp');
-                    if (enemy.isGift) newEnemySpan.classList.add('emoji-gold-glow');
                     enemyWrapper.appendChild(newEnemySpan);
                     if (!enemy.isGift) {
                         const healthBarContainer = document.createElement('div');
