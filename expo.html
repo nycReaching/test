@@ -215,7 +215,7 @@
                     <span id="reshuffle-counter" class="absolute bottom-1 right-2 text-lg text-white"></span>
                 </button>
                 <!-- CHANGE: Attack button text is now white -->
-                <button id="attackBtn" class="w-1/3 h-14 bg-red-500 focus:outline-none flex items-center justify-center text-3xl text-white retro-btn"><span id="attack-icon">💥</span><span id="attack-value" class="text-2xl">10</span></button>
+                <button id="attackBtn" class="w-1/3 h-14 bg-red-500 focus:outline-none flex items-center justify-center text-3xl text-white retro-btn" disabled><span id="attack-icon">💥</span><span id="attack-value" class="text-2xl">10</span></button>
                 <!-- CHANGE: Luck button text is now white -->
                 <button id="luckBtn" class="w-1/3 h-14 bg-green-400 focus:outline-none flex items-center justify-center text-white text-xl retro-btn gap-1"><span class="text-3xl">🍀</span><span id="luck-value">10</span>%</button>
             </div>
@@ -415,7 +415,24 @@
                 { id: 'infinityRing', name: '♾️ Infinity Ring', cost: 75, desc: 'Take damage to reroll.', oneTime: true },
             ];
             const enemyData = {
-                '💀': { name: 'Skeleton' },'🐺': { name: 'Wolf' },'🐸': { name: 'Frog', special: '☠️' },'🦄': { name: 'Unicorn', special: '❇️' },'🐲': { name: 'Dragon' },'🐍': { name: 'Serpent', special: '☠️' },'🐀': { name: 'Rat' },'🐦‍⬛': { name: 'Crow', special: '🕯️' },'🕷️': { name: 'Spider', special: '☠️' },'🦂': { name: 'Scorpion' },'🦟': { name: 'Mosquito', special: '🐌' },'🧟': { name: 'Zombie', special: '🐌' },'🧞': { name: 'Genie', special: '❇️' },'🧌': { name: 'Troll' },'🥷': { name: 'Ninja', special: '🫳' },'🧛': { name: 'Vampire', special: '🕯️' },'🦹': { name: 'Supervillain' },'🎁': { name: 'Gift' }
+                '💀': { name: 'Skeleton', hp: 9, attack: 1 },
+                '🐺': { name: 'Wolf', hp: 10, attack: 1 },
+                '🐸': { name: 'Frog', hp: 9, attack: 1, special: '☠️' },
+                '🦄': { name: 'Unicorn', hp: 22, attack: 1, special: '❇️' },
+                '🐲': { name: 'Dragon', hp: 15, attack: 3 },
+                '🐍': { name: 'Serpent', hp: 9, attack: 1, special: '☠️' },
+                '🐀': { name: 'Rat', hp: 8, attack: 1 },
+                '🐦‍⬛': { name: 'Crow', hp: 8, attack: 1, special: '🕯️' },
+                '🕷️': { name: 'Spider', hp: 8, attack: 1, special: '☠️' },
+                '🦂': { name: 'Scorpion', hp: 12, attack: 2 },
+                '🦟': { name: 'Mosquito', hp: 3, attack: 3, special: '🐌' },
+                '🧟': { name: 'Zombie', hp: 10, attack: 1, special: '🐌' },
+                '🧞': { name: 'Genie', hp: 12, attack: 1, special: '❇️' },
+                '🧌': { name: 'Troll', hp: 14, attack: 2 },
+                '🥷': { name: 'Ninja', hp: 10, attack: 1, special: '🫳' },
+                '🧛': { name: 'Vampire', hp: 12, attack: 2, special: '🕯️' },
+                '🦹': { name: 'Supervillain', hp: 25, attack: 3 },
+                '🎁': { name: 'Gift', hp: 1, attack: 0 }
             };
             const equipmentOptions = {
                 weapon: [
@@ -666,7 +683,7 @@
                 let statsHtml = '<div class="h-4"></div>';
                 if (!enemy.isGift) {
                     const hp = enemy.hp;
-                    const dmg = enemy.isStamped ? '2' : '1';
+                    const dmg = enemy.attack;
                     const specialIcon = data.special ? ` (${data.special})` : '';
                     
                     const statusIcons = Object.entries(enemy.statusEffects)
@@ -1536,10 +1553,14 @@
                         enemyWrapper.classList.add('flip-animation');
                         setTimeout(() => enemyWrapper.classList.remove('flip-animation'), 500);
                         await delay(500); 
-                        playerTakesDamage(enemy.isStamped ? 2 : 1);
+                        playerTakesDamage(enemy.attack);
                         const enemyInfo = enemyData[enemy.emoji];
                         if (enemyInfo.special) {
-                            if (['🕯️', '🐌'].includes(enemyInfo.special)) {
+                            if (enemyInfo.special === '🫳') { // Ninja ability
+                                playerState.gold = Math.max(0, playerState.gold - 5);
+                                updatePlayerUI();
+                                showDamageNumber('-5💰', healthIconEl);
+                            } else if (['🕯️', '🐌'].includes(enemyInfo.special)) {
                                 playerState.statusEffects[enemyInfo.special] = 3;
                             } else if (enemyInfo.special === '☠️') {
                                 playerState.statusEffects[enemyInfo.special] = 1; // Lasts all battle
@@ -1568,6 +1589,7 @@
             };
             const endBattle = () => {
                 battleStarted = false; currentEnemiesInBattle = []; playerState.armor = playerState.maxArmor; sideWindowLeft.innerHTML = ''; 
+                attackBtn.disabled = true;
                 flameheartBtn.disabled = false;
                 flameheartBtn.classList.remove('opacity-50', 'cursor-not-allowed');
                 armorheartBtn.disabled = false;
@@ -1905,6 +1927,7 @@
             const startBattle = () => {
                 if (battleStarted || isReshuffling) return;
                 playerActionsTaken = 0; // Reset actions at start of battle
+                attackBtn.disabled = false;
                 const flashOverlay = document.getElementById('screen-flash-overlay');
                 if (flashOverlay) {
                     flashOverlay.classList.add('flash-animation');
@@ -1930,10 +1953,23 @@
                 enemyContainer.classList.remove('cursor-grab', 'active:cursor-grabbing'); enemyContainer.classList.add('cursor-default'); enemySlider.classList.add('hidden');
                 const selectedEnemySpans = Array.from(document.querySelectorAll('#enemy-list > span')).slice(startIndex, startIndex + groupSize);
                 currentEnemiesInBattle = selectedEnemySpans.map(span => {
-                    const isStamped = span.classList.contains('emoji-red-stamp'), isGift = span.textContent === giftEmoji;
-                    const hp = isGift ? 1 : (isStamped ? 20 : 10);
+                    const emoji = span.textContent;
+                    const data = enemyData[emoji] || { name: 'Unknown', hp: 10, attack: 1 };
+                    const isStamped = span.classList.contains('emoji-red-stamp');
+                    const isGift = emoji === giftEmoji;
+                    
+                    const hp = isGift ? data.hp : (isStamped ? data.hp * 2 : data.hp);
+                    const attack = isGift ? data.attack : (isStamped ? data.attack + 1 : data.attack);
+
                     return { 
-                        emoji: span.textContent, isStamped, isGift, hp, maxHp: hp, isDefeated: false, ref: null,
+                        emoji: emoji, 
+                        isStamped: isStamped, 
+                        isGift: isGift, 
+                        hp: hp, 
+                        maxHp: hp, 
+                        attack: attack, // Storing attack value
+                        isDefeated: false, 
+                        ref: null,
                         statusEffects: {'☠️': 0, '🕯️': 0, '🐌': 0},
                         lastDebuff: null 
                     };
