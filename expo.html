@@ -2007,18 +2007,19 @@
                 enemyContainer.classList.remove('justify-around'); enemyContainer.classList.add('justify-center', 'gap-4');
                 currentEnemiesInBattle.forEach((enemy, index) => {
                     const enemyWrapper = document.createElement('div');
-                    enemyWrapper.className = 'relative cursor-pointer h-[70px] w-[60px] flex flex-col items-center justify-end transition-opacity duration-300 pb-1';
+                    enemyWrapper.className = 'relative cursor-pointer w-[60px] flex flex-col items-center justify-center transition-opacity duration-300';
                     const newEnemySpan = document.createElement('span');
                     newEnemySpan.className = 'text-5xl relative z-10'; newEnemySpan.textContent = enemy.emoji;
                     if (enemy.isStamped) newEnemySpan.classList.add('emoji-elite-stamp');
                     enemyWrapper.appendChild(newEnemySpan);
                     if (!enemy.isGift) {
                         const healthBarContainer = document.createElement('div');
-                        healthBarContainer.className = 'absolute bottom-0 w-12 h-2.5 bg-black/50 rounded-full border border-gray-900';
+                        healthBarContainer.className = 'w-12 h-2.5 bg-black/50 rounded-full border border-gray-900 mt-1';
                         
                         const healthBarFill = document.createElement('div');
                         healthBarFill.className = 'health-bar-fill h-full rounded-full transition-all duration-300';
                         healthBarFill.style.width = '100%';
+                        healthBarFill.style.backgroundColor = 'var(--accent-red)';
                         healthBarContainer.appendChild(healthBarFill);
 
                         enemyWrapper.appendChild(healthBarContainer);
@@ -2061,4 +2062,6 @@
 
 </body>
 </html>
+
+
 
