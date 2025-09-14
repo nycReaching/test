@@ -3,247 +3,276 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Loot Grab RPG (Minimalist Edition)</title>
+    <title>Loot Grab RPG (Modern Edition)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* --- MINIMALIST 90s SOFTWARE RE-SKIN --- */
+        /* --- MODERN & CLEAN UI RE-SKIN --- */
         :root {
-            --bg-main: #1F2937;       /* Dark Gray */
-            --bg-panel: #374151;      /* Lighter Dark Gray */
-            --border-color: #6B7280;  /* Medium Gray */
-            --text-color: #F9FAFB;    /* Off-white Text */
-            --accent-color: #6366F1;  /* A lighter Indigo for highlights */
+            --bg-main: #111827;       /* Very Dark Blue-Gray */
+            --bg-panel: #1F2937;      /* Dark Blue-Gray */
+            --bg-inset: #111827;      /* Inset Background */
+            --border-color: #374151;  /* Subtle Border/Divider */
+            --text-primary: #F9FAFB;  /* Off-white Text */
+            --text-secondary: #9CA3AF;/* Light Gray Text */
+            --accent-primary: #38BDF8; /* Sky Blue */
+            --accent-secondary: #F472B6;/* Pink */
+            --accent-red: #F87171;     /* Red */
+            --accent-green: #4ADE80;  /* Green */
+            --accent-orange: #FB923C; /* Orange */
+            --accent-yellow: #FACC15; /* Yellow */
+            --font-main: 'Poppins', sans-serif;
         }
-        body {
-            font-family: 'VT323', monospace;
-            background-color: var(--bg-main);
-            color: var(--text-color);
-            touch-action: manipulation;
-        }
-        /* Disable Tailwind's default modern filters */
-        *, ::before, ::after {
-            --tw-blur: ; --tw-brightness: ; --tw-contrast: ; --tw-grayscale: ; --tw-hue-rotate: ; --tw-invert: ; --tw-saturate: ; --tw-sepia: ; --tw-drop-shadow: ;
-        }
-        .text-shadow { text-shadow: 1px 1px 0px rgba(0,0,0,0.1); }
 
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            touch-action: manipulation;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
         #game-container {
-            background-color: var(--bg-panel);
+            background-color: var(--bg-main);
+            border-radius: 2rem;
+            box-shadow: 0 0 40px rgba(0,0,0,0.5), inset 0 0 10px rgba(255,255,255,0.05);
             border: 1px solid var(--border-color);
         }
 
         /* Standard panel */
-        .retro-panel {
+        .panel {
             border: 1px solid var(--border-color);
             background-color: var(--bg-panel);
+            border-radius: 1.25rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
         }
         /* Sunken/inset panel */
-        .retro-panel-inset {
-            border: 1px solid var(--border-color);
-            background-color: #111827; /* Very dark gray for depth */
-            padding: 2px 4px;
+        .panel-inset {
+            border: 1px solid #000;
+            background-color: var(--bg-inset);
+            border-radius: 1rem;
+            padding: 0.5rem;
         }
 
-        /* Minimalist button style */
-        .retro-btn {
-            border: 1px solid var(--border-color) !important;
-            background-color: #F9FAFB;
-            box-shadow: none !important;
-            transition: background-color 0.1s ease-in-out, transform 0.1s ease-in-out !important;
-            color: var(--text-color);
+        /* Modern button style */
+        .btn {
+            border-radius: 0.75rem !important;
+            background-color: #374151; /* Default dark gray */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.05) !important;
+            transition: all 0.15s ease-in-out !important;
+            color: var(--text-primary);
             line-height: 1;
+            font-weight: 500;
         }
-        .retro-btn:active {
-            background-color: #1F2937; /* Darken on press */
-            transform: scale(0.97) !important; /* Slight shrink on press */
-            filter: none !important;
+        .btn:active {
+            transform: scale(0.96) !important;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.3), inset 0 1px 2px rgba(0,0,0,0.2) !important;
+            filter: brightness(0.9);
         }
-        .retro-btn:disabled {
-            background-color: #F3F4F6;
-            color: #9CA3AF;
+        .btn:disabled {
+            background-color: #4B5563 !important;
+            color: #9CA3AF !important;
+            cursor: not-allowed;
+            opacity: 0.7;
         }
+        .btn-green { background-color: #166534 !important; }
+        .btn-red { background-color: #991B1B !important; }
+        .btn-blue { background-color: #1E40AF !important; }
+        .btn-cyan { background-color: #155E75 !important; }
+        .btn-violet { background-color: #5B21B6 !important; }
+        .btn-slate { background-color: #334155 !important; }
+        .btn-amber { background-color: #92400E !important; }
+        
 
         /* Progress Bars */
         .progress-bar-container {
             border: 1px solid var(--border-color);
-            height: 12px; /* Slimmer progress bars */
-            padding: 1px;
-            background-color: var(--bg-main);
+            height: 10px;
+            padding: 2px;
+            background-color: var(--bg-inset);
+            border-radius: 9999px;
         }
         .progress-bar-fill {
             transition: width 0.2s linear;
             height: 100%;
+            border-radius: 9999px;
+            box-shadow: 0 0 10px var(--color);
         }
 
         /* Modals */
-        .retro-modal-content {
+        .modal-backdrop {
+             background-color: rgba(17, 24, 39, 0.8);
+             backdrop-filter: blur(8px);
+        }
+        .modal-content {
             border: 1px solid var(--border-color);
             background-color: var(--bg-panel);
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.3);
         }
 
-        /* --- EMOJI & ANIMATION STYLES (Tweaked for Minimalist Feel) --- */
-        .emoji-red-stamp {
-            filter: drop-shadow(0 0 3px #ef4444);
+        /* --- EMOJI & ANIMATION STYLES (Modernized) --- */
+        .emoji-elite-stamp {
+            filter: drop-shadow(0 0 6px var(--accent-red));
         }
         @keyframes pulse { 50% { transform: scale(1.05); } }
         .pulse-animation { animation: pulse 1.5s infinite ease-in-out; }
         @keyframes shake {
           0%, 100% { transform: translateX(0); }
-          10%, 30%, 50%, 70%, 90% { transform: translateX(-3px); }
-          20%, 40%, 60%, 80% { transform: translateX(3px); }
+          10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+          20%, 40%, 60%, 80% { transform: translateX(4px); }
         }
         .shake-animation { animation: shake 0.3s ease-in-out; }
-        @keyframes float-up { to { transform: translateY(-50px) translateX(-50%); opacity: 0; } }
+        @keyframes float-up { to { transform: translateY(-60px) translateX(-50%) scale(0.8); opacity: 0; } }
         .damage-number {
-          position: absolute; font-size: 2rem; font-weight: bold; color: var(--accent-color);
-          text-shadow: 1px 1px 0 black; pointer-events: none;
+          position: absolute; font-size: 2.25rem; font-weight: 700; color: var(--accent-primary);
+          text-shadow: 0px 0px 8px rgba(56, 189, 248, 0.7); pointer-events: none;
           animation: float-up 1s ease-out forwards;
         }
         @keyframes flip-horizontal { 50% { transform: scaleX(-1); } 100% { transform: scaleX(1); } }
         .flip-animation { animation: flip-horizontal 0.5s ease-in-out; }
-        @keyframes damage-flash { 50% { transform: scale(1.7); color: var(--accent-color); } }
+        @keyframes damage-flash { 50% { transform: scale(1.7); color: var(--accent-red); } }
         .damage-flash-animation { animation: damage-flash 0.4s ease-in-out; }
         
-        /* UPDATED: Border pulse is now a subtle shadow pulse */
-        @keyframes border-pulse { 50% { box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.5); } }
+        @keyframes border-pulse { 50% { box-shadow: 0 0 0 4px rgba(248, 113, 113, 0.5), 0 0 40px rgba(0,0,0,0.5), inset 0 0 10px rgba(255,255,255,0.05); } }
         .border-pulse-animation { animation: border-pulse 1s infinite; }
 
-        .screen-flash { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: white; opacity: 0; pointer-events: none; z-index: 999; }
-        @keyframes screen-flash-anim { from { opacity: 0.4; } to { opacity: 0; } }
+        .screen-flash { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: white; opacity: 0; pointer-events: none; z-index: 999; border-radius: 2rem; }
+        @keyframes screen-flash-anim { from { opacity: 0.5; } to { opacity: 0; } }
         .flash-animation { animation: screen-flash-anim 0.3s ease-out; }
-
-        /* UPDATED: Battle selector is a single, clean border */
+        
         #battle-selector {
+            border: 3px solid var(--accent-primary) !important;
+            background: rgba(56, 189, 248, 0.15) !important;
+            box-shadow: 0 0 15px var(--accent-primary) !important;
+            border-radius: 1rem;
+            transition: transform 0.15s ease-out;
             animation: none;
-            border: 2px solid var(--accent-color) !important;
-            background: rgba(79, 70, 229, 0.1) !important;
-            box-shadow: none !important;
-            transition: transform 0.1s linear;
         }
 
         @keyframes fade-out-and-shrink { to { transform: scale(0.5); opacity: 0; } }
         .enemy-fade-out { animation: fade-out-and-shrink 0.4s ease-out forwards; }
         .enemy-defeated { transition: width 0.3s ease-out, padding 0.3s ease-out, margin 0.3s ease-out; width: 0px !important; padding: 0 !important; margin: 0 !important; overflow: hidden; }
         
-        /* UPDATED: Kill bar pulse is simpler */
-        @keyframes pulse-orange { 50% { background-color: #f59e0b; } }
-        .pulse-orange-animation { animation: pulse-orange 1s infinite steps(2, jump-none); }
-        .glow-orange-text-animation { color: #f97316 !important; }
+        @keyframes pulse-orange { 50% { background-color: var(--accent-orange); box-shadow: 0 0 15px var(--accent-orange); } }
+        .pulse-orange-animation { animation: pulse-orange 1s infinite; }
+        .glow-orange-text-animation { color: var(--accent-orange) !important; text-shadow: 0 0 8px var(--accent-orange); }
 
         @keyframes reward-highlight {
-            50% { border-color: var(--accent-color); box-shadow: 0 0 0 2px var(--accent-color); transform: scale(1.03); }
+            50% { border-color: var(--accent-primary); box-shadow: 0 0 0 3px var(--accent-primary); transform: scale(1.03); }
         }
         .reward-highlight-anim { animation: reward-highlight 0.5s ease-in-out; }
-        .reward-selected { border-color: var(--accent-color) !important; box-shadow: 0 0 0 3px var(--accent-color) !important; transform: scale(1.08) !important; cursor: pointer; }
-        .reward-fade-out { opacity: 0.3; transform: scale(0.95); }
+        .reward-selected { border-color: var(--accent-primary) !important; box-shadow: 0 0 0 4px var(--accent-primary) !important; transform: scale(1.08) !important; cursor: pointer; }
+        .reward-fade-out { opacity: 0.4; transform: scale(0.95); }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-2">
+<body class="flex items-center justify-center min-h-screen p-2 text-sm">
 
     <!-- Mobile Screen Container -->
-    <div id="game-container" class="w-full max-w-sm h-[95vh] max-h-[850px] p-2 flex flex-col gap-2 relative overflow-hidden">
+    <div id="game-container" class="w-full max-w-sm h-[95vh] max-h-[850px] p-3 flex flex-col gap-3 relative overflow-hidden">
         <div id="screen-flash-overlay" class="screen-flash"></div>
         
         <!-- =================================================================== -->
         <!-- Top Section: Player Stats & Info -->
         <!-- =================================================================== -->
-        <div class="flex-shrink-0 retro-panel p-2 flex flex-col gap-2">
+        <div class="flex-shrink-0 panel p-3 flex flex-col gap-3">
             <!-- Row 1: Core Stats (HP, Armor) & Currency -->
             <div class="flex items-center justify-between">
-                <div class="flex items-center text-3xl gap-4">
-                    <div class="flex items-center gap-1.5">
-                        <span id="health-icon" class="transition-transform duration-200">❤️</span>
-                        <span id="health-value" class="w-8 text-left text-2xl">10</span>
-                    </div>
-                    <div class="flex items-center gap-1.5">
-                        <span id="armor-icon" class="text-zinc-400">🛡️</span>
-                        <span id="armor-value" class="w-8 text-left text-2xl">3</span>
-                    </div>
+                <div class="flex items-center gap-2">
+                    <span id="health-icon" class="text-3xl transition-transform duration-200">❤️</span>
+                    <span id="health-value" class="text-left text-2xl font-semibold w-12">10</span>
                 </div>
-                <div class="flex items-center text-2xl gap-3">
-                    <div class="flex items-center gap-1.5"><span class="text-3xl">💰</span><span id="gold-value" class="w-8 text-left">99</span></div>
-                    <div class="flex items-center gap-1.5"><span class="text-3xl">🌒</span><span id="moonstone-value" class="w-8 text-left">3</span></div>
+                <div class="flex items-center gap-2">
+                    <span id="armor-icon" class="text-3xl text-gray-400">🛡️</span>
+                    <span id="armor-value" class="text-left text-2xl font-semibold w-12">3</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-3xl">💰</span>
+                    <span id="gold-value" class="text-left text-2xl font-semibold w-12">99</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-3xl">🌒</span>
+                    <span id="moonstone-value" class="text-left text-2xl font-semibold w-12">3</span>
                 </div>
             </div>
             
             <!-- Row 2: Slim Progress Bars -->
-            <div class="flex flex-col w-full gap-1.5">
+            <div class="flex flex-col w-full gap-2">
                 <div class="w-full progress-bar-container">
-                    <div id="magic-bar" class="bg-cyan-400 progress-bar-fill" style="width: 100%;"></div>
+                    <div id="magic-bar" class="progress-bar-fill" style="width: 100%; --color: var(--accent-primary);"></div>
                 </div>
                 <div class="w-full progress-bar-container">
-                    <div id="kill-bar" class="bg-red-600 progress-bar-fill" style="width: 0%;"></div>
+                    <div id="kill-bar" class="progress-bar-fill" style="width: 0%; --color: var(--accent-red);"></div>
                 </div>
             </div>
 
             <!-- Row 3: Player Status Effects -->
-            <div id="player-status-effects" class="flex items-center justify-start text-2xl gap-1 h-6">
+            <div id="player-status-effects" class="flex items-center justify-start text-2xl gap-1 h-7">
                 <!-- Status icons will be managed by JS -->
-                <div class="relative status-effect-icon hidden" data-effect="⚡"><span>⚡</span><span class="stack-counter absolute -bottom-1 -right-1 text-base text-shadow bg-black/70 text-white rounded-full w-4 h-4 flex items-center justify-center leading-none"></span></div>
-                <div class="relative status-effect-icon hidden" data-effect="🌟"><span>🌟</span><span class="stack-counter absolute -bottom-1 -right-1 text-base text-shadow bg-black/70 text-white rounded-full w-4 h-4 flex items-center justify-center leading-none"></span></div>
-                <div class="relative status-effect-icon hidden" data-effect="❇️"><span>❇️</span><span class="stack-counter absolute -bottom-1 -right-1 text-base text-shadow bg-black/70 text-white rounded-full w-4 h-4 flex items-center justify-center leading-none"></span></div>
-                <div class="relative status-effect-icon hidden" data-effect="🐌"><span>🐌</span><span class="stack-counter absolute -bottom-1 -right-1 text-base text-shadow bg-black/70 text-white rounded-full w-4 h-4 flex items-center justify-center leading-none"></span></div>
-                <div class="relative status-effect-icon hidden" data-effect="🕯️"><span>🕯️</span><span class="stack-counter absolute -bottom-1 -right-1 text-base text-shadow bg-black/70 text-white rounded-full w-4 h-4 flex items-center justify-center leading-none"></span></div>
-                <div class="relative status-effect-icon hidden" data-effect="☠️"><span>☠️</span><span class="stack-counter absolute -bottom-1 -right-1 text-base text-shadow bg-black/70 text-white rounded-full w-4 h-4 flex items-center justify-center leading-none"></span></div>
+                <div class="relative status-effect-icon hidden" data-effect="⚡"><span>⚡</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold bg-black/70 text-white rounded-full w-4 h-4 flex items-center justify-center leading-none"></span></div>
+                <div class="relative status-effect-icon hidden" data-effect="🌟"><span>🌟</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold bg-black/70 text-white rounded-full w-4 h-4 flex items-center justify-center leading-none"></span></div>
+                <div class="relative status-effect-icon hidden" data-effect="❇️"><span>❇️</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold bg-black/70 text-white rounded-full w-4 h-4 flex items-center justify-center leading-none"></span></div>
+                <div class="relative status-effect-icon hidden" data-effect="🐌"><span>🐌</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold bg-black/70 text-white rounded-full w-4 h-4 flex items-center justify-center leading-none"></span></div>
+                <div class="relative status-effect-icon hidden" data-effect="🕯️"><span>🕯️</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold bg-black/70 text-white rounded-full w-4 h-4 flex items-center justify-center leading-none"></span></div>
+                <div class="relative status-effect-icon hidden" data-effect="☠️"><span>☠️</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold bg-black/70 text-white rounded-full w-4 h-4 flex items-center justify-center leading-none"></span></div>
             </div>
         </div>
 
         <!-- =================================================================== -->
         <!-- Main Game Area -->
         <!-- =================================================================== -->
-        <div class="flex-grow flex flex-col gap-2 retro-panel p-2">
+        <div class="flex-grow flex flex-col gap-3 panel p-3">
             
             <!-- UNIFIED BATTLE WINDOW -->
-            <div class="flex-shrink-0 retro-panel-inset flex flex-col justify-between p-1">
+            <div class="flex-shrink-0 panel-inset flex flex-col justify-between p-1.5 gap-1.5">
                 <!-- Top part: Info Display / Start Button -->
                 <div id="battle-details-window" class="relative flex-shrink-0 h-16 flex items-center justify-center text-center">
-                    <div id="wave-counter" class="absolute top-0 left-1.5 text-base italic text-gray-400"></div>
+                    <div id="wave-counter" class="absolute top-1 left-2 text-sm font-semibold text-gray-500"></div>
                     <div id="battle-details-content" class="w-full h-full flex items-center justify-center">
-                        <button id="start-battle-btn" class="retro-btn bg-green-500 text-white text-xl py-2 px-6 disabled:opacity-50 disabled:cursor-not-allowed">Start Battle</button>
+                        <button id="start-battle-btn" class="btn btn-green text-white text-lg py-2.5 px-8 font-semibold disabled:opacity-50 disabled:cursor-not-allowed">Start Battle</button>
                     </div>
                 </div>
 
                 <!-- Bottom part: Enemy Reel -->
-                <div id="enemy-container" class="relative flex items-center select-none cursor-grab active:cursor-grabbing overflow-hidden h-24 retro-panel-inset">
-                    <div id="enemy-slider" class="absolute top-0 left-0 h-full bg-white/10 pointer-events-none z-10" style="transition: transform 0.2s ease-out;"></div>
+                <div id="enemy-container" class="relative flex items-center select-none cursor-grab active-cursor-grabbing overflow-hidden h-24 panel-inset">
+                    <div id="enemy-slider" class="absolute top-0 left-0 h-full bg-white/5 pointer-events-none z-10" style="transition: transform 0.2s ease-out;"></div>
                     <div id="battle-selector" class="hidden absolute top-0 left-0 pointer-events-none z-30"></div>
-                    <div id="enemy-list" class="absolute inset-0 flex items-center justify-between pl-1 pr-3 z-20">
+                    <div id="enemy-list" class="absolute inset-0 flex items-center justify-evenly z-20">
                         <!-- Icons populated by JS -->
                         <span class="text-3xl"></span><span class="text-3xl"></span><span class="text-3xl"></span><span class="text-3xl"></span><span class="text-3xl"></span><span class="text-3xl"></span><span class="text-3xl"></span><span class="text-3xl"></span>
                     </div>
                 </div>
             </div>
             
-            <!-- Central Action Bar & Lower Interaction Area are now combined for better symmetry -->
-            <div class="flex-grow flex flex-col gap-2">
+            <div class="flex-grow flex flex-col gap-3">
                 <!-- Side Window / Spell Info -->
-                <div id="side-window-left" class="h-20 flex flex-col items-center justify-center retro-panel-inset p-2 overflow-hidden text-lg text-center">
+                <div id="side-window-left" class="h-16 flex flex-col items-center justify-center panel-inset p-2 overflow-hidden text-sm text-center">
                     <!-- Spell descriptions / Battle Log will appear here -->
                 </div>
 
                 <!-- Symmetrical Button Grid -->
-                <div class="flex-grow grid grid-cols-3 gap-2">
-                    <button id="reshuffleBtn" class="h-full relative bg-blue-500 text-white focus:outline-none flex items-center justify-center text-4xl retro-btn">
+                <div class="flex-grow grid grid-cols-3 grid-rows-4 gap-2">
+                    <button id="reshuffleBtn" class="h-full relative btn btn-blue text-white focus:outline-none flex items-center justify-center text-4xl">
                         🔃
-                        <span id="reshuffle-counter" class="absolute bottom-1 right-2 text-lg text-white bg-black/50 rounded px-1"></span>
+                        <span id="reshuffle-counter" class="absolute bottom-1 right-2 text-sm text-white bg-black/50 rounded-md px-1.5 py-0.5 font-semibold"></span>
                     </button>
-                    <button id="attackBtn" class="h-full bg-red-500 focus:outline-none flex items-center justify-center text-3xl text-white retro-btn" disabled><span id="attack-icon">💥</span><span id="attack-value" class="text-2xl">10</span></button>
-                    <button id="luckBtn" class="h-full bg-green-400 focus:outline-none flex items-center justify-center text-white text-xl retro-btn gap-1"><span class="text-3xl">🍀</span><span id="luck-value">10</span>%</button>
+                    <button id="attackBtn" class="h-full btn btn-red focus:outline-none flex items-center justify-center text-3xl text-white gap-1" disabled><span id="attack-icon">💥</span><span id="attack-value" class="text-2xl font-bold">10</span></button>
+                    <button id="luckBtn" class="h-full btn btn-green focus:outline-none flex items-center justify-center text-white text-xl gap-1"><span class="text-3xl">🍀</span><span id="luck-value" class="font-bold">10</span>%</button>
                     
-                    <button id="flameheartBtn" class="h-full bg-cyan-400 focus:outline-none text-4xl flex items-center justify-center retro-btn">❤️‍🔥</button>
-                    <button id="frostbiteBtn" class="h-full bg-cyan-400 focus:outline-none text-4xl flex items-center justify-center retro-btn">❄️</button>
-                    <button id="armorheartBtn" class="h-full bg-cyan-400 focus:outline-none text-4xl flex items-center justify-center retro-btn">🩶</button>
+                    <button id="flameheartBtn" class="h-full btn btn-cyan focus:outline-none text-4xl flex items-center justify-center">❤️‍🔥</button>
+                    <button id="frostbiteBtn" class="h-full btn btn-cyan focus:outline-none text-4xl flex items-center justify-center">❄️</button>
+                    <button id="armorheartBtn" class="h-full btn btn-cyan focus:outline-none text-4xl flex items-center justify-center">🩶</button>
                     
-                    <button class="equip-slot h-full relative bg-blue-400 focus:outline-none text-4xl flex items-center justify-center retro-btn"><span class="opacity-50">❔</span></button>
-                    <button class="equip-slot h-full relative bg-blue-400 focus:outline-none text-4xl flex items-center justify-center retro-btn"><span class="opacity-50">❔</span></button>
-                    <button class="equip-slot h-full relative bg-blue-400 focus:outline-none text-4xl flex items-center justify-center retro-btn"><span class="opacity-50">❔</span></button>
+                    <button class="equip-slot h-full relative btn btn-blue focus:outline-none text-4xl flex items-center justify-center"><span class="opacity-50">?</span></button>
+                    <button class="equip-slot h-full relative btn btn-blue focus:outline-none text-4xl flex items-center justify-center"><span class="opacity-50">?</span></button>
+                    <button class="equip-slot h-full relative btn btn-blue focus:outline-none text-4xl flex items-center justify-center"><span class="opacity-50">?</span></button>
                     
-                    <button id="fortunesBtn" class="h-full bg-violet-500 text-white text-4xl focus:outline-none flex items-center justify-center retro-btn">🔮</button>
-                    <button id="buildBtn" class="h-full bg-slate-500 text-white text-4xl focus:outline-none flex items-center justify-center retro-btn">🔨</button>
-                    <button id="shopBtn" class="h-full bg-amber-500 text-white text-4xl focus:outline-none flex items-center justify-center retro-btn">🪙</button>
+                    <button id="fortunesBtn" class="h-full btn btn-violet text-white text-4xl focus:outline-none flex items-center justify-center">🔮</button>
+                    <button id="buildBtn" class="h-full btn btn-slate text-white text-4xl focus:outline-none flex items-center justify-center">🔨</button>
+                    <button id="shopBtn" class="h-full btn btn-amber text-white text-4xl focus:outline-none flex items-center justify-center">🪙</button>
                 </div>
             </div>
         </div>
@@ -252,98 +281,96 @@
         <!-- =================================================================== -->
         <!-- MODAL WINDOWS -->
         <!-- =================================================================== -->
-        <div id="fortunesModal" class="hidden absolute inset-0 bg-black/70 flex items-center justify-center z-30 p-4">
-            <div class="relative retro-modal-content p-4 w-full max-w-xs">
-                <div id="fortunes-content" class="w-full text-xl space-y-4 text-center"></div>
+        <div id="fortunesModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-30 p-4">
+            <div class="relative modal-content p-4 w-full max-w-xs">
+                <div id="fortunes-content" class="w-full text-lg space-y-4 text-center"></div>
             </div>
         </div>
-        <div id="buildModal" class="hidden absolute inset-0 bg-black/70 flex items-center justify-center z-30 p-4">
-            <div class="relative retro-modal-content p-4 w-full max-w-xs">
-                <div class="w-full text-xl space-y-4">
-                    <div class="flex justify-between items-center"><span>WEAPON</span><button data-slot-type="weapon" class="w-24 h-14 bg-slate-400 flex items-center justify-center text-4xl retro-btn"></button></div>
-                    <div class="flex justify-between items-center"><span>ARMOR</span><button data-slot-type="armor" class="w-24 h-14 bg-slate-400 flex items-center justify-center text-4xl retro-btn"></button></div>
-                    <div class="flex justify-between items-center"><span>RING</span><button data-slot-type="ring" class="w-24 h-14 bg-slate-400 flex items-center justify-center text-4xl retro-btn"></button></div>
+        <div id="buildModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-30 p-4">
+            <div class="relative modal-content p-4 w-full max-w-xs">
+                <div class="w-full text-lg space-y-4">
+                    <div class="flex justify-between items-center"><span>WEAPON</span><button data-slot-type="weapon" class="w-24 h-16 bg-slate-700 flex items-center justify-center text-4xl btn"></button></div>
+                    <div class="flex justify-between items-center"><span>ARMOR</span><button data-slot-type="armor" class="w-24 h-16 bg-slate-700 flex items-center justify-center text-4xl btn"></button></div>
+                    <div class="flex justify-between items-center"><span>RING</span><button data-slot-type="ring" class="w-24 h-16 bg-slate-700 flex items-center justify-center text-4xl btn"></button></div>
                 </div>
             </div>
         </div>
-        <div id="shopModal" class="hidden absolute inset-0 bg-black/70 flex items-center justify-center z-30 p-4">
-            <div class="relative retro-modal-content p-4 w-full max-w-xs">
-                <div id="shop-items-container" class="w-full max-w-xs text-xl space-y-2"></div>
+        <div id="shopModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-30 p-4">
+            <div class="relative modal-content p-4 w-full max-w-xs">
+                <div id="shop-items-container" class="w-full max-w-xs text-base space-y-2"></div>
             </div>
         </div>
-        <div id="reelModal" class="hidden absolute inset-0 bg-black/70 flex items-center justify-center z-50">
-            <div class="relative retro-modal-content p-3">
-                <div id="reel-items" class="flex gap-2 text-4xl">
-                    <button class="reel-item p-1 transition-transform active:scale-95">☠️</button>
-                    <button class="reel-item p-1 transition-transform active:scale-95">🕯️</button>
-                    <button class="reel-item p-1 transition-transform active:scale-95">🐌</button>
-                    <button class="reel-item p-1 transition-transform active:scale-95">❇️</button>
-                    <button class="reel-item p-1 transition-transform active:scale-95">🌟</button>
-                    <button class="reel-item p-1 transition-transform active:scale-95">⚡</button>
+        <div id="reelModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
+            <div class="relative modal-content p-3">
+                <div id="reel-items" class="flex gap-2 text-3xl">
+                    <button class="reel-item p-2 transition-transform active:scale-95">☠️</button>
+                    <button class="reel-item p-2 transition-transform active:scale-95">🕯️</button>
+                    <button class="reel-item p-2 transition-transform active:scale-95">🐌</button>
+                    <button class="reel-item p-2 transition-transform active:scale-95">❇️</button>
+                    <button class="reel-item p-2 transition-transform active:scale-95">🌟</button>
+                    <button class="reel-item p-2 transition-transform active:scale-95">⚡</button>
                 </div>
             </div>
         </div>
-        <div id="equipmentChoiceModal" class="hidden absolute inset-0 bg-black/70 flex items-center justify-center z-40 p-4">
-            <div class="relative retro-modal-content p-4 w-full max-w-xs">
-                <div id="equipmentChoiceContent" class="text-xl space-y-3"></div>
+        <div id="equipmentChoiceModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-40 p-4">
+            <div class="relative modal-content p-4 w-full max-w-xs">
+                <div id="equipmentChoiceContent" class="text-base space-y-3"></div>
             </div>
         </div>
-        <div id="fortuneDetailModal" class="hidden absolute inset-0 bg-black/70 flex items-center justify-center z-40 p-4">
-            <div class="relative retro-modal-content p-4 w-full max-w-xs">
-                <div id="fortuneDetailContent" class="text-xl space-y-2 text-center">
+        <div id="fortuneDetailModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-40 p-4">
+            <div class="relative modal-content p-4 w-full max-w-xs">
+                <div id="fortuneDetailContent" class="text-lg space-y-2 text-center">
                     <!-- Fortune details will be injected here -->
                 </div>
             </div>
         </div>
-        <div id="giftModal" class="hidden absolute inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-            <div class="relative retro-modal-content p-6 w-full max-w-xs text-center border-2 border-red-500">
-                <h2 class="text-3xl mb-4 text-amber-600">A Gift!</h2>
+        <div id="giftModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
+            <div class="relative modal-content p-6 w-full max-w-xs text-center border-2" style="border-color: var(--accent-primary);">
+                <h2 class="text-3xl mb-4 font-bold" style="color: var(--accent-yellow);">A Gift!</h2>
                 <div id="gift-rewards" class="space-y-3 mb-6">
-                    <div data-reward="armor" class="gift-reward-item retro-panel-inset p-3 border-2 border-transparent transition-all duration-400 flex items-center justify-center">
+                    <div data-reward="armor" class="gift-reward-item panel-inset p-3 border-2 border-transparent transition-all duration-400 flex items-center justify-center">
                         <span class="text-3xl">🛡️</span>
-                        <span class="ml-2 text-xl">+1 Max Armor</span>
+                        <span class="ml-2 text-lg font-semibold">+1 Max Armor</span>
                     </div>
-                    <div data-reward="gold" class="gift-reward-item retro-panel-inset p-3 border-2 border-transparent transition-all duration-400 flex items-center justify-center">
+                    <div data-reward="gold" class="gift-reward-item panel-inset p-3 border-2 border-transparent transition-all duration-400 flex items-center justify-center">
                         <span class="text-3xl">💰</span>
-                        <span class="ml-2 text-xl">+15 Gold</span>
+                        <span class="ml-2 text-lg font-semibold">+15 Gold</span>
                     </div>
-                    <div data-reward="luck" class="gift-reward-item retro-panel-inset p-3 border-2 border-transparent transition-all duration-400 flex items-center justify-center">
+                    <div data-reward="luck" class="gift-reward-item panel-inset p-3 border-2 border-transparent transition-all duration-400 flex items-center justify-center">
                         <span class="text-3xl">🍀</span>
-                        <span class="ml-2 text-xl">+1% Luck</span>
+                        <span class="ml-2 text-lg font-semibold">+1% Luck</span>
                     </div>
                 </div>
             </div>
         </div>
-        <!-- ADDED: Kill Meter Upgrade Modal -->
-        <div id="killMeterModal" class="hidden absolute inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-            <div class="relative retro-modal-content p-6 w-full max-w-xs text-center">
-                <h2 class="text-3xl mb-6 text-orange-600">UPGRADE!</h2>
+        <div id="killMeterModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
+            <div class="relative modal-content p-6 w-full max-w-xs text-center">
+                <h2 class="text-3xl mb-6 font-bold" style="color: var(--accent-orange);">UPGRADE!</h2>
                 <div id="kill-meter-rewards" class="space-y-4">
-                    <button data-upgrade="health" class="retro-btn w-full p-4 text-xl flex items-center justify-center gap-3 bg-slate-700">
+                    <button data-upgrade="health" class="btn w-full p-4 text-lg flex items-center justify-center gap-3">
                         <span>❤️</span>
                         <span>+1 Max Health</span>
                     </button>
-                    <button data-upgrade="luck" class="retro-btn w-full p-4 text-xl flex items-center justify-center gap-3 bg-slate-700">
+                    <button data-upgrade="luck" class="btn w-full p-4 text-lg flex items-center justify-center gap-3">
                         <span>🍀</span>
                         <span>+5% Luck</span>
                     </button>
                 </div>
             </div>
         </div>
-        <!-- ADDED: Luck Modal -->
-        <div id="luckModal" class="hidden absolute inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-            <div class="relative retro-modal-content p-6 w-full max-w-xs text-center">
-                <h2 class="text-3xl mb-6 text-green-700">LUCK</h2>
+        <div id="luckModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
+            <div class="relative modal-content p-6 w-full max-w-xs text-center">
+                <h2 class="text-3xl mb-6 font-bold" style="color: var(--accent-green);">LUCK</h2>
                 <div id="luck-options" class="space-y-4">
-                    <button data-luck="attack" class="retro-btn w-full p-4 text-xl flex items-center justify-center gap-3 bg-slate-700">
+                    <button data-luck="attack" class="btn w-full p-4 text-lg flex items-center justify-center gap-3">
                         <span>💥</span>
                         <span>Attack</span>
                     </button>
-                    <button data-luck="magic" class="retro-btn w-full p-4 text-xl flex items-center justify-center gap-3 bg-slate-700">
+                    <button data-luck="magic" class="btn w-full p-4 text-lg flex items-center justify-center gap-3">
                         <span>✨</span>
                         <span>Magic</span>
                     </button>
-                    <button data-luck="choices" class="retro-btn w-full p-4 text-xl flex items-center justify-center gap-3 bg-slate-700">
+                    <button data-luck="choices" class="btn w-full p-4 text-lg flex items-center justify-center gap-3">
                         <span>🎲</span>
                         <span>Choices</span>
                     </button>
@@ -451,7 +478,6 @@
                 frostbite: { title: "❄️ Frostbite:", desc1: "Deal 5 damage & inflict 🐌.", desc2: "Depletes half magic bar." },
                 armorheart: { title: "🩶 Armorheart:", desc1: "Add current health to armor.", desc2: "Depletes half magic bar." }
             };
-            // --- STATUS EFFECT CHANGE: Descriptions updated ---
             const symbolDescriptions = {
                 '☠️': { title: "☠️ Poison", desc: "Deals 1 damage directly to HP per turn." },
                 '🕯️': { title: "🕯️ Curse", desc: "Attacks deal half damage and inflict the other half on you." },
@@ -469,15 +495,15 @@
                 { title: '🎭 Unstable Mind', desc: 'Share 🍶 with enemy' }
             ];
             const fortunes = [
-                { text: 'Durable Stones', rarity: '🔵', desc: '+1 Status stone use', color: 'text-sky-600' },
-                { text: 'Efficient Magic', rarity: '🔵', desc: '1/2 MP cost', color: 'text-sky-600' },
-                { text: 'Bartering Edge', rarity: '🔵', desc: '15% shop discount', color: 'text-sky-600' },
-                { text: 'Archer\'s Edge', rarity: '🟡', desc: 'Attacks all with 🏹', color: 'text-amber-600' },
-                { text: 'Enchantment', rarity: '🟡', desc: '🧚🏼also grants ❇️', color: 'text-amber-600' },
-                { text: 'Battle Grace', rarity: '🟡', desc: 'Buffs restore 1 🛡️', color: 'text-amber-600' },
-                { text: 'Prolonged Torment', rarity: '🎉', desc: '2x 🕯️and 🐌 durations', color: 'text-pink-600' },
-                { text: 'Thief Strike', rarity: '🎉', desc: 'Steal 2 gold with 🗡️', color: 'text-pink-600' },
-                { text: 'Toxic Decay', rarity: '🎉', desc: '☠️ can stack', color: 'text-pink-600' }
+                { text: 'Durable Stones', rarity: '🔵', desc: '+1 Status stone use', color: 'text-sky-400' },
+                { text: 'Efficient Magic', rarity: '🔵', desc: '1/2 MP cost', color: 'text-sky-400' },
+                { text: 'Bartering Edge', rarity: '🔵', desc: '15% shop discount', color: 'text-sky-400' },
+                { text: 'Archer\'s Edge', rarity: '🟡', desc: 'Attacks all with 🏹', color: 'text-amber-400' },
+                { text: 'Enchantment', rarity: '🟡', desc: '🧚🏼also grants ❇️', color: 'text-amber-400' },
+                { text: 'Battle Grace', rarity: '🟡', desc: 'Buffs restore 1 🛡️', color: 'text-amber-400' },
+                { text: 'Prolonged Torment', rarity: '🎉', desc: '2x 🕯️and 🐌 durations', color: 'text-pink-400' },
+                { text: 'Thief Strike', rarity: '🎉', desc: 'Steal 2 gold with 🗡️', color: 'text-pink-400' },
+                { text: 'Toxic Decay', rarity: '🎉', desc: '☠️ can stack', color: 'text-pink-400' }
             ];
 
             // --- State ---
@@ -497,7 +523,7 @@
 
             let waveCount = 1;
             let battleStarted = false;
-            let playerActionsTaken = 0; // --- STATUS EFFECT CHANGE: For Rush ---
+            let playerActionsTaken = 0;
             const enemyPool = Object.keys(enemyData).filter(e => e !== '🎁');
             const giftEmoji = '🎁';
             const numIcons = 8;
@@ -540,10 +566,9 @@
                 setTimeout(() => { damageEl.remove(); }, 1000);
             };
             
-            // --- STATUS EFFECT CHANGE: Action processing helpers ---
             const isActionSluggish = () => {
                 if (playerState.statusEffects['🐌'] > 0 && Math.random() < 0.5) {
-                    sideWindowLeft.innerHTML = `<div class="w-full p-1"><p class="text-2xl text-center">SLUGGISH!<br>No effect!</p></div>`;
+                    sideWindowLeft.innerHTML = `<div class="w-full p-1"><p class="text-lg text-center font-semibold text-yellow-400">SLUGGISH!<br>No effect!</p></div>`;
                     return true;
                 }
                 return false;
@@ -559,7 +584,7 @@
                         await enemyAttackPhase();
                     }
                 } else {
-                    sideWindowLeft.innerHTML = `<div class="w-full p-1"><p class="text-2xl text-center">RUSH!<br>Another action!</p></div>`;
+                    sideWindowLeft.innerHTML = `<div class="w-full p-1"><p class="text-lg text-center font-semibold text-sky-400">RUSH!<br>Another action!</p></div>`;
                     if(playerState.health > 0) attackBtn.disabled = false; // Ensure enabled for next action
                 }
             }
@@ -592,11 +617,9 @@
                         icon.classList.add('hidden');
                     }
                 });
-                // --- STATUS EFFECT CHANGE: Blessing needs to update attack value ---
                 updateAttackValueUI();
             };
             
-            // --- STATUS EFFECT CHANGE: New function for Blessing ---
             const updateAttackValueUI = () => {
                 const BASE_ATTACK = 10;
                 let attackPower = BASE_ATTACK;
@@ -617,25 +640,25 @@
                 healthValueEl.textContent = playerState.health;
                 luckValueEl.textContent = playerState.luck;
                 
-                // --- STATUS EFFECT CHANGE: Call new attack value updater ---
                 updateAttackValueUI();
                 
                 if(magicBarEl) {
                     const magicPercentage = (playerState.magic / playerState.maxMagic) * 100;
                     magicBarEl.style.width = `${magicPercentage}%`;
+                    magicBarEl.style.backgroundColor = `var(--accent-primary)`;
                 }
 
                 const isCharged = playerState.killCount >= 10;
                 
                 if (isCharged) {
                     killBarEl.style.width = '100%';
-                    killBarEl.classList.remove('bg-red-600');
-                    killBarEl.classList.add('bg-orange-500', 'pulse-orange-animation');
+                    killBarEl.style.backgroundColor = `var(--accent-orange)`;
+                    killBarEl.classList.add('pulse-orange-animation');
                 } else {
                     const killPercentage = (playerState.killCount / 10) * 100;
                     killBarEl.style.width = `${killPercentage}%`;
-                    killBarEl.classList.add('bg-red-600');
-                    killBarEl.classList.remove('bg-orange-500', 'pulse-orange-animation');
+                    killBarEl.style.backgroundColor = `var(--accent-red)`;
+                    killBarEl.classList.remove('pulse-orange-animation');
                 }
                 
                 luckBtn.classList.remove('glow-orange-text-animation');
@@ -657,15 +680,14 @@
                 if (!healthBarFill) return;
 
                 const debuffColors = {
-                    '☠️': 'bg-purple-600',
-                    '🐌': 'bg-yellow-800', 
-                    '🕯️': 'bg-gray-500'
+                    '☠️': '#A855F7',
+                    '🐌': '#A16207', 
+                    '🕯️': '#475569'
                 };
+                const defaultColor = 'var(--accent-red)';
 
-                healthBarFill.classList.remove('bg-red-600', 'bg-purple-600', 'bg-yellow-800', 'bg-gray-500');
-
-                const newColor = debuffColors[enemy.lastDebuff] || 'bg-red-600';
-                healthBarFill.classList.add(newColor);
+                const newColor = debuffColors[enemy.lastDebuff] || defaultColor;
+                healthBarFill.style.backgroundColor = newColor;
                 
                 if (enemyIndex === currentBattleTargetIndex) {
                     updateEnemyDisplay(enemy);
@@ -691,24 +713,24 @@
                             } else if (key === '☠️' && hasFortune('Toxic Decay')) {
                                 stackText = `${value}`;
                             }
-                            return `<span class="text-xl">${key}${stackText ? `<sup>${stackText}</sup>` : ''}</span>`;
+                            return `<span class="text-xl">${key}${stackText ? `<sup class="font-bold">${stackText}</sup>` : ''}</span>`;
                         })
                         .join('');
 
-                    statsHtml = `<div class="text-lg mt-1 flex justify-center items-center gap-1.5">${statusIcons} <span class="text-red-500">❤️</span> ${hp} 💥 ${dmg}${specialIcon}</div>`;
+                    statsHtml = `<div class="text-base mt-1 flex justify-center items-center gap-2 font-semibold">${statusIcons} <span class="text-red-400">❤️</span> ${hp} 💥 ${dmg}${specialIcon}</div>`;
                 }
                 battleDetailsContentEl.innerHTML = `
                     <div class="h-full flex flex-col justify-center items-center">
-                        <div class="text-2xl">${enemy.emoji} ${name}</div>
+                        <div class="text-xl font-semibold">${enemy.emoji} ${name}</div>
                         ${statsHtml}
                     </div>`;
             };
             const displayInfoInSideWindow = (title, ...descriptions) => {
                 if (battleStarted) return; 
                  sideWindowLeft.innerHTML = `
-                    <div class="w-full p-1">
-                        <p class="mb-1">${title}</p>
-                        ${descriptions.map(d => `<p>${d}</p>`).join('')}
+                    <div class="w-full">
+                        <p class="font-bold mb-0.5">${title}</p>
+                        ${descriptions.map(d => `<p class="text-xs leading-tight">${d}</p>`).join('')}
                     </div>`;
             };
             const displaySpellInfo = (spellKey) => {
@@ -720,11 +742,9 @@
             const updateLuckModalUI = () => {
                 const luckOptions = luckModal.querySelectorAll('button[data-luck]');
                 luckOptions.forEach(opt => {
-                    opt.classList.remove('bg-green-600', 'text-white');
-                    opt.classList.add('bg-slate-700');
+                    opt.classList.remove('btn-green');
                     if (opt.dataset.luck === playerState.selectedLuck) {
-                        opt.classList.remove('bg-slate-700');
-                        opt.classList.add('bg-green-600', 'text-white');
+                        opt.classList.add('btn-green');
                     }
                 });
             };
@@ -734,7 +754,7 @@
                 fortunePhase = 'fortune';
                 fortunesContent.innerHTML = ''; 
                 const title = document.createElement('h2');
-                title.className = 'text-3xl mb-4 text-violet-800';
+                title.className = 'text-2xl mb-4 font-bold text-violet-400';
                 title.textContent = 'FORTUNE';
                 fortunesContent.appendChild(title);
 
@@ -745,10 +765,10 @@
                 const options = shuffled.slice(0, 3);
                 options.forEach(fortune => {
                     const button = document.createElement('button');
-                    button.className = `retro-btn bg-slate-700 px-4 py-2 w-full whitespace-normal leading-tight flex flex-col items-center`;
+                    button.className = `btn w-full px-4 py-2 whitespace-normal leading-tight flex flex-col items-center`;
                     button.innerHTML = `
-                        <span class="${fortune.color}">${fortune.rarity} ${fortune.text}</span>
-                        <span class="text-base font-normal text-white">${fortune.desc}</span>
+                        <span class="${fortune.color} font-semibold">${fortune.rarity} ${fortune.text}</span>
+                        <span class="text-sm font-normal text-gray-300">${fortune.desc}</span>
                     `;
                     button.addEventListener('click', (e) => {
                         e.stopPropagation(); 
@@ -767,7 +787,7 @@
                 fortunesContent.innerHTML = ''; 
                 if (selectedFortunes.length < 4) {
                     const title = document.createElement('h2');
-                    title.className = 'text-3xl mb-4 text-violet-800';
+                    title.className = 'text-2xl mb-4 font-bold text-violet-400';
                     title.textContent = 'SACRIFICE';
                     fortunesContent.appendChild(title);
 
@@ -778,7 +798,7 @@
                     const selectedSacrifices = shuffledSacrifices.slice(0, 2);
                     selectedSacrifices.forEach(sacrifice => {
                         const button = document.createElement('button');
-                        button.className = 'retro-btn bg-slate-700 px-4 py-2 w-full whitespace-normal leading-tight flex flex-col items-center';
+                        button.className = 'btn px-4 py-2 w-full whitespace-normal leading-tight flex flex-col items-center';
                         
                         let canSelect = true;
                         switch (sacrifice.title) {
@@ -801,8 +821,8 @@
                         }
 
                         button.innerHTML = `
-                            <span>${sacrifice.title}</span>
-                            <span class="text-base font-normal">${sacrifice.desc}</span>
+                            <span class="font-semibold">${sacrifice.title}</span>
+                            <span class="text-sm font-normal text-gray-300">${sacrifice.desc}</span>
                         `;
                         button.addEventListener('click', (e) => {
                             e.stopPropagation();
@@ -837,25 +857,25 @@
                     });
                 } else {
                     const fullMessage = document.createElement('p');
-                    fullMessage.className = 'text-xl';
+                    fullMessage.className = 'text-lg';
                     fullMessage.textContent = "Your destiny is sealed.";
                     fortunesContent.appendChild(fullMessage);
                 }
                 if (selectedFortunes.length > 0) {
                     const fortuneListContainer = document.createElement('div');
-                    fortuneListContainer.className = 'mt-6 pt-4 border-t-2 border-gray-600 w-full';
+                    fortuneListContainer.className = 'mt-6 pt-4 border-t-2 border-gray-700 w-full';
                     const fortuneList = document.createElement('div');
-                    fortuneList.className = 'flex flex-wrap justify-center gap-2 text-base text-center';
+                    fortuneList.className = 'flex flex-wrap justify-center gap-2 text-xs text-center';
                     selectedFortunes.forEach(sf => {
                         const fortuneEntry = document.createElement('div');
-                        fortuneEntry.className = 'p-2 bg-slate-700 retro-panel-inset w-2/5 cursor-pointer';
-                        fortuneEntry.innerHTML = `<p class="pointer-events-none">${sf.sacrifice}</p><p class="pointer-events-none ${sf.fortune.color}">${sf.fortune.rarity} ${sf.fortune.text}</p>`;
+                        fortuneEntry.className = 'p-2 bg-slate-800 rounded-lg w-2/5 cursor-pointer';
+                        fortuneEntry.innerHTML = `<p class="pointer-events-none font-semibold">${sf.sacrifice}</p><p class="pointer-events-none ${sf.fortune.color}">${sf.fortune.rarity} ${sf.fortune.text}</p>`;
                         fortuneEntry.addEventListener('click', () => {
                             fortuneDetailContent.innerHTML = `
-                                <h3 class="text-2xl ${sf.fortune.color}">${sf.fortune.rarity} ${sf.fortune.text}</h3>
-                                <p class="mt-2 text-lg">${sf.fortune.desc}</p>
-                                <hr class="my-2 border-gray-400">
-                                <p class="text-base text-gray-700">Sacrifice: ${sf.sacrifice}</p>
+                                <h3 class="text-xl font-bold ${sf.fortune.color}">${sf.fortune.rarity} ${sf.fortune.text}</h3>
+                                <p class="mt-2 text-base">${sf.fortune.desc}</p>
+                                <hr class="my-2 border-gray-600">
+                                <p class="text-sm text-gray-400">Sacrifice: ${sf.sacrifice}</p>
                             `;
                             fortuneDetailModal.classList.remove('hidden');
                         });
@@ -881,25 +901,25 @@
                     }
 
                     if (item.oneTime && itemOwned > 0) {
-                        buttonHtml = `<button class="retro-btn bg-gray-400 px-4 py-1" disabled>OWNED</button>`;
+                        buttonHtml = `<button class="btn px-4 py-1.5" disabled>OWNED</button>`;
                     } else if (battleStarted) {
                          if (item.id === 'moonstone') {
-                            buttonHtml = `<button data-item-id="${item.id}" class="retro-btn bg-gray-400 px-4 py-1" disabled>PASSIVE</button>`;
+                            buttonHtml = `<button data-item-id="${item.id}" class="btn px-4 py-1.5" disabled>PASSIVE</button>`;
                         } else {
                             let canUse = itemOwned > 0;
                             if (item.id === 'cross') {
                                 canUse = canUse && playerState.statusEffects['🕯️'] > 0;
                             }
-                            buttonHtml = `<button data-item-id="${item.id}" class="retro-btn bg-green-500 px-4 py-1" ${!canUse ? 'disabled' : ''}>USE</button>`;
+                            buttonHtml = `<button data-item-id="${item.id}" class="btn btn-green px-4 py-1.5" ${!canUse ? 'disabled' : ''}>USE</button>`;
                         }
                     } else {
                         const canAfford = playerState.gold >= currentCost;
-                        buttonHtml = `<button data-item-id="${item.id}" class="retro-btn bg-slate-700 px-3 py-1" ${!canAfford ? 'disabled' : ''}>🪙${currentCost}</button>`;
+                        buttonHtml = `<button data-item-id="${item.id}" class="btn px-3 py-1.5" ${!canAfford ? 'disabled' : ''}>🪙${currentCost}</button>`;
                     }
                     itemDiv.innerHTML = `
                         <div class="flex-grow pr-4">
-                            <span class="whitespace-nowrap">${item.name} (${itemOwned})</span>
-                            <p class="text-base leading-tight">${item.desc}</p>
+                            <span class="whitespace-nowrap font-semibold">${item.name} (${itemOwned})</span>
+                            <p class="text-xs leading-tight text-gray-400">${item.desc}</p>
                         </div>
                         ${buttonHtml}`;
                     shopItemsContainer.appendChild(itemDiv);
@@ -934,7 +954,6 @@
                 if (item.id === 'cross' && playerState.statusEffects['🕯️'] <= 0) return;
 
                 if (isActionSluggish()) {
-                    // Resource is still consumed for sluggish actions
                     playerState.inventory[itemId]--;
                     renderShop();
                     processEndOfPlayerAction();
@@ -977,7 +996,7 @@
                         if (['🌟', '⚡'].includes(randomBuff)) {
                             playerState.statusEffects[randomBuff] = 3;
                         } else {
-                            playerState.statusEffects[randomBuff] = 1; // Lasts all battle
+                            playerState.statusEffects[randomBuff] = 1;
                         }
 
                         if(hasFortune('Battle Grace')) {
@@ -1059,15 +1078,14 @@
                         let uses = parseInt(slot.dataset.uses || '0', 10);
                         if (!symbol || uses <= 0) return;
                         
-                        const magicCost = 0; // Assuming status stones don't cost magic
+                        const magicCost = 0;
                         if (isActionSluggish()) {
-                            // Consume use even on fail
                             uses--;
                             slot.dataset.uses = uses;
                             const counterSpan = slot.querySelector('.absolute');
                             if (counterSpan) counterSpan.textContent = uses;
                             if (uses <= 0) {
-                                slot.innerHTML = '';
+                                slot.innerHTML = `<span class="opacity-50">?</span>`;
                                 delete slot.dataset.symbol;
                                 delete slot.dataset.uses;
                             }
@@ -1105,7 +1123,7 @@
                             const counterSpan = slot.querySelector('.absolute');
                             if (counterSpan) counterSpan.textContent = uses;
                             if (uses <= 0) {
-                                slot.innerHTML = '';
+                                slot.innerHTML = `<span class="opacity-50">?</span>`;
                                 delete slot.dataset.symbol;
                                 delete slot.dataset.uses;
                             }
@@ -1146,7 +1164,7 @@
                         emojiSpan.textContent = symbol;
                         activeEquipSlot.appendChild(emojiSpan);
                         const counterSpan = document.createElement('span');
-                        counterSpan.className = 'absolute bottom-1 right-2 text-lg text-white bg-black/50 rounded px-1';
+                        counterSpan.className = 'absolute bottom-1 right-2 text-sm text-white bg-black/50 rounded-md px-1.5 py-0.5 font-semibold';
                         counterSpan.textContent = stoneUses;
                         activeEquipSlot.appendChild(counterSpan);
                         reelModal.classList.add('hidden');
@@ -1167,12 +1185,12 @@
 
                 currentOptions.forEach(item => {
                     const itemButton = document.createElement('button');
-                    itemButton.className = 'retro-btn bg-slate-700 px-4 py-2 w-full text-left flex items-center whitespace-normal';
+                    itemButton.className = 'btn px-4 py-2 w-full text-left flex items-center whitespace-normal';
                     itemButton.innerHTML = `
                         <span class="text-4xl w-12">${item.emoji}</span>
                         <div>
-                            <span class="text-xl">${item.name}</span>
-                            <p class="text-base leading-tight">${item.desc}</p>
+                            <span class="text-lg font-semibold">${item.name}</span>
+                            <p class="text-xs leading-tight text-gray-300">${item.desc}</p>
                         </div>
                     `;
                     itemButton.addEventListener('click', (e) => {
@@ -1188,19 +1206,16 @@
                             } else if (currentSlotType === 'armor') {
                                 document.getElementById('armor-icon').textContent = item.emoji;
                                 
-                                // Unequip old item's stats
                                 if (oldItem) {
                                     playerState.maxArmor -= oldItem.bonus || 0;
                                     playerState.armor -= oldItem.bonus || 0;
                                     playerState.luck -= oldItem.luckBonus || 0;
                                 }
 
-                                // Equip new item's stats
                                 playerState.maxArmor += item.bonus || 0;
                                 playerState.armor += item.bonus || 0;
                                 playerState.luck += item.luckBonus || 0;
 
-                                // Clamp values
                                 playerState.armor = Math.max(0, Math.min(playerState.armor, playerState.maxArmor));
                             }
                             
@@ -1320,14 +1335,14 @@
                         span.style.transition = 'opacity 0.4s ease-out';
                     });
                     const stampableSpans = enemySpans.filter(span => span.textContent !== giftEmoji);
-                    if (stampableSpans.length > 0) stampableSpans[Math.floor(Math.random() * stampableSpans.length)].classList.add('emoji-red-stamp');
+                    if (stampableSpans.length > 0) stampableSpans[Math.floor(Math.random() * stampableSpans.length)].classList.add('emoji-elite-stamp');
                     
                     const totalRevealTime = 1000;
                     enemySpans.forEach((span, index) => { setTimeout(() => { span.style.opacity = '1'; }, index * (totalRevealTime / enemySpans.length)); });
                     
                     setTimeout(() => {
                         const { listPaddingLeft } = calculateSliderDimensions();
-                        currentTranslateX = 0; // Logical position
+                        currentTranslateX = 0;
                         if (enemySlider) enemySlider.style.transform = `translateX(${listPaddingLeft}px)`;
 
                         isReshuffling = false;
@@ -1347,7 +1362,7 @@
                 
                 if (luckActivatedThisBattle && playerState.selectedLuck === 'magic' && (Math.random() * 100 < playerState.luck)) {
                     currentMagicCost = 0;
-                    sideWindowLeft.innerHTML = `<div class="w-full p-1"><p class="text-2xl text-center text-cyan-300">FREE CAST!</p></div>`;
+                    sideWindowLeft.innerHTML = `<div class="w-full p-1"><p class="text-lg text-center font-semibold text-cyan-400">FREE CAST!</p></div>`;
                 }
 
                 if (!battleStarted || playerState.magic < currentMagicCost) return;
@@ -1449,16 +1464,15 @@
                  if (!targetElement) return;
                  const containerRect = enemyContainer.getBoundingClientRect();
                  const targetRect = targetElement.getBoundingClientRect();
-                 const selectorWidth = 68;
-                 const selectorHeight = containerRect.height;
+                 const selectorWidth = targetRect.width + 12;
+                 const selectorHeight = targetRect.height + 12;
                  battleSelector.style.width = `${selectorWidth}px`;
                  battleSelector.style.height = `${selectorHeight}px`;
                  const leftOffset = targetRect.left - containerRect.left + (targetRect.width - selectorWidth) / 2;
-                 const topOffset = 0;
+                 const topOffset = targetRect.top - containerRect.top + (targetRect.height - selectorHeight) / 2;
                  battleSelector.style.transform = `translate(${leftOffset}px, ${topOffset}px)`;
             };
             
-            // --- Battle Mode Interaction ---
             const battleDragStart = (e) => {
                 const coords = getEventCoords(e); startX = coords.x; startY = coords.y; dragStartTime = Date.now(); isDragging = false; 
                 document.addEventListener('mousemove', battleDragMove);
@@ -1511,7 +1525,6 @@
                     gameContainer.classList.add('border-pulse-animation');
                 } else {
                     gameContainer.classList.remove('border-pulse-animation');
-                    gameContainer.style.boxShadow = '';
                 }
                 updatePlayerUI();
                 if (playerState.health <= 0) {
@@ -1523,7 +1536,6 @@
             const tickdownPlayerStatusEffects = () => {
                 if (playerState.health <= 0) return;
 
-                // --- STATUS EFFECT CHANGE: Poison & Regen logic ---
                 if (playerState.statusEffects['☠️'] > 0) {
                     playerState.health = Math.max(0, playerState.health - 1);
                     showDamageNumber(1, healthIconEl);
@@ -1551,9 +1563,8 @@
                 for (const enemy of livingEnemies) {
                     if (playerState.health <= 0) break;
                     
-                    // --- STATUS EFFECT CHANGE: Enemy Sluggish check ---
                     if (enemy.statusEffects['🐌'] > 0 && Math.random() < 0.5) {
-                        // Skip attack but still tick down debuffs
+                        // Skip attack
                     } else {
                         const enemyWrapper = enemy.ref;
                         enemyWrapper.classList.add('flip-animation');
@@ -1569,7 +1580,7 @@
                             } else if (['🕯️', '🐌'].includes(enemyInfo.special)) {
                                 playerState.statusEffects[enemyInfo.special] = 3;
                             } else if (enemyInfo.special === '☠️') {
-                                playerState.statusEffects[enemyInfo.special] = 1; // Lasts all battle
+                                playerState.statusEffects[enemyInfo.special] = 1;
                             }
                             updateStatusEffectsUI();
                         }
@@ -1588,7 +1599,7 @@
                 
                 tickdownPlayerStatusEffects();
 
-                playerActionsTaken = 0; // Reset for player's turn
+                playerActionsTaken = 0;
                 if (playerState.health > 0) {
                     attackBtn.disabled = false;
                 }
@@ -1598,18 +1609,13 @@
                 attackBtn.disabled = true;
                 luckActivatedThisBattle = false;
                 luckBtn.disabled = false;
-                attackBtn.classList.add('bg-red-500');
-                attackBtn.classList.remove('bg-green-600');
+                attackBtn.classList.remove('btn-green');
                 [flameheartBtn, frostbiteBtn, armorheartBtn].forEach(btn => {
-                    btn.classList.add('bg-cyan-400');
-                    btn.classList.remove('bg-green-600');
+                    btn.classList.remove('btn-green');
                 });
                 flameheartBtn.disabled = false;
                 armorheartBtn.disabled = false;
-                // --- STATUS EFFECT CHANGE: Reset all status effects ---
                 playerState.statusEffects = Object.keys(playerState.statusEffects).reduce((acc, key) => {
-                    // Poison and Regen last all battle, so they don't reset unless we explicitly do it here.
-                    // The guide says "lasts all battle", so they should be cleared after.
                     acc[key] = 0;
                     return acc;
                 }, {});
@@ -1617,15 +1623,15 @@
                 updateStatusEffectsUI(); 
                 waveCount++; 
                 updateWaveCounterUI();
-                enemyContainer.innerHTML = `<div id="enemy-slider" class="absolute top-0 left-0 h-full bg-black/10 pointer-events-none z-10" style="transition: transform 0.2s ease-out;"></div>
+                enemyContainer.innerHTML = `<div id="enemy-slider" class="absolute top-0 left-0 h-full bg-white/5 pointer-events-none z-10" style="transition: transform 0.2s ease-out;"></div>
                 <div id="battle-selector" class="hidden absolute top-0 left-0 pointer-events-none z-30"></div>
-                <div id="enemy-list" class="absolute inset-0 flex items-center justify-between pl-1 pr-3 z-20">
+                <div id="enemy-list" class="absolute inset-0 flex items-center justify-evenly z-20">
                     ${Array(numIcons).fill('<span class="text-3xl"></span>').join('')}
                 </div>`;
                 enemySlider = document.getElementById('enemy-slider'); battleSelector = document.getElementById('battle-selector');
                 enemyContainer.classList.remove('justify-center', 'gap-4', 'cursor-default');
                 enemyContainer.classList.add('cursor-grab', 'active:cursor-grabbing');
-                battleDetailsContentEl.innerHTML = '<button id="start-battle-btn" class="retro-btn bg-green-500 text-white text-xl py-2 px-6">Start Battle</button>';
+                battleDetailsContentEl.innerHTML = '<button id="start-battle-btn" class="btn btn-green text-white text-lg py-2.5 px-8 font-semibold">Start Battle</button>';
                 startBattleBtn = document.getElementById('start-battle-btn');
                 if (startBattleBtn) startBattleBtn.addEventListener('click', startBattle);
                 updatePlayerUI();
@@ -1698,11 +1704,11 @@
             const getTieredReward = (baseValue) => {
                 const rand = Math.random();
                 if (rand < 0.5) { // 50% chance
-                    return { value: baseValue, color: 'text-sky-600' };
+                    return { value: baseValue, color: 'text-sky-400' };
                 } else if (rand < 0.85) { // 35% chance
-                    return { value: baseValue * 2, color: 'text-amber-600' };
+                    return { value: baseValue * 2, color: 'text-amber-400' };
                 } else { // 15% chance
-                    return { value: baseValue * 4, color: 'text-pink-600' };
+                    return { value: baseValue * 4, color: 'text-pink-400' };
                 }
             };
 
@@ -1787,9 +1793,9 @@
                     
                     item.dataset.value = rewardData.value;
 
-                    const textSpan = item.querySelector('.text-xl');
+                    const textSpan = item.querySelector('.text-lg');
                     
-                    textSpan.classList.remove('text-sky-600', 'text-amber-600', 'text-pink-600', 'text-black');
+                    textSpan.className = 'ml-2 text-lg font-semibold';
                     textSpan.classList.add(rewardData.color);
 
                     if (rewardType === 'armor') {
@@ -1809,7 +1815,7 @@
 
             attackBtn.addEventListener('click', async () => {
                 if (!battleStarted || playerState.health <= 0 || attackBtn.disabled) return;
-                attackBtn.disabled = true; // Prevent double-clicks during processing
+                attackBtn.disabled = true;
 
                 if (isActionSluggish()) {
                     await processEndOfPlayerAction();
@@ -1833,7 +1839,7 @@
                         if (giftOpened) return false;
                         giftOpened = true;
                         showGiftPopup(index);
-                        return false; // Gift handling has its own end-of-action call
+                        return false;
                     }
 
                     let attackPower = parseInt(attackValueEl.textContent, 10);
@@ -1841,14 +1847,13 @@
                     if (luckActivatedThisBattle && playerState.selectedLuck === 'attack') {
                         if (Math.random() * 100 < playerState.luck) {
                             attackPower *= 3;
-                            sideWindowLeft.innerHTML = `<div class="w-full p-1"><p class="text-2xl text-center text-yellow-400">CRITICAL HIT!</p></div>`;
+                            sideWindowLeft.innerHTML = `<div class="w-full p-1"><p class="text-lg text-center font-semibold text-yellow-400">CRITICAL HIT!</p></div>`;
                         }
                     }
 
-                    // --- STATUS EFFECT CHANGE: Curse logic ---
                     if (playerState.statusEffects['🕯️'] > 0) {
                         const selfDamage = Math.floor(attackPower / 2);
-                        attackPower = attackPower - selfDamage; // deals the other "half"
+                        attackPower = attackPower - selfDamage;
                         playerTakesDamage(selfDamage);
                     }
 
@@ -1876,7 +1881,7 @@
                 if (isArcher) {
                     const livingEnemies = currentEnemiesInBattle.map((e, i) => ({enemy: e, index: i})).filter(item => !item.enemy.isDefeated);
                     for (const {enemy, index} of livingEnemies) {
-                        if (giftOpened) break; // Don't attack other enemies if a gift was opened
+                        if (giftOpened) break;
                         upgradeTriggered = performAttack(enemy, index) || upgradeTriggered;
                         if (upgradeTriggered) break; 
                         await delay(150);
@@ -1904,12 +1909,10 @@
                         luckBtn.disabled = true;
 
                         if (playerState.selectedLuck === 'attack') {
-                            attackBtn.classList.remove('bg-red-500');
-                            attackBtn.classList.add('bg-green-600');
+                            attackBtn.classList.add('btn-green');
                         } else if (playerState.selectedLuck === 'magic') {
                             [flameheartBtn, frostbiteBtn, armorheartBtn].forEach(btn => {
-                                btn.classList.remove('bg-cyan-400');
-                                btn.classList.add('bg-green-600');
+                                btn.classList.add('btn-green');
                             });
                         }
                         await processEndOfPlayerAction();
@@ -1949,13 +1952,12 @@
                 updatePlayerUI();
                 killMeterModal.classList.add('hidden');
                 
-                // After upgrade, process end of player's turn (which is what triggered this)
                 processEndOfPlayerAction();
             });
 
             const startBattle = () => {
                 if (battleStarted || isReshuffling) return;
-                playerActionsTaken = 0; // Reset actions at start of battle
+                playerActionsTaken = 0;
                 attackBtn.disabled = false;
                 const flashOverlay = document.getElementById('screen-flash-overlay');
                 if (flashOverlay) {
@@ -1982,7 +1984,7 @@
                 currentEnemiesInBattle = selectedEnemySpans.map(span => {
                     const emoji = span.textContent;
                     const data = enemyData[emoji] || { name: 'Unknown', hp: 10, attack: 1 };
-                    const isStamped = span.classList.contains('emoji-red-stamp');
+                    const isStamped = span.classList.contains('emoji-elite-stamp');
                     const isGift = emoji === giftEmoji;
                     
                     const hp = isGift ? data.hp : (isStamped ? data.hp * 2 : data.hp);
@@ -1994,7 +1996,7 @@
                         isGift: isGift, 
                         hp: hp, 
                         maxHp: hp, 
-                        attack: attack, // Storing attack value
+                        attack: attack,
                         isDefeated: false, 
                         ref: null,
                         statusEffects: {'☠️': 0, '🕯️': 0, '🐌': 0},
@@ -2005,17 +2007,17 @@
                 enemyContainer.classList.remove('justify-around'); enemyContainer.classList.add('justify-center', 'gap-4');
                 currentEnemiesInBattle.forEach((enemy, index) => {
                     const enemyWrapper = document.createElement('div');
-                    enemyWrapper.className = 'relative cursor-pointer h-[70px] w-[60px] flex flex-col items-center justify-center transition-opacity duration-300';
+                    enemyWrapper.className = 'relative cursor-pointer h-[70px] w-[60px] flex flex-col items-center justify-end transition-opacity duration-300 pb-1';
                     const newEnemySpan = document.createElement('span');
                     newEnemySpan.className = 'text-5xl relative z-10'; newEnemySpan.textContent = enemy.emoji;
-                    if (enemy.isStamped) newEnemySpan.classList.add('emoji-red-stamp');
+                    if (enemy.isStamped) newEnemySpan.classList.add('emoji-elite-stamp');
                     enemyWrapper.appendChild(newEnemySpan);
                     if (!enemy.isGift) {
                         const healthBarContainer = document.createElement('div');
-                        healthBarContainer.className = 'w-12 h-3 bg-white/10 mt-2 border border-zinc-900';
+                        healthBarContainer.className = 'absolute bottom-0 w-12 h-2.5 bg-black/50 rounded-full border border-gray-900';
                         
                         const healthBarFill = document.createElement('div');
-                        healthBarFill.className = 'health-bar-fill h-full bg-red-600 transition-all duration-300';
+                        healthBarFill.className = 'health-bar-fill h-full rounded-full transition-all duration-300';
                         healthBarFill.style.width = '100%';
                         healthBarContainer.appendChild(healthBarFill);
 
@@ -2059,4 +2061,7 @@
 
 </body>
 </html>
+
+
+
 
