@@ -11,11 +11,11 @@
     <style>
         /* --- MINIMALIST 90s SOFTWARE RE-SKIN --- */
         :root {
-            --bg-main: #E5E7EB;       /* Light Gray (like old office software) */
-            --bg-panel: #F9FAFB;      /* Off-white for panels */
-            --border-color: #9CA3AF;  /* Medium Gray for borders */
-            --text-color: #1F2937;    /* Dark Gray for text */
-            --accent-color: #4F46E5;  /* A modern Indigo for highlights */
+            --bg-main: #1F2937;       /* Dark Gray */
+            --bg-panel: #374151;      /* Lighter Dark Gray */
+            --border-color: #6B7280;  /* Medium Gray */
+            --text-color: #F9FAFB;    /* Off-white Text */
+            --accent-color: #6366F1;  /* A lighter Indigo for highlights */
         }
         body {
             font-family: 'VT323', monospace;
@@ -42,7 +42,7 @@
         /* Sunken/inset panel */
         .retro-panel-inset {
             border: 1px solid var(--border-color);
-            background-color: #F3F4F6; /* Slightly darker gray for depth */
+            background-color: #111827; /* Very dark gray for depth */
             padding: 2px 4px;
         }
 
@@ -56,7 +56,7 @@
             line-height: 1;
         }
         .retro-btn:active {
-            background-color: #E5E7EB; /* Darken on press */
+            background-color: #1F2937; /* Darken on press */
             transform: scale(0.97) !important; /* Slight shrink on press */
             filter: none !important;
         }
@@ -99,7 +99,7 @@
         @keyframes float-up { to { transform: translateY(-50px) translateX(-50%); opacity: 0; } }
         .damage-number {
           position: absolute; font-size: 2rem; font-weight: bold; color: var(--accent-color);
-          text-shadow: 1px 1px 0 white; pointer-events: none;
+          text-shadow: 1px 1px 0 black; pointer-events: none;
           animation: float-up 1s ease-out forwards;
         }
         @keyframes flip-horizontal { 50% { transform: scaleX(-1); } 100% { transform: scaleX(1); } }
@@ -200,7 +200,7 @@
             <div class="flex-shrink-0 retro-panel-inset flex flex-col justify-between p-1">
                 <!-- Top part: Info Display / Start Button -->
                 <div id="battle-details-window" class="relative flex-shrink-0 h-16 flex items-center justify-center text-center">
-                    <div id="wave-counter" class="absolute top-0 left-1.5 text-base italic text-gray-500"></div>
+                    <div id="wave-counter" class="absolute top-0 left-1.5 text-base italic text-gray-400"></div>
                     <div id="battle-details-content" class="w-full h-full flex items-center justify-center">
                         <button id="start-battle-btn" class="retro-btn bg-green-500 text-white text-xl py-2 px-6 disabled:opacity-50 disabled:cursor-not-allowed">Start Battle</button>
                     </div>
@@ -208,7 +208,7 @@
 
                 <!-- Bottom part: Enemy Reel -->
                 <div id="enemy-container" class="relative flex items-center select-none cursor-grab active:cursor-grabbing overflow-hidden h-24 retro-panel-inset">
-                    <div id="enemy-slider" class="absolute top-0 left-0 h-full bg-black/10 pointer-events-none z-10" style="transition: transform 0.2s ease-out;"></div>
+                    <div id="enemy-slider" class="absolute top-0 left-0 h-full bg-white/10 pointer-events-none z-10" style="transition: transform 0.2s ease-out;"></div>
                     <div id="battle-selector" class="hidden absolute top-0 left-0 pointer-events-none z-30"></div>
                     <div id="enemy-list" class="absolute inset-0 flex items-center justify-between pl-1 pr-3 z-20">
                         <!-- Icons populated by JS -->
@@ -319,11 +319,11 @@
             <div class="relative retro-modal-content p-6 w-full max-w-xs text-center">
                 <h2 class="text-3xl mb-6 text-orange-600">UPGRADE!</h2>
                 <div id="kill-meter-rewards" class="space-y-4">
-                    <button data-upgrade="health" class="retro-btn w-full p-4 text-xl flex items-center justify-center gap-3 bg-slate-200">
+                    <button data-upgrade="health" class="retro-btn w-full p-4 text-xl flex items-center justify-center gap-3 bg-slate-700">
                         <span>❤️</span>
                         <span>+1 Max Health</span>
                     </button>
-                    <button data-upgrade="luck" class="retro-btn w-full p-4 text-xl flex items-center justify-center gap-3 bg-slate-200">
+                    <button data-upgrade="luck" class="retro-btn w-full p-4 text-xl flex items-center justify-center gap-3 bg-slate-700">
                         <span>🍀</span>
                         <span>+5% Luck</span>
                     </button>
@@ -335,15 +335,15 @@
             <div class="relative retro-modal-content p-6 w-full max-w-xs text-center">
                 <h2 class="text-3xl mb-6 text-green-700">LUCK</h2>
                 <div id="luck-options" class="space-y-4">
-                    <button data-luck="attack" class="retro-btn w-full p-4 text-xl flex items-center justify-center gap-3 bg-slate-200">
+                    <button data-luck="attack" class="retro-btn w-full p-4 text-xl flex items-center justify-center gap-3 bg-slate-700">
                         <span>💥</span>
                         <span>Attack</span>
                     </button>
-                    <button data-luck="magic" class="retro-btn w-full p-4 text-xl flex items-center justify-center gap-3 bg-slate-200">
+                    <button data-luck="magic" class="retro-btn w-full p-4 text-xl flex items-center justify-center gap-3 bg-slate-700">
                         <span>✨</span>
                         <span>Magic</span>
                     </button>
-                    <button data-luck="choices" class="retro-btn w-full p-4 text-xl flex items-center justify-center gap-3 bg-slate-200">
+                    <button data-luck="choices" class="retro-btn w-full p-4 text-xl flex items-center justify-center gap-3 bg-slate-700">
                         <span>🎲</span>
                         <span>Choices</span>
                     </button>
@@ -721,9 +721,9 @@
                 const luckOptions = luckModal.querySelectorAll('button[data-luck]');
                 luckOptions.forEach(opt => {
                     opt.classList.remove('bg-green-600', 'text-white');
-                    opt.classList.add('bg-slate-200');
+                    opt.classList.add('bg-slate-700');
                     if (opt.dataset.luck === playerState.selectedLuck) {
-                        opt.classList.remove('bg-slate-200');
+                        opt.classList.remove('bg-slate-700');
                         opt.classList.add('bg-green-600', 'text-white');
                     }
                 });
@@ -745,10 +745,10 @@
                 const options = shuffled.slice(0, 3);
                 options.forEach(fortune => {
                     const button = document.createElement('button');
-                    button.className = `retro-btn bg-slate-200 px-4 py-2 w-full whitespace-normal leading-tight flex flex-col items-center`;
+                    button.className = `retro-btn bg-slate-700 px-4 py-2 w-full whitespace-normal leading-tight flex flex-col items-center`;
                     button.innerHTML = `
                         <span class="${fortune.color}">${fortune.rarity} ${fortune.text}</span>
-                        <span class="text-base font-normal text-black">${fortune.desc}</span>
+                        <span class="text-base font-normal text-white">${fortune.desc}</span>
                     `;
                     button.addEventListener('click', (e) => {
                         e.stopPropagation(); 
@@ -778,7 +778,7 @@
                     const selectedSacrifices = shuffledSacrifices.slice(0, 2);
                     selectedSacrifices.forEach(sacrifice => {
                         const button = document.createElement('button');
-                        button.className = 'retro-btn bg-slate-200 px-4 py-2 w-full whitespace-normal leading-tight flex flex-col items-center';
+                        button.className = 'retro-btn bg-slate-700 px-4 py-2 w-full whitespace-normal leading-tight flex flex-col items-center';
                         
                         let canSelect = true;
                         switch (sacrifice.title) {
@@ -843,12 +843,12 @@
                 }
                 if (selectedFortunes.length > 0) {
                     const fortuneListContainer = document.createElement('div');
-                    fortuneListContainer.className = 'mt-6 pt-4 border-t-2 border-gray-400 w-full';
+                    fortuneListContainer.className = 'mt-6 pt-4 border-t-2 border-gray-600 w-full';
                     const fortuneList = document.createElement('div');
                     fortuneList.className = 'flex flex-wrap justify-center gap-2 text-base text-center';
                     selectedFortunes.forEach(sf => {
                         const fortuneEntry = document.createElement('div');
-                        fortuneEntry.className = 'p-2 bg-slate-200 retro-panel-inset w-2/5 cursor-pointer';
+                        fortuneEntry.className = 'p-2 bg-slate-700 retro-panel-inset w-2/5 cursor-pointer';
                         fortuneEntry.innerHTML = `<p class="pointer-events-none">${sf.sacrifice}</p><p class="pointer-events-none ${sf.fortune.color}">${sf.fortune.rarity} ${sf.fortune.text}</p>`;
                         fortuneEntry.addEventListener('click', () => {
                             fortuneDetailContent.innerHTML = `
@@ -894,7 +894,7 @@
                         }
                     } else {
                         const canAfford = playerState.gold >= currentCost;
-                        buttonHtml = `<button data-item-id="${item.id}" class="retro-btn bg-slate-200 px-3 py-1" ${!canAfford ? 'disabled' : ''}>🪙${currentCost}</button>`;
+                        buttonHtml = `<button data-item-id="${item.id}" class="retro-btn bg-slate-700 px-3 py-1" ${!canAfford ? 'disabled' : ''}>🪙${currentCost}</button>`;
                     }
                     itemDiv.innerHTML = `
                         <div class="flex-grow pr-4">
@@ -1167,7 +1167,7 @@
 
                 currentOptions.forEach(item => {
                     const itemButton = document.createElement('button');
-                    itemButton.className = 'retro-btn bg-slate-200 px-4 py-2 w-full text-left flex items-center whitespace-normal';
+                    itemButton.className = 'retro-btn bg-slate-700 px-4 py-2 w-full text-left flex items-center whitespace-normal';
                     itemButton.innerHTML = `
                         <span class="text-4xl w-12">${item.emoji}</span>
                         <div>
@@ -1733,8 +1733,7 @@
 
                 const continueGameHandler = async () => {
                     giftModal.classList.add('hidden');
-                    const upgradeTriggered = handleEnemyDefeat(giftIndex);
-                    // Since a gift was opened, its defeat can't trigger an upgrade, so we just continue the game flow.
+                    handleEnemyDefeat(giftIndex);
                     await processEndOfPlayerAction();
                 };
 
@@ -2013,7 +2012,7 @@
                     enemyWrapper.appendChild(newEnemySpan);
                     if (!enemy.isGift) {
                         const healthBarContainer = document.createElement('div');
-                        healthBarContainer.className = 'w-12 h-3 bg-black/20 mt-2 border border-zinc-900';
+                        healthBarContainer.className = 'w-12 h-3 bg-white/10 mt-2 border border-zinc-900';
                         
                         const healthBarFill = document.createElement('div');
                         healthBarFill.className = 'health-bar-fill h-full bg-red-600 transition-all duration-300';
@@ -2060,5 +2059,4 @@
 
 </body>
 </html>
-
 
