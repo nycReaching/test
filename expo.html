@@ -17,6 +17,10 @@
             --text-color: #000000;
             --title-blue: #000080; /* Classic title bar blue */
         }
+        /* --- NEW: Universal Box Sizing for predictable layouts --- */
+        *, ::before, ::after {
+            box-sizing: border-box;
+        }
         html {
             font-size: 17px; /* Slightly larger base font for mobile readability */
         }
@@ -1499,11 +1503,12 @@
                  const containerRect = enemyContainer.getBoundingClientRect();
                  const targetRect = targetElement.getBoundingClientRect();
                  const selectorWidth = 68;
-                 const selectorHeight = containerRect.height;
+                 // Subtract the container's top (2px) and bottom (2px) border width
+                 const selectorHeight = containerRect.height - 4;
                  battleSelector.style.width = `${selectorWidth}px`;
                  battleSelector.style.height = `${selectorHeight}px`;
                  const leftOffset = targetRect.left - containerRect.left + (targetRect.width - selectorWidth) / 2;
-                 const topOffset = 0;
+                 const topOffset = 0; // Positioned relative to the content box, so 0 is correct
                  battleSelector.style.transform = `translate(${leftOffset}px, ${topOffset}px)`;
             };
             
@@ -2119,6 +2124,7 @@
 
 </body>
 </html>
+
 
 
 
