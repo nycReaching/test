@@ -180,22 +180,22 @@
         <!-- =================================================================== -->
         <div class="flex-shrink-0 panel p-3 flex flex-col gap-3">
             <!-- Row 1: Core Stats (HP, Armor) & Currency -->
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-evenly">
                 <div class="flex items-center gap-2">
                     <span id="health-icon" class="text-3xl transition-transform duration-200">❤️</span>
-                    <span id="health-value" class="text-left text-2xl font-semibold w-12">10</span>
+                    <span id="health-value" class="text-left text-2xl font-semibold">10</span>
                 </div>
                 <div class="flex items-center gap-2">
                     <span id="armor-icon" class="text-3xl text-gray-400">🛡️</span>
-                    <span id="armor-value" class="text-left text-2xl font-semibold w-12">3</span>
+                    <span id="armor-value" class="text-left text-2xl font-semibold">3</span>
                 </div>
                 <div class="flex items-center gap-2">
                     <span class="text-3xl">💰</span>
-                    <span id="gold-value" class="text-left text-2xl font-semibold w-12">99</span>
+                    <span id="gold-value" class="text-left text-2xl font-semibold">99</span>
                 </div>
                 <div class="flex items-center gap-2">
                     <span class="text-3xl">🌒</span>
-                    <span id="moonstone-value" class="text-left text-2xl font-semibold w-12">3</span>
+                    <span id="moonstone-value" class="text-left text-2xl font-semibold">3</span>
                 </div>
             </div>
             
@@ -240,7 +240,7 @@
                 <div id="enemy-container" class="relative flex items-center select-none cursor-grab active-cursor-grabbing overflow-hidden h-24 panel-inset">
                     <div id="enemy-slider" class="absolute top-0 left-0 h-full bg-white/5 pointer-events-none z-10" style="transition: transform 0.2s ease-out;"></div>
                     <div id="battle-selector" class="hidden absolute top-0 left-0 pointer-events-none z-30"></div>
-                    <div id="enemy-list" class="absolute inset-0 flex items-center justify-evenly z-20">
+                    <div id="enemy-list" class="absolute inset-0 flex items-center justify-between px-2 z-20">
                         <!-- Icons populated by JS -->
                         <span class="text-3xl"></span><span class="text-3xl"></span><span class="text-3xl"></span><span class="text-3xl"></span><span class="text-3xl"></span><span class="text-3xl"></span><span class="text-3xl"></span><span class="text-3xl"></span>
                     </div>
@@ -1625,7 +1625,7 @@
                 updateWaveCounterUI();
                 enemyContainer.innerHTML = `<div id="enemy-slider" class="absolute top-0 left-0 h-full bg-white/5 pointer-events-none z-10" style="transition: transform 0.2s ease-out;"></div>
                 <div id="battle-selector" class="hidden absolute top-0 left-0 pointer-events-none z-30"></div>
-                <div id="enemy-list" class="absolute inset-0 flex items-center justify-evenly z-20">
+                <div id="enemy-list" class="absolute inset-0 flex items-center justify-between px-2 z-20">
                     ${Array(numIcons).fill('<span class="text-3xl"></span>').join('')}
                 </div>`;
                 enemySlider = document.getElementById('enemy-slider'); battleSelector = document.getElementById('battle-selector');
@@ -2061,7 +2061,3 @@
 
 </body>
 </html>
-
-
-
-
