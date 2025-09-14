@@ -549,14 +549,13 @@
                 return false;
             };
 
-            async function processEndOfPlayerAction(options = {}) {
-                const { giftOpened = false, upgradeTriggered = false } = options;
+            async function processEndOfPlayerAction() {
                 playerActionsTaken++;
                 const maxActions = playerState.statusEffects['⚡'] > 0 ? 2 : 1;
 
                 if (playerActionsTaken >= maxActions) {
                     attackBtn.disabled = true; // Disable until next player turn
-                    if (!giftOpened && !currentEnemiesInBattle.every(e => e.isDefeated) && !upgradeTriggered) {
+                    if (!currentEnemiesInBattle.every(e => e.isDefeated)) {
                         await enemyAttackPhase();
                     }
                 } else {
@@ -1406,7 +1405,9 @@
                         setTimeout(() => armorValueEl.classList.remove('damage-flash-animation'), 400);
                         break;
                 }
-                processEndOfPlayerAction({ upgradeTriggered });
+                if (!upgradeTriggered) {
+                    processEndOfPlayerAction();
+                }
             };
 
             // --- Initial Setup & Listeners ---
@@ -1733,7 +1734,8 @@
                 const continueGameHandler = async () => {
                     giftModal.classList.add('hidden');
                     const upgradeTriggered = handleEnemyDefeat(giftIndex);
-                    await processEndOfPlayerAction({ giftOpened: true, upgradeTriggered });
+                    // Since a gift was opened, its defeat can't trigger an upgrade, so we just continue the game flow.
+                    await processEndOfPlayerAction();
                 };
 
                 const spin = () => {
@@ -1887,8 +1889,8 @@
                     }
                 }
 
-                if (!giftOpened) {
-                    await processEndOfPlayerAction({ upgradeTriggered });
+                if (!giftOpened && !upgradeTriggered) {
+                    await processEndOfPlayerAction();
                 }
             });
 
@@ -1949,7 +1951,7 @@
                 killMeterModal.classList.add('hidden');
                 
                 // After upgrade, process end of player's turn (which is what triggered this)
-                processEndOfPlayerAction({ upgradeTriggered: true });
+                processEndOfPlayerAction();
             });
 
             const startBattle = () => {
@@ -2058,4 +2060,5 @@
 
 </body>
 </html>
+
 
