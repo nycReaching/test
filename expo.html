@@ -268,7 +268,7 @@
                 <div id="enemy-container" class="relative flex items-center select-none cursor-grab active:cursor-grabbing overflow-hidden h-24 retro-panel-inset">
                     <div id="enemy-slider" class="absolute top-0 left-0 h-full bg-black/20 border-2 border-black/30 pointer-events-none z-10" style="transition: transform 0.2s ease-out;"></div>
                     <div id="battle-selector" class="hidden absolute top-0 left-0 pointer-events-none z-30"></div>
-                    <div id="enemy-list" class="absolute inset-0 flex items-center justify-around px-3 z-20">
+                    <div id="enemy-list" class="absolute inset-0 flex items-center justify-evenly z-20">
                         <!-- Icons populated by JS -->
                         <span class="text-3xl"></span><span class="text-3xl"></span><span class="text-3xl"></span><span class="text-3xl"></span><span class="text-3xl"></span><span class="text-3xl"></span><span class="text-3xl"></span><span class="text-3xl"></span>
                     </div>
@@ -288,17 +288,17 @@
             <!-- Lower Interaction Area (RE-ORGANIZED) -->
             <div class="flex-grow grid grid-cols-3 grid-rows-3 gap-2">
                 <!-- Row 1: Spells -->
-                <button id="flameheartBtn" class="h-full bg-cyan-400 focus:outline-none text-4xl flex items-center justify-center retro-btn">❤️‍🔥</button>
-                <button id="frostbiteBtn" class="h-full bg-cyan-400 focus:outline-none text-4xl flex items-center justify-center retro-btn">❄️</button>
-                <button id="armorheartBtn" class="h-full bg-cyan-400 focus:outline-none text-4xl flex items-center justify-center retro-btn">🩶</button>
+                <button id="flameheartBtn" class="h-full bg-cyan-400 focus:outline-none text-3xl flex items-center justify-center retro-btn">❤️‍🔥</button>
+                <button id="frostbiteBtn" class="h-full bg-cyan-400 focus:outline-none text-3xl flex items-center justify-center retro-btn">❄️</button>
+                <button id="armorheartBtn" class="h-full bg-cyan-400 focus:outline-none text-3xl flex items-center justify-center retro-btn">🩶</button>
                 <!-- Row 2: Equipment -->
-                <button class="equip-slot h-full relative bg-blue-400 focus:outline-none text-4xl flex items-center justify-center retro-btn"></button>
-                <button class="equip-slot h-full relative bg-blue-400 focus:outline-none text-4xl flex items-center justify-center retro-btn"></button>
-                <button class="equip-slot h-full relative bg-blue-400 focus:outline-none text-4xl flex items-center justify-center retro-btn"></button>
+                <button class="equip-slot h-full relative bg-blue-400 focus:outline-none text-3xl flex items-center justify-center retro-btn"></button>
+                <button class="equip-slot h-full relative bg-blue-400 focus:outline-none text-3xl flex items-center justify-center retro-btn"></button>
+                <button class="equip-slot h-full relative bg-blue-400 focus:outline-none text-3xl flex items-center justify-center retro-btn"></button>
                 <!-- Row 3: Menus -->
-                <button id="fortunesBtn" class="h-full bg-violet-500 text-4xl focus:outline-none flex items-center justify-center retro-btn">🔮</button>
-                <button id="buildBtn" class="h-full bg-slate-500 text-4xl focus:outline-none flex items-center justify-center retro-btn">🔨</button>
-                <button id="shopBtn" class="h-full bg-amber-500 text-4xl focus:outline-none flex items-center justify-center retro-btn">🪙</button>
+                <button id="fortunesBtn" class="h-full bg-violet-500 text-3xl focus:outline-none flex items-center justify-center retro-btn">🔮</button>
+                <button id="buildBtn" class="h-full bg-slate-500 text-3xl focus:outline-none flex items-center justify-center retro-btn">🔨</button>
+                <button id="shopBtn" class="h-full bg-amber-500 text-3xl focus:outline-none flex items-center justify-center retro-btn">🪙</button>
             </div>
         </div>
 
@@ -336,7 +336,7 @@
         <div id="reelModal" class="hidden absolute inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
             <div class="retro-modal-content w-auto flex flex-col">
                 <div class="modal-title-bar">Create Stone</div>
-                <div id="reel-items" class="px-4 py-3 flex flex-wrap gap-2 justify-center text-4xl">
+                <div id="reel-items" class="py-3 flex flex-nowrap gap-2 justify-evenly text-4xl">
                     <button class="reel-item p-1 transition-transform active:scale-95">☠️</button>
                     <button class="reel-item p-1 transition-transform active:scale-95">🕯️</button>
                     <button class="reel-item p-1 transition-transform active:scale-95">🐌</button>
@@ -1671,7 +1671,7 @@
                 updateWaveCounterUI();
                 enemyContainer.innerHTML = `<div id="enemy-slider" class="absolute top-0 left-0 h-full bg-black/20 border-2 border-black/30 pointer-events-none z-10" style="transition: transform 0.2s ease-out;"></div>
                 <div id="battle-selector" class="hidden absolute top-0 left-0 pointer-events-none z-30"></div>
-                <div id="enemy-list" class="absolute inset-0 flex items-center justify-around px-3 z-20">
+                <div id="enemy-list" class="absolute inset-0 flex items-center justify-evenly z-20">
                     ${Array(numIcons).fill('<span class="text-3xl"></span>').join('')}
                 </div>`;
                 enemySlider = document.getElementById('enemy-slider'); battleSelector = document.getElementById('battle-selector');
@@ -2124,3 +2124,4 @@
 
 </body>
 </html>
+
