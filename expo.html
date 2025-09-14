@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Loot Grab RPG (90s Edition)</title>
+    <title>Loot Grab RPG (Refreshed)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* --- 90s PC GAME VISUAL RE-SKIN --- */
+        /* --- 90s PC GAME VISUAL RE-SKIN (REFRESHED) --- */
         :root {
             --bg-panel: #C0C0C0; /* Classic Windows Grey */
             --border-light: #FFFFFF;
@@ -17,9 +17,12 @@
             --text-color: #000000;
             --title-blue: #000080; /* Classic title bar blue */
         }
+        html {
+            font-size: 17px; /* Slightly larger base font for mobile readability */
+        }
         body {
             font-family: 'VT323', monospace;
-            background-color: #008080; /* Teal background */
+            background-color: #004040; /* Darker teal for more contrast */
             color: var(--text-color);
             touch-action: manipulation;
         }
@@ -34,13 +37,37 @@
             border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
             box-shadow: 4px 4px 0px #000;
         }
-        /* Standard raised panel (like a window or dialog) */
+        /* --- NEW: Classic Window Elements --- */
+        #title-bar {
+            background: var(--title-blue);
+            color: white;
+            padding: 2px 6px;
+            font-size: 1.1rem;
+            line-height: 1.5rem;
+            height: 1.8rem;
+        }
+        #title-bar span {
+            text-shadow: 1px 1px 0px rgba(0,0,0,0.5);
+        }
+        #title-bar .window-btn {
+            width: 1.25rem;
+            height: 1.25rem;
+            font-family: sans-serif; /* For sharper symbols */
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+        #status-bar {
+            padding: 0 8px;
+            font-size: 1rem;
+            height: 1.5rem;
+        }
+        /* Standard raised panel */
         .retro-panel {
             border: 2px solid;
             border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
             background-color: var(--bg-panel);
         }
-        /* Sunken/inset panel (like a text field or status bar) */
+        /* Sunken/inset panel */
         .retro-panel-inset {
             border: 2px solid;
             border-color: var(--border-dark) var(--border-light) var(--border-light) var(--border-dark);
@@ -63,6 +90,15 @@
             box-shadow: none !important;
             filter: none !important;
         }
+        /* --- NEW: Retro disabled button style --- */
+        .retro-btn:disabled {
+            background-image: repeating-linear-gradient(45deg, rgba(0,0,0,0.15), rgba(0,0,0,0.15) 2px, transparent 2px, transparent 4px);
+            color: #888;
+            text-shadow: 1px 1px 0px #fff;
+            cursor: not-allowed;
+            /* Override tailwind's default disabled opacity */
+            opacity: 1 !important;
+        }
         /* Progress Bars */
         .progress-bar-container {
             border: 2px solid;
@@ -81,6 +117,25 @@
             border-color: var(--border-light) var(--border-dark) var(--border-dark) var(--border-light);
             background-color: var(--bg-panel);
             box-shadow: 5px 5px 0px #000;
+        }
+        /* --- NEW: Modal Title Bar --- */
+        .modal-title-bar {
+            background: var(--title-blue);
+            color: white;
+            padding: 2px 8px;
+            font-size: 1.1rem;
+        }
+        /* --- NEW: Message Log (replaces side window) --- */
+        #message-log {
+            background-color: #fefcbf; /* Classic tooltip yellow */
+            border: 1px solid var(--border-dark);
+            transform: translate(-50%, 10px); /* Start slightly lower */
+            opacity: 0;
+            transition: opacity 0.2s ease-out, transform 0.2s ease-out; /* FASTER TRANSITION */
+        }
+        #message-log.visible {
+            opacity: 1;
+            transform: translate(-50%, 0);
         }
         /* --- EMOJI & ANIMATION STYLES (Tweaked for Retro Feel) --- */
         .emoji-red-stamp {
@@ -119,8 +174,8 @@
         @keyframes fade-out-and-shrink { to { transform: scale(0.5); opacity: 0; } }
         .enemy-fade-out { animation: fade-out-and-shrink 0.4s ease-out forwards; }
         .enemy-defeated { transition: width 0.3s ease-out, padding 0.3s ease-out, margin 0.3s ease-out; width: 0px !important; padding: 0 !important; margin: 0 !important; overflow: hidden; }
-        @keyframes pulse-orange { 50% { background-color: #f97316; } }
-        .pulse-orange-animation { animation: pulse-orange 1s infinite steps(2, jump-none); }
+        @keyframes pulse-red { 50% { background-color: #ef4444; } } /* Changed from orange */
+        .pulse-red-animation { animation: pulse-red 1s infinite steps(2, jump-none); }
         .glow-orange-text-animation { animation: none; color: #f97316 !important; }
         @keyframes reward-highlight {
             50% { border-color: #FF0000; box-shadow: 0 0 0 2px #FF0000; transform: scale(1.03); }
@@ -133,17 +188,30 @@
 <body class="flex items-center justify-center min-h-screen p-2">
 
     <!-- Mobile Screen Container -->
-    <div id="game-container" class="w-full max-w-sm h-[95vh] max-h-[850px] p-2 flex flex-col gap-2 relative overflow-hidden transition-colors duration-500">
+    <div id="game-container" class="w-full max-w-sm h-[95vh] max-h-[850px] flex flex-col relative overflow-hidden transition-colors duration-500">
         <div id="screen-flash-overlay" class="screen-flash"></div>
-        
+        <div id="message-overlay" class="hidden absolute inset-0 z-30"></div> <!-- NEW OVERLAY -->
+        <div id="message-log" class="absolute bottom-[20%] left-1/2 w-11/12 p-2 text-center text-lg z-40 pointer-events-none"></div>
+
+        <!-- NEW: Title Bar -->
+        <div id="title-bar" class="flex-shrink-0 flex items-center justify-between">
+            <span class="font-bold">💾 LOOT GRAB v1.1</span>
+            <div class="flex items-center gap-1.5">
+                <div class="window-btn retro-btn text-black flex items-center justify-center">_</div>
+                <div class="window-btn retro-btn text-black flex items-center justify-center">□</div>
+                <div class="window-btn retro-btn text-black flex items-center justify-center">X</div>
+            </div>
+        </div>
+
         <!-- =================================================================== -->
-        <!-- Top Section: Player Stats & Info -->
+        <!-- Top Section: Player Stats & Info (RE-ORGANIZED) -->
         <!-- =================================================================== -->
         <div class="flex-shrink-0 retro-panel p-2 flex flex-col gap-2">
-            <!-- Row 1: Core Stats (HP, Armor) & Currency -->
-            <div class="flex items-center justify-between">
-                <div class="flex items-center text-3xl gap-4">
-                    <div class="flex items-center gap-1.5">
+            <!-- Row 1: Core Stats & Progress Bars -->
+            <div class="grid grid-cols-2 gap-x-4 gap-y-1">
+                <!-- Left Column: Health/Armor/Magic -->
+                <div class="flex items-center text-3xl gap-2">
+                     <div class="flex items-center gap-1.5">
                         <span id="health-icon" class="transition-transform duration-200">❤️</span>
                         <span id="health-value" class="w-8 text-left text-2xl">10</span>
                     </div>
@@ -152,24 +220,21 @@
                         <span id="armor-value" class="w-8 text-left text-2xl">3</span>
                     </div>
                 </div>
-                <div class="flex items-center text-2xl gap-3">
+                 <!-- Right Column: Currency -->
+                <div class="flex items-center text-2xl gap-3 justify-end">
                     <div class="flex items-center gap-1.5"><span class="text-3xl">💰</span><span id="gold-value" class="w-8 text-left">99</span></div>
                     <div class="flex items-center gap-1.5"><span class="text-3xl">🌒</span><span id="moonstone-value" class="w-8 text-left">3</span></div>
                 </div>
-            </div>
-            
-            <!-- Row 2: Slim Progress Bars -->
-            <div class="flex flex-col w-full gap-1.5">
+                <!-- Progress Bars -->
                 <div class="w-full progress-bar-container">
-                    <div id="magic-bar" class="bg-cyan-400 progress-bar-fill" style="width: 100%;"></div>
+                    <div id="magic-bar" class="progress-bar-fill bg-cyan-400" style="width: 100%;"></div>
                 </div>
                 <div class="w-full progress-bar-container">
-                    <!-- CHANGE: Kill bar color is now darker -->
-                    <div id="kill-bar" class="bg-red-900 progress-bar-fill" style="width: 0%;"></div>
+                    <div id="kill-bar" class="bg-red-700 progress-bar-fill" style="width: 0%;"></div>
                 </div>
             </div>
 
-            <!-- Row 3: Player Status Effects -->
+            <!-- Row 2: Player Status Effects -->
             <div id="player-status-effects" class="flex items-center justify-start text-2xl gap-1 h-6">
                 <!-- Status icons will be managed by JS -->
                 <div class="relative status-effect-icon hidden" data-effect="⚡"><span>⚡</span><span class="stack-counter absolute -bottom-1 -right-1 text-base text-shadow bg-black/70 text-white rounded-full w-4 h-4 flex items-center justify-center leading-none"></span></div>
@@ -184,15 +249,14 @@
         <!-- =================================================================== -->
         <!-- Main Game Area -->
         <!-- =================================================================== -->
-        <div class="flex-grow flex flex-col gap-3 retro-panel p-2">
+        <div class="flex-grow flex flex-col gap-2 retro-panel p-2">
             
             <!-- UNIFIED BATTLE WINDOW -->
             <div class="flex-shrink-0 retro-panel-inset flex flex-col justify-between p-1">
                 <!-- Top part: Info Display / Start Button -->
                 <div id="battle-details-window" class="relative flex-shrink-0 h-16 flex items-center justify-center text-center">
-                    <div id="wave-counter" class="absolute top-0 left-1.5 text-base italic text-gray-700"></div>
                     <div id="battle-details-content" class="w-full h-full flex items-center justify-center">
-                        <button id="start-battle-btn" class="retro-btn bg-orange-600 text-white text-xl py-2 px-6 disabled:opacity-50 disabled:cursor-not-allowed">Start Battle</button>
+                        <button id="start-battle-btn" class="retro-btn bg-orange-500 text-white text-xl py-2 px-6">Start Battle</button>
                     </div>
                 </div>
 
@@ -208,61 +272,51 @@
             </div>
             
             <!-- Central Action Bar -->
-            <div class="flex-shrink-0 flex justify-around items-center gap-3">
-                <!-- CHANGE: Reroll counter text is now white -->
-                <button id="reshuffleBtn" class="relative w-1/3 h-14 bg-blue-800 focus:outline-none flex items-center justify-center text-4xl retro-btn">
+            <div class="flex-shrink-0 flex justify-around items-center gap-2">
+                <button id="reshuffleBtn" class="relative w-1/3 h-14 bg-blue-700 text-white focus:outline-none flex items-center justify-center text-4xl retro-btn">
                     🔃
-                    <span id="reshuffle-counter" class="absolute bottom-1 right-2 text-lg text-white"></span>
+                    <span id="reshuffle-counter" class="absolute bottom-1 right-2 text-lg"></span>
                 </button>
-                <!-- CHANGE: Attack button text is now white -->
                 <button id="attackBtn" class="w-1/3 h-14 bg-red-500 focus:outline-none flex items-center justify-center text-3xl text-white retro-btn" disabled><span id="attack-icon">💥</span><span id="attack-value" class="text-2xl">10</span></button>
-                <!-- CHANGE: Luck button text is now white -->
-                <button id="luckBtn" class="w-1/3 h-14 bg-green-400 focus:outline-none flex items-center justify-center text-white text-xl retro-btn gap-1"><span class="text-3xl">🍀</span><span id="luck-value">10</span>%</button>
+                <button id="luckBtn" class="w-1/3 h-14 bg-green-500 focus:outline-none flex items-center justify-center text-white text-xl retro-btn gap-1"><span class="text-3xl">🍀</span><span id="luck-value">10</span>%</button>
             </div>
             
-            <!-- Lower Interaction Area -->
-            <div class="flex-grow flex gap-3">
-                <!-- Side Window / Spell Info -->
-                <div id="side-window-left" class="w-1/2 flex flex-col items-center justify-center retro-panel-inset p-2 overflow-hidden text-lg text-center">
-                    <!-- Spell descriptions / Battle Log will appear here -->
-                </div>
-
-                <!-- 3x3 Grid + Side Buttons -->
-                <div class="w-1/2 flex flex-col gap-3">
-                     <!-- Spell Buttons (3x1) -->
-                    <div class="grid grid-cols-3 gap-2">
-                        <button id="flameheartBtn" class="h-14 bg-cyan-400 focus:outline-none text-4xl flex items-center justify-center retro-btn">❤️‍🔥</button>
-                        <button id="frostbiteBtn" class="h-14 bg-cyan-400 focus:outline-none text-4xl flex items-center justify-center retro-btn">❄️</button>
-                        <button id="armorheartBtn" class="h-14 bg-cyan-400 focus:outline-none text-4xl flex items-center justify-center retro-btn">🩶</button>
-                    </div>
-                     <!-- Equipment Slots (3x1) -->
-                    <div class="grid grid-cols-3 gap-2">
-                        <button class="equip-slot h-14 relative bg-blue-400 focus:outline-none text-4xl flex items-center justify-center retro-btn"></button>
-                        <button class="equip-slot h-14 relative bg-blue-400 focus:outline-none text-4xl flex items-center justify-center retro-btn"></button>
-                        <button class="equip-slot h-14 relative bg-blue-400 focus:outline-none text-4xl flex items-center justify-center retro-btn"></button>
-                    </div>
-                     <!-- Menu Buttons (3x1) -->
-                    <div class="grid grid-cols-3 gap-2">
-                         <button id="fortunesBtn" class="h-14 bg-violet-500 text-4xl focus:outline-none flex items-center justify-center retro-btn">🔮</button>
-                        <button id="buildBtn" class="h-14 bg-slate-500 text-4xl focus:outline-none flex items-center justify-center retro-btn">🔨</button>
-                        <button id="shopBtn" class="h-14 bg-amber-500 text-4xl focus:outline-none flex items-center justify-center retro-btn">🪙</button>
-                    </div>
-                </div>
+            <!-- Lower Interaction Area (RE-ORGANIZED) -->
+            <div class="flex-grow grid grid-cols-3 grid-rows-3 gap-2">
+                <!-- Row 1: Spells -->
+                <button id="flameheartBtn" class="h-full bg-cyan-400 focus:outline-none text-4xl flex items-center justify-center retro-btn">❤️‍🔥</button>
+                <button id="frostbiteBtn" class="h-full bg-cyan-400 focus:outline-none text-4xl flex items-center justify-center retro-btn">❄️</button>
+                <button id="armorheartBtn" class="h-full bg-cyan-400 focus:outline-none text-4xl flex items-center justify-center retro-btn">🩶</button>
+                <!-- Row 2: Equipment -->
+                <button class="equip-slot h-full relative bg-blue-400 focus:outline-none text-4xl flex items-center justify-center retro-btn"></button>
+                <button class="equip-slot h-full relative bg-blue-400 focus:outline-none text-4xl flex items-center justify-center retro-btn"></button>
+                <button class="equip-slot h-full relative bg-blue-400 focus:outline-none text-4xl flex items-center justify-center retro-btn"></button>
+                <!-- Row 3: Menus -->
+                <button id="fortunesBtn" class="h-full bg-violet-500 text-4xl focus:outline-none flex items-center justify-center retro-btn">🔮</button>
+                <button id="buildBtn" class="h-full bg-slate-500 text-4xl focus:outline-none flex items-center justify-center retro-btn">🔨</button>
+                <button id="shopBtn" class="h-full bg-amber-500 text-4xl focus:outline-none flex items-center justify-center retro-btn">🪙</button>
             </div>
         </div>
 
+        <!-- NEW: Status Bar -->
+        <div id="status-bar" class="flex-shrink-0 retro-panel-inset flex items-center justify-between">
+            <span id="wave-counter">Wave 1</span>
+            <span id="player-status-text" class="text-gray-700"></span>
+        </div>
 
         <!-- =================================================================== -->
-        <!-- MODAL WINDOWS -->
+        <!-- MODAL WINDOWS (Updated with Title Bars) -->
         <!-- =================================================================== -->
         <div id="fortunesModal" class="hidden absolute inset-0 bg-black/70 flex items-center justify-center z-30 p-4">
-            <div class="relative retro-modal-content p-4 w-full max-w-xs">
-                <div id="fortunes-content" class="w-full text-xl space-y-4 text-center"></div>
+            <div class="retro-modal-content w-full max-w-xs flex flex-col">
+                <div class="modal-title-bar">Fortunes</div>
+                <div id="fortunes-content" class="p-4 w-full text-xl space-y-4 text-center"></div>
             </div>
         </div>
         <div id="buildModal" class="hidden absolute inset-0 bg-black/70 flex items-center justify-center z-30 p-4">
-            <div class="relative retro-modal-content p-4 w-full max-w-xs">
-                <div class="w-full text-xl space-y-4">
+            <div class="retro-modal-content w-full max-w-xs flex flex-col">
+                <div class="modal-title-bar">Build</div>
+                <div class="p-4 w-full text-xl space-y-4">
                     <div class="flex justify-between items-center"><span>WEAPON</span><button data-slot-type="weapon" class="w-24 h-14 bg-slate-400 flex items-center justify-center text-4xl retro-btn"></button></div>
                     <div class="flex justify-between items-center"><span>ARMOR</span><button data-slot-type="armor" class="w-24 h-14 bg-slate-400 flex items-center justify-center text-4xl retro-btn"></button></div>
                     <div class="flex justify-between items-center"><span>RING</span><button data-slot-type="ring" class="w-24 h-14 bg-slate-400 flex items-center justify-center text-4xl retro-btn"></button></div>
@@ -270,13 +324,15 @@
             </div>
         </div>
         <div id="shopModal" class="hidden absolute inset-0 bg-black/70 flex items-center justify-center z-30 p-4">
-            <div class="relative retro-modal-content p-4 w-full max-w-xs">
-                <div id="shop-items-container" class="w-full max-w-xs text-xl space-y-2"></div>
+            <div class="retro-modal-content w-full max-w-xs flex flex-col">
+                <div class="modal-title-bar">Shop</div>
+                <div id="shop-items-container" class="p-4 w-full max-w-xs text-xl space-y-2"></div>
             </div>
         </div>
-        <div id="reelModal" class="hidden absolute inset-0 bg-black/70 flex items-center justify-center z-50">
-            <div class="relative retro-modal-content p-3">
-                <div id="reel-items" class="flex gap-2 text-4xl">
+        <div id="reelModal" class="hidden absolute inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+            <div class="retro-modal-content w-auto flex flex-col">
+                <div class="modal-title-bar">Create Stone</div>
+                <div id="reel-items" class="p-3 flex gap-2 justify-center text-4xl">
                     <button class="reel-item p-1 transition-transform active:scale-95">☠️</button>
                     <button class="reel-item p-1 transition-transform active:scale-95">🕯️</button>
                     <button class="reel-item p-1 transition-transform active:scale-95">🐌</button>
@@ -287,15 +343,15 @@
             </div>
         </div>
         <div id="equipmentChoiceModal" class="hidden absolute inset-0 bg-black/70 flex items-center justify-center z-40 p-4">
-            <div class="relative retro-modal-content p-4 w-full max-w-xs">
-                <div id="equipmentChoiceContent" class="text-xl space-y-3"></div>
+             <div class="retro-modal-content w-full max-w-xs flex flex-col">
+                <div class="modal-title-bar">Choose Equipment</div>
+                <div id="equipmentChoiceContent" class="p-4 text-xl space-y-3"></div>
             </div>
         </div>
         <div id="fortuneDetailModal" class="hidden absolute inset-0 bg-black/70 flex items-center justify-center z-40 p-4">
-            <div class="relative retro-modal-content p-4 w-full max-w-xs">
-                <div id="fortuneDetailContent" class="text-xl space-y-2 text-center">
-                    <!-- Fortune details will be injected here -->
-                </div>
+            <div class="retro-modal-content w-full max-w-xs flex flex-col">
+                <div class="modal-title-bar">Fortune Details</div>
+                <div id="fortuneDetailContent" class="p-4 text-xl space-y-2 text-center"></div>
             </div>
         </div>
         <div id="giftModal" class="hidden absolute inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
@@ -317,39 +373,43 @@
                 </div>
             </div>
         </div>
-        <!-- ADDED: Kill Meter Upgrade Modal -->
         <div id="killMeterModal" class="hidden absolute inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-            <div class="relative retro-modal-content p-6 w-full max-w-xs text-center">
-                <h2 class="text-3xl mb-6 text-orange-600">UPGRADE!</h2>
-                <div id="kill-meter-rewards" class="space-y-4">
-                    <button data-upgrade="health" class="retro-btn w-full p-4 text-xl flex items-center justify-center gap-3 bg-slate-400">
-                        <span>❤️</span>
-                        <span>+1 Max Health</span>
-                    </button>
-                    <button data-upgrade="luck" class="retro-btn w-full p-4 text-xl flex items-center justify-center gap-3 bg-slate-400">
-                        <span>🍀</span>
-                        <span>+5% Luck</span>
-                    </button>
+             <div class="retro-modal-content w-full max-w-xs flex flex-col">
+                <div class="modal-title-bar">LIMIT BREAK!</div>
+                <div class="p-6 w-full text-center">
+                    <h2 class="text-3xl mb-6 text-orange-600">UPGRADE!</h2>
+                    <div id="kill-meter-rewards" class="space-y-4">
+                        <button data-upgrade="health" class="retro-btn w-full p-4 text-xl flex items-center justify-center gap-3 bg-slate-400">
+                            <span>❤️</span>
+                            <span>+1 Max Health</span>
+                        </button>
+                        <button data-upgrade="luck" class="retro-btn w-full p-4 text-xl flex items-center justify-center gap-3 bg-slate-400">
+                            <span>🍀</span>
+                            <span>+5% Luck</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
-        <!-- ADDED: Luck Modal -->
         <div id="luckModal" class="hidden absolute inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-            <div class="relative retro-modal-content p-6 w-full max-w-xs text-center">
-                <h2 class="text-3xl mb-6 text-green-700">LUCK</h2>
-                <div id="luck-options" class="space-y-4">
-                    <button data-luck="attack" class="retro-btn w-full p-4 text-xl flex items-center justify-center gap-3 bg-slate-400">
-                        <span>💥</span>
-                        <span>Attack</span>
-                    </button>
-                    <button data-luck="magic" class="retro-btn w-full p-4 text-xl flex items-center justify-center gap-3 bg-slate-400">
-                        <span>✨</span>
-                        <span>Magic</span>
-                    </button>
-                    <button data-luck="choices" class="retro-btn w-full p-4 text-xl flex items-center justify-center gap-3 bg-slate-400">
-                        <span>🎲</span>
-                        <span>Choices</span>
-                    </button>
+            <div class="retro-modal-content w-full max-w-xs flex flex-col">
+                <div class="modal-title-bar">Focus Luck</div>
+                 <div class="p-6 w-full text-center">
+                    <h2 class="text-3xl mb-6 text-green-700">LUCK</h2>
+                    <div id="luck-options" class="space-y-4">
+                        <button data-luck="attack" class="retro-btn w-full p-4 text-xl flex items-center justify-center gap-3 bg-slate-400">
+                            <span>💥</span>
+                            <span>Attack</span>
+                        </button>
+                        <button data-luck="magic" class="retro-btn w-full p-4 text-xl flex items-center justify-center gap-3 bg-slate-400">
+                            <span>✨</span>
+                            <span>Magic</span>
+                        </button>
+                        <button data-luck="choices" class="retro-btn w-full p-4 text-xl flex items-center justify-center gap-3 bg-slate-400">
+                            <span>🎲</span>
+                            <span>Choices</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -373,10 +433,10 @@
             const equipmentChoiceModal = document.getElementById('equipmentChoiceModal');
             const equipmentChoiceContent = document.getElementById('equipmentChoiceContent');
             let startBattleBtn = document.getElementById('start-battle-btn');
-            const sideWindowLeft = document.getElementById('side-window-left');
             const battleDetailsWindow = document.getElementById('battle-details-window');
             const battleDetailsContentEl = document.getElementById('battle-details-content');
             const waveCounterEl = document.getElementById('wave-counter');
+            const playerStatusTextEl = document.getElementById('player-status-text');
             const flameheartBtn = document.getElementById('flameheartBtn');
             const frostbiteBtn = document.getElementById('frostbiteBtn');
             const armorheartBtn = document.getElementById('armorheartBtn');
@@ -454,7 +514,6 @@
                 frostbite: { title: "❄️ Frostbite:", desc1: "Deal 5 damage & inflict 🐌.", desc2: "Depletes half magic bar." },
                 armorheart: { title: "🩶 Armorheart:", desc1: "Add current health to armor.", desc2: "Depletes half magic bar." }
             };
-            // --- STATUS EFFECT CHANGE: Descriptions updated ---
             const symbolDescriptions = {
                 '☠️': { title: "☠️ Poison", desc: "Deals 1 damage directly to HP per turn." },
                 '🕯️': { title: "🕯️ Curse", desc: "Attacks deal half damage and inflict the other half on you." },
@@ -500,7 +559,7 @@
 
             let waveCount = 1;
             let battleStarted = false;
-            let playerActionsTaken = 0; // --- STATUS EFFECT CHANGE: For Rush ---
+            let playerActionsTaken = 0;
             const enemyPool = Object.keys(enemyData).filter(e => e !== '🎁');
             const giftEmoji = '🎁';
             const numIcons = 8;
@@ -542,11 +601,37 @@
                 gameContainer.appendChild(damageEl);
                 setTimeout(() => { damageEl.remove(); }, 1000);
             };
+
+            // --- NEW: Message Log System ---
+            let messageTimeout;
+            const messageLog = document.getElementById('message-log');
+            const messageOverlay = document.getElementById('message-overlay'); // Get overlay element
+
+            const hideMessage = () => {
+                if (!messageLog || !messageOverlay) return;
+                clearTimeout(messageTimeout);
+                messageLog.classList.remove('visible');
+                messageOverlay.classList.add('hidden'); // Hide overlay
+            };
+
+            const displayMessage = (htmlContent, duration = 2500) => { // Reduced default duration
+                if (!messageLog || !messageOverlay) return;
+
+                hideMessage(); // Clear any existing message and overlay state
+
+                messageLog.innerHTML = `<div class="retro-panel-inset p-2">${htmlContent}</div>`;
+                messageLog.classList.add('visible');
+                messageOverlay.classList.remove('hidden'); // Show overlay
+
+                // Click overlay to hide
+                messageOverlay.addEventListener('click', hideMessage, { once: true });
+
+                messageTimeout = setTimeout(hideMessage, duration);
+            };
             
-            // --- STATUS EFFECT CHANGE: Action processing helpers ---
             const isActionSluggish = () => {
                 if (playerState.statusEffects['🐌'] > 0 && Math.random() < 0.5) {
-                    sideWindowLeft.innerHTML = `<div class="w-full p-1"><p class="text-2xl text-center">SLUGGISH!<br>No effect!</p></div>`;
+                    displayMessage(`<p class="text-2xl text-center">SLUGGISH!<br>No effect!</p>`);
                     return true;
                 }
                 return false;
@@ -559,15 +644,15 @@
 
                 if (playerActionsTaken >= maxActions) {
                     attackBtn.disabled = true; // Disable until next player turn
+                    if(playerStatusTextEl) playerStatusTextEl.textContent = "Enemy's Turn...";
                     if (!giftOpened && !currentEnemiesInBattle.every(e => e.isDefeated) && !upgradeTriggered) {
                         await enemyAttackPhase();
                     }
                 } else {
-                    sideWindowLeft.innerHTML = `<div class="w-full p-1"><p class="text-2xl text-center">RUSH!<br>Another action!</p></div>`;
-                    if(playerState.health > 0) attackBtn.disabled = false; // Ensure enabled for next action
+                    displayMessage(`<p class="text-2xl text-center">RUSH!<br>Another action!</p>`);
+                    if(playerState.health > 0) attackBtn.disabled = false;
                 }
             }
-
 
             // --- UI Update Logic ---
             const updateStatusEffectsUI = () => {
@@ -596,11 +681,9 @@
                         icon.classList.add('hidden');
                     }
                 });
-                // --- STATUS EFFECT CHANGE: Blessing needs to update attack value ---
                 updateAttackValueUI();
             };
             
-            // --- STATUS EFFECT CHANGE: New function for Blessing ---
             const updateAttackValueUI = () => {
                 const BASE_ATTACK = 10;
                 let attackPower = BASE_ATTACK;
@@ -621,7 +704,6 @@
                 healthValueEl.textContent = playerState.health;
                 luckValueEl.textContent = playerState.luck;
                 
-                // --- STATUS EFFECT CHANGE: Call new attack value updater ---
                 updateAttackValueUI();
                 
                 if(magicBarEl) {
@@ -633,25 +715,19 @@
                 
                 if (isCharged) {
                     killBarEl.style.width = '100%';
-                    killBarEl.classList.remove('bg-red-900');
-                    killBarEl.classList.add('bg-orange-500', 'pulse-orange-animation');
+                    killBarEl.classList.remove('bg-red-700');
+                    killBarEl.classList.add('bg-red-500', 'pulse-red-animation');
                 } else {
                     const killPercentage = (playerState.killCount / 10) * 100;
                     killBarEl.style.width = `${killPercentage}%`;
-                    killBarEl.classList.add('bg-red-900');
-                    killBarEl.classList.remove('bg-orange-500', 'pulse-orange-animation');
+                    killBarEl.classList.add('bg-red-700');
+                    killBarEl.classList.remove('bg-red-500', 'pulse-red-animation');
                 }
                 
                 luckBtn.classList.remove('glow-orange-text-animation');
                 healthIconEl.classList.remove('glow-orange-text-animation');
                 
-                if (playerState.rerolls <= 0 || battleStarted) {
-                    reshuffleBtn.disabled = true;
-                    reshuffleBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                } else {
-                     reshuffleBtn.disabled = false;
-                    reshuffleBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                }
+                reshuffleBtn.disabled = playerState.rerolls <= 0 || battleStarted;
             };
             const updateEnemyStatusUI = (enemyIndex) => {
                 const enemy = currentEnemiesInBattle[enemyIndex];
@@ -711,11 +787,12 @@
             };
             const displayInfoInSideWindow = (title, ...descriptions) => {
                 if (battleStarted) return; 
-                 sideWindowLeft.innerHTML = `
-                    <div class="w-full p-1">
+                 const content = `
+                    <div>
                         <p class="mb-1">${title}</p>
                         ${descriptions.map(d => `<p>${d}</p>`).join('')}
                     </div>`;
+                displayMessage(content, 4000);
             };
             const displaySpellInfo = (spellKey) => {
                 const spell = spellDescriptions[spellKey];
@@ -792,7 +869,6 @@
 
                         if (!canSelect) {
                             button.disabled = true;
-                            button.classList.add('opacity-50', 'cursor-not-allowed');
                         }
 
                         button.innerHTML = `
@@ -876,20 +952,20 @@
                     }
 
                     if (item.oneTime && itemOwned > 0) {
-                        buttonHtml = `<button class="retro-btn bg-gray-400 px-4 py-1 opacity-70 cursor-not-allowed" disabled>OWNED</button>`;
+                        buttonHtml = `<button class="retro-btn bg-gray-400 px-4 py-1" disabled>OWNED</button>`;
                     } else if (battleStarted) {
                          if (item.id === 'moonstone') {
-                            buttonHtml = `<button data-item-id="${item.id}" class="retro-btn bg-gray-400 px-4 py-1 opacity-50 cursor-not-allowed" disabled>PASSIVE</button>`;
+                            buttonHtml = `<button data-item-id="${item.id}" class="retro-btn bg-gray-400 px-4 py-1" disabled>PASSIVE</button>`;
                         } else {
                             let canUse = itemOwned > 0;
                             if (item.id === 'cross') {
                                 canUse = canUse && playerState.statusEffects['🕯️'] > 0;
                             }
-                            buttonHtml = `<button data-item-id="${item.id}" class="retro-btn bg-green-500 px-4 py-1 ${canUse ? '' : 'opacity-50 cursor-not-allowed'}" ${!canUse ? 'disabled' : ''}>USE</button>`;
+                            buttonHtml = `<button data-item-id="${item.id}" class="retro-btn bg-green-500 px-4 py-1" ${!canUse ? 'disabled' : ''}>USE</button>`;
                         }
                     } else {
                         const canAfford = playerState.gold >= currentCost;
-                        buttonHtml = `<button data-item-id="${item.id}" class="retro-btn bg-slate-400 px-3 py-1 ${canAfford ? '' : 'opacity-50 cursor-not-allowed'}" ${!canAfford ? 'disabled' : ''}>🪙${currentCost}</button>`;
+                        buttonHtml = `<button data-item-id="${item.id}" class="retro-btn bg-slate-400 px-3 py-1" ${!canAfford ? 'disabled' : ''}>🪙${currentCost}</button>`;
                     }
                     itemDiv.innerHTML = `
                         <div class="flex-grow pr-4">
@@ -929,7 +1005,6 @@
                 if (item.id === 'cross' && playerState.statusEffects['🕯️'] <= 0) return;
 
                 if (isActionSluggish()) {
-                    // Resource is still consumed for sluggish actions
                     playerState.inventory[itemId]--;
                     renderShop();
                     processEndOfPlayerAction();
@@ -1008,6 +1083,7 @@
 
                 if (battleStarted) {
                     useItem(itemId);
+                    closeModal(modalMap.shopBtn.modal);
                 } else {
                     buyItem(itemId);
                 }
@@ -1054,9 +1130,7 @@
                         let uses = parseInt(slot.dataset.uses || '0', 10);
                         if (!symbol || uses <= 0) return;
                         
-                        const magicCost = 0; // Assuming status stones don't cost magic
                         if (isActionSluggish()) {
-                            // Consume use even on fail
                             uses--;
                             slot.dataset.uses = uses;
                             const counterSpan = slot.querySelector('.absolute');
@@ -1118,8 +1192,6 @@
                         activeEquipSlot = slot;
                         reelItems.forEach(item => {
                             item.disabled = playerState.moonstones <= 0;
-                            item.classList.toggle('opacity-50', playerState.moonstones <= 0);
-                            item.classList.toggle('cursor-not-allowed', playerState.moonstones <= 0);
                         });
                         reelModal.classList.remove('hidden');
                     }
@@ -1142,7 +1214,7 @@
                         emojiSpan.textContent = symbol;
                         activeEquipSlot.appendChild(emojiSpan);
                         const counterSpan = document.createElement('span');
-                        counterSpan.className = 'absolute bottom-1 right-2 text-lg text-white';
+                        counterSpan.className = 'absolute bottom-1 right-2 text-lg text-white text-shadow';
                         counterSpan.textContent = stoneUses;
                         activeEquipSlot.appendChild(counterSpan);
                         reelModal.classList.add('hidden');
@@ -1150,7 +1222,7 @@
                     }
                 });
             });
-            reelModal.addEventListener('click', (e) => { if (e.target === reelModal) reelModal.classList.add('hidden'); });
+            reelModal.addEventListener('click', (e) => { if (e.target.id === 'reelModal') reelModal.classList.add('hidden'); });
             
             const openEquipmentChoiceModal = (slotType) => {
                 equipmentChoiceContent.innerHTML = '';
@@ -1175,7 +1247,7 @@
                         e.stopPropagation();
                         if (activeBuildSlot) {
                             const currentSlotType = activeBuildSlot.dataset.slotType;
-                            const oldItem = playerState.equipment[currentSlotType]; // Store old item
+                            const oldItem = playerState.equipment[currentSlotType];
                             playerState.equipment[currentSlotType] = item;
                             activeBuildSlot.innerHTML = item.emoji;
                             
@@ -1184,19 +1256,16 @@
                             } else if (currentSlotType === 'armor') {
                                 document.getElementById('armor-icon').textContent = item.emoji;
                                 
-                                // Unequip old item's stats
                                 if (oldItem) {
                                     playerState.maxArmor -= oldItem.bonus || 0;
                                     playerState.armor -= oldItem.bonus || 0;
                                     playerState.luck -= oldItem.luckBonus || 0;
                                 }
 
-                                // Equip new item's stats
                                 playerState.maxArmor += item.bonus || 0;
                                 playerState.armor += item.bonus || 0;
                                 playerState.luck += item.luckBonus || 0;
 
-                                // Clamp values
                                 playerState.armor = Math.max(0, Math.min(playerState.armor, playerState.maxArmor));
                             }
                             
@@ -1215,7 +1284,7 @@
                     openEquipmentChoiceModal(btn.dataset.slotType);
                 });
             });
-            equipmentChoiceModal.addEventListener('click', (e) => { if (e.target === equipmentChoiceModal) equipmentChoiceModal.classList.add('hidden'); });
+            equipmentChoiceModal.addEventListener('click', (e) => { if (e.target.id === 'equipmentChoiceModal') equipmentChoiceModal.classList.add('hidden'); });
 
             // --- Enemy Slider & Reshuffle Logic ---
             const calculateSliderDimensions = () => {
@@ -1323,7 +1392,7 @@
                     
                     setTimeout(() => {
                         const { listPaddingLeft } = calculateSliderDimensions();
-                        currentTranslateX = 0; // Logical position
+                        currentTranslateX = 0;
                         if (enemySlider) enemySlider.style.transform = `translateX(${listPaddingLeft}px)`;
 
                         isReshuffling = false;
@@ -1343,7 +1412,7 @@
                 
                 if (luckActivatedThisBattle && playerState.selectedLuck === 'magic' && (Math.random() * 100 < playerState.luck)) {
                     currentMagicCost = 0;
-                    sideWindowLeft.innerHTML = `<div class="w-full p-1"><p class="text-2xl text-center text-cyan-300">FREE CAST!</p></div>`;
+                    displayMessage(`<p class="text-2xl text-center text-cyan-400">FREE CAST!</p>`);
                 }
 
                 if (!battleStarted || playerState.magic < currentMagicCost) return;
@@ -1405,15 +1474,9 @@
             };
 
             // --- Initial Setup & Listeners ---
-            flameheartBtn.addEventListener('click', () => {
-                executeSpell('flameheart');
-            });
-            frostbiteBtn.addEventListener('click', () => {
-                executeSpell('frostbite');
-            });
-            armorheartBtn.addEventListener('click', () => {
-                executeSpell('armorheart');
-            });
+            flameheartBtn.addEventListener('click', () => executeSpell('flameheart'));
+            frostbiteBtn.addEventListener('click', () => executeSpell('frostbite'));
+            armorheartBtn.addEventListener('click', () => executeSpell('armorheart'));
 
             Object.values(modalMap).forEach(item => {
                 item.button.addEventListener('click', (e) => {
@@ -1501,6 +1564,7 @@
                 }
                 updatePlayerUI();
                 if (playerState.health <= 0) {
+                    if(playerStatusTextEl) playerStatusTextEl.textContent = "DEFEATED";
                     attackBtn.disabled = true;
                     gameContainer.classList.remove('border-pulse-animation', 'border-red-500');
                 }
@@ -1509,7 +1573,6 @@
             const tickdownPlayerStatusEffects = () => {
                 if (playerState.health <= 0) return;
 
-                // --- STATUS EFFECT CHANGE: Poison & Regen logic ---
                 if (playerState.statusEffects['☠️'] > 0) {
                     playerState.health = Math.max(0, playerState.health - 1);
                     showDamageNumber(1, healthIconEl);
@@ -1537,7 +1600,6 @@
                 for (const enemy of livingEnemies) {
                     if (playerState.health <= 0) break;
                     
-                    // --- STATUS EFFECT CHANGE: Enemy Sluggish check ---
                     if (enemy.statusEffects['🐌'] > 0 && Math.random() < 0.5) {
                         // Skip attack but still tick down debuffs
                     } else {
@@ -1574,17 +1636,18 @@
                 
                 tickdownPlayerStatusEffects();
 
-                playerActionsTaken = 0; // Reset for player's turn
+                playerActionsTaken = 0;
                 if (playerState.health > 0) {
                     attackBtn.disabled = false;
+                    if(playerStatusTextEl) playerStatusTextEl.textContent = "Player's Turn";
                 }
             };
             const endBattle = () => {
-                battleStarted = false; currentEnemiesInBattle = []; playerState.armor = playerState.maxArmor; sideWindowLeft.innerHTML = ''; 
+                battleStarted = false; currentEnemiesInBattle = []; playerState.armor = playerState.maxArmor;
+                if(playerStatusTextEl) playerStatusTextEl.textContent = "Choose your encounter.";
                 attackBtn.disabled = true;
                 luckActivatedThisBattle = false;
                 luckBtn.disabled = false;
-                luckBtn.classList.remove('opacity-50');
                 attackBtn.classList.add('bg-red-500');
                 attackBtn.classList.remove('bg-green-600');
                 [flameheartBtn, frostbiteBtn, armorheartBtn].forEach(btn => {
@@ -1592,13 +1655,8 @@
                     btn.classList.remove('bg-green-600');
                 });
                 flameheartBtn.disabled = false;
-                flameheartBtn.classList.remove('opacity-50', 'cursor-not-allowed');
                 armorheartBtn.disabled = false;
-                armorheartBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                // --- STATUS EFFECT CHANGE: Reset all status effects ---
                 playerState.statusEffects = Object.keys(playerState.statusEffects).reduce((acc, key) => {
-                    // Poison and Regen last all battle, so they don't reset unless we explicitly do it here.
-                    // The guide says "lasts all battle", so they should be cleared after.
                     acc[key] = 0;
                     return acc;
                 }, {});
@@ -1614,7 +1672,7 @@
                 enemySlider = document.getElementById('enemy-slider'); battleSelector = document.getElementById('battle-selector');
                 enemyContainer.classList.remove('justify-center', 'gap-4', 'cursor-default');
                 enemyContainer.classList.add('cursor-grab', 'active:cursor-grabbing');
-                battleDetailsContentEl.innerHTML = '<button id="start-battle-btn" class="retro-btn bg-orange-600 text-white text-xl py-2 px-6 disabled:opacity-50 disabled:cursor-not-allowed">Start Battle</button>';
+                battleDetailsContentEl.innerHTML = '<button id="start-battle-btn" class="retro-btn bg-orange-500 text-white text-xl py-2 px-6">Start Battle</button>';
                 startBattleBtn = document.getElementById('start-battle-btn');
                 if (startBattleBtn) startBattleBtn.addEventListener('click', startBattle);
                 updatePlayerUI();
@@ -1623,6 +1681,7 @@
             };
             const checkBattleEnd = () => {
                 if (currentEnemiesInBattle.every(enemy => enemy.isDefeated)) {
+                    if(playerStatusTextEl) playerStatusTextEl.textContent = "VICTORY!";
                     setTimeout(endBattle, 1500);
                 }
             };
@@ -1686,11 +1745,11 @@
             // --- Gift Modal Logic ---
             const getTieredReward = (baseValue) => {
                 const rand = Math.random();
-                if (rand < 0.5) { // 50% chance
+                if (rand < 0.5) {
                     return { value: baseValue, color: 'text-sky-600' };
-                } else if (rand < 0.85) { // 35% chance
+                } else if (rand < 0.85) {
                     return { value: baseValue * 2, color: 'text-amber-600' };
-                } else { // 15% chance
+                } else {
                     return { value: baseValue * 4, color: 'text-pink-600' };
                 }
             };
@@ -1798,7 +1857,7 @@
 
             attackBtn.addEventListener('click', async () => {
                 if (!battleStarted || playerState.health <= 0 || attackBtn.disabled) return;
-                attackBtn.disabled = true; // Prevent double-clicks during processing
+                attackBtn.disabled = true;
 
                 if (isActionSluggish()) {
                     await processEndOfPlayerAction();
@@ -1830,14 +1889,13 @@
                     if (luckActivatedThisBattle && playerState.selectedLuck === 'attack') {
                         if (Math.random() * 100 < playerState.luck) {
                             attackPower *= 3;
-                            sideWindowLeft.innerHTML = `<div class="w-full p-1"><p class="text-2xl text-center text-yellow-400">CRITICAL HIT!</p></div>`;
+                            displayMessage(`<p class="text-2xl text-center text-yellow-400">CRITICAL HIT!</p>`);
                         }
                     }
 
-                    // --- STATUS EFFECT CHANGE: Curse logic ---
                     if (playerState.statusEffects['🕯️'] > 0) {
                         const selfDamage = Math.floor(attackPower / 2);
-                        attackPower = attackPower - selfDamage; // deals the other "half"
+                        attackPower = attackPower - selfDamage;
                         playerTakesDamage(selfDamage);
                     }
 
@@ -1865,7 +1923,7 @@
                 if (isArcher) {
                     const livingEnemies = currentEnemiesInBattle.map((e, i) => ({enemy: e, index: i})).filter(item => !item.enemy.isDefeated);
                     for (const {enemy, index} of livingEnemies) {
-                        if (giftOpened) break; // Don't attack other enemies if a gift was opened
+                        if (giftOpened) break;
                         upgradeTriggered = performAttack(enemy, index) || upgradeTriggered;
                         if (upgradeTriggered) break; 
                         await delay(150);
@@ -1890,7 +1948,6 @@
                     if (playerState.selectedLuck && !luckActivatedThisBattle) {
                         luckActivatedThisBattle = true;
                         luckBtn.disabled = true;
-                        luckBtn.classList.add('opacity-50');
 
                         if (playerState.selectedLuck === 'attack') {
                             attackBtn.classList.remove('bg-red-500');
@@ -1916,26 +1973,23 @@
                     const luckOptions = luckModal.querySelectorAll('button[data-luck]');
                     luckOptions.forEach(opt => {
                         opt.disabled = true;
-                        opt.classList.add('opacity-50');
                     });
-                    button.classList.remove('bg-slate-400', 'opacity-50');
+                    button.classList.remove('bg-slate-400');
                     button.classList.add('bg-green-600', 'text-white');
                 }
 
-                if (e.target === luckModal || button) {
+                if (e.target.closest('.retro-modal-content') && (e.target.id === 'luckModal' || button) ) {
                     setTimeout(() => {
                         const luckOptions = luckModal.querySelectorAll('button[data-luck]');
                          luckOptions.forEach(opt => {
                             opt.disabled = false;
-                            opt.classList.remove('opacity-50', 'bg-green-600', 'text-white');
+                            opt.classList.remove('bg-green-600', 'text-white');
                             opt.classList.add('bg-slate-400');
                          });
                         luckModal.classList.add('hidden');
                     }, 400);
                 }
             });
-
-            healthIconEl.addEventListener('click', () => {});
             
             killMeterRewards.addEventListener('click', (e) => {
                 const button = e.target.closest('button');
@@ -1954,13 +2008,13 @@
                 updatePlayerUI();
                 killMeterModal.classList.add('hidden');
                 
-                // After upgrade, process end of player's turn (which is what triggered this)
                 processEndOfPlayerAction({ upgradeTriggered: true });
             });
 
             const startBattle = () => {
                 if (battleStarted || isReshuffling) return;
-                playerActionsTaken = 0; // Reset actions at start of battle
+                playerActionsTaken = 0;
+                if(playerStatusTextEl) playerStatusTextEl.textContent = "Player's Turn";
                 attackBtn.disabled = false;
                 const flashOverlay = document.getElementById('screen-flash-overlay');
                 if (flashOverlay) {
@@ -1969,17 +2023,15 @@
                 }
                 const { iconWidth } = calculateSliderDimensions();
                 const startIndex = Math.round(currentTranslateX / iconWidth);
-                battleStarted = true; sideWindowLeft.innerHTML = ''; 
+                battleStarted = true;
                 enemyContainer.removeEventListener('mousedown', dragStart); enemyContainer.removeEventListener('touchstart', dragStart);
                 if(startBattleBtn) startBattleBtn.remove();
                 
                 if (playerState.activeSacrifices.includes('💔 Heartbreak')) {
                     if (Math.random() < 0.5) {
                         flameheartBtn.disabled = true;
-                        flameheartBtn.classList.add('opacity-50', 'cursor-not-allowed');
                     } else {
                         armorheartBtn.disabled = true;
-                        armorheartBtn.classList.add('opacity-50', 'cursor-not-allowed');
                     }
                 }
 
@@ -2001,7 +2053,7 @@
                         isGift: isGift, 
                         hp: hp, 
                         maxHp: hp, 
-                        attack: attack, // Storing attack value
+                        attack: attack,
                         isDefeated: false, 
                         ref: null,
                         statusEffects: {'☠️': 0, '🕯️': 0, '🐌': 0},
@@ -2061,9 +2113,11 @@
             updatePlayerUI(); 
             updateWaveCounterUI();
             updateStatusEffectsUI();
+            if(playerStatusTextEl) playerStatusTextEl.textContent = "Choose your encounter.";
         });
     </script>
 
 </body>
 </html>
+
 
