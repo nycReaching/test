@@ -106,6 +106,41 @@
         }
         .btn-neutral { background-color: #475569 !important; border-color: #64748B !important; }
 
+        /* --- NEW GRADIENT BUTTONS --- */
+        .btn-grad-reroll {
+            background: linear-gradient(145deg, var(--accent-blue), #1d4ed8) !important; /* Sky 400 to Blue 700 */
+            border-color: #1e40af !important; /* Blue 800 */
+        }
+        .btn-grad-attack {
+            background: linear-gradient(145deg, var(--accent-red), #be123c) !important; /* Rose 500 to Rose 700 */
+            border-color: #9f1239 !important; /* Rose 800 */
+        }
+        .btn-grad-luck {
+            background: linear-gradient(145deg, var(--accent-green), #16a34a) !important; /* Green 500 to Green 600 */
+            border-color: #15803d !important; /* Green 700 */
+        }
+        .btn-grad-stone {
+            background: linear-gradient(145deg, #3730a3, #5b21b6) !important; /* Indigo 700 to Violet 700 */
+            border-color: #4c1d95 !important; /* Violet 800 */
+        }
+
+        /* --- NEW STRIPED BUTTONS --- */
+        .btn-striped-fortune {
+            background-color: var(--accent-violet) !important;
+            border-color: color-mix(in srgb, var(--accent-violet) 80%, black) !important;
+            background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0,0,0,0.2) 5px, rgba(0,0,0,0.2) 10px) !important;
+        }
+        .btn-striped-build {
+            background-color: #475569 !important;
+            border-color: #64748B !important;
+            background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0,0,0,0.2) 5px, rgba(0,0,0,0.2) 10px) !important;
+        }
+        .btn-striped-shop {
+            background-color: var(--accent-orange) !important;
+            border-color: color-mix(in srgb, var(--accent-orange) 80%, black) !important;
+            background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0,0,0,0.2) 5px, rgba(0,0,0,0.2) 10px) !important;
+        }
+
         @keyframes subtle-pulse { 50% { filter: brightness(1.15); box-shadow: 0 0 10px var(--accent-green); } }
         .start-battle-btn-pulse { animation: subtle-pulse 1.5s infinite ease-in-out; }
 
@@ -309,24 +344,24 @@
 
                 <!-- Symmetrical Button Grid -->
                 <div class="flex-grow grid grid-cols-3 grid-rows-4 gap-2">
-                    <button id="reshuffleBtn" class="h-full relative btn btn-action text-white focus:outline-none flex items-center justify-center text-4xl">
+                    <button id="reshuffleBtn" class="h-full relative btn btn-grad-reroll text-white focus:outline-none flex items-center justify-center text-4xl">
                         🔃
                         <span id="reshuffle-counter" class="absolute bottom-1 right-2 text-sm text-white bg-black/50 rounded-md px-1.5 py-0.5 font-semibold"></span>
                     </button>
-                    <button id="attackBtn" class="h-full btn btn-danger focus:outline-none flex items-center justify-center text-3xl text-white gap-1" disabled><span id="attack-icon">💥</span><span id="attack-value" class="text-2xl font-bold">10</span></button>
-                    <button id="luckBtn" class="h-full btn btn-success focus:outline-none flex items-center justify-center text-white text-xl gap-1"><span class="text-3xl">🍀</span><span id="luck-value" class="font-bold">10</span>%</button>
+                    <button id="attackBtn" class="h-full btn btn-grad-attack focus:outline-none flex items-center justify-center text-3xl text-white gap-1" disabled><span id="attack-icon">💥</span><span id="attack-value" class="text-2xl font-bold">10</span></button>
+                    <button id="luckBtn" class="h-full btn btn-grad-luck focus:outline-none flex items-center justify-center text-white text-xl gap-1"><span class="text-3xl">🍀</span><span id="luck-value" class="font-bold">10</span>%</button>
                     
                     <button id="flameheartBtn" class="h-full btn btn-magic focus:outline-none text-4xl flex items-center justify-center">❤️‍🔥</button>
                     <button id="frostbiteBtn" class="h-full btn btn-magic focus:outline-none text-4xl flex items-center justify-center">❄️</button>
                     <button id="armorheartBtn" class="h-full btn btn-magic focus:outline-none text-4xl flex items-center justify-center">🩶</button>
                     
-                    <button class="equip-slot h-full relative btn btn-action focus:outline-none text-4xl flex items-center justify-center"><span class="opacity-50">?</span></button>
-                    <button class="equip-slot h-full relative btn btn-action focus:outline-none text-4xl flex items-center justify-center"><span class="opacity-50">?</span></button>
-                    <button class="equip-slot h-full relative btn btn-action focus:outline-none text-4xl flex items-center justify-center"><span class="opacity-50">?</span></button>
+                    <button class="equip-slot h-full relative btn btn-grad-stone focus:outline-none text-4xl flex items-center justify-center"><span class="opacity-50">?</span></button>
+                    <button class="equip-slot h-full relative btn btn-grad-stone focus:outline-none text-4xl flex items-center justify-center"><span class="opacity-50">?</span></button>
+                    <button class="equip-slot h-full relative btn btn-grad-stone focus:outline-none text-4xl flex items-center justify-center"><span class="opacity-50">?</span></button>
                     
-                    <button id="fortunesBtn" class="h-full btn btn-special text-white text-4xl focus:outline-none flex items-center justify-center">🔮</button>
-                    <button id="buildBtn" class="h-full btn btn-neutral text-white text-4xl focus:outline-none flex items-center justify-center">🔨</button>
-                    <button id="shopBtn" class="h-full btn btn-upgrade text-white text-4xl focus:outline-none flex items-center justify-center">🪙</button>
+                    <button id="fortunesBtn" class="h-full btn btn-striped-fortune text-white text-4xl focus:outline-none flex items-center justify-center">🔮</button>
+                    <button id="buildBtn" class="h-full btn btn-striped-build text-white text-4xl focus:outline-none flex items-center justify-center">🔨</button>
+                    <button id="shopBtn" class="h-full btn btn-striped-shop text-white text-4xl focus:outline-none flex items-center justify-center">🪙</button>
                 </div>
             </div>
         </div>
@@ -1605,7 +1640,7 @@
                             if (enemyInfo.special === '🫳') { // Ninja ability
                                 playerState.gold = Math.max(0, playerState.gold - 5);
                                 updatePlayerUI();
-                                showDamageNumber('-5💰', healthIconEl);
+                                showDamageNumber('-5💰', goldValueEl);
                             } else if (['🕯️', '🐌'].includes(enemyInfo.special)) {
                                 playerState.statusEffects[enemyInfo.special] = 3;
                             } else if (enemyInfo.special === '☠️') {
@@ -2092,4 +2127,7 @@
 
 </body>
 </html>
+
+
+
 
