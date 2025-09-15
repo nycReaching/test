@@ -144,6 +144,9 @@
         @keyframes subtle-pulse { 50% { filter: brightness(1.15); box-shadow: 0 0 10px var(--accent-green); } }
         .start-battle-btn-pulse { animation: subtle-pulse 1.5s infinite ease-in-out; }
 
+        @keyframes subtle-pulse-red { 50% { filter: brightness(1.15); box-shadow: 0 0 10px var(--accent-red); } }
+        .start-battle-btn-pulse-red { animation: subtle-pulse-red 1.5s infinite ease-in-out; }
+
         /* Progress Bars */
         .progress-bar-container {
             border: 1px solid var(--border-color);
@@ -316,9 +319,9 @@
             <div class="flex-shrink-0 panel-inset flex flex-col justify-between p-1.5 gap-1.5">
                 <!-- Top part: Info Display / Start Button -->
                 <div id="battle-details-window" class="relative flex-shrink-0 h-16 flex items-center justify-center text-center">
-                    <div id="wave-counter" class="absolute top-1 left-2 text-sm font-semibold text-gray-500"></div>
+                    <div id="wave-counter" class="absolute top-1 left-2 text-xs italic font-semibold text-white"></div>
                     <div id="battle-details-content" class="w-full h-full flex items-center justify-center">
-                        <button id="start-battle-btn" class="btn btn-success start-battle-btn-pulse text-white text-lg py-2.5 px-8 font-semibold disabled:opacity-50 disabled:cursor-not-allowed">Start Battle</button>
+                        <button id="start-battle-btn" class="btn btn-danger start-battle-btn-pulse-red text-white text-lg py-2.5 px-8 font-semibold disabled:opacity-50 disabled:cursor-not-allowed">Start Battle</button>
                     </div>
                 </div>
 
@@ -1701,7 +1704,7 @@
                 enemyContainer.removeEventListener('mousedown', battleDragStart);
                 enemyContainer.removeEventListener('touchstart', battleDragStart);
                 
-                battleDetailsContentEl.innerHTML = '<button id="start-battle-btn" class="btn btn-success start-battle-btn-pulse text-white text-lg py-2.5 px-8 font-semibold">Start Battle</button>';
+                battleDetailsContentEl.innerHTML = '<button id="start-battle-btn" class="btn btn-danger start-battle-btn-pulse-red text-white text-lg py-2.5 px-8 font-semibold">Start Battle</button>';
                 startBattleBtn = document.getElementById('start-battle-btn');
                 if (startBattleBtn) startBattleBtn.addEventListener('click', startBattle);
                 updatePlayerUI();
@@ -2127,6 +2130,7 @@
 
 </body>
 </html>
+
 
 
 
