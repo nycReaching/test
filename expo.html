@@ -138,7 +138,14 @@
 
         /* --- EMOJI & ANIMATION STYLES (Polished) --- */
         .emoji-elite-stamp {
-            filter: drop-shadow(0 0 6px var(--accent-red));
+            filter: drop-shadow(0 0 12px var(--accent-red)) drop-shadow(0 0 4px var(--accent-red));
+            animation: intimidating-pulse 1.2s infinite ease-in-out;
+        }
+        @keyframes intimidating-pulse {
+            50% { 
+                transform: scale(1.1); 
+                filter: drop-shadow(0 0 20px var(--accent-red)) drop-shadow(0 0 8px var(--accent-red));
+            }
         }
         @keyframes pulse { 50% { transform: scale(1.05); } }
         .pulse-animation { animation: pulse 1.5s infinite ease-in-out; }
@@ -166,15 +173,6 @@
         @keyframes screen-flash-anim { from { opacity: 0.5; } to { opacity: 0; } }
         .flash-animation { animation: screen-flash-anim 0.3s ease-out; }
         
-        #enemy-slider {
-            border: 3px solid var(--accent-blue) !important;
-            background: color-mix(in srgb, var(--accent-blue) 15%, transparent) !important;
-            box-shadow: 0 0 15px var(--accent-blue) !important;
-            border-radius: 1rem;
-            transition: transform 0.15s ease-out;
-            animation: none;
-        }
-
         #battle-selector { /* The new targeting reticle container */
             border: none !important;
             background: transparent !important;
@@ -289,18 +287,16 @@
                     </div>
                 </div>
 
-                <!-- Bottom part: Enemy Reel -->
-                <div id="enemy-container" class="relative flex items-center select-none cursor-grab active-cursor-grabbing overflow-hidden h-24 panel-inset">
-                    <div id="enemy-slider" class="absolute top-0 left-0 h-full bg-white/5 pointer-events-none z-10" style="transition: transform 0.2s ease-out;"></div>
+                <!-- Bottom part: NEW Enemy Display -->
+                <div id="enemy-container" class="relative flex items-center select-none overflow-hidden h-24 panel-inset">
                     <div id="battle-selector" class="hidden absolute top-0 left-0 pointer-events-none z-30">
                         <div class="corner corner-tl"></div>
                         <div class="corner corner-tr"></div>
                         <div class="corner corner-bl"></div>
                         <div class="corner corner-br"></div>
                     </div>
-                    <div id="enemy-list" class="absolute inset-0 flex items-center justify-around z-20">
+                    <div id="enemy-list" class="absolute inset-0 flex items-center justify-center gap-4 z-20">
                         <!-- Icons populated by JS -->
-                        <span class="text-3xl"></span><span class="text-3xl"></span><span class="text-3xl"></span><span class="text-3xl"></span><span class="text-3xl"></span><span class="text-3xl"></span><span class="text-3xl"></span><span class="text-3xl"></span>
                     </div>
                 </div>
             </div>
@@ -446,7 +442,6 @@
             const reshuffleCounter = document.getElementById('reshuffle-counter');
             const shopItemsContainer = document.getElementById('shop-items-container');
             let enemyContainer = document.getElementById('enemy-container');
-            let enemySlider = document.getElementById('enemy-slider');
             let battleSelector = document.getElementById('battle-selector');
             const reshuffleBtn = document.getElementById('reshuffleBtn');
             const reelModal = document.getElementById('reelModal');
@@ -584,17 +579,14 @@
             let playerActionsTaken = 0;
             const enemyPool = Object.keys(enemyData).filter(e => e !== '🎁');
             const giftEmoji = '🎁';
-            const numIcons = 8;
-            const groupSize = 3;
             let isReshuffling = false;
             let activeEquipSlot = null;
             let activeBuildSlot = null;
             let isDragging = false;
             let startX, startY;
-            let initialTranslateX;
-            let currentTranslateX = 0;
             let dragStartTime;
             let currentBattleTargetIndex = 0;
+            let currentPreBattleEnemies = [];
             let currentEnemiesInBattle = [];
             let fortunePhase = 'sacrifice'; 
             let selectedFortunes = [];
@@ -1295,123 +1287,96 @@
             });
             equipmentChoiceModal.addEventListener('click', (e) => { if (e.target === equipmentChoiceModal) equipmentChoiceModal.classList.add('hidden'); });
 
-            // --- Enemy Slider & Reshuffle Logic ---
-            const calculateSliderDimensions = () => {
-                if(battleStarted) return {};
-                const enemyList = document.getElementById('enemy-list');
-                if (!enemyList) return { iconWidth: 0, sliderWidth: 0, listPaddingLeft: 0, maxTranslateX: 0 };
-
-                const spans = enemyList.querySelectorAll('span');
-                if (spans.length < 2) return { iconWidth: 0, sliderWidth: 0, listPaddingLeft: 0, maxTranslateX: 0 };
-
-                const listPaddingLeft = parseFloat(getComputedStyle(enemyList).paddingLeft);
-
-                const firstRect = spans[0].getBoundingClientRect();
-                const secondRect = spans[1].getBoundingClientRect();
-                const iconWidth = secondRect.left - firstRect.left;
-
-                const sliderWidth = iconWidth * (groupSize - 1) + firstRect.width;
-                enemySlider.style.width = `${sliderWidth}px`;
-                
-                const maxTranslateX = (numIcons - groupSize) * iconWidth;
-
-                return { iconWidth, sliderWidth, listPaddingLeft, maxTranslateX };
-            };
-            const getEventCoords = (e) => ({ x: e.touches ? e.touches[0].clientX : e.clientX, y: e.touches ? e.touches[0].clientY : e.clientY });
-            const dragStart = (e) => {
-                if (battleStarted || isReshuffling) return;
-                isDragging = true;
-                const coords = getEventCoords(e);
-                startX = coords.x; startY = coords.y; dragStartTime = Date.now();
-                enemySlider.style.transition = 'none';
-                initialTranslateX = currentTranslateX;
-                document.addEventListener('mousemove', dragMove);
-                document.addEventListener('touchmove', dragMove, { passive: false });
-                document.addEventListener('mouseup', dragEnd);
-                document.addEventListener('touchend', dragEnd);
-            };
-            const dragMove = (e) => {
-                if (!isDragging) return;
-                e.preventDefault();
-                const deltaX = getEventCoords(e).x - startX;
-                const newLogicalPos = initialTranslateX + deltaX;
-
-                const { listPaddingLeft, maxTranslateX } = calculateSliderDimensions();
-                
-                const clampedLogicalPos = Math.max(0, Math.min(newLogicalPos, maxTranslateX));
-                
-                enemySlider.style.transform = `translateX(${clampedLogicalPos + listPaddingLeft}px)`;
-            };
-            const dragEnd = (e) => {
-                if (!isDragging) return;
-                isDragging = false;
-                const endCoords = e.changedTouches ? e.changedTouches[0] : e;
-                const deltaX = endCoords.clientX - startX, deltaY = endCoords.clientY - startY, deltaTime = Date.now() - dragStartTime;
-                document.removeEventListener('mousemove', dragMove);
-                document.removeEventListener('touchmove', dragMove);
-                document.removeEventListener('mouseup', dragEnd);
-                document.removeEventListener('touchend', dragEnd);
-                enemySlider.style.transition = 'transform 0.2s ease-out';
-                const { iconWidth, listPaddingLeft } = calculateSliderDimensions();
-
-                const transformMatrix = new WebKitCSSMatrix(getComputedStyle(enemySlider).transform);
-                const finalVisualTranslateX = transformMatrix.m41;
-                const logicalTranslateX = finalVisualTranslateX - listPaddingLeft;
-                
-                if (deltaTime < 250 && Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10) {
-                    const tappedX = endCoords.clientX - enemyContainer.getBoundingClientRect().left;
-                    const logicalTappedX = tappedX - listPaddingLeft;
-                    const tappedIndex = Math.floor(logicalTappedX / iconWidth);
-                    const targetIndex = Math.max(0, Math.min(numIcons - groupSize, tappedIndex - 1));
-                    currentTranslateX = targetIndex * iconWidth;
-                } else { 
-                    const closestSnapIndex = Math.round(logicalTranslateX / iconWidth);
-                    const clampedIndex = Math.min(numIcons - groupSize, Math.max(0, closestSnapIndex));
-                    currentTranslateX = clampedIndex * iconWidth;
-                }
-                const finalTransform = currentTranslateX + listPaddingLeft;
-                enemySlider.style.transform = `translateX(${finalTransform}px)`;
-            };
+            // --- Enemy Drawing & Reshuffle Logic ---
             const shuffle = (array) => {
-                for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [array[i], array[j]] = [array[j], array[i]]; }
+                for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[array[i], array[j]] = [array[j], array[i]]; }
                 return array;
             };
+
             const reshuffleEnemies = (isInitial = false) => {
                 if (isReshuffling || (!isInitial && playerState.rerolls <= 0)) return;
                 if (!isInitial) { playerState.rerolls--; updatePlayerUI(); }
                 isReshuffling = true;
                 if(startBattleBtn) startBattleBtn.disabled = true;
-                enemyContainer.classList.remove('cursor-grab', 'active:cursor-grabbing');
-                if (enemySlider) enemySlider.classList.add('hidden');
-                const enemySpans = Array.from(document.querySelectorAll('#enemy-list > span'));
-                const fadeOutDuration = isInitial ? 0 : 200; 
-                enemySpans.forEach(span => { span.style.transition = `opacity ${fadeOutDuration}ms ease-out`; span.style.opacity = '0'; });
-                setTimeout(() => {
-                    const finalEnemySet = shuffle([...shuffle([...enemyPool]).slice(0, 7), giftEmoji]);
-                    enemySpans.forEach((span, index) => {
-                        span.textContent = finalEnemySet[index];
-                        span.className = 'text-3xl'; 
-                        span.style.transition = 'opacity 0.4s ease-out';
-                    });
-                    const stampableSpans = enemySpans.filter(span => span.textContent !== giftEmoji);
-                    if (stampableSpans.length > 0) stampableSpans[Math.floor(Math.random() * stampableSpans.length)].classList.add('emoji-elite-stamp');
-                    
-                    const totalRevealTime = 1000;
-                    enemySpans.forEach((span, index) => { setTimeout(() => { span.style.opacity = '1'; }, index * (totalRevealTime / enemySpans.length)); });
-                    
-                    setTimeout(() => {
-                        const { listPaddingLeft } = calculateSliderDimensions();
-                        currentTranslateX = 0;
-                        if (enemySlider) enemySlider.style.transform = `translateX(${listPaddingLeft}px)`;
 
+                const enemyList = document.getElementById('enemy-list');
+                const enemySpans = Array.from(enemyList.children);
+                const fadeOutDuration = isInitial ? 0 : 200;
+
+                // Fade out existing enemies
+                enemySpans.forEach(span => {
+                    span.style.transition = `opacity ${fadeOutDuration}ms ease-out, transform 0.2s ease-out`;
+                    span.style.opacity = '0';
+                    span.style.transform = 'scale(0.8)';
+                });
+
+                setTimeout(() => {
+                    // --- NEW DRAWING LOGIC ---
+                    const wantsGift = Math.random() < 0.25;
+                    const wantsRed = Math.random() < 0.25;
+
+                    let drawnSet = [];
+                    let availablePool = shuffle([...enemyPool]);
+                    
+                    let giftIndex = -1;
+                    if (wantsGift) {
+                        giftIndex = Math.floor(Math.random() * 3);
+                    }
+
+                    for (let i = 0; i < 3; i++) {
+                        if (i === giftIndex) {
+                            drawnSet.push({ emoji: giftEmoji, isRed: false });
+                        } else {
+                            // Ensure we don't run out of enemies from the pool
+                            const enemyEmoji = availablePool.length > 0 ? availablePool.pop() : enemyPool[0];
+                            drawnSet.push({ emoji: enemyEmoji, isRed: false });
+                        }
+                    }
+                    
+                    if (wantsRed) {
+                        const nonGiftIndices = drawnSet.map((e, i) => e.emoji !== giftEmoji ? i : -1).filter(i => i !== -1);
+                        if (nonGiftIndices.length > 0) {
+                            const redIndex = nonGiftIndices[Math.floor(Math.random() * nonGiftIndices.length)];
+                            drawnSet[redIndex].isRed = true;
+                        }
+                    }
+                    
+                    currentPreBattleEnemies = shuffle(drawnSet);
+
+                    // --- RENDER NEW ENEMIES ---
+                    enemyList.innerHTML = ''; // Clear old spans
+                    currentPreBattleEnemies.forEach(enemy => {
+                        const span = document.createElement('span');
+                        span.className = 'text-5xl relative transition-all duration-300';
+                        span.textContent = enemy.emoji;
+                        if (enemy.isRed) {
+                            span.classList.add('emoji-elite-stamp');
+                        }
+                        // Start them small and faded for reveal animation
+                        span.style.opacity = '0';
+                        span.style.transform = 'scale(0.8)';
+                        enemyList.appendChild(span);
+                    });
+
+                    // --- REVEAL ANIMATION ---
+                    const newSpans = Array.from(enemyList.children);
+                    const totalRevealTime = 1000;
+                    newSpans.forEach((span, index) => {
+                        setTimeout(() => {
+                            span.style.opacity = '1';
+                            span.style.transform = 'scale(1)';
+                        }, (index * 250));
+                    });
+
+                    // --- RESET STATE ---
+                    setTimeout(() => {
                         isReshuffling = false;
-                        if (!battleStarted) { 
-                            if (enemySlider) enemySlider.classList.remove('hidden');
-                            updatePlayerUI();
-                            enemyContainer.classList.add('cursor-grab', 'active:cursor-grabbing');
+                        if (!battleStarted) {
                             if(startBattleBtn) startBattleBtn.disabled = false;
+                            updatePlayerUI(); // To update reroll button state
                         }
                     }, totalRevealTime);
+
                 }, fadeOutDuration);
             };
 
@@ -1536,6 +1501,7 @@
                  battleSelector.style.transform = `translate(${leftOffset}px, ${topOffset}px)`;
             };
             
+            const getEventCoords = (e) => ({ x: e.touches ? e.touches[0].clientX : e.clientX, y: e.touches ? e.touches[0].clientY : e.clientY });
             const battleDragStart = (e) => {
                 const coords = getEventCoords(e); startX = coords.x; startY = coords.y; dragStartTime = Date.now(); isDragging = false; 
                 document.addEventListener('mousemove', battleDragMove);
@@ -1686,25 +1652,25 @@
                 updateStatusEffectsUI(); 
                 waveCount++; 
                 updateWaveCounterUI();
-                enemyContainer.innerHTML = `<div id="enemy-slider" class="absolute top-0 left-0 h-full pointer-events-none z-10" style="transition: transform 0.2s ease-out;"></div>
+                
+                enemyContainer.innerHTML = `
                 <div id="battle-selector" class="hidden absolute top-0 left-0 pointer-events-none z-30">
                         <div class="corner corner-tl"></div>
                         <div class="corner corner-tr"></div>
                         <div class="corner corner-bl"></div>
                         <div class="corner corner-br"></div>
                 </div>
-                <div id="enemy-list" class="absolute inset-0 flex items-center justify-around z-20">
-                    ${Array(numIcons).fill('<span class="text-3xl"></span>').join('')}
+                <div id="enemy-list" class="absolute inset-0 flex items-center justify-center gap-4 z-20">
                 </div>`;
-                enemySlider = document.getElementById('enemy-slider'); battleSelector = document.getElementById('battle-selector');
-                enemyContainer.classList.remove('justify-center', 'gap-4', 'cursor-default');
-                enemyContainer.classList.add('cursor-grab', 'active:cursor-grabbing');
+                battleSelector = document.getElementById('battle-selector');
+                enemyContainer.removeEventListener('mousedown', battleDragStart);
+                enemyContainer.removeEventListener('touchstart', battleDragStart);
+                
                 battleDetailsContentEl.innerHTML = '<button id="start-battle-btn" class="btn btn-success start-battle-btn-pulse text-white text-lg py-2.5 px-8 font-semibold">Start Battle</button>';
                 startBattleBtn = document.getElementById('start-battle-btn');
                 if (startBattleBtn) startBattleBtn.addEventListener('click', startBattle);
                 updatePlayerUI();
-                enemyContainer.addEventListener('mousedown', dragStart); enemyContainer.addEventListener('touchstart', dragStart);
-                reshuffleEnemies(); calculateSliderDimensions();
+                reshuffleEnemies(true);
             };
             const checkBattleEnd = () => {
                 if (currentEnemiesInBattle.every(enemy => enemy.isDefeated)) {
@@ -2032,10 +1998,9 @@
                     flashOverlay.classList.add('flash-animation');
                     setTimeout(() => flashOverlay.classList.remove('flash-animation'), 300);
                 }
-                const { iconWidth } = calculateSliderDimensions();
-                const startIndex = Math.round(currentTranslateX / iconWidth);
-                battleStarted = true; sideWindowLeft.innerHTML = ''; 
-                enemyContainer.removeEventListener('mousedown', dragStart); enemyContainer.removeEventListener('touchstart', dragStart);
+                
+                battleStarted = true; 
+                sideWindowLeft.innerHTML = ''; 
                 if(startBattleBtn) startBattleBtn.remove();
                 
                 if (playerState.activeSacrifices.includes('💔 Heartbreak')) {
@@ -2047,16 +2012,15 @@
                 }
 
                 updatePlayerUI(); 
-                enemyContainer.classList.remove('cursor-grab', 'active:cursor-grabbing'); enemyContainer.classList.add('cursor-default'); enemySlider.classList.add('hidden');
-                const selectedEnemySpans = Array.from(document.querySelectorAll('#enemy-list > span')).slice(startIndex, startIndex + groupSize);
-                currentEnemiesInBattle = selectedEnemySpans.map(span => {
-                    const emoji = span.textContent;
+                
+                currentEnemiesInBattle = currentPreBattleEnemies.map(preBattleEnemy => {
+                    const emoji = preBattleEnemy.emoji;
                     const data = enemyData[emoji] || { name: 'Unknown', hp: 10, attack: 1 };
-                    const isStamped = span.classList.contains('emoji-elite-stamp');
+                    const isStamped = preBattleEnemy.isRed;
                     const isGift = emoji === giftEmoji;
                     
                     const hp = isGift ? data.hp : (isStamped ? data.hp * 2 : data.hp);
-                    const attack = isGift ? data.attack : (isStamped ? data.attack + 1 : data.attack);
+                    const attack = isGift ? data.attack : (isStamped ? data.attack * 2 : data.attack);
 
                     return { 
                         emoji: emoji, 
@@ -2071,8 +2035,10 @@
                         lastDebuff: null 
                     };
                 });
-                enemyContainer.innerHTML = ''; enemyContainer.appendChild(battleSelector);
-                enemyContainer.classList.remove('justify-around'); enemyContainer.classList.add('justify-center', 'gap-4');
+                enemyContainer.innerHTML = ''; 
+                enemyContainer.appendChild(battleSelector);
+                enemyContainer.classList.add('justify-center', 'gap-4');
+
                 currentEnemiesInBattle.forEach((enemy, index) => {
                     const enemyWrapper = document.createElement('div');
                     enemyWrapper.className = 'relative cursor-pointer w-[60px] flex flex-col items-center justify-center transition-opacity duration-300';
@@ -2102,11 +2068,13 @@
                     enemyContainer.appendChild(enemyWrapper);
                 });
                 const firstLivingEnemyIndex = currentEnemiesInBattle.findIndex(e => !e.isDefeated);
-                const firstEnemyWrapper = currentEnemiesInBattle[firstLivingEnemyIndex].ref;
-                battleSelector.classList.remove('hidden');
-                currentBattleTargetIndex = firstLivingEnemyIndex;
-                updateEnemyDisplay(currentEnemiesInBattle[firstLivingEnemyIndex]);
-                setTimeout(() => positionBattleSelector(firstEnemyWrapper), 50);
+                if (firstLivingEnemyIndex !== -1) {
+                    const firstEnemyWrapper = currentEnemiesInBattle[firstLivingEnemyIndex].ref;
+                    battleSelector.classList.remove('hidden');
+                    currentBattleTargetIndex = firstLivingEnemyIndex;
+                    updateEnemyDisplay(currentEnemiesInBattle[firstLivingEnemyIndex]);
+                    setTimeout(() => positionBattleSelector(firstEnemyWrapper), 50);
+                }
                 enemyContainer.addEventListener('mousedown', battleDragStart);
                 enemyContainer.addEventListener('touchstart', battleDragStart);
                 if (!modalMap.shopBtn.modal.classList.contains('hidden')) renderShop();
@@ -2114,12 +2082,6 @@
             
             // --- Final Setup ---
             if(startBattleBtn) startBattleBtn.addEventListener('click', startBattle);
-            calculateSliderDimensions();
-            window.addEventListener('resize', calculateSliderDimensions);
-            enemyContainer.addEventListener('mousedown', dragStart);
-            enemyContainer.addEventListener('touchstart', dragStart);
-            document.addEventListener('mouseup', dragEnd);
-            document.addEventListener('touchend', dragEnd);
             reshuffleBtn.addEventListener('click', () => { if (!battleStarted && !isReshuffling) reshuffleEnemies(); });
             reshuffleEnemies(true);
             updatePlayerUI(); 
