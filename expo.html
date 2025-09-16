@@ -205,7 +205,7 @@
         .damage-flash-animation { animation: damage-flash 0.4s ease-in-out; }
         
         @keyframes lunge-animation { 50% { transform: scale(1.15) translateY(-5px); } }
-        .lunge-animation { animation: lunge-animation 0.4s ease-in-out; }
+        .lunge-animation { animation: lunge-animation 0.6s ease-in-out; }
 
         @keyframes border-pulse { 50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-red) 50%, transparent), 0 0 40px rgba(0,0,0,0.5), inset 0 0 10px rgba(255,255,255,0.05); } }
         .border-pulse-animation { animation: border-pulse 1s infinite; }
@@ -1709,9 +1709,10 @@
                     } else {
                         const enemyWrapper = enemy.ref;
                         enemyWrapper.classList.add('lunge-animation');
-                        setTimeout(() => enemyWrapper.classList.remove('lunge-animation'), 400);
-                        await delay(400); 
+                        setTimeout(() => enemyWrapper.classList.remove('lunge-animation'), 600);
+                        await delay(300); 
                         playerTakesDamage(enemy.attack);
+                        await delay(300);
                         const enemyInfo = enemyData[enemy.emoji];
                         if (enemyInfo.special) {
                             if (enemyInfo.special === '🫳') { // Ninja ability
@@ -2270,4 +2271,5 @@
 
 </body>
 </html>
+
 
