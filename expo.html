@@ -204,6 +204,9 @@
         @keyframes damage-flash { 50% { transform: scale(1.7); color: var(--accent-red); } }
         .damage-flash-animation { animation: damage-flash 0.4s ease-in-out; }
         
+        @keyframes lunge-animation { 50% { transform: scale(1.15) translateY(-5px); } }
+        .lunge-animation { animation: lunge-animation 0.4s ease-in-out; }
+
         @keyframes border-pulse { 50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-red) 50%, transparent), 0 0 40px rgba(0,0,0,0.5), inset 0 0 10px rgba(255,255,255,0.05); } }
         .border-pulse-animation { animation: border-pulse 1s infinite; }
 
@@ -441,7 +444,7 @@
                 <div id="kill-meter-rewards" class="space-y-4">
                     <button data-upgrade="health" class="btn w-full p-4 text-lg flex items-center justify-center gap-3">
                         <span>❤️</span>
-                        <span>+1 Max Health</span>
+                        <span>Full Heal and +1 Max HP</span>
                     </button>
                     <button data-upgrade="luck" class="btn w-full p-4 text-lg flex items-center justify-center gap-3">
                         <span>🍀</span>
@@ -467,6 +470,15 @@
                         <span>Choices</span>
                     </button>
                 </div>
+            </div>
+        </div>
+        <div id="deathModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
+            <div class="relative modal-content p-6 w-full max-w-xs text-center">
+                <h2 class="text-5xl mb-4">🪦</h2>
+                <div id="death-message" class="text-lg space-y-2 mb-6">
+                    <!-- Death message injected by JS -->
+                </div>
+                <button id="continue-btn" class="btn btn-action w-full p-4 text-lg">Continue</button>
             </div>
         </div>
     </div>
@@ -512,6 +524,9 @@
             const killMeterModal = document.getElementById('killMeterModal');
             const killMeterRewards = document.getElementById('kill-meter-rewards');
             const luckModal = document.getElementById('luckModal');
+            const deathModal = document.getElementById('deathModal');
+            const deathMessageEl = document.getElementById('death-message');
+            const continueBtn = document.getElementById('continue-btn');
             
             const modalMap = {
                 fortunesBtn: { modal: document.getElementById('fortunesModal'), button: document.getElementById('fortunesBtn') },
@@ -598,20 +613,39 @@
             ];
 
             // --- State ---
-            let playerState = {
-                gold: 99, moonstones: 3, rerolls: 5, killCount: 0, 
-                maxHealth: 10, health: 10, armor: 3, maxArmor: 3,
+            let unlocks = { extraMoonstone: false, extraVigor: false };
+
+            const saveUnlocks = () => {
+                localStorage.setItem('lootGrabUnlocks', JSON.stringify(unlocks));
+            };
+
+            const loadUnlocks = () => {
+                const saved = localStorage.getItem('lootGrabUnlocks');
+                if (saved) {
+                    unlocks = JSON.parse(saved);
+                }
+            };
+
+            const getInitialPlayerState = () => ({
+                gold: 99,
+                moonstones: unlocks.extraMoonstone ? 4 : 3,
+                rerolls: 5,
+                killCount: 0,
+                maxHealth: unlocks.extraVigor ? 11 : 10,
+                health: unlocks.extraVigor ? 11 : 10,
+                armor: unlocks.extraVigor ? 4 : 3,
+                maxArmor: unlocks.extraVigor ? 4 : 3,
                 magic: 100, maxMagic: 100,
                 luck: 10,
-                selectedLuck: null, // 'attack', 'magic', or 'choices'
-                equipment: { weapon: null, armor: null, ring: null }, 
-                inventory: { tonic: 0, gem: 0, cross: 0, fairy: 0, moonstone: 3, infinityRing: 0 }, 
+                selectedLuck: null,
+                equipment: { weapon: null, armor: null, ring: null },
+                inventory: { tonic: 0, gem: 0, cross: 0, fairy: 0, moonstone: unlocks.extraMoonstone ? 4 : 3, infinityRing: 0 },
                 statusEffects: { '☠️': 0, '🕯️': 0, '🐌': 0, '❇️': 0, '🌟': 0, '⚡': 0 },
                 activeSacrifices: [],
-                poisonInflictions: 0 // FORTUNE: For Toxic Decay
-            };
-            playerState.health = playerState.maxHealth; // Ensure health starts at max
-
+                poisonInflictions: 0
+            });
+            
+            let playerState;
             let waveCount = 1;
             let battleStarted = false;
             let playerActionsTaken = 0;
@@ -862,6 +896,19 @@
                         e.stopPropagation(); 
                         if (currentSacrifice && selectedFortunes.length < 4) {
                             selectedFortunes.push({ sacrifice: currentSacrifice, fortune: fortune });
+
+                            // If the chosen fortune is 'Durable Stones', update existing stones
+                            if (fortune.text === 'Durable Stones') {
+                                equipSlots.forEach(slot => {
+                                    if (slot.dataset.symbol) {
+                                        let uses = parseInt(slot.dataset.uses, 10);
+                                        uses++;
+                                        slot.dataset.uses = uses;
+                                        const counterSpan = slot.querySelector('.absolute');
+                                        if (counterSpan) counterSpan.textContent = uses;
+                                    }
+                                });
+                            }
                         }
                         currentSacrifice = null;
                         closeModal(modalMap.fortunesBtn.modal);
@@ -1042,13 +1089,6 @@
                 
                 if (item.id === 'cross' && playerState.statusEffects['🕯️'] <= 0) return;
 
-                if (isActionSluggish()) {
-                    playerState.inventory[itemId]--;
-                    renderShop();
-                    processEndOfPlayerAction();
-                    return;
-                }
-
                 playerState.inventory[itemId]--;
 
                 switch (itemId) {
@@ -1109,7 +1149,6 @@
                 updateStatusEffectsUI();
                 updatePlayerUI();
                 renderShop(); 
-                processEndOfPlayerAction();
             };
 
             shopItemsContainer.addEventListener('click', (e) => {
@@ -1574,6 +1613,30 @@
                 setTimeout(() => { isDragging = false; }, 50);
             };
 
+            const handlePlayerDeath = () => {
+                let message = "<p>You've perished, but death is not eternal here.</p>";
+                let newUnlock = false;
+
+                if (waveCount >= 6 && !unlocks.extraVigor) {
+                    unlocks.extraVigor = true;
+                    message += "<p class='mt-3 text-green-400 font-semibold'>Your rebirth is infused with vigor.</p>";
+                    newUnlock = true;
+                }
+
+                if (waveCount >= 4 && !unlocks.extraMoonstone) {
+                    unlocks.extraMoonstone = true;
+                    message += "<p class='mt-3 text-yellow-400 font-semibold'>An extra moonstone stays with you.</p>";
+                    newUnlock = true;
+                }
+
+                if (newUnlock) {
+                    saveUnlocks();
+                }
+
+                deathMessageEl.innerHTML = message;
+                deathModal.classList.remove('hidden');
+            };
+
             // --- BATTLE LOGIC ---
             const playerTakesDamage = (damage) => {
                 const damageAbsorbed = Math.min(playerState.armor, damage);
@@ -1588,14 +1651,19 @@
                     healthValueEl.classList.add('damage-flash-animation');
                     setTimeout(() => healthValueEl.classList.remove('damage-flash-animation'), 400);
                 }
+                
+                updatePlayerUI();
+
+                if (playerState.health <= 0) {
+                    attackBtn.disabled = true;
+                    gameContainer.classList.remove('border-pulse-animation');
+                    handlePlayerDeath();
+                    return;
+                }
+                
                 if (playerState.health <= 5 && playerState.health > 0) {
                     gameContainer.classList.add('border-pulse-animation');
                 } else {
-                    gameContainer.classList.remove('border-pulse-animation');
-                }
-                updatePlayerUI();
-                if (playerState.health <= 0) {
-                    attackBtn.disabled = true;
                     gameContainer.classList.remove('border-pulse-animation');
                 }
             };
@@ -1605,7 +1673,13 @@
 
                 if (playerState.statusEffects['☠️'] > 0) {
                     playerState.health = Math.max(0, playerState.health - 1);
+                    updatePlayerUI();
                     showDamageNumber(1, healthIconEl);
+                     if (playerState.health <= 0) {
+                        gameContainer.classList.remove('border-pulse-animation');
+                        handlePlayerDeath();
+                        return;
+                    }
                 }
                 if (playerState.statusEffects['❇️'] > 0) {
                     playerState.health = Math.min(playerState.maxHealth, playerState.health + 1);
@@ -1634,9 +1708,9 @@
                         // Skip attack
                     } else {
                         const enemyWrapper = enemy.ref;
-                        enemyWrapper.classList.add('flip-animation');
-                        setTimeout(() => enemyWrapper.classList.remove('flip-animation'), 500);
-                        await delay(500); 
+                        enemyWrapper.classList.add('lunge-animation');
+                        setTimeout(() => enemyWrapper.classList.remove('lunge-animation'), 400);
+                        await delay(400); 
                         playerTakesDamage(enemy.attack);
                         const enemyInfo = enemyData[enemy.emoji];
                         if (enemyInfo.special) {
@@ -1664,11 +1738,11 @@
                     await delay(400);
                 }
                 
-                tickdownPlayerStatusEffects();
-
-                playerActionsTaken = 0;
                 if (playerState.health > 0) {
+                    tickdownPlayerStatusEffects();
+                    playerActionsTaken = 0;
                     attackBtn.disabled = false;
+                    sideWindowLeft.innerHTML = '';
                 }
             };
             const endBattle = () => {
@@ -1744,7 +1818,7 @@
 
                 let upgradeTriggered = false;
                 if (!enemy.isGift) {
-                    playerState.killCount += enemy.isStamped ? 3 : 1;
+                    playerState.killCount += enemy.isStamped ? 5 : 2;
                     if (playerState.killCount >= 10) {
                         playerState.killCount = 10;
                         showKillMeterUpgradeModal();
@@ -1927,6 +2001,7 @@
                         const selfDamage = Math.floor(attackPower / 2);
                         attackPower = attackPower - selfDamage;
                         playerTakesDamage(selfDamage);
+                        if(playerState.health <= 0) return false;
                     }
 
                     showDamageNumber(attackPower, enemyWrapper);
@@ -1953,6 +2028,7 @@
                 if (isArcher) {
                     const livingEnemies = currentEnemiesInBattle.map((e, i) => ({enemy: e, index: i})).filter(item => !item.enemy.isDefeated);
                     for (const {enemy, index} of livingEnemies) {
+                        if (playerState.health <= 0) break;
                         if (giftOpened) break;
                         upgradeTriggered = performAttack(enemy, index) || upgradeTriggered;
                         if (upgradeTriggered) break; 
@@ -1965,7 +2041,7 @@
                     }
                 }
 
-                if (!giftOpened && !upgradeTriggered) {
+                if (!giftOpened && !upgradeTriggered && playerState.health > 0) {
                     await processEndOfPlayerAction();
                 }
             });
@@ -1999,7 +2075,7 @@
                     updateLuckModalUI();
                     setTimeout(() => {
                         luckModal.classList.add('hidden');
-                    }, 200);
+                    }, 500);
                 } else if (e.target === luckModal) {
                     luckModal.classList.add('hidden');
                 }
@@ -2118,20 +2194,80 @@
                 if (!modalMap.shopBtn.modal.classList.contains('hidden')) renderShop();
             };
             
-            // --- Final Setup ---
-            if(startBattleBtn) startBattleBtn.addEventListener('click', startBattle);
-            reshuffleBtn.addEventListener('click', () => { if (!battleStarted && !isReshuffling) reshuffleEnemies(); });
-            reshuffleEnemies(true);
-            updatePlayerUI(); 
-            updateWaveCounterUI();
-            updateStatusEffectsUI();
+            const resetGame = () => {
+                deathModal.classList.add('hidden');
+
+                loadUnlocks();
+                playerState = getInitialPlayerState();
+                waveCount = 1;
+                battleStarted = false;
+                playerActionsTaken = 0;
+                currentPreBattleEnemies = [];
+                currentEnemiesInBattle = [];
+                selectedFortunes = [];
+                currentSacrifice = null;
+                luckActivatedThisBattle = false;
+                
+                allModals.forEach(m => m.classList.add('hidden'));
+                
+                updatePlayerUI();
+                updateWaveCounterUI();
+                
+                updateStatusEffectsUI();
+                
+                attackBtn.disabled = true;
+                luckBtn.disabled = false;
+                attackBtn.classList.remove('btn-success');
+                [flameheartBtn, frostbiteBtn, armorheartBtn].forEach(btn => {
+                    btn.classList.remove('btn-success');
+                    btn.disabled = false;
+                });
+
+                document.querySelectorAll('[data-slot-type]').forEach(btn => { btn.innerHTML = ''; });
+                document.getElementById('attack-icon').textContent = '💥';
+                document.getElementById('armor-icon').textContent = '🛡️';
+                equipSlots.forEach(slot => {
+                    slot.innerHTML = `<span class="opacity-50">?</span>`;
+                    delete slot.dataset.symbol;
+                    delete slot.dataset.uses;
+                });
+
+                sideWindowLeft.innerHTML = '';
+                enemyContainer.innerHTML = `
+                    <div id="battle-selector" class="hidden absolute top-0 left-0 pointer-events-none z-30">
+                        <div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+                        <div class="corner corner-bl"></div><div class="corner corner-br"></div>
+                    </div>
+                    <div id="enemy-list" class="absolute inset-0 flex items-center justify-center gap-4 z-20"></div>`;
+                battleSelector = document.getElementById('battle-selector');
+                enemyContainer.removeEventListener('mousedown', battleDragStart);
+                enemyContainer.removeEventListener('touchstart', battleDragStart);
+                
+                battleDetailsContentEl.innerHTML = '<button id="start-battle-btn" class="btn btn-danger start-battle-btn-pulse-red text-white text-lg py-2.5 px-8 font-semibold">Start Battle</button>';
+                startBattleBtn = document.getElementById('start-battle-btn');
+                if (startBattleBtn) startBattleBtn.addEventListener('click', startBattle);
+
+                reshuffleEnemies(true);
+            };
+
+            const initGame = () => {
+                loadUnlocks();
+                playerState = getInitialPlayerState();
+                
+                if(startBattleBtn) startBattleBtn.addEventListener('click', startBattle);
+                reshuffleBtn.addEventListener('click', () => { if (!battleStarted && !isReshuffling) reshuffleEnemies(); });
+                continueBtn.addEventListener('click', resetGame);
+
+                reshuffleEnemies(true);
+                updatePlayerUI(); 
+                updateWaveCounterUI();
+                updateStatusEffectsUI();
+            };
+
+            initGame();
         });
     </script>
 
 </body>
 </html>
-
-
-
-
 
