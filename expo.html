@@ -57,13 +57,13 @@
             touch-action: manipulation;
             -webkit-font-smoothing: none; /* Keep fonts sharp and pixelated */
             -moz-osx-font-smoothing: grayscale;
-            font-size: 10px; /* Base size for pixel font */
+            font-size: 9px; /* Base size for pixel font - REDUCED */
         }
         
         #game-container {
             background-color: var(--bg-main);
             border-radius: 0; /* Sharp corners */
-            box-shadow: 0 0 15px var(--accent-magenta), 0 0 25px var(--accent-magenta), inset 0 0 10px var(--accent-magenta);
+            box-shadow: 0 0 10px var(--accent-magenta), 0 0 18px var(--accent-magenta), inset 0 0 8px var(--accent-magenta); /* REDUCED GLOW */
             border: 2px solid var(--border-color);
         }
 
@@ -196,16 +196,20 @@
 
         @keyframes corner-flicker { 50% { border-color: var(--accent-yellow); box-shadow: 0 0 4px var(--accent-yellow); } }
         .corner {
-            position: absolute; width: 12px; height: 12px; border-style: solid;
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-style: solid;
             border-color: var(--accent-yellow);
-            box-shadow: 0 0 8px var(--accent-yellow);
-            transition: all 0.1s linear; animation: corner-flicker 1s infinite;
+            box-shadow: 0 0 6px var(--accent-yellow);
+            transition: all 0.1s linear;
+            animation: corner-flicker 1s infinite;
             border-radius: 0;
         }
-        .corner-tl { top: -2px; left: -2px; border-width: 2px 0 0 2px; }
-        .corner-tr { top: -2px; right: -2px; border-width: 2px 2px 0 0; }
-        .corner-bl { bottom: -2px; left: -2px; border-width: 0 0 2px 2px; }
-        .corner-br { bottom: -2px; right: -2px; border-width: 0 2px 2px 0; }
+        .corner-tl { top: -2px; left: -2px; border-width: 1px 0 0 1px; }
+        .corner-tr { top: -2px; right: -2px; border-width: 1px 1px 0 0; }
+        .corner-bl { bottom: -2px; left: -2px; border-width: 0 0 1px 1px; }
+        .corner-br { bottom: -2px; right: -2px; border-width: 0 1px 1px 0; }
 
         @keyframes pulse-orange { 50% { background-color: var(--accent-orange); box-shadow: 0 0 15px var(--accent-orange); } }
         .pulse-orange-animation { animation: pulse-orange 1s infinite; }
@@ -239,21 +243,21 @@
         <!-- =================================================================== -->
         <div class="flex-shrink-0 panel p-3 flex flex-col gap-3">
             <!-- Row 1: Core Stats (HP, Armor) & Currency -->
-            <div class="flex items-center justify-evenly text-xl">
+            <div class="flex items-center justify-evenly text-lg">
                 <div class="flex items-center gap-2">
-                    <span id="health-icon" class="text-3xl transition-transform duration-200">❤️</span>
+                    <span id="health-icon" class="text-2xl transition-transform duration-200">❤️</span>
                     <span id="health-value" class="text-left font-semibold">10</span>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span id="armor-icon" class="text-3xl text-gray-400">🛡️</span>
+                    <span id="armor-icon" class="text-2xl text-gray-400">🛡️</span>
                     <span id="armor-value" class="text-left font-semibold">3</span>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span class="text-3xl" style="text-shadow: 0 0 8px var(--accent-yellow);">💰</span>
+                    <span class="text-2xl" style="text-shadow: 0 0 8px var(--accent-yellow);">💰</span>
                     <span id="gold-value" class="text-left font-semibold">99</span>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span class="text-3xl" style="text-shadow: 0 0 8px var(--accent-blue);">🌒</span>
+                    <span class="text-2xl" style="text-shadow: 0 0 8px var(--accent-blue);">🌒</span>
                     <span id="moonstone-value" class="text-left font-semibold">3</span>
                 </div>
             </div>
@@ -269,7 +273,7 @@
             </div>
 
             <!-- Row 3: Player Status Effects -->
-            <div id="player-status-effects" class="flex items-center justify-start text-2xl gap-1 h-7">
+            <div id="player-status-effects" class="flex items-center justify-start text-xl gap-1 h-7">
                 <!-- Status icons will be managed by JS -->
                 <div class="relative status-effect-icon hidden" data-effect="⚡"><span>⚡</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold bg-black/70 text-white rounded-full w-4 h-4 flex items-center justify-center leading-none"></span></div>
                 <div class="relative status-effect-icon hidden" data-effect="🌟"><span>🌟</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold bg-black/70 text-white rounded-full w-4 h-4 flex items-center justify-center leading-none"></span></div>
@@ -291,7 +295,7 @@
                 <div id="battle-details-window" class="relative flex-shrink-0 h-16 flex items-center justify-center text-center">
                     <div id="wave-counter" class="absolute top-1 left-2 text-xs italic" style="color: var(--accent-cyan)"></div>
                     <div id="battle-details-content" class="w-full h-full flex items-center justify-center">
-                        <button id="start-battle-btn" class="btn btn-danger start-battle-btn-pulse-red text-white text-base py-3 px-6 disabled:opacity-50 disabled:cursor-not-allowed">START</button>
+                        <button id="start-battle-btn" class="btn btn-danger start-battle-btn-pulse-red text-white text-sm py-3 px-6 disabled:opacity-50 disabled:cursor-not-allowed">START</button>
                     </div>
                 </div>
 
@@ -312,25 +316,25 @@
                 </div>
 
                 <!-- Symmetrical Button Grid -->
-                <div class="flex-grow grid grid-cols-3 grid-rows-4 gap-2 text-base">
-                    <button id="reshuffleBtn" class="h-full relative btn btn-reroll focus:outline-none flex items-center justify-center text-3xl">
+                <div class="flex-grow grid grid-cols-3 grid-rows-4 gap-2 text-sm">
+                    <button id="reshuffleBtn" class="h-full relative btn btn-reroll focus:outline-none flex items-center justify-center text-2xl">
                         🔃
                         <span id="reshuffle-counter" class="absolute bottom-1 right-2 text-sm bg-black/75 rounded-sm px-1 py-0.5"></span>
                     </button>
-                    <button id="attackBtn" class="h-full btn btn-attack focus:outline-none flex items-center justify-center text-2xl gap-1" disabled><span id="attack-icon">💥</span><span id="attack-value">10</span></button>
-                    <button id="luckBtn" class="h-full btn btn-luck focus:outline-none flex items-center justify-center text-lg gap-1"><span class="text-2xl">🍀</span><span id="luck-value">10</span>%</button>
+                    <button id="attackBtn" class="h-full btn btn-attack focus:outline-none flex items-center justify-center text-xl gap-1" disabled><span id="attack-icon">💥</span><span id="attack-value">10</span></button>
+                    <button id="luckBtn" class="h-full btn btn-luck focus:outline-none flex items-center justify-center text-base gap-1"><span class="text-xl">🍀</span><span id="luck-value">10</span>%</button>
                     
-                    <button id="flameheartBtn" class="h-full btn btn-magic focus:outline-none text-3xl flex items-center justify-center">❤️‍🔥</button>
-                    <button id="frostbiteBtn" class="h-full btn btn-magic focus:outline-none text-3xl flex items-center justify-center">❄️</button>
-                    <button id="armorheartBtn" class="h-full btn btn-magic focus:outline-none text-3xl flex items-center justify-center">🩶</button>
+                    <button id="flameheartBtn" class="h-full btn btn-magic focus:outline-none text-2xl flex items-center justify-center">❤️‍🔥</button>
+                    <button id="frostbiteBtn" class="h-full btn btn-magic focus:outline-none text-2xl flex items-center justify-center">❄️</button>
+                    <button id="armorheartBtn" class="h-full btn btn-magic focus:outline-none text-2xl flex items-center justify-center">🩶</button>
                     
-                    <button class="equip-slot h-full relative btn btn-stone focus:outline-none text-3xl flex items-center justify-center"><span class="opacity-50">?</span></button>
-                    <button class="equip-slot h-full relative btn btn-stone focus:outline-none text-3xl flex items-center justify-center"><span class="opacity-50">?</span></button>
-                    <button class="equip-slot h-full relative btn btn-stone focus:outline-none text-3xl flex items-center justify-center"><span class="opacity-50">?</span></button>
+                    <button class="equip-slot h-full relative btn btn-stone focus:outline-none text-2xl flex items-center justify-center"><span class="opacity-50">?</span></button>
+                    <button class="equip-slot h-full relative btn btn-stone focus:outline-none text-2xl flex items-center justify-center"><span class="opacity-50">?</span></button>
+                    <button class="equip-slot h-full relative btn btn-stone focus:outline-none text-2xl flex items-center justify-center"><span class="opacity-50">?</span></button>
                     
-                    <button id="fortunesBtn" class="h-full btn btn-fortune text-3xl focus:outline-none flex items-center justify-center">🔮</button>
-                    <button id="buildBtn" class="h-full btn btn-build text-3xl focus:outline-none flex items-center justify-center">🔨</button>
-                    <button id="shopBtn" class="h-full btn btn-shop text-3xl focus:outline-none flex items-center justify-center">🪙</button>
+                    <button id="fortunesBtn" class="h-full btn btn-fortune text-2xl focus:outline-none flex items-center justify-center">🔮</button>
+                    <button id="buildBtn" class="h-full btn btn-build text-2xl focus:outline-none flex items-center justify-center">🔨</button>
+                    <button id="shopBtn" class="h-full btn btn-shop text-2xl focus:outline-none flex items-center justify-center">🪙</button>
                 </div>
             </div>
         </div>
@@ -341,15 +345,15 @@
         <!-- =================================================================== -->
         <div id="fortunesModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-30 p-4">
             <div class="relative modal-content p-4 w-full max-w-xs">
-                <div id="fortunes-content" class="w-full text-lg space-y-4 text-center"></div>
+                <div id="fortunes-content" class="w-full text-base space-y-4 text-center"></div>
             </div>
         </div>
         <div id="buildModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-30 p-4">
             <div class="relative modal-content p-4 w-full max-w-xs">
-                <div class="w-full text-lg space-y-4">
-                    <div class="flex justify-between items-center"><span>WEAPON</span><button data-slot-type="weapon" class="w-24 h-16 bg-black flex items-center justify-center text-4xl btn"></button></div>
-                    <div class="flex justify-between items-center"><span>ARMOR</span><button data-slot-type="armor" class="w-24 h-16 bg-black flex items-center justify-center text-4xl btn"></button></div>
-                    <div class="flex justify-between items-center"><span>RING</span><button data-slot-type="ring" class="w-24 h-16 bg-black flex items-center justify-center text-4xl btn"></button></div>
+                <div class="w-full text-base space-y-4">
+                    <div class="flex justify-between items-center"><span>WEAPON</span><button data-slot-type="weapon" class="w-24 h-16 bg-black flex items-center justify-center text-3xl btn"></button></div>
+                    <div class="flex justify-between items-center"><span>ARMOR</span><button data-slot-type="armor" class="w-24 h-16 bg-black flex items-center justify-center text-3xl btn"></button></div>
+                    <div class="flex justify-between items-center"><span>RING</span><button data-slot-type="ring" class="w-24 h-16 bg-black flex items-center justify-center text-3xl btn"></button></div>
                 </div>
             </div>
         </div>
@@ -360,7 +364,7 @@
         </div>
         <div id="reelModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
             <div class="relative modal-content p-3">
-                <div id="reel-items" class="flex gap-2 text-3xl">
+                <div id="reel-items" class="flex gap-2 text-2xl">
                     <button class="reel-item p-2 transition-transform active:scale-95">☠️</button>
                     <button class="reel-item p-2 transition-transform active:scale-95">🕯️</button>
                     <button class="reel-item p-2 transition-transform active:scale-95">🐌</button>
@@ -384,30 +388,30 @@
         </div>
         <div id="giftModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
              <div class="relative modal-content p-6 w-full max-w-xs text-center border-2" style="border-color: var(--accent-yellow); box-shadow: 0 0 20px var(--accent-yellow);">
-                <h2 class="text-2xl mb-4" style="color: var(--accent-yellow); text-shadow: 0 0 8px var(--accent-yellow);">A GIFT!</h2>
+                <h2 class="text-xl mb-4" style="color: var(--accent-yellow); text-shadow: 0 0 8px var(--accent-yellow);">A GIFT!</h2>
                 <div id="gift-rewards" class="space-y-3 mb-6">
                     <!-- Rewards are styled dynamically -->
                     <div data-reward="armor" class="gift-reward-item panel-inset p-3 border-2 border-transparent transition-all duration-200 flex items-center justify-center">
-                        <span class="text-3xl">🛡️</span><span class="ml-2 text-lg"></span>
+                        <span class="text-2xl">🛡️</span><span class="ml-2 text-base"></span>
                     </div>
                     <div data-reward="gold" class="gift-reward-item panel-inset p-3 border-2 border-transparent transition-all duration-200 flex items-center justify-center">
-                        <span class="text-3xl">💰</span><span class="ml-2 text-lg"></span>
+                        <span class="text-2xl">💰</span><span class="ml-2 text-base"></span>
                     </div>
                     <div data-reward="luck" class="gift-reward-item panel-inset p-3 border-2 border-transparent transition-all duration-200 flex items-center justify-center">
-                        <span class="text-3xl">🍀</span><span class="ml-2 text-lg"></span>
+                        <span class="text-2xl">🍀</span><span class="ml-2 text-base"></span>
                     </div>
                 </div>
             </div>
         </div>
         <div id="killMeterModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
             <div class="relative modal-content p-6 w-full max-w-xs text-center">
-                <h2 class="text-2xl mb-6" style="color: var(--accent-orange); text-shadow: 0 0 8px var(--accent-orange);">UPGRADE!</h2>
+                <h2 class="text-xl mb-6" style="color: var(--accent-orange); text-shadow: 0 0 8px var(--accent-orange);">UPGRADE!</h2>
                 <div id="kill-meter-rewards" class="space-y-4">
-                    <button data-upgrade="health" class="btn w-full p-4 text-base flex items-center justify-center gap-3">
+                    <button data-upgrade="health" class="btn w-full p-4 text-sm flex items-center justify-center gap-3">
                         <span>❤️</span>
                         <span>Full Heal/+1 Max</span>
                     </button>
-                    <button data-upgrade="luck" class="btn w-full p-4 text-base flex items-center justify-center gap-3">
+                    <button data-upgrade="luck" class="btn w-full p-4 text-sm flex items-center justify-center gap-3">
                         <span>🍀</span>
                         <span>+5% Luck</span>
                     </button>
@@ -416,17 +420,17 @@
         </div>
         <div id="luckModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
             <div class="relative modal-content p-6 w-full max-w-xs text-center">
-                <h2 class="text-2xl mb-6" style="color: var(--accent-green); text-shadow: 0 0 8px var(--accent-green);">LUCK</h2>
+                <h2 class="text-xl mb-6" style="color: var(--accent-green); text-shadow: 0 0 8px var(--accent-green);">LUCK</h2>
                 <div id="luck-options" class="space-y-4">
-                    <button data-luck="attack" class="btn w-full p-4 text-lg flex items-center justify-center gap-3">
+                    <button data-luck="attack" class="btn w-full p-4 text-base flex items-center justify-center gap-3">
                         <span>💥</span>
                         <span>Attack</span>
                     </button>
-                    <button data-luck="magic" class="btn w-full p-4 text-lg flex items-center justify-center gap-3">
+                    <button data-luck="magic" class="btn w-full p-4 text-base flex items-center justify-center gap-3">
                         <span>✨</span>
                         <span>Magic</span>
                     </button>
-                    <button data-luck="choices" class="btn w-full p-4 text-lg flex items-center justify-center gap-3">
+                    <button data-luck="choices" class="btn w-full p-4 text-base flex items-center justify-center gap-3">
                         <span>🎲</span>
                         <span>Choices</span>
                     </button>
@@ -435,10 +439,10 @@
         </div>
         <div id="deathModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
             <div class="relative modal-content p-6 w-full max-w-xs text-center">
-                <h2 class="text-5xl mb-4">🪦</h2>
-                <div id="death-message" class="text-lg space-y-2 mb-6" style="line-height: 1.5;">
+                <h2 class="text-4xl mb-4">🪦</h2>
+                <div id="death-message" class="text-base space-y-2 mb-6" style="line-height: 1.5;">
                 </div>
-                <button id="continue-btn" class="btn btn-action w-full p-4 text-lg">CONTINUE</button>
+                <button id="continue-btn" class="btn btn-action w-full p-4 text-base">CONTINUE</button>
             </div>
         </div>
     </div>
@@ -2262,3 +2266,5 @@
 
 </body>
 </html>
+
+
