@@ -312,7 +312,7 @@
             
             <div class="flex-grow flex flex-col gap-3">
                 <!-- Side Window / Spell Info -->
-                <div id="side-window-left" class="h-16 flex flex-col items-center justify-center panel-inset p-2 overflow-hidden text-center" style="font-size: 9px; line-height: 1.2;">
+                <div id="side-window-left" class="h-24 flex flex-col items-center justify-center panel-inset p-2 overflow-hidden text-center" style="font-size: 10px; line-height: 1.3;">
                 </div>
 
                 <!-- Symmetrical Button Grid -->
@@ -343,13 +343,13 @@
         <!-- =================================================================== -->
         <!-- MODAL WINDOWS -->
         <!-- =================================================================== -->
-        <div id="fortunesModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-30 p-4">
-            <div class="relative modal-content p-4 w-full max-w-xs">
+        <div id="fortunesModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-30 py-4">
+            <div class="relative modal-content p-4 w-full">
                 <div id="fortunes-content" class="w-full text-base space-y-4 text-center"></div>
             </div>
         </div>
-        <div id="buildModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-30 p-4">
-            <div class="relative modal-content p-4 w-full max-w-xs">
+        <div id="buildModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-30 py-4">
+            <div class="relative modal-content p-4 w-full">
                 <div class="w-full text-base space-y-4">
                     <div class="flex justify-between items-center"><span>WEAPON</span><button data-slot-type="weapon" class="w-24 h-16 bg-black flex items-center justify-center text-3xl btn"></button></div>
                     <div class="flex justify-between items-center"><span>ARMOR</span><button data-slot-type="armor" class="w-24 h-16 bg-black flex items-center justify-center text-3xl btn"></button></div>
@@ -357,12 +357,12 @@
                 </div>
             </div>
         </div>
-        <div id="shopModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-30 p-4">
-            <div class="relative modal-content p-4 w-full max-w-xs">
-                <div id="shop-items-container" class="w-full max-w-xs text-base space-y-2"></div>
+        <div id="shopModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-30 py-4">
+            <div class="relative modal-content p-4 w-full">
+                <div id="shop-items-container" class="w-full text-base space-y-2"></div>
             </div>
         </div>
-        <div id="reelModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
+        <div id="reelModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-50 py-4">
             <div class="relative modal-content p-3">
                 <div id="reel-items" class="flex gap-2 text-2xl">
                     <button class="reel-item p-2 transition-transform active:scale-95">☠️</button>
@@ -374,20 +374,20 @@
                 </div>
             </div>
         </div>
-        <div id="equipmentChoiceModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-40 p-4">
-            <div class="relative modal-content p-4 w-full max-w-xs">
+        <div id="equipmentChoiceModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-40 py-4">
+            <div class="relative modal-content p-4 w-full">
                 <div id="equipmentChoiceContent" class="text-base space-y-3"></div>
             </div>
         </div>
-        <div id="fortuneDetailModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-40 p-4">
-            <div class="relative modal-content p-4 w-full max-w-xs">
+        <div id="fortuneDetailModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-40 py-4">
+            <div class="relative modal-content p-4 w-full">
                 <div id="fortuneDetailContent" class="text-lg space-y-2 text-center">
                     <!-- Fortune details will be injected here -->
                 </div>
             </div>
         </div>
-        <div id="giftModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
-             <div class="relative modal-content p-6 w-full max-w-xs text-center border-2" style="border-color: var(--accent-yellow); box-shadow: 0 0 20px var(--accent-yellow);">
+        <div id="giftModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-50 py-4">
+             <div class="relative modal-content p-6 w-full text-center border-2" style="border-color: var(--accent-yellow); box-shadow: 0 0 20px var(--accent-yellow);">
                 <h2 class="text-xl mb-4" style="color: var(--accent-yellow); text-shadow: 0 0 8px var(--accent-yellow);">A GIFT!</h2>
                 <div id="gift-rewards" class="space-y-3 mb-6">
                     <!-- Rewards are styled dynamically -->
@@ -403,8 +403,8 @@
                 </div>
             </div>
         </div>
-        <div id="killMeterModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
-            <div class="relative modal-content p-6 w-full max-w-xs text-center">
+        <div id="killMeterModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-50 py-4">
+            <div class="relative modal-content p-6 w-full text-center">
                 <h2 class="text-xl mb-6" style="color: var(--accent-orange); text-shadow: 0 0 8px var(--accent-orange);">UPGRADE!</h2>
                 <div id="kill-meter-rewards" class="space-y-4">
                     <button data-upgrade="health" class="btn w-full p-4 text-sm flex items-center justify-center gap-3">
@@ -418,8 +418,8 @@
                 </div>
             </div>
         </div>
-        <div id="luckModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
-            <div class="relative modal-content p-6 w-full max-w-xs text-center">
+        <div id="luckModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-50 py-4">
+            <div class="relative modal-content p-6 w-full text-center">
                 <h2 class="text-xl mb-6" style="color: var(--accent-green); text-shadow: 0 0 8px var(--accent-green);">LUCK</h2>
                 <div id="luck-options" class="space-y-4">
                     <button data-luck="attack" class="btn w-full p-4 text-base flex items-center justify-center gap-3">
@@ -437,8 +437,8 @@
                 </div>
             </div>
         </div>
-        <div id="deathModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
-            <div class="relative modal-content p-6 w-full max-w-xs text-center">
+        <div id="deathModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-50 py-4">
+            <div class="relative modal-content p-6 w-full text-center">
                 <h2 class="text-4xl mb-4">🪦</h2>
                 <div id="death-message" class="text-base space-y-2 mb-6" style="line-height: 1.5;">
                 </div>
@@ -804,11 +804,11 @@
                         })
                         .join('');
 
-                    statsHtml = `<div class="text-base mt-1 flex justify-center items-center gap-2"><span style="color: var(--accent-red);">HP</span> ${hp} <span style="color: var(--accent-red);">ATK</span> ${dmg}${specialIcon} ${statusIcons}</div>`;
+                    statsHtml = `<div class="text-sm mt-1 flex justify-center items-center gap-2"><span style="color: var(--accent-red);">HP</span> ${hp} <span style="color: var(--accent-red);">ATK</span> ${dmg}${specialIcon} ${statusIcons}</div>`;
                 }
                 battleDetailsContentEl.innerHTML = `
                     <div class="h-full flex flex-col justify-center items-center">
-                        <div class="text-xl">${enemy.emoji} ${name}</div>
+                        <div class="text-lg">${enemy.emoji} ${name}</div>
                         ${statsHtml}
                     </div>`;
             };
@@ -1005,27 +1005,29 @@
                     }
 
                     if (item.oneTime && itemOwned > 0) {
-                        buttonHtml = `<button class="btn px-4 py-1.5" disabled>OWNED</button>`;
+                        buttonHtml = `<button class="btn px-4 py-1.5 w-full" disabled>OWNED</button>`;
                     } else if (battleStarted) {
                          if (item.id === 'moonstone') {
-                            buttonHtml = `<button data-item-id="${item.id}" class="btn px-4 py-1.5" disabled>PASSIVE</button>`;
+                            buttonHtml = `<button data-item-id="${item.id}" class="btn px-4 py-1.5 w-full" disabled>PASSIVE</button>`;
                         } else {
                             let canUse = itemOwned > 0;
                             if (item.id === 'cross') {
                                 canUse = canUse && playerState.statusEffects['🕯️'] > 0;
                             }
-                            buttonHtml = `<button data-item-id="${item.id}" class="btn btn-success px-4 py-1.5" ${!canUse ? 'disabled' : ''}>USE</button>`;
+                            buttonHtml = `<button data-item-id="${item.id}" class="btn btn-success px-4 py-1.5 w-full" ${!canUse ? 'disabled' : ''}>USE</button>`;
                         }
                     } else {
                         const canAfford = playerState.gold >= currentCost;
-                        buttonHtml = `<button data-item-id="${item.id}" class="btn px-3 py-1.5" ${!canAfford ? 'disabled' : ''}>🪙${currentCost}</button>`;
+                        buttonHtml = `<button data-item-id="${item.id}" class="btn px-3 py-1.5 w-full" ${!canAfford ? 'disabled' : ''}>🪙${currentCost}</button>`;
                     }
                     itemDiv.innerHTML = `
                         <div class="flex-grow pr-4">
-                            <span class="whitespace-nowrap">${item.name} (${itemOwned})</span>
+                            <span>${item.name} (${itemOwned})</span>
                             <p class="text-xs leading-tight text-gray-400">${item.desc}</p>
                         </div>
-                        ${buttonHtml}`;
+                        <div class="w-24 flex-shrink-0">
+                           ${buttonHtml}
+                        </div>`;
                     shopItemsContainer.appendChild(itemDiv);
                 });
             };
@@ -1939,13 +1941,15 @@
                     item.dataset.value = rewardData.value;
                     item.dataset.color = rewardData.color;
 
-                    const textSpan = item.querySelector('.text-lg');
-                    textSpan.style.color = rewardData.color;
-                    textSpan.style.textShadow = `0 0 4px ${rewardData.color}`;
+                    const textSpan = item.querySelector('.text-base');
+                    if (textSpan) {
+                        textSpan.style.color = rewardData.color;
+                        textSpan.style.textShadow = `0 0 4px ${rewardData.color}`;
 
-                    if (rewardType === 'armor') textSpan.textContent = `+${rewardData.value} Max Armor`;
-                    else if (rewardType === 'gold') textSpan.textContent = `+${rewardData.value} Gold`;
-                    else if (rewardType === 'luck') textSpan.textContent = `+${rewardData.value}% Luck`;
+                        if (rewardType === 'armor') textSpan.textContent = `+${rewardData.value} Max Armor`;
+                        else if (rewardType === 'gold') textSpan.textContent = `+${rewardData.value} Gold`;
+                        else if (rewardType === 'luck') textSpan.textContent = `+${rewardData.value}% Luck`;
+                    }
                     
                     item.classList.remove('reward-selected', 'reward-fade-out');
                     item.style.cursor = 'default';
@@ -2266,5 +2270,4 @@
 
 </body>
 </html>
-
 
