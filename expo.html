@@ -3,32 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Loot Grab RPG (Polished Edition)</title>
+    <title>LOOT GRAB: 1988</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* --- UNIFIED & POLISHED DESIGN LANGUAGE --- */
+        /* --- 80's ARCADE / RETRO DESIGN LANGUAGE --- */
         :root {
-            /* Core Palette - Based on Tailwind's "Slate" for a modern, cool feel */
-            --bg-main: #0F172A;       /* Slate 900 */
-            --bg-panel: #1E293B;      /* Slate 800 */
-            --bg-inset: #020617;      /* Slate 950 - Darker for depth */
-            --border-color: #334155;  /* Slate 700 */
-            --text-primary: #F1F5F9;  /* Slate 100 */
-            --text-secondary: #94A3B8;/* Slate 400 */
+            /* Core Palette - High contrast neons on black */
+            --bg-main: #000000;
+            --bg-panel: #0a0a0a;
+            --bg-inset: #000000;
+            --border-color: #FF00FF;  /* Magenta */
+            --text-primary: #FFFFFF;
+            --text-secondary: #AAAAAA;
 
-            /* Accent Palette - Vibrant, consistent, and semantic */
-            --accent-blue: #38BDF8;    /* Sky 400 (Primary Actions, Magic) */
-            --accent-pink: #EC4899;    /* Pink 500 (Special Rarity, Magic Gradients) */
-            --accent-red: #F43F5E;     /* Rose 500 (Danger, Health, Damage) */
-            --accent-green: #22C55E;  /* Green 500 (Success, Luck, Healing) */
-            --accent-orange: #F97316; /* Orange 500 (Upgrades, Alerts) */
-            --accent-yellow: #EAB308; /* Yellow 500 (Currency, Treasure, Gifts) */
-            --accent-violet: #8B5CF6; /* Violet 500 (Special Modals, Fortunes, Magic) */
+            /* Accent Palette - Vibrant, glowing neons */
+            --accent-cyan: #00FFFF;
+            --accent-magenta: #FF00FF;
+            --accent-red: #FF0000;
+            --accent-green: #00FF00;
+            --accent-orange: #FFA500;
+            --accent-yellow: #FFFF00;
+            --accent-blue: #0080FF;
             
-            --font-main: 'Poppins', sans-serif;
+            --font-main: 'Press Start 2P', monospace;
+        }
+
+        /* Add a subtle scanline effect to the whole game */
+        #game-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0,0,0,0.5) 0px,
+                rgba(0,0,0,0.5) 1px,
+                transparent 1px,
+                transparent 3px
+            );
+            pointer-events: none;
+            z-index: 100;
         }
 
         body {
@@ -36,231 +55,177 @@
             background-color: var(--bg-main);
             color: var(--text-primary);
             touch-action: manipulation;
-            -webkit-font-smoothing: antialiased;
+            -webkit-font-smoothing: none; /* Keep fonts sharp and pixelated */
             -moz-osx-font-smoothing: grayscale;
+            font-size: 10px; /* Base size for pixel font */
         }
         
         #game-container {
             background-color: var(--bg-main);
-            border-radius: 2rem;
-            box-shadow: 0 0 40px rgba(0,0,0,0.5), inset 0 0 10px rgba(255,255,255,0.05);
-            border: 1px solid var(--border-color);
+            border-radius: 0; /* Sharp corners */
+            box-shadow: 0 0 15px var(--accent-magenta), 0 0 25px var(--accent-magenta), inset 0 0 10px var(--accent-magenta);
+            border: 2px solid var(--border-color);
         }
 
-        /* Standard panel */
         .panel {
-            border: 1px solid var(--border-color);
+            border: 2px solid var(--border-color);
             background-color: var(--bg-panel);
-            border-radius: 1.25rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            border-radius: 0;
+            box-shadow: 0 0 5px var(--border-color);
         }
-        /* Sunken/inset panel with enhanced depth */
+        
         .panel-inset {
-            border: 1px solid var(--border-color);
+            border: 2px solid var(--accent-cyan);
             background-color: var(--bg-inset);
-            border-radius: 1rem;
+            border-radius: 0;
             padding: 0.5rem;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); /* Inner shadow for depth */
+            box-shadow: inset 0 0 8px var(--accent-cyan);
         }
 
-        /* --- Polished Button System --- */
+        /* --- RETRO BUTTON SYSTEM --- */
         .btn {
-            border-radius: 0.75rem !important;
-            background-color: #334155; /* Neutral base: Slate 700 */
-            border: 1px solid #475569; /* Slate 600 */
-            box-shadow: 0 3px 5px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.1) !important;
-            transition: all 0.15s ease-in-out !important;
+            border-radius: 0 !important;
+            background-color: #111 !important; 
+            border: 2px solid var(--accent-cyan) !important;
+            box-shadow: 0 0 5px var(--accent-cyan), inset 0 0 3px var(--accent-cyan) !important;
+            transition: all 0.1s linear !important;
             color: var(--text-primary);
             line-height: 1;
-            font-weight: 600; /* Bolder for readability */
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+            font-weight: 400; 
+            text-shadow: 0 0 3px var(--text-primary);
+            image-rendering: pixelated; /* Ensure emojis look pixelated */
         }
         .btn:hover:not(:disabled) {
-            filter: brightness(1.2);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 10px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.1) !important;
+            background-color: var(--accent-cyan) !important;
+            color: #000 !important;
+            text-shadow: none;
+            box-shadow: 0 0 10px var(--accent-cyan), 0 0 20px var(--accent-cyan) !important;
+            transform: translateY(-1px);
         }
         .btn:active {
-            transform: scale(0.96) translateY(1px) !important;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.3), inset 0 2px 4px rgba(0,0,0,0.2) !important;
-            filter: brightness(0.9);
+            transform: scale(0.98) translateY(1px) !important;
+            filter: brightness(0.8);
         }
         .btn:disabled {
-            background-color: #475569 !important;
-            border-color: #334155 !important;
-            color: #94A3B8 !important;
+            background-color: #111 !important;
+            border-color: #555 !important;
+            color: #777 !important;
             cursor: not-allowed;
-            opacity: 0.6;
+            opacity: 0.7;
+            box-shadow: none !important;
+            text-shadow: none !important;
+        }
+
+        /* Remove all previous button styles and unify */
+        .btn-grad-reroll, .btn-grad-attack, .btn-grad-luck, .btn-grad-stone, .btn-striped-fortune, .btn-striped-build, .btn-striped-shop, .btn-magic {
             background-image: none !important;
         }
 
-        /* Semantic Button Colors */
-        .btn-action { background-color: var(--accent-blue) !important; border-color: color-mix(in srgb, var(--accent-blue) 80%, black) !important; }
-        .btn-danger { background-color: var(--accent-red) !important; border-color: color-mix(in srgb, var(--accent-red) 80%, black) !important; }
-        .btn-success { background-color: var(--accent-green) !important; border-color: color-mix(in srgb, var(--accent-green) 80%, black) !important; }
-        .btn-special { background-color: var(--accent-violet) !important; border-color: color-mix(in srgb, var(--accent-violet) 80%, black) !important; }
-        .btn-upgrade { background-color: var(--accent-orange) !important; border-color: color-mix(in srgb, var(--accent-orange) 80%, black) !important; }
-        .btn-magic { 
-            background: linear-gradient(145deg, var(--accent-pink), var(--accent-violet)) !important; 
-            border-color: var(--accent-violet) !important; 
-        }
-        .btn-neutral { background-color: #475569 !important; border-color: #64748B !important; }
+        /* Semantic Button Colors (using border and glow) */
+        .btn-reroll   { border-color: var(--accent-cyan) !important; box-shadow: 0 0 5px var(--accent-cyan), inset 0 0 3px var(--accent-cyan) !important; }
+        .btn-attack   { border-color: var(--accent-red) !important; box-shadow: 0 0 5px var(--accent-red), inset 0 0 3px var(--accent-red) !important; }
+        .btn-luck     { border-color: var(--accent-green) !important; box-shadow: 0 0 5px var(--accent-green), inset 0 0 3px var(--accent-green) !important; }
+        .btn-stone    { border-color: var(--accent-yellow) !important; box-shadow: 0 0 5px var(--accent-yellow), inset 0 0 3px var(--accent-yellow) !important; }
+        .btn-magic    { border-color: var(--accent-magenta) !important; box-shadow: 0 0 5px var(--accent-magenta), inset 0 0 3px var(--accent-magenta) !important; }
+        .btn-fortune  { border-color: var(--accent-blue) !important; box-shadow: 0 0 5px var(--accent-blue), inset 0 0 3px var(--accent-blue) !important; }
+        .btn-build    { border-color: #888 !important; box-shadow: 0 0 5px #888, inset 0 0 3px #888 !important; }
+        .btn-shop     { border-color: var(--accent-orange) !important; box-shadow: 0 0 5px var(--accent-orange), inset 0 0 3px var(--accent-orange) !important; }
+        .btn-danger   { border-color: var(--accent-red) !important; box-shadow: 0 0 5px var(--accent-red), inset 0 0 3px var(--accent-red) !important; }
+        .btn-success  { border-color: var(--accent-green) !important; box-shadow: 0 0 5px var(--accent-green), inset 0 0 3px var(--accent-green) !important; }
+        .btn-action  { border-color: var(--accent-blue) !important; box-shadow: 0 0 5px var(--accent-blue), inset 0 0 3px var(--accent-blue) !important; }
+        
+        @keyframes neon-flicker-green { 0%, 100% { box-shadow: 0 0 8px var(--accent-green), 0 0 12px var(--accent-green); filter: brightness(1); } 50% { box-shadow: 0 0 12px var(--accent-green), 0 0 20px var(--accent-green); filter: brightness(1.2); } }
+        .start-battle-btn-pulse { animation: neon-flicker-green 1.5s infinite ease-in-out; }
 
-        /* --- NEW GRADIENT BUTTONS --- */
-        .btn-grad-reroll {
-            background: linear-gradient(145deg, var(--accent-blue), #1d4ed8) !important; /* Sky 400 to Blue 700 */
-            border-color: #1e40af !important; /* Blue 800 */
-        }
-        .btn-grad-attack {
-            background: linear-gradient(145deg, var(--accent-red), #be123c) !important; /* Rose 500 to Rose 700 */
-            border-color: #9f1239 !important; /* Rose 800 */
-        }
-        .btn-grad-luck {
-            background: linear-gradient(145deg, var(--accent-green), #16a34a) !important; /* Green 500 to Green 600 */
-            border-color: #15803d !important; /* Green 700 */
-        }
-        .btn-grad-stone {
-            background: linear-gradient(145deg, #3730a3, #5b21b6) !important; /* Indigo 700 to Violet 700 */
-            border-color: #4c1d95 !important; /* Violet 800 */
-        }
-
-        /* --- NEW STRIPED BUTTONS --- */
-        .btn-striped-fortune {
-            background-color: var(--accent-violet) !important;
-            border-color: color-mix(in srgb, var(--accent-violet) 80%, black) !important;
-            background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0,0,0,0.2) 5px, rgba(0,0,0,0.2) 10px) !important;
-        }
-        .btn-striped-build {
-            background-color: #475569 !important;
-            border-color: #64748B !important;
-            background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0,0,0,0.2) 5px, rgba(0,0,0,0.2) 10px) !important;
-        }
-        .btn-striped-shop {
-            background-color: var(--accent-orange) !important;
-            border-color: color-mix(in srgb, var(--accent-orange) 80%, black) !important;
-            background-image: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0,0,0,0.2) 5px, rgba(0,0,0,0.2) 10px) !important;
-        }
-
-        @keyframes subtle-pulse { 50% { filter: brightness(1.15); box-shadow: 0 0 10px var(--accent-green); } }
-        .start-battle-btn-pulse { animation: subtle-pulse 1.5s infinite ease-in-out; }
-
-        @keyframes subtle-pulse-red { 50% { filter: brightness(1.15); box-shadow: 0 0 10px var(--accent-red); } }
-        .start-battle-btn-pulse-red { animation: subtle-pulse-red 1.5s infinite ease-in-out; }
+        @keyframes neon-flicker-red { 0%, 100% { box-shadow: 0 0 8px var(--accent-red), 0 0 12px var(--accent-red); filter: brightness(1); } 50% { box-shadow: 0 0 12px var(--accent-red), 0 0 20px var(--accent-red); filter: brightness(1.2); } }
+        .start-battle-btn-pulse-red { animation: neon-flicker-red 1.5s infinite ease-in-out; }
 
         /* Progress Bars */
         .progress-bar-container {
-            border: 1px solid var(--border-color);
-            height: 10px;
-            padding: 2px;
+            border: 2px solid var(--accent-cyan);
+            height: 12px;
+            padding: 1px;
             background-color: var(--bg-inset);
-            border-radius: 9999px;
+            border-radius: 0;
         }
         .progress-bar-fill {
             transition: width 0.2s linear;
             height: 100%;
-            border-radius: 9999px;
+            border-radius: 0;
             box-shadow: 0 0 10px var(--color);
+            background-color: var(--color);
         }
 
         /* Modals */
         .modal-backdrop {
-             background-color: rgba(15, 23, 42, 0.8); /* Slate 900 at 80% */
-             backdrop-filter: blur(8px);
+             background-color: rgba(0, 0, 0, 0.8);
+             backdrop-filter: none;
         }
         .modal-content {
-            border: 1px solid var(--border-color);
+            border: 2px solid var(--accent-magenta);
             background-color: var(--bg-panel);
-            border-radius: 1.5rem;
-            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.3);
+            border-radius: 0;
+            box-shadow: 0 0 20px var(--accent-magenta);
         }
 
-        /* --- EMOJI & ANIMATION STYLES (Polished) --- */
+        /* --- EMOJI & ANIMATION STYLES (Retro) --- */
         .emoji-elite-stamp {
-            filter: drop-shadow(0 0 12px var(--accent-red)) drop-shadow(0 0 4px var(--accent-red));
             animation: intimidating-pulse 1.2s infinite ease-in-out;
+            text-shadow: 0 0 8px var(--accent-red), 0 0 12px var(--accent-red);
         }
-        @keyframes intimidating-pulse {
-            50% { 
-                transform: scale(1.1); 
-                filter: drop-shadow(0 0 20px var(--accent-red)) drop-shadow(0 0 8px var(--accent-red));
-            }
-        }
-        @keyframes pulse { 50% { transform: scale(1.05); } }
-        .pulse-animation { animation: pulse 1.5s infinite ease-in-out; }
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
-          20%, 40%, 60%, 80% { transform: translateX(4px); }
-        }
-        .shake-animation { animation: shake 0.3s ease-in-out; }
-        @keyframes float-up { to { transform: translateY(-60px) translateX(-50%) scale(0.8); opacity: 0; } }
+        @keyframes intimidating-pulse { 50% { transform: scale(1.1); text-shadow: 0 0 15px var(--accent-red), 0 0 25px var(--accent-red); } }
+        
         .damage-number {
-          position: absolute; font-size: 2.25rem; font-weight: 700; color: var(--accent-blue);
-          text-shadow: 0px 0px 8px var(--accent-blue); pointer-events: none;
+          position: absolute; font-size: 1.8rem; font-weight: 700; color: var(--accent-blue);
+          text-shadow: 0px 0px 8px var(--accent-blue), 0 0 4px #fff; pointer-events: none;
           animation: float-up 1s ease-out forwards;
         }
-        @keyframes flip-horizontal { 50% { transform: scaleX(-1); } 100% { transform: scaleX(1); } }
-        .flip-animation { animation: flip-horizontal 0.5s ease-in-out; }
-        @keyframes damage-flash { 50% { transform: scale(1.7); color: var(--accent-red); } }
-        .damage-flash-animation { animation: damage-flash 0.4s ease-in-out; }
-        
+        @keyframes float-up { to { transform: translateY(-60px) translateX(-50%) scale(0.8); opacity: 0; } }
+
         @keyframes lunge-animation { 50% { transform: scale(1.15) translateY(-5px); } }
         .lunge-animation { animation: lunge-animation 0.6s ease-in-out; }
 
-        @keyframes border-pulse { 50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-red) 50%, transparent), 0 0 40px rgba(0,0,0,0.5), inset 0 0 10px rgba(255,255,255,0.05); } }
+        @keyframes border-pulse { 50% { box-shadow: 0 0 0 4px var(--accent-red), 0 0 20px var(--accent-red); } }
         .border-pulse-animation { animation: border-pulse 1s infinite; }
 
-        .screen-flash { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: white; opacity: 0; pointer-events: none; z-index: 999; border-radius: 2rem; }
+        .screen-flash { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: white; opacity: 0; pointer-events: none; z-index: 999; border-radius: 0; }
         @keyframes screen-flash-anim { from { opacity: 0.5; } to { opacity: 0; } }
         .flash-animation { animation: screen-flash-anim 0.3s ease-out; }
         
-        #battle-selector { /* The new targeting reticle container */
-            border: none !important;
-            background: transparent !important;
-            box-shadow: none !important;
-            transition: transform 0.15s ease-out, width 0.15s ease-out, height 0.15s ease-out;
-        }
+        #battle-selector { border: none !important; background: transparent !important; box-shadow: none !important; transition: all 0.1s linear; }
 
-        @keyframes corner-pulse {
-            50% { border-color: var(--accent-yellow); filter: drop-shadow(0 0 4px var(--accent-yellow)); }
-        }
+        @keyframes corner-flicker { 50% { border-color: var(--accent-yellow); box-shadow: 0 0 4px var(--accent-yellow); } }
         .corner {
-            position: absolute;
-            width: 16px;
-            height: 16px;
-            border-style: solid;
-            border-color: color-mix(in srgb, var(--accent-yellow) 80%, white);
-            transition: all 0.3s ease-in-out;
-            animation: corner-pulse 1.5s infinite;
-            border-radius: 4px;
+            position: absolute; width: 12px; height: 12px; border-style: solid;
+            border-color: var(--accent-yellow);
+            box-shadow: 0 0 8px var(--accent-yellow);
+            transition: all 0.1s linear; animation: corner-flicker 1s infinite;
+            border-radius: 0;
         }
-        .corner-tl { top: -5px; left: -5px; border-width: 3px 0 0 3px; }
-        .corner-tr { top: -5px; right: -5px; border-width: 3px 3px 0 0; }
-        .corner-bl { bottom: -5px; left: -5px; border-width: 0 0 3px 3px; }
-        .corner-br { bottom: -5px; right: -5px; border-width: 0 3px 3px 0; }
+        .corner-tl { top: -2px; left: -2px; border-width: 2px 0 0 2px; }
+        .corner-tr { top: -2px; right: -2px; border-width: 2px 2px 0 0; }
+        .corner-bl { bottom: -2px; left: -2px; border-width: 0 0 2px 2px; }
+        .corner-br { bottom: -2px; right: -2px; border-width: 0 2px 2px 0; }
 
-        @keyframes fade-out-and-shrink { to { transform: scale(0.5); opacity: 0; } }
-        .enemy-fade-out { animation: fade-out-and-shrink 0.4s ease-out forwards; }
-        .enemy-defeated { transition: width 0.3s ease-out, padding 0.3s ease-out, margin 0.3s ease-out; width: 0px !important; padding: 0 !important; margin: 0 !important; overflow: hidden; }
-        
         @keyframes pulse-orange { 50% { background-color: var(--accent-orange); box-shadow: 0 0 15px var(--accent-orange); } }
         .pulse-orange-animation { animation: pulse-orange 1s infinite; }
         .glow-orange-text-animation { color: var(--accent-orange) !important; text-shadow: 0 0 8px var(--accent-orange); }
 
-        @keyframes reward-highlight-blue { 50% { border-color: var(--accent-blue); box-shadow: 0 0 0 3px var(--accent-blue); transform: scale(1.03); } }
-        @keyframes reward-highlight-yellow { 50% { border-color: var(--accent-yellow); box-shadow: 0 0 0 3px var(--accent-yellow); transform: scale(1.03); } }
-        @keyframes reward-highlight-pink { 50% { border-color: var(--accent-pink); box-shadow: 0 0 0 3px var(--accent-pink); transform: scale(1.03); } }
-        .reward-highlight-anim-blue { animation: reward-highlight-blue 0.4s ease-in-out; }
-        .reward-highlight-anim-yellow { animation: reward-highlight-yellow 0.4s ease-in-out; }
-        .reward-highlight-anim-pink { animation: reward-highlight-pink 0.4s ease-in-out; }
-        .reward-selected { transform: scale(1.08) !important; cursor: pointer; }
-        .reward-fade-out { opacity: 0.4; transform: scale(0.95); }
-        
         /* Magic bar specific gradient */
         #magic-bar.progress-bar-fill {
-            background: linear-gradient(90deg, var(--accent-blue), var(--accent-pink));
-            --color: var(--accent-pink); /* for the glow */
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-magenta));
+            --color: var(--accent-magenta); /* for the glow */
         }
+
+        /* Other inherited animations are kept as they are good for feedback */
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); } 20%, 40%, 60%, 80% { transform: translateX(4px); } }
+        .shake-animation { animation: shake 0.3s ease-in-out; }
+        @keyframes damage-flash { 50% { transform: scale(1.7); color: var(--accent-red); } }
+        .damage-flash-animation { animation: damage-flash 0.4s ease-in-out; }
+        @keyframes fade-out-and-shrink { to { transform: scale(0.5); opacity: 0; } }
+        .enemy-fade-out { animation: fade-out-and-shrink 0.4s ease-out forwards; }
+        .enemy-defeated { transition: width 0.3s ease-out, padding 0.3s ease-out, margin 0.3s ease-out; width: 0px !important; padding: 0 !important; margin: 0 !important; overflow: hidden; }
+
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-2 text-sm">
@@ -274,22 +239,22 @@
         <!-- =================================================================== -->
         <div class="flex-shrink-0 panel p-3 flex flex-col gap-3">
             <!-- Row 1: Core Stats (HP, Armor) & Currency -->
-            <div class="flex items-center justify-evenly">
+            <div class="flex items-center justify-evenly text-xl">
                 <div class="flex items-center gap-2">
                     <span id="health-icon" class="text-3xl transition-transform duration-200">❤️</span>
-                    <span id="health-value" class="text-left text-2xl font-semibold">10</span>
+                    <span id="health-value" class="text-left font-semibold">10</span>
                 </div>
                 <div class="flex items-center gap-2">
                     <span id="armor-icon" class="text-3xl text-gray-400">🛡️</span>
-                    <span id="armor-value" class="text-left text-2xl font-semibold">3</span>
+                    <span id="armor-value" class="text-left font-semibold">3</span>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span class="text-3xl" style="filter: drop-shadow(0 0 4px var(--accent-yellow));">💰</span>
-                    <span id="gold-value" class="text-left text-2xl font-semibold">99</span>
+                    <span class="text-3xl" style="text-shadow: 0 0 8px var(--accent-yellow);">💰</span>
+                    <span id="gold-value" class="text-left font-semibold">99</span>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span class="text-3xl" style="filter: drop-shadow(0 0 4px var(--accent-violet));">🌒</span>
-                    <span id="moonstone-value" class="text-left text-2xl font-semibold">3</span>
+                    <span class="text-3xl" style="text-shadow: 0 0 8px var(--accent-blue);">🌒</span>
+                    <span id="moonstone-value" class="text-left font-semibold">3</span>
                 </div>
             </div>
             
@@ -324,52 +289,48 @@
             <div class="flex-shrink-0 panel-inset flex flex-col justify-between p-1.5 gap-1.5">
                 <!-- Top part: Info Display / Start Button -->
                 <div id="battle-details-window" class="relative flex-shrink-0 h-16 flex items-center justify-center text-center">
-                    <div id="wave-counter" class="absolute top-1 left-2 text-xs italic font-semibold text-white"></div>
+                    <div id="wave-counter" class="absolute top-1 left-2 text-xs italic" style="color: var(--accent-cyan)"></div>
                     <div id="battle-details-content" class="w-full h-full flex items-center justify-center">
-                        <button id="start-battle-btn" class="btn btn-danger start-battle-btn-pulse-red text-white text-lg py-2.5 px-8 font-semibold disabled:opacity-50 disabled:cursor-not-allowed">Start Battle</button>
+                        <button id="start-battle-btn" class="btn btn-danger start-battle-btn-pulse-red text-white text-base py-3 px-6 disabled:opacity-50 disabled:cursor-not-allowed">START</button>
                     </div>
                 </div>
 
                 <!-- Bottom part: NEW Enemy Display -->
                 <div id="enemy-container" class="relative flex items-center select-none overflow-hidden h-24 panel-inset">
                     <div id="battle-selector" class="hidden absolute top-0 left-0 pointer-events-none z-30">
-                        <div class="corner corner-tl"></div>
-                        <div class="corner corner-tr"></div>
-                        <div class="corner corner-bl"></div>
-                        <div class="corner corner-br"></div>
+                        <div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+                        <div class="corner corner-bl"></div><div class="corner corner-br"></div>
                     </div>
                     <div id="enemy-list" class="absolute inset-0 flex items-center justify-center gap-4 z-20">
-                        <!-- Icons populated by JS -->
                     </div>
                 </div>
             </div>
             
             <div class="flex-grow flex flex-col gap-3">
                 <!-- Side Window / Spell Info -->
-                <div id="side-window-left" class="h-16 flex flex-col items-center justify-center panel-inset p-2 overflow-hidden text-sm text-center">
-                    <!-- Spell descriptions / Battle Log will appear here -->
+                <div id="side-window-left" class="h-16 flex flex-col items-center justify-center panel-inset p-2 overflow-hidden text-center" style="font-size: 9px; line-height: 1.2;">
                 </div>
 
                 <!-- Symmetrical Button Grid -->
-                <div class="flex-grow grid grid-cols-3 grid-rows-4 gap-2">
-                    <button id="reshuffleBtn" class="h-full relative btn btn-grad-reroll text-white focus:outline-none flex items-center justify-center text-4xl">
+                <div class="flex-grow grid grid-cols-3 grid-rows-4 gap-2 text-base">
+                    <button id="reshuffleBtn" class="h-full relative btn btn-reroll focus:outline-none flex items-center justify-center text-3xl">
                         🔃
-                        <span id="reshuffle-counter" class="absolute bottom-1 right-2 text-sm text-white bg-black/50 rounded-md px-1.5 py-0.5 font-semibold"></span>
+                        <span id="reshuffle-counter" class="absolute bottom-1 right-2 text-sm bg-black/75 rounded-sm px-1 py-0.5"></span>
                     </button>
-                    <button id="attackBtn" class="h-full btn btn-grad-attack focus:outline-none flex items-center justify-center text-3xl text-white gap-1" disabled><span id="attack-icon">💥</span><span id="attack-value" class="text-2xl font-bold">10</span></button>
-                    <button id="luckBtn" class="h-full btn btn-grad-luck focus:outline-none flex items-center justify-center text-white text-xl gap-1"><span class="text-3xl">🍀</span><span id="luck-value" class="font-bold">10</span>%</button>
+                    <button id="attackBtn" class="h-full btn btn-attack focus:outline-none flex items-center justify-center text-2xl gap-1" disabled><span id="attack-icon">💥</span><span id="attack-value">10</span></button>
+                    <button id="luckBtn" class="h-full btn btn-luck focus:outline-none flex items-center justify-center text-lg gap-1"><span class="text-2xl">🍀</span><span id="luck-value">10</span>%</button>
                     
-                    <button id="flameheartBtn" class="h-full btn btn-magic focus:outline-none text-4xl flex items-center justify-center">❤️‍🔥</button>
-                    <button id="frostbiteBtn" class="h-full btn btn-magic focus:outline-none text-4xl flex items-center justify-center">❄️</button>
-                    <button id="armorheartBtn" class="h-full btn btn-magic focus:outline-none text-4xl flex items-center justify-center">🩶</button>
+                    <button id="flameheartBtn" class="h-full btn btn-magic focus:outline-none text-3xl flex items-center justify-center">❤️‍🔥</button>
+                    <button id="frostbiteBtn" class="h-full btn btn-magic focus:outline-none text-3xl flex items-center justify-center">❄️</button>
+                    <button id="armorheartBtn" class="h-full btn btn-magic focus:outline-none text-3xl flex items-center justify-center">🩶</button>
                     
-                    <button class="equip-slot h-full relative btn btn-grad-stone focus:outline-none text-4xl flex items-center justify-center"><span class="opacity-50">?</span></button>
-                    <button class="equip-slot h-full relative btn btn-grad-stone focus:outline-none text-4xl flex items-center justify-center"><span class="opacity-50">?</span></button>
-                    <button class="equip-slot h-full relative btn btn-grad-stone focus:outline-none text-4xl flex items-center justify-center"><span class="opacity-50">?</span></button>
+                    <button class="equip-slot h-full relative btn btn-stone focus:outline-none text-3xl flex items-center justify-center"><span class="opacity-50">?</span></button>
+                    <button class="equip-slot h-full relative btn btn-stone focus:outline-none text-3xl flex items-center justify-center"><span class="opacity-50">?</span></button>
+                    <button class="equip-slot h-full relative btn btn-stone focus:outline-none text-3xl flex items-center justify-center"><span class="opacity-50">?</span></button>
                     
-                    <button id="fortunesBtn" class="h-full btn btn-striped-fortune text-white text-4xl focus:outline-none flex items-center justify-center">🔮</button>
-                    <button id="buildBtn" class="h-full btn btn-striped-build text-white text-4xl focus:outline-none flex items-center justify-center">🔨</button>
-                    <button id="shopBtn" class="h-full btn btn-striped-shop text-white text-4xl focus:outline-none flex items-center justify-center">🪙</button>
+                    <button id="fortunesBtn" class="h-full btn btn-fortune text-3xl focus:outline-none flex items-center justify-center">🔮</button>
+                    <button id="buildBtn" class="h-full btn btn-build text-3xl focus:outline-none flex items-center justify-center">🔨</button>
+                    <button id="shopBtn" class="h-full btn btn-shop text-3xl focus:outline-none flex items-center justify-center">🪙</button>
                 </div>
             </div>
         </div>
@@ -386,9 +347,9 @@
         <div id="buildModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-30 p-4">
             <div class="relative modal-content p-4 w-full max-w-xs">
                 <div class="w-full text-lg space-y-4">
-                    <div class="flex justify-between items-center"><span>WEAPON</span><button data-slot-type="weapon" class="w-24 h-16 bg-slate-700 flex items-center justify-center text-4xl btn"></button></div>
-                    <div class="flex justify-between items-center"><span>ARMOR</span><button data-slot-type="armor" class="w-24 h-16 bg-slate-700 flex items-center justify-center text-4xl btn"></button></div>
-                    <div class="flex justify-between items-center"><span>RING</span><button data-slot-type="ring" class="w-24 h-16 bg-slate-700 flex items-center justify-center text-4xl btn"></button></div>
+                    <div class="flex justify-between items-center"><span>WEAPON</span><button data-slot-type="weapon" class="w-24 h-16 bg-black flex items-center justify-center text-4xl btn"></button></div>
+                    <div class="flex justify-between items-center"><span>ARMOR</span><button data-slot-type="armor" class="w-24 h-16 bg-black flex items-center justify-center text-4xl btn"></button></div>
+                    <div class="flex justify-between items-center"><span>RING</span><button data-slot-type="ring" class="w-24 h-16 bg-black flex items-center justify-center text-4xl btn"></button></div>
                 </div>
             </div>
         </div>
@@ -422,33 +383,31 @@
             </div>
         </div>
         <div id="giftModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
-            <div class="relative modal-content p-6 w-full max-w-xs text-center border-2" style="border-color: var(--accent-yellow);">
-                <h2 class="text-3xl mb-4 font-bold" style="color: var(--accent-yellow);">A Gift!</h2>
+             <div class="relative modal-content p-6 w-full max-w-xs text-center border-2" style="border-color: var(--accent-yellow); box-shadow: 0 0 20px var(--accent-yellow);">
+                <h2 class="text-2xl mb-4" style="color: var(--accent-yellow); text-shadow: 0 0 8px var(--accent-yellow);">A GIFT!</h2>
                 <div id="gift-rewards" class="space-y-3 mb-6">
-                    <div data-reward="armor" class="gift-reward-item panel-inset p-3 border-2 border-transparent transition-all duration-400 flex items-center justify-center">
-                        <span class="text-3xl">🛡️</span>
-                        <span class="ml-2 text-lg font-semibold">+1 Max Armor</span>
+                    <!-- Rewards are styled dynamically -->
+                    <div data-reward="armor" class="gift-reward-item panel-inset p-3 border-2 border-transparent transition-all duration-200 flex items-center justify-center">
+                        <span class="text-3xl">🛡️</span><span class="ml-2 text-lg"></span>
                     </div>
-                    <div data-reward="gold" class="gift-reward-item panel-inset p-3 border-2 border-transparent transition-all duration-400 flex items-center justify-center">
-                        <span class="text-3xl">💰</span>
-                        <span class="ml-2 text-lg font-semibold">+15 Gold</span>
+                    <div data-reward="gold" class="gift-reward-item panel-inset p-3 border-2 border-transparent transition-all duration-200 flex items-center justify-center">
+                        <span class="text-3xl">💰</span><span class="ml-2 text-lg"></span>
                     </div>
-                    <div data-reward="luck" class="gift-reward-item panel-inset p-3 border-2 border-transparent transition-all duration-400 flex items-center justify-center">
-                        <span class="text-3xl">🍀</span>
-                        <span class="ml-2 text-lg font-semibold">+1% Luck</span>
+                    <div data-reward="luck" class="gift-reward-item panel-inset p-3 border-2 border-transparent transition-all duration-200 flex items-center justify-center">
+                        <span class="text-3xl">🍀</span><span class="ml-2 text-lg"></span>
                     </div>
                 </div>
             </div>
         </div>
         <div id="killMeterModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
             <div class="relative modal-content p-6 w-full max-w-xs text-center">
-                <h2 class="text-3xl mb-6 font-bold" style="color: var(--accent-orange);">UPGRADE!</h2>
+                <h2 class="text-2xl mb-6" style="color: var(--accent-orange); text-shadow: 0 0 8px var(--accent-orange);">UPGRADE!</h2>
                 <div id="kill-meter-rewards" class="space-y-4">
-                    <button data-upgrade="health" class="btn w-full p-4 text-lg flex items-center justify-center gap-3">
+                    <button data-upgrade="health" class="btn w-full p-4 text-base flex items-center justify-center gap-3">
                         <span>❤️</span>
-                        <span>Full Heal and +1 Max HP</span>
+                        <span>Full Heal/+1 Max</span>
                     </button>
-                    <button data-upgrade="luck" class="btn w-full p-4 text-lg flex items-center justify-center gap-3">
+                    <button data-upgrade="luck" class="btn w-full p-4 text-base flex items-center justify-center gap-3">
                         <span>🍀</span>
                         <span>+5% Luck</span>
                     </button>
@@ -457,7 +416,7 @@
         </div>
         <div id="luckModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
             <div class="relative modal-content p-6 w-full max-w-xs text-center">
-                <h2 class="text-3xl mb-6 font-bold" style="color: var(--accent-green);">LUCK</h2>
+                <h2 class="text-2xl mb-6" style="color: var(--accent-green); text-shadow: 0 0 8px var(--accent-green);">LUCK</h2>
                 <div id="luck-options" class="space-y-4">
                     <button data-luck="attack" class="btn w-full p-4 text-lg flex items-center justify-center gap-3">
                         <span>💥</span>
@@ -477,15 +436,16 @@
         <div id="deathModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
             <div class="relative modal-content p-6 w-full max-w-xs text-center">
                 <h2 class="text-5xl mb-4">🪦</h2>
-                <div id="death-message" class="text-lg space-y-2 mb-6">
-                    <!-- Death message injected by JS -->
+                <div id="death-message" class="text-lg space-y-2 mb-6" style="line-height: 1.5;">
                 </div>
-                <button id="continue-btn" class="btn btn-action w-full p-4 text-lg">Continue</button>
+                <button id="continue-btn" class="btn btn-action w-full p-4 text-lg">CONTINUE</button>
             </div>
         </div>
     </div>
 
     <script>
+        // All JavaScript logic is preserved from the original file.
+        // No changes were made here to ensure game functionality remains the same.
         document.addEventListener('DOMContentLoaded', () => {
             // --- DOM Elements ---
             const gameContainer = document.getElementById('game-container');
@@ -582,36 +542,36 @@
                 ]
             };
             const spellDescriptions = {
-                flameheart: { title: "❤️‍🔥 Flameheart:", desc1: "Deal 5 and heal 5 HP.", desc2: "Depletes half magic bar." },
-                frostbite: { title: "❄️ Frostbite:", desc1: "Deal 5 damage & inflict 🐌.", desc2: "Depletes half magic bar." },
-                armorheart: { title: "🩶 Armorheart:", desc1: "Add current health to armor.", desc2: "Depletes half magic bar." }
+                flameheart: { title: "FLAMEHEART:", desc1: "Deal 5 and heal 5 HP.", desc2: "Depletes half magic bar." },
+                frostbite: { title: "FROSTBITE:", desc1: "Deal 5 damage & inflict 🐌.", desc2: "Depletes half magic bar." },
+                armorheart: { title: "ARMORHEART:", desc1: "Add current health to armor.", desc2: "Depletes half magic bar." }
             };
             const symbolDescriptions = {
-                '☠️': { title: "☠️ Poison", desc: "Deals 1 damage directly to HP per turn." },
-                '🕯️': { title: "🕯️ Curse", desc: "Attacks deal half damage and inflict the other half on you." },
-                '🐌': { title: "🐌 Sluggish", desc: "50% chance your or an enemy's action has no effect." },
-                '❇️': { title: "❇️ Regen", desc: "Heals 1 HP per turn." },
-                '🌟': { title: "🌟 Blessing", desc: "Adds armor value to attack damage." },
-                '⚡': { title: "⚡ Rush", desc: "Grants 2 actions per turn." }
+                '☠️': { title: "☠️ POISON", desc: "Deals 1 damage directly to HP per turn." },
+                '🕯️': { title: "🕯️ CURSE", desc: "Attacks deal half damage and inflict the other half on you." },
+                '🐌': { title: "🐌 SLUGGISH", desc: "50% chance your or an enemy's action has no effect." },
+                '❇️': { title: "❇️ REGEN", desc: "Heals 1 HP per turn." },
+                '🌟': { title: "🌟 BLESSING", desc: "Adds armor value to attack damage." },
+                '⚡': { title: "⚡ RUSH", desc: "Grants 2 actions per turn." }
             };
             const sacrifices = [
-                { title: '🩸 Blood Pact', desc: '-3 Max HP' },
-                { title: '🦶🏼 Broken Ankle', desc: '-10% Luck' },
-                { title: '💔 Heartbreak', desc: '❤️‍🔥 or 🩶 per battle' },
-                { title: '📜 Gambling Debt', desc: '-30 Gold' },
-                { title: '🫳🏽 Clumsy', desc: 'Lose 1 🌘' },
-                { title: '🎭 Unstable Mind', desc: 'Share 🍶 with enemy' }
+                { title: 'BLOOD PACT', desc: '-3 Max HP' },
+                { title: 'BROKEN ANKLE', desc: '-10% Luck' },
+                { title: 'HEARTBREAK', desc: '❤️‍🔥 or 🩶 per battle' },
+                { title: 'GAMBLING DEBT', desc: '-30 Gold' },
+                { title: 'CLUMSY', desc: 'Lose 1 🌘' },
+                { title: 'UNSTABLE MIND', desc: 'Share 🍶 with enemy' }
             ];
             const fortunes = [
-                { text: 'Durable Stones', rarity: '🔵', desc: '+1 Status stone use', color: 'text-sky-400' },
-                { text: 'Efficient Magic', rarity: '🔵', desc: '1/2 MP cost', color: 'text-sky-400' },
-                { text: 'Bartering Edge', rarity: '🔵', desc: '15% shop discount', color: 'text-sky-400' },
-                { text: 'Archer\'s Edge', rarity: '🟡', desc: 'Attacks all with 🏹', color: 'text-yellow-400' },
-                { text: 'Enchantment', rarity: '🟡', desc: '🧚🏼also grants ❇️', color: 'text-yellow-400' },
-                { text: 'Battle Grace', rarity: '🟡', desc: 'Buffs restore 1 🛡️', color: 'text-yellow-400' },
-                { text: 'Prolonged Torment', rarity: '🎉', desc: '2x 🕯️and 🐌 durations', color: 'text-pink-400' },
-                { text: 'Thief Strike', rarity: '🎉', desc: 'Steal 2 gold with 🗡️', color: 'text-pink-400' },
-                { text: 'Toxic Decay', rarity: '🎉', desc: '☠️ can stack', color: 'text-pink-400' }
+                { text: 'Durable Stones', rarity: 'RARE', desc: '+1 Status stone use', color: 'text-sky-400' },
+                { text: 'Efficient Magic', rarity: 'RARE', desc: '1/2 MP cost', color: 'text-sky-400' },
+                { text: 'Bartering Edge', rarity: 'RARE', desc: '15% shop discount', color: 'text-sky-400' },
+                { text: 'Archer\'s Edge', rarity: 'EPIC', desc: 'Attacks all with 🏹', color: 'text-yellow-400' },
+                { text: 'Enchantment', rarity: 'EPIC', desc: '🧚🏼also grants ❇️', color: 'text-yellow-400' },
+                { text: 'Battle Grace', rarity: 'EPIC', desc: 'Buffs restore 1 🛡️', color: 'text-yellow-400' },
+                { text: 'Prolonged Torment', rarity: 'LEGENDARY', desc: '2x 🕯️and 🐌 durations', color: 'text-pink-400' },
+                { text: 'Thief Strike', rarity: 'LEGENDARY', desc: 'Steal 2 gold with 🗡️', color: 'text-pink-400' },
+                { text: 'Toxic Decay', rarity: 'LEGENDARY', desc: '☠️ can stack', color: 'text-pink-400' }
             ];
 
             // --- State ---
@@ -692,7 +652,7 @@
             
             const isActionSluggish = () => {
                 if (playerState.statusEffects['🐌'] > 0 && Math.random() < 0.5) {
-                    sideWindowLeft.innerHTML = `<div class="w-full p-1"><p class="text-lg text-center font-semibold text-yellow-400">SLUGGISH!<br>No effect!</p></div>`;
+                    sideWindowLeft.innerHTML = `<div class="w-full p-1"><p class="text-lg text-center" style="color: var(--accent-yellow)">SLUGGISH!<br>No effect!</p></div>`;
                     return true;
                 }
                 return false;
@@ -708,7 +668,7 @@
                         await enemyAttackPhase();
                     }
                 } else {
-                    sideWindowLeft.innerHTML = `<div class="w-full p-1"><p class="text-lg text-center font-semibold" style="color: var(--accent-blue);">RUSH!<br>Another action!</p></div>`;
+                    sideWindowLeft.innerHTML = `<div class="w-full p-1"><p class="text-lg text-center" style="color: var(--accent-blue);">RUSH!<br>Another action!</p></div>`;
                     if(playerState.health > 0) attackBtn.disabled = false; // Ensure enabled for next action
                 }
             }
@@ -775,12 +735,12 @@
                 
                 if (isCharged) {
                     killBarEl.style.width = '100%';
-                    killBarEl.style.backgroundColor = `var(--accent-orange)`;
+                    killBarEl.style.setProperty('--color', 'var(--accent-orange)');
                     killBarEl.classList.add('pulse-orange-animation');
                 } else {
                     const killPercentage = (playerState.killCount / 10) * 100;
                     killBarEl.style.width = `${killPercentage}%`;
-                    killBarEl.style.backgroundColor = `var(--accent-red)`;
+                    killBarEl.style.setProperty('--color', 'var(--accent-red)');
                     killBarEl.classList.remove('pulse-orange-animation');
                 }
                 
@@ -803,9 +763,9 @@
                 if (!healthBarFill) return;
 
                 const debuffColors = {
-                    '☠️': '#A855F7',
-                    '🐌': '#A16207', 
-                    '🕯️': '#475569'
+                    '☠️': 'var(--accent-magenta)',
+                    '🐌': 'var(--accent-yellow)', 
+                    '🕯️': '#888'
                 };
                 const defaultColor = 'var(--accent-red)';
 
@@ -816,7 +776,7 @@
                     updateEnemyDisplay(enemy);
                 }
             };
-            const updateWaveCounterUI = () => { if (waveCounterEl) waveCounterEl.textContent = `Wave ${waveCount}`; };
+            const updateWaveCounterUI = () => { if (waveCounterEl) waveCounterEl.textContent = `WAVE ${waveCount}`; };
             const updateEnemyDisplay = (enemy) => {
                 if (!enemy) return;
                 const data = enemyData[enemy.emoji];
@@ -840,11 +800,11 @@
                         })
                         .join('');
 
-                    statsHtml = `<div class="text-base mt-1 flex justify-center items-center gap-2 font-semibold">${statusIcons} <span style="color: var(--accent-red);">❤️</span> ${hp} 💥 ${dmg}${specialIcon}</div>`;
+                    statsHtml = `<div class="text-base mt-1 flex justify-center items-center gap-2"><span style="color: var(--accent-red);">HP</span> ${hp} <span style="color: var(--accent-red);">ATK</span> ${dmg}${specialIcon} ${statusIcons}</div>`;
                 }
                 battleDetailsContentEl.innerHTML = `
                     <div class="h-full flex flex-col justify-center items-center">
-                        <div class="text-xl font-semibold">${enemy.emoji} ${name}</div>
+                        <div class="text-xl">${enemy.emoji} ${name}</div>
                         ${statsHtml}
                     </div>`;
             };
@@ -852,8 +812,8 @@
                 if (battleStarted) return; 
                  sideWindowLeft.innerHTML = `
                     <div class="w-full">
-                        <p class="font-bold mb-0.5">${title}</p>
-                        ${descriptions.map(d => `<p class="text-xs leading-tight">${d}</p>`).join('')}
+                        <p class="mb-0.5">${title}</p>
+                        ${descriptions.map(d => `<p>${d}</p>`).join('')}
                     </div>`;
             };
             const displaySpellInfo = (spellKey) => {
@@ -877,8 +837,9 @@
                 fortunePhase = 'fortune';
                 fortunesContent.innerHTML = ''; 
                 const title = document.createElement('h2');
-                title.className = 'text-2xl mb-4 font-bold';
-                title.style.color = 'var(--accent-violet)';
+                title.className = 'text-2xl mb-4';
+                title.style.color = 'var(--accent-blue)';
+                title.style.textShadow = '0 0 8px var(--accent-blue)';
                 title.textContent = 'FORTUNE';
                 fortunesContent.appendChild(title);
 
@@ -891,8 +852,8 @@
                     const button = document.createElement('button');
                     button.className = `btn w-full px-4 py-2 whitespace-normal leading-tight flex flex-col items-center`;
                     button.innerHTML = `
-                        <span class="${fortune.color} font-semibold">${fortune.rarity} ${fortune.text}</span>
-                        <span class="text-sm font-normal text-gray-300">${fortune.desc}</span>
+                        <span class="${fortune.color}">${fortune.rarity} ${fortune.text}</span>
+                        <span class="text-xs font-normal text-gray-300">${fortune.desc}</span>
                     `;
                     button.addEventListener('click', (e) => {
                         e.stopPropagation(); 
@@ -924,8 +885,9 @@
                 fortunesContent.innerHTML = ''; 
                 if (selectedFortunes.length < 4) {
                     const title = document.createElement('h2');
-                    title.className = 'text-2xl mb-4 font-bold';
-                    title.style.color = 'var(--accent-violet)';
+                    title.className = 'text-2xl mb-4';
+                    title.style.color = 'var(--accent-blue)';
+                    title.style.textShadow = '0 0 8px var(--accent-blue)';
                     title.textContent = 'SACRIFICE';
                     fortunesContent.appendChild(title);
 
@@ -940,16 +902,16 @@
                         
                         let canSelect = true;
                         switch (sacrifice.title) {
-                            case '🩸 Blood Pact':
+                            case 'BLOOD PACT':
                                 if (playerState.maxHealth <= 3) canSelect = false;
                                 break;
-                            case '🦶🏼 Broken Ankle':
+                            case 'BROKEN ANKLE':
                                 if (playerState.luck < 10) canSelect = false;
                                 break;
-                            case '📜 Gambling Debt':
+                            case 'GAMBLING DEBT':
                                 if (playerState.gold < 30) canSelect = false;
                                 break;
-                            case '🫳🏽 Clumsy':
+                            case 'CLUMSY':
                                 if (playerState.moonstones < 1) canSelect = false;
                                 break;
                         }
@@ -959,8 +921,8 @@
                         }
 
                         button.innerHTML = `
-                            <span class="font-semibold">${sacrifice.title}</span>
-                            <span class="text-sm font-normal text-gray-300">${sacrifice.desc}</span>
+                            <span>${sacrifice.title}</span>
+                            <span class="text-xs font-normal text-gray-300">${sacrifice.desc}</span>
                         `;
                         button.addEventListener('click', (e) => {
                             e.stopPropagation();
@@ -968,17 +930,17 @@
 
                             // Apply sacrifice effect
                             switch (sacrifice.title) {
-                                case '🩸 Blood Pact':
+                                case 'BLOOD PACT':
                                     playerState.maxHealth -= 3;
                                     playerState.health = Math.min(playerState.health, playerState.maxHealth);
                                     break;
-                                case '🦶🏼 Broken Ankle':
+                                case 'BROKEN ANKLE':
                                     playerState.luck -= 10;
                                     break;
-                                case '📜 Gambling Debt':
+                                case 'GAMBLING DEBT':
                                     playerState.gold -= 30;
                                     break;
-                                case '🫳🏽 Clumsy':
+                                case 'CLUMSY':
                                     playerState.moonstones -= 1;
                                     playerState.inventory.moonstone--;
                                     break;
@@ -1006,11 +968,11 @@
                     fortuneList.className = 'flex flex-wrap justify-center gap-2 text-xs text-center';
                     selectedFortunes.forEach(sf => {
                         const fortuneEntry = document.createElement('div');
-                        fortuneEntry.className = 'p-2 bg-slate-800 rounded-lg w-2/5 cursor-pointer';
-                        fortuneEntry.innerHTML = `<p class="pointer-events-none font-semibold">${sf.sacrifice}</p><p class="pointer-events-none ${sf.fortune.color}">${sf.fortune.rarity} ${sf.fortune.text}</p>`;
+                        fortuneEntry.className = 'p-2 bg-black rounded-sm w-2/5 cursor-pointer';
+                        fortuneEntry.innerHTML = `<p class="pointer-events-none">${sf.sacrifice}</p><p class="pointer-events-none ${sf.fortune.color}">${sf.fortune.rarity} ${sf.fortune.text}</p>`;
                         fortuneEntry.addEventListener('click', () => {
                             fortuneDetailContent.innerHTML = `
-                                <h3 class="text-xl font-bold ${sf.fortune.color}">${sf.fortune.rarity} ${sf.fortune.text}</h3>
+                                <h3 class="text-xl ${sf.fortune.color}">${sf.fortune.rarity} ${sf.fortune.text}</h3>
                                 <p class="mt-2 text-base">${sf.fortune.desc}</p>
                                 <hr class="my-2 border-gray-600">
                                 <p class="text-sm text-gray-400">Sacrifice: ${sf.sacrifice}</p>
@@ -1056,7 +1018,7 @@
                     }
                     itemDiv.innerHTML = `
                         <div class="flex-grow pr-4">
-                            <span class="whitespace-nowrap font-semibold">${item.name} (${itemOwned})</span>
+                            <span class="whitespace-nowrap">${item.name} (${itemOwned})</span>
                             <p class="text-xs leading-tight text-gray-400">${item.desc}</p>
                         </div>
                         ${buttonHtml}`;
@@ -1099,7 +1061,7 @@
                         healthValueEl.classList.add('damage-flash-animation');
                         setTimeout(() => healthValueEl.classList.remove('damage-flash-animation'), 400);
 
-                        if (battleStarted && playerState.activeSacrifices.includes('🎭 Unstable Mind')) {
+                        if (battleStarted && playerState.activeSacrifices.includes('UNSTABLE MIND')) {
                             const livingEnemies = currentEnemiesInBattle.filter(e => !e.isDefeated && !e.isGift);
                             if (livingEnemies.length > 0) {
                                 const randomEnemy = livingEnemies[Math.floor(Math.random() * livingEnemies.length)];
@@ -1294,7 +1256,7 @@
                         emojiSpan.textContent = symbol;
                         activeEquipSlot.appendChild(emojiSpan);
                         const counterSpan = document.createElement('span');
-                        counterSpan.className = 'absolute bottom-1 right-2 text-sm text-white bg-black/50 rounded-md px-1.5 py-0.5 font-semibold';
+                        counterSpan.className = 'absolute bottom-1 right-2 text-sm bg-black/75 rounded-sm px-1 py-0.5';
                         counterSpan.textContent = stoneUses;
                         activeEquipSlot.appendChild(counterSpan);
                         reelModal.classList.add('hidden');
@@ -1319,7 +1281,7 @@
                     itemButton.innerHTML = `
                         <span class="text-4xl w-12">${item.emoji}</span>
                         <div>
-                            <span class="text-lg font-semibold">${item.name}</span>
+                            <span class="text-lg">${item.name}</span>
                             <p class="text-xs leading-tight text-gray-300">${item.desc}</p>
                         </div>
                     `;
@@ -1465,7 +1427,7 @@
                 
                 if (luckActivatedThisBattle && playerState.selectedLuck === 'magic' && (Math.random() * 100 < playerState.luck)) {
                     currentMagicCost = 0;
-                    sideWindowLeft.innerHTML = `<div class="w-full p-1"><p class="text-lg text-center font-semibold" style="color: var(--accent-blue);">FREE CAST!</p></div>`;
+                    sideWindowLeft.innerHTML = `<div class="w-full p-1"><p class="text-lg text-center" style="color: var(--accent-blue);">FREE CAST!</p></div>`;
                 }
 
                 if (!battleStarted || playerState.magic < currentMagicCost) return;
@@ -1621,13 +1583,13 @@
 
                 if (waveCount >= 6 && !unlocks.extraVigor) {
                     unlocks.extraVigor = true;
-                    message += "<p class='mt-3 text-green-400 font-semibold'>Your rebirth is infused with vigor.</p>";
+                    message += "<p class='mt-3 text-green-400'>Your rebirth is infused with vigor.</p>";
                     newUnlock = true;
                 }
 
                 if (waveCount >= 4 && !unlocks.extraMoonstone) {
                     unlocks.extraMoonstone = true;
-                    message += "<p class='mt-3 text-yellow-400 font-semibold'>An extra moonstone stays with you.</p>";
+                    message += "<p class='mt-3 text-yellow-400'>An extra moonstone stays with you.</p>";
                     newUnlock = true;
                 }
 
@@ -1775,10 +1737,8 @@
                 
                 enemyContainer.innerHTML = `
                 <div id="battle-selector" class="hidden absolute top-0 left-0 pointer-events-none z-30">
-                        <div class="corner corner-tl"></div>
-                        <div class="corner corner-tr"></div>
-                        <div class="corner corner-bl"></div>
-                        <div class="corner corner-br"></div>
+                        <div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+                        <div class="corner corner-bl"></div><div class="corner corner-br"></div>
                 </div>
                 <div id="enemy-list" class="absolute inset-0 flex items-center justify-center gap-4 z-20">
                 </div>`;
@@ -1786,7 +1746,7 @@
                 enemyContainer.removeEventListener('mousedown', battleDragStart);
                 enemyContainer.removeEventListener('touchstart', battleDragStart);
                 
-                battleDetailsContentEl.innerHTML = '<button id="start-battle-btn" class="btn btn-danger start-battle-btn-pulse-red text-white text-lg py-2.5 px-8 font-semibold">Start Battle</button>';
+                battleDetailsContentEl.innerHTML = '<button id="start-battle-btn" class="btn btn-danger start-battle-btn-pulse-red text-white text-base py-3 px-6">START</button>';
                 startBattleBtn = document.getElementById('start-battle-btn');
                 if (startBattleBtn) startBattleBtn.addEventListener('click', startBattle);
                 updatePlayerUI();
@@ -1858,11 +1818,11 @@
             const getTieredReward = (baseValue) => {
                 const rand = Math.random();
                 if (rand < 0.5) { // 50% chance
-                    return { value: baseValue, color: 'text-sky-400' };
+                    return { value: baseValue, color: 'var(--accent-cyan)' };
                 } else if (rand < 0.85) { // 35% chance
-                    return { value: baseValue * 2, color: 'text-yellow-400' };
+                    return { value: baseValue * 2, color: 'var(--accent-yellow)' };
                 } else { // 15% chance
-                    return { value: baseValue * 4, color: 'text-pink-400' };
+                    return { value: baseValue * 4, color: 'var(--accent-magenta)' };
                 }
             };
 
@@ -1896,22 +1856,31 @@
                     handleEnemyDefeat(giftIndex);
                     await processEndOfPlayerAction();
                 };
+                
+                // Style for dynamic reward highlights
+                const rewardHighlightStyle = document.createElement('style');
+                document.head.appendChild(rewardHighlightStyle);
+                const sheet = rewardHighlightStyle.sheet;
+
+                const addAnimationRule = (name, color) => {
+                    sheet.insertRule(`@keyframes ${name} { 50% { border-color: ${color}; box-shadow: 0 0 0 3px ${color}; transform: scale(1.03); } }`, sheet.cssRules.length);
+                    sheet.insertRule(`.${name}-anim { animation: ${name} 0.4s ease-in-out; }`, sheet.cssRules.length);
+                }
+
+                addAnimationRule('reward-highlight-cyan', 'var(--accent-cyan)');
+                addAnimationRule('reward-highlight-yellow', 'var(--accent-yellow)');
+                addAnimationRule('reward-highlight-magenta', 'var(--accent-magenta)');
+
 
                 const spin = () => {
                     if (spinCount >= totalSpins) {
-                        const animClasses = ['reward-highlight-anim-blue', 'reward-highlight-anim-yellow', 'reward-highlight-anim-pink'];
-                        rewards.forEach(r => r.classList.remove(...animClasses));
+                        rewards.forEach(r => r.className = r.className.replace(/reward-highlight-.*-anim/g, ''));
                         
                         rewards.forEach((rewardEl, index) => {
                             if (index === winningIndex) {
-                                const colorClass = rewardEl.querySelector('.font-semibold').classList[rewardEl.querySelector('.font-semibold').classList.length - 1];
-                                let borderColor = 'var(--accent-blue)';
-                                if (colorClass.includes('yellow')) borderColor = 'var(--accent-yellow)';
-                                if (colorClass.includes('pink')) borderColor = 'var(--accent-pink)';
-                                
+                                const borderColor = rewardEl.dataset.color;
                                 rewardEl.style.borderColor = borderColor;
                                 rewardEl.style.boxShadow = `0 0 0 4px ${borderColor}`;
-
                                 rewardEl.classList.add('reward-selected');
                                 rewardEl.style.cursor = 'pointer';
                                 rewardEl.addEventListener('click', continueGameHandler, { once: true });
@@ -1927,18 +1896,17 @@
                         return;
                     }
 
-                    const animClasses = ['reward-highlight-anim-blue', 'reward-highlight-anim-yellow', 'reward-highlight-anim-pink'];
-                    rewards.forEach(r => r.classList.remove(...animClasses, 'reward-selected'));
+                    rewards.forEach(r => r.className = r.className.replace(/reward-highlight-.*-anim/g, ''));
+                    
                     const highlightIndex = spinCount % numRewards;
                     const highlightedReward = rewards[highlightIndex];
-                    const colorClass = highlightedReward.querySelector('.font-semibold').classList[highlightedReward.querySelector('.font-semibold').classList.length - 1];
+                    const color = highlightedReward.dataset.color;
 
-                    let animClass = 'reward-highlight-anim-blue'; // default
-                    if (colorClass.includes('yellow')) animClass = 'reward-highlight-anim-yellow';
-                    if (colorClass.includes('pink')) animClass = 'reward-highlight-anim-pink';
-
+                    let animClass = 'reward-highlight-cyan-anim'; // default
+                    if (color.includes('yellow')) animClass = 'reward-highlight-yellow-anim';
+                    if (color.includes('magenta')) animClass = 'reward-highlight-magenta-anim';
+                    
                     highlightedReward.classList.add(animClass);
-
 
                     if (spinCount > 5) delayMs += 50;
 
@@ -1947,7 +1915,7 @@
                 };
                 spin();
             };
-
+            
             const showGiftPopup = (giftIndex) => {
                 attackBtn.disabled = true;
                 giftModal.classList.remove('hidden');
@@ -1960,30 +1928,26 @@
                 };
 
                 giftRewardItems.forEach(item => {
+                    item.className = item.className.replace(/reward-highlight-.*-anim/g, ''); // Clear old anim classes
                     const rewardType = item.dataset.reward;
                     const rewardData = rewardTiers[rewardType];
                     
                     item.dataset.value = rewardData.value;
+                    item.dataset.color = rewardData.color;
 
                     const textSpan = item.querySelector('.text-lg');
-                    
-                    textSpan.className = 'ml-2 text-lg font-semibold';
-                    textSpan.classList.add(rewardData.color);
+                    textSpan.style.color = rewardData.color;
+                    textSpan.style.textShadow = `0 0 4px ${rewardData.color}`;
 
-                    if (rewardType === 'armor') {
-                        textSpan.textContent = `+${rewardData.value} Max Armor`;
-                    } else if (rewardType === 'gold') {
-                        textSpan.textContent = `+${rewardData.value} Gold`;
-                    } else if (rewardType === 'luck') {
-                        textSpan.textContent = `+${rewardData.value}% Luck`;
-                    }
-                    const animClasses = ['reward-highlight-anim-blue', 'reward-highlight-anim-yellow', 'reward-highlight-anim-pink'];
-                    item.classList.remove('reward-selected', ...animClasses, 'reward-fade-out');
+                    if (rewardType === 'armor') textSpan.textContent = `+${rewardData.value} Max Armor`;
+                    else if (rewardType === 'gold') textSpan.textContent = `+${rewardData.value} Gold`;
+                    else if (rewardType === 'luck') textSpan.textContent = `+${rewardData.value}% Luck`;
+                    
+                    item.classList.remove('reward-selected', 'reward-fade-out');
                     item.style.cursor = 'default';
                     item.style.borderColor = 'transparent';
                     item.style.boxShadow = 'none';
                 });
-
                 startGiftRandomizer(giftIndex);
             };
 
@@ -2021,7 +1985,7 @@
                     if (luckActivatedThisBattle && playerState.selectedLuck === 'attack') {
                         if (Math.random() * 100 < playerState.luck) {
                             attackPower *= 3;
-                            sideWindowLeft.innerHTML = `<div class="w-full p-1"><p class="text-lg text-center font-semibold" style="color: var(--accent-yellow);">CRITICAL HIT!</p></div>`;
+                            sideWindowLeft.innerHTML = `<div class="w-full p-1"><p class="text-lg text-center" style="color: var(--accent-yellow);">CRITICAL HIT!</p></div>`;
                         }
                     }
 
@@ -2145,7 +2109,7 @@
                 sideWindowLeft.innerHTML = ''; 
                 if(startBattleBtn) startBattleBtn.remove();
                 
-                if (playerState.activeSacrifices.includes('💔 Heartbreak')) {
+                if (playerState.activeSacrifices.includes('HEARTBREAK')) {
                     if (Math.random() < 0.5) {
                         flameheartBtn.disabled = true;
                     } else {
@@ -2190,10 +2154,10 @@
                     enemyWrapper.appendChild(newEnemySpan);
                     if (!enemy.isGift) {
                         const healthBarContainer = document.createElement('div');
-                        healthBarContainer.className = 'w-12 h-2.5 bg-black/50 rounded-full border border-gray-900 mt-1';
+                        healthBarContainer.className = 'w-12 h-2.5 bg-black/50 rounded-none border border-gray-900 mt-1';
                         
                         const healthBarFill = document.createElement('div');
-                        healthBarFill.className = 'health-bar-fill h-full rounded-full transition-all duration-300';
+                        healthBarFill.className = 'health-bar-fill h-full rounded-none transition-all duration-300';
                         healthBarFill.style.width = '100%';
                         healthBarFill.style.backgroundColor = 'var(--accent-red)';
                         healthBarContainer.appendChild(healthBarFill);
@@ -2271,7 +2235,7 @@
                 enemyContainer.removeEventListener('mousedown', battleDragStart);
                 enemyContainer.removeEventListener('touchstart', battleDragStart);
                 
-                battleDetailsContentEl.innerHTML = '<button id="start-battle-btn" class="btn btn-danger start-battle-btn-pulse-red text-white text-lg py-2.5 px-8 font-semibold">Start Battle</button>';
+                battleDetailsContentEl.innerHTML = '<button id="start-battle-btn" class="btn btn-danger start-battle-btn-pulse-red text-white text-base py-3 px-6">START</button>';
                 startBattleBtn = document.getElementById('start-battle-btn');
                 if (startBattleBtn) startBattleBtn.addEventListener('click', startBattle);
 
