@@ -247,11 +247,13 @@
         .pulse-orange-animation { animation: pulse-orange 1s infinite; }
         .glow-orange-text-animation { color: var(--accent-orange) !important; text-shadow: 0 0 8px var(--accent-orange); }
 
-        @keyframes reward-highlight {
-            50% { border-color: var(--accent-blue); box-shadow: 0 0 0 3px var(--accent-blue); transform: scale(1.03); }
-        }
-        .reward-highlight-anim { animation: reward-highlight 0.5s ease-in-out; }
-        .reward-selected { border-color: var(--accent-blue) !important; box-shadow: 0 0 0 4px var(--accent-blue) !important; transform: scale(1.08) !important; cursor: pointer; }
+        @keyframes reward-highlight-blue { 50% { border-color: var(--accent-blue); box-shadow: 0 0 0 3px var(--accent-blue); transform: scale(1.03); } }
+        @keyframes reward-highlight-yellow { 50% { border-color: var(--accent-yellow); box-shadow: 0 0 0 3px var(--accent-yellow); transform: scale(1.03); } }
+        @keyframes reward-highlight-pink { 50% { border-color: var(--accent-pink); box-shadow: 0 0 0 3px var(--accent-pink); transform: scale(1.03); } }
+        .reward-highlight-anim-blue { animation: reward-highlight-blue 0.4s ease-in-out; }
+        .reward-highlight-anim-yellow { animation: reward-highlight-yellow 0.4s ease-in-out; }
+        .reward-highlight-anim-pink { animation: reward-highlight-pink 0.4s ease-in-out; }
+        .reward-selected { transform: scale(1.08) !important; cursor: pointer; }
         .reward-fade-out { opacity: 0.4; transform: scale(0.95); }
         
         /* Magic bar specific gradient */
@@ -1731,9 +1733,14 @@
                     if (enemy.statusEffects['🕯️'] > 0) enemy.statusEffects['🕯️']--;
                     if (enemy.statusEffects['🐌'] > 0) enemy.statusEffects['🐌']--;
 
+                    if (enemy.statusEffects['☠️'] <= 0 && enemy.statusEffects['🕯️'] <= 0 && enemy.statusEffects['🐌'] <= 0) {
+                        enemy.lastDebuff = null;
+                    }
+
                     const enemyIndex = currentEnemiesInBattle.findIndex(e => e === enemy);
                     if (enemyIndex !== -1) {
                          updateEnemyDisplay(currentEnemiesInBattle[enemyIndex]);
+                         updateEnemyStatusUI(enemyIndex);
                     }
 
                     await delay(400);
@@ -1892,10 +1899,19 @@
 
                 const spin = () => {
                     if (spinCount >= totalSpins) {
-                        rewards.forEach(r => r.classList.remove('reward-highlight-anim'));
+                        const animClasses = ['reward-highlight-anim-blue', 'reward-highlight-anim-yellow', 'reward-highlight-anim-pink'];
+                        rewards.forEach(r => r.classList.remove(...animClasses));
                         
                         rewards.forEach((rewardEl, index) => {
                             if (index === winningIndex) {
+                                const colorClass = rewardEl.querySelector('.font-semibold').classList[rewardEl.querySelector('.font-semibold').classList.length - 1];
+                                let borderColor = 'var(--accent-blue)';
+                                if (colorClass.includes('yellow')) borderColor = 'var(--accent-yellow)';
+                                if (colorClass.includes('pink')) borderColor = 'var(--accent-pink)';
+                                
+                                rewardEl.style.borderColor = borderColor;
+                                rewardEl.style.boxShadow = `0 0 0 4px ${borderColor}`;
+
                                 rewardEl.classList.add('reward-selected');
                                 rewardEl.style.cursor = 'pointer';
                                 rewardEl.addEventListener('click', continueGameHandler, { once: true });
@@ -1911,9 +1927,18 @@
                         return;
                     }
 
-                    rewards.forEach(r => r.classList.remove('reward-highlight-anim', 'reward-selected'));
+                    const animClasses = ['reward-highlight-anim-blue', 'reward-highlight-anim-yellow', 'reward-highlight-anim-pink'];
+                    rewards.forEach(r => r.classList.remove(...animClasses, 'reward-selected'));
                     const highlightIndex = spinCount % numRewards;
-                    rewards[highlightIndex].classList.add('reward-highlight-anim');
+                    const highlightedReward = rewards[highlightIndex];
+                    const colorClass = highlightedReward.querySelector('.font-semibold').classList[highlightedReward.querySelector('.font-semibold').classList.length - 1];
+
+                    let animClass = 'reward-highlight-anim-blue'; // default
+                    if (colorClass.includes('yellow')) animClass = 'reward-highlight-anim-yellow';
+                    if (colorClass.includes('pink')) animClass = 'reward-highlight-anim-pink';
+
+                    highlightedReward.classList.add(animClass);
+
 
                     if (spinCount > 5) delayMs += 50;
 
@@ -1952,9 +1977,11 @@
                     } else if (rewardType === 'luck') {
                         textSpan.textContent = `+${rewardData.value}% Luck`;
                     }
-
-                    item.classList.remove('reward-selected', 'reward-highlight-anim', 'reward-fade-out');
+                    const animClasses = ['reward-highlight-anim-blue', 'reward-highlight-anim-yellow', 'reward-highlight-anim-pink'];
+                    item.classList.remove('reward-selected', ...animClasses, 'reward-fade-out');
                     item.style.cursor = 'default';
+                    item.style.borderColor = 'transparent';
+                    item.style.boxShadow = 'none';
                 });
 
                 startGiftRandomizer(giftIndex);
@@ -2271,5 +2298,3 @@
 
 </body>
 </html>
-
-
