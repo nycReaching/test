@@ -221,6 +221,11 @@
             --color: var(--accent-magenta); /* for the glow */
         }
 
+        /* Kill bar specific gradient */
+        #kill-bar.progress-bar-fill {
+            background: linear-gradient(90deg, var(--accent-red), var(--accent-green));
+        }
+
         /* Other inherited animations are kept as they are good for feedback */
         @keyframes shake { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); } 20%, 40%, 60%, 80% { transform: translateX(4px); } }
         .shake-animation { animation: shake 0.3s ease-in-out; }
@@ -243,21 +248,21 @@
         <!-- =================================================================== -->
         <div class="flex-shrink-0 panel p-3 flex flex-col gap-3">
             <!-- Row 1: Core Stats (HP, Armor) & Currency -->
-            <div class="flex items-center justify-evenly text-lg">
+            <div class="flex items-center justify-evenly text-base">
                 <div class="flex items-center gap-2">
-                    <span id="health-icon" class="text-2xl transition-transform duration-200">❤️</span>
+                    <span id="health-icon" class="text-xl transition-transform duration-200">❤️</span>
                     <span id="health-value" class="text-left font-semibold">10</span>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span id="armor-icon" class="text-2xl text-gray-400">🛡️</span>
+                    <span id="armor-icon" class="text-xl text-gray-400">🛡️</span>
                     <span id="armor-value" class="text-left font-semibold">3</span>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span class="text-2xl" style="text-shadow: 0 0 8px var(--accent-yellow);">💰</span>
+                    <span class="text-xl" style="text-shadow: 0 0 8px var(--accent-yellow);">💰</span>
                     <span id="gold-value" class="text-left font-semibold">99</span>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span class="text-2xl" style="text-shadow: 0 0 8px var(--accent-blue);">🌒</span>
+                    <span class="text-xl" style="text-shadow: 0 0 8px var(--accent-blue);">🌒</span>
                     <span id="moonstone-value" class="text-left font-semibold">3</span>
                 </div>
             </div>
@@ -268,7 +273,7 @@
                     <div id="magic-bar" class="progress-bar-fill" style="width: 100%; --color: var(--accent-blue);"></div>
                 </div>
                 <div class="w-full progress-bar-container">
-                    <div id="kill-bar" class="progress-bar-fill" style="width: 0%; --color: var(--accent-red);"></div>
+                    <div id="kill-bar" class="progress-bar-fill" style="width: 0%; --color: var(--accent-green);"></div>
                 </div>
             </div>
 
@@ -448,9 +453,17 @@
     </div>
 
     <script>
-        // All JavaScript logic is preserved from the original file.
-        // No changes were made here to ensure game functionality remains the same.
         document.addEventListener('DOMContentLoaded', () => {
+            // --- Prevent persistent button highlights on touch devices ---
+            const blurButtonOnEnd = (e) => {
+                const target = e.target.closest('.btn, .reel-item');
+                if (target) {
+                    target.blur();
+                }
+            };
+            document.addEventListener('mouseup', blurButtonOnEnd);
+            document.addEventListener('touchend', blurButtonOnEnd);
+
             // --- DOM Elements ---
             const gameContainer = document.getElementById('game-container');
             const goldValueEl = document.getElementById('gold-value');
@@ -744,7 +757,7 @@
                 } else {
                     const killPercentage = (playerState.killCount / 10) * 100;
                     killBarEl.style.width = `${killPercentage}%`;
-                    killBarEl.style.setProperty('--color', 'var(--accent-red)');
+                    killBarEl.style.setProperty('--color', 'var(--accent-green)');
                     killBarEl.classList.remove('pulse-orange-animation');
                 }
                 
@@ -856,8 +869,8 @@
                     const button = document.createElement('button');
                     button.className = `btn w-full px-4 py-2 whitespace-normal leading-tight flex flex-col items-center`;
                     button.innerHTML = `
-                        <span class="${fortune.color}">${fortune.rarity} ${fortune.text}</span>
-                        <span class="text-xs font-normal text-gray-300">${fortune.desc}</span>
+                        <span class="${fortune.color}">${fortune.text}</span>
+                        <span class="text-sm font-normal text-gray-300">${fortune.desc}</span>
                     `;
                     button.addEventListener('click', (e) => {
                         e.stopPropagation(); 
@@ -926,7 +939,7 @@
 
                         button.innerHTML = `
                             <span>${sacrifice.title}</span>
-                            <span class="text-xs font-normal text-gray-300">${sacrifice.desc}</span>
+                            <span class="text-sm font-normal text-gray-300">${sacrifice.desc}</span>
                         `;
                         button.addEventListener('click', (e) => {
                             e.stopPropagation();
@@ -973,10 +986,10 @@
                     selectedFortunes.forEach(sf => {
                         const fortuneEntry = document.createElement('div');
                         fortuneEntry.className = 'p-2 bg-black rounded-sm w-2/5 cursor-pointer';
-                        fortuneEntry.innerHTML = `<p class="pointer-events-none">${sf.sacrifice}</p><p class="pointer-events-none ${sf.fortune.color}">${sf.fortune.rarity} ${sf.fortune.text}</p>`;
+                        fortuneEntry.innerHTML = `<p class="pointer-events-none">${sf.sacrifice}</p><p class="pointer-events-none ${sf.fortune.color}">${sf.fortune.text}</p>`;
                         fortuneEntry.addEventListener('click', () => {
                             fortuneDetailContent.innerHTML = `
-                                <h3 class="text-xl ${sf.fortune.color}">${sf.fortune.rarity} ${sf.fortune.text}</h3>
+                                <h3 class="text-xl ${sf.fortune.color}">${sf.fortune.text}</h3>
                                 <p class="mt-2 text-base">${sf.fortune.desc}</p>
                                 <hr class="my-2 border-gray-600">
                                 <p class="text-sm text-gray-400">Sacrifice: ${sf.sacrifice}</p>
@@ -2270,4 +2283,3 @@
 
 </body>
 </html>
-
