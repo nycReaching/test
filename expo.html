@@ -2427,7 +2427,7 @@
 
                 startGameBtn.addEventListener('click', () => {
                     startModal.classList.add('hidden');
-                    localStorage.setItem('lootGrabPlayedBefore', 'true');
+                    // localStorage.setItem('lootGrabPlayedBefore', 'true'); // Removed this line
                     startGameplay();
                 });
 
@@ -2439,12 +2439,8 @@
                     tutorialModal.classList.add('hidden');
                 });
 
-                const hasPlayed = localStorage.getItem('lootGrabPlayedBefore');
-                if (!hasPlayed) {
-                    startModal.classList.remove('hidden');
-                } else {
-                    startGameplay();
-                }
+                // Always show the start modal on game load
+                startModal.classList.remove('hidden');
             };
 
             initGame();
