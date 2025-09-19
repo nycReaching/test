@@ -103,6 +103,34 @@
             transform: scale(0.98) translateY(1px) !important;
             filter: brightness(0.8);
         }
+
+        /* --- Active state flash colors --- */
+        .btn-reroll:active,
+        .btn-attack:active,
+        .btn-luck:active,
+        .btn-stone:active,
+        .btn-magic:active,
+        .btn-fortune:active,
+        .btn-build:active,
+        .btn-shop:active,
+        .btn-danger:active,
+        .btn-success:active,
+        .btn-action:active {
+            color: #000 !important; 
+            text-shadow: none;
+        }
+        .btn-reroll:active   { background-color: var(--accent-cyan) !important; }
+        .btn-attack:active,
+        .btn-danger:active   { background-color: var(--accent-red) !important; }
+        .btn-luck:active,
+        .btn-success:active  { background-color: var(--accent-green) !important; }
+        .btn-stone:active    { background-color: var(--accent-yellow) !important; }
+        .btn-magic:active    { background-color: var(--accent-magenta) !important; }
+        .btn-fortune:active,
+        .btn-action:active   { background-color: var(--accent-blue) !important; }
+        .btn-build:active    { background-color: #888 !important; }
+        .btn-shop:active     { background-color: var(--accent-orange) !important; }
+        
         .btn:disabled {
             background-color: #111 !important;
             border-color: #555 !important;
@@ -245,21 +273,21 @@
         <!-- =================================================================== -->
         <div class="flex-shrink-0 panel p-3 flex flex-col gap-3">
             <!-- Row 1: Core Stats (HP, Armor) & Currency -->
-            <div class="flex items-center justify-evenly text-base">
+            <div class="flex items-center justify-evenly text-lg">
                 <div class="flex items-center gap-2">
-                    <span id="health-icon" class="text-xl transition-transform duration-200">❤️</span>
+                    <span id="health-icon" class="text-2xl transition-transform duration-200">❤️</span>
                     <span id="health-value" class="text-left font-semibold">10</span>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span id="armor-icon" class="text-xl text-gray-400">🛡️</span>
+                    <span id="armor-icon" class="text-2xl text-gray-400">🛡️</span>
                     <span id="armor-value" class="text-left font-semibold">3</span>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span class="text-xl" style="text-shadow: 0 0 8px var(--accent-yellow);">💰</span>
+                    <span class="text-2xl" style="text-shadow: 0 0 8px var(--accent-yellow);">💰</span>
                     <span id="gold-value" class="text-left font-semibold">99</span>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span class="text-xl" style="text-shadow: 0 0 8px var(--accent-blue);">🌒</span>
+                    <span class="text-2xl" style="text-shadow: 0 0 8px var(--accent-blue);">🌒</span>
                     <span id="moonstone-value" class="text-left font-semibold">3</span>
                 </div>
             </div>
@@ -2281,4 +2309,5 @@
 
 </body>
 </html>
+
 
