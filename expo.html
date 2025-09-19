@@ -88,7 +88,7 @@
             background-color: #111 !important; 
             border: 2px solid var(--accent-cyan) !important;
             box-shadow: 0 0 5px var(--accent-cyan), inset 0 0 3px var(--accent-cyan) !important;
-            transition: all 0.1s linear !important;
+            transition: all 0.2s linear !important; /* UPDATE: Longer animation */
             color: var(--text-primary);
             line-height: 1;
             font-weight: 400; 
@@ -490,7 +490,7 @@
         <div id="tutorialModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-50 py-4">
             <div class="relative modal-content p-6 w-full flex flex-col">
                 <h2 class="text-xl mb-4 text-center" style="color: var(--accent-yellow); text-shadow: 0 0 8px var(--accent-yellow);">HOW TO PLAY</h2>
-                <div class="text-left space-y-3 flex-grow" style="line-height: 1.5; font-size: 8px;">
+                <div class="text-left space-y-3 flex-grow" style="line-height: 1.5; font-size: 9px;"> <!-- UPDATE: Larger font size -->
                     <p><strong style="color: var(--accent-cyan);">Reroll (🔃)</strong> for new enemies. 25% chance for a <strong style="color: var(--accent-yellow);">Gift (🎁)</strong>, 25% for a stronger <strong style="color: var(--accent-red);">Elite</strong>.</p>
                     <p><strong style="color: var(--accent-green);">XP Bar:</strong> Fills when defeating enemies. When full, pick an <strong style="color: var(--accent-orange);">Upgrade</strong>.</p>
                     <p><strong style="color: var(--accent-blue);">Fortunes (🔮):</strong> Make a permanent <strong style="color: var(--accent-red);">Sacrifice</strong> to gain a powerful, run-altering <strong style="color: var(--accent-yellow);">Fortune</strong>.</p>
@@ -1169,7 +1169,18 @@
                 
                 if (item.id === 'cross' && playerState.statusEffects['🕯️'] <= 0) return;
 
-                playerState.inventory[itemId]--;
+                // UPDATE: LUCK 'CHOICES' LOGIC
+                let isFreeUse = false;
+                if (luckActivatedThisBattle && playerState.selectedLuck === 'choices') {
+                    if (Math.random() * 100 < playerState.luck) {
+                        isFreeUse = true;
+                        sideWindowLeft.innerHTML = `<div class="w-full p-1"><p class="text-lg text-center" style="color: var(--accent-blue);">FREE USE!</p></div>`;
+                    }
+                }
+
+                if (!isFreeUse) {
+                    playerState.inventory[itemId]--;
+                }
 
                 switch (itemId) {
                     case 'tonic':
@@ -1288,9 +1299,17 @@
                         
                         setActionsDisabled(true); // Disable actions immediately
 
-                        const magicCost = 0;
+                        // UPDATE: LUCK 'CHOICES' LOGIC
+                        let isFreeUse = false;
+                        if (luckActivatedThisBattle && playerState.selectedLuck === 'choices') {
+                            if (Math.random() * 100 < playerState.luck) {
+                                isFreeUse = true;
+                                sideWindowLeft.innerHTML = `<div class="w-full p-1"><p class="text-lg text-center" style="color: var(--accent-blue);">FREE USE!</p></div>`;
+                            }
+                        }
+                        
                         if (isActionSluggish()) {
-                            uses--;
+                            if (!isFreeUse) uses--; // Consume use if sluggish and not free
                             slot.dataset.uses = uses;
                             const counterSpan = slot.querySelector('.absolute');
                             if (counterSpan) counterSpan.textContent = uses;
@@ -1308,7 +1327,7 @@
                         let turnConsumed = false;
 
                         if (playerBuffs.includes(symbol) && uses > 0) {
-                            uses--;
+                            if (!isFreeUse) uses--;
                             if (['🌟', '⚡'].includes(symbol)) {
                                 playerState.statusEffects[symbol] = 3;
                             } else {
@@ -1322,7 +1341,7 @@
                         } else if (enemyDebuffs.includes(symbol) && uses > 0) {
                             const targetEnemy = currentEnemiesInBattle[currentBattleTargetIndex];
                             if (targetEnemy && !targetEnemy.isDefeated && !targetEnemy.isGift) {
-                                uses--;
+                                if (!isFreeUse) uses--;
                                 applyDebuffToEnemy(currentBattleTargetIndex, symbol);
                                 turnConsumed = true;
                             }
@@ -1847,6 +1866,9 @@
                 [flameheartBtn, frostbiteBtn, armorheartBtn].forEach(btn => {
                     btn.classList.remove('btn-success');
                 });
+                // UPDATE: Clear 'Choices' luck visual feedback
+                equipSlots.forEach(s => s.classList.remove('btn-success'));
+                if(modalMap.shopBtn.button) modalMap.shopBtn.button.classList.remove('btn-success');
                 
                 // Clear any heartbreak state
                 flameheartBtn.disabled = false;
@@ -2185,6 +2207,9 @@
                             [flameheartBtn, frostbiteBtn, armorheartBtn].forEach(btn => {
                                 btn.classList.add('btn-success');
                             });
+                        } else if (playerState.selectedLuck === 'choices') { // UPDATE
+                            equipSlots.forEach(s => s.classList.add('btn-success'));
+                            modalMap.shopBtn.button.classList.add('btn-success');
                         }
                         await processEndOfPlayerAction();
                     }
@@ -2255,14 +2280,21 @@
 
                 updatePlayerUI(); 
                 
+                // UPDATE: Calculate wave-based enemy stat bonuses
+                const hpBonus = Math.max(0, waveCount - 1);
+                const attackBonus = Math.max(0, Math.floor((waveCount - 1) / 2));
+
                 currentEnemiesInBattle = currentPreBattleEnemies.map(preBattleEnemy => {
                     const emoji = preBattleEnemy.emoji;
                     const data = enemyData[emoji] || { name: 'Unknown', hp: 10, attack: 1 };
                     const isStamped = preBattleEnemy.isRed;
                     const isGift = emoji === giftEmoji;
                     
-                    const hp = isGift ? data.hp : (isStamped ? data.hp * 2 : data.hp);
-                    const attack = isGift ? data.attack : (isStamped ? data.attack * 2 : data.attack);
+                    const baseHp = isGift ? data.hp : (data.hp + hpBonus);
+                    const baseAttack = isGift ? data.attack : (data.attack + attackBonus);
+
+                    const hp = isGift ? baseHp : (isStamped ? baseHp * 2 : baseHp);
+                    const attack = isGift ? baseAttack : (isStamped ? baseAttack * 2 : baseAttack);
 
                     return { 
                         emoji: emoji, 
@@ -2421,3 +2453,4 @@
 
 </body>
 </html>
+
