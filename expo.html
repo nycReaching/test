@@ -470,6 +470,51 @@
                 </div>
             </div>
         </div>
+
+        <!-- =================================================================== -->
+        <!-- START & TUTORIAL MODALS -->
+        <!-- =================================================================== -->
+        <div id="startModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-50 py-4">
+             <div class="relative modal-content p-6 w-full text-center border-2" style="border-color: var(--accent-yellow); box-shadow: 0 0 20px var(--accent-yellow);">
+                <h2 class="text-lg mb-6 leading-relaxed">
+                    I bet you can't make it to <span style="color: var(--accent-magenta); text-shadow: 0 0 6px var(--accent-magenta);">wave 13...</span>
+                    <br><br>
+                    <span style="color: var(--accent-red);">D</span><span style="color: var(--accent-yellow);">u</span><span style="color: var(--accent-blue);">m</span><span style="color: var(--accent-green);">m</span><span style="color: var(--accent-red);">y</span><span style="color: var(--accent-yellow);">.</span> <span style="font-size: 2rem;">🤡</span>
+                </h2>
+                <div class="space-y-4">
+                    <button id="start-game-btn" class="btn btn-success w-full p-4 text-base">START GAME</button>
+                    <button id="how-to-play-btn" class="btn btn-action w-full p-4 text-base">HOW TO PLAY</button>
+                </div>
+            </div>
+        </div>
+        <div id="tutorialModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-50 py-4">
+            <div class="relative modal-content p-6 w-full flex flex-col">
+                <h2 class="text-xl mb-4 text-center" style="color: var(--accent-yellow); text-shadow: 0 0 8px var(--accent-yellow);">HOW TO PLAY</h2>
+                <div class="text-xs text-left space-y-3 flex-grow" style="line-height: 1.5;">
+                     <div>
+                        <h3 class="font-bold" style="color: var(--accent-cyan);">BATTLE PREP</h3>
+                        <p>Tap <strong style="color: var(--accent-cyan);">Reroll (🔃)</strong> for new enemies. 25% chance for a <strong style="color: var(--accent-yellow);">Gift (🎁)</strong>, 25% for a stronger <strong style="color: var(--accent-red);">Elite</strong>.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-bold" style="color: var(--accent-green);">GROWTH</h3>
+                        <p><strong style="color: var(--accent-green);">Experience Bar:</strong> Fills when defeating enemies. When full, pick an <strong style="color: var(--accent-orange);">Upgrade</strong>.</p>
+                        <p class="mt-2"><strong style="color: var(--accent-blue);">Fortunes (🔮):</strong> Make a permanent <strong style="color: var(--accent-red);">Sacrifice</strong> to gain a powerful, run-altering <strong style="color: var(--accent-yellow);">Fortune</strong>.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-bold" style="color: var(--accent-magenta);">ABILITIES</h3>
+                        <p><strong style="color: var(--accent-magenta);">Magic Bar:</strong> Fuels powerful spells.</p>
+                        <p class="mt-2"><strong style="color: var(--accent-blue);">Moon Arts (🌒):</strong> Spend Moonstones on limited-use skills in the <strong class="text-gray-400">?</strong> slots.</p>
+                        <p class="mt-2"><strong style="color: var(--accent-green);">Luck (🍀):</strong> Focus luck pre-battle. Activate in combat for a chance at a powerful bonus.</p>
+                    </div>
+                     <div>
+                        <h3 class="font-bold" style="color: var(--accent-yellow);">SYNERGIES</h3>
+                        <p>Combine equipment, Fortunes, and abilities for unique builds.</p>
+                    </div>
+                </div>
+                 <button id="close-tutorial-btn" class="btn btn-danger w-full p-3 mt-6 text-base">CLOSE</button>
+            </div>
+        </div>
+        
         <div id="deathModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-50 py-4">
             <div class="relative modal-content p-6 w-full text-center">
                 <h2 class="text-4xl mb-4">🪦</h2>
@@ -535,6 +580,11 @@
             const deathModal = document.getElementById('deathModal');
             const deathMessageEl = document.getElementById('death-message');
             const continueBtn = document.getElementById('continue-btn');
+            const startModal = document.getElementById('startModal');
+            const tutorialModal = document.getElementById('tutorialModal');
+            const startGameBtn = document.getElementById('start-game-btn');
+            const howToPlayBtn = document.getElementById('how-to-play-btn');
+            const closeTutorialBtn = document.getElementById('close-tutorial-btn');
             
             const modalMap = {
                 fortunesBtn: { modal: document.getElementById('fortunesModal'), button: document.getElementById('fortunesBtn') },
@@ -2339,18 +2389,41 @@
                 reshuffleEnemies(true);
             };
 
+            const startGameplay = () => {
+                reshuffleEnemies(true);
+                updatePlayerUI();
+                updateWaveCounterUI();
+                updateStatusEffectsUI();
+            };
+
             const initGame = () => {
                 loadUnlocks();
                 playerState = getInitialPlayerState();
-                
-                if(startBattleBtn) startBattleBtn.addEventListener('click', startBattle);
+
+                if (startBattleBtn) startBattleBtn.addEventListener('click', startBattle);
                 reshuffleBtn.addEventListener('click', () => { if (!battleStarted && !isReshuffling) reshuffleEnemies(); });
                 continueBtn.addEventListener('click', resetGame);
 
-                reshuffleEnemies(true);
-                updatePlayerUI(); 
-                updateWaveCounterUI();
-                updateStatusEffectsUI();
+                startGameBtn.addEventListener('click', () => {
+                    startModal.classList.add('hidden');
+                    localStorage.setItem('lootGrabPlayedBefore', 'true');
+                    startGameplay();
+                });
+
+                howToPlayBtn.addEventListener('click', () => {
+                    tutorialModal.classList.remove('hidden');
+                });
+
+                closeTutorialBtn.addEventListener('click', () => {
+                    tutorialModal.classList.add('hidden');
+                });
+
+                const hasPlayed = localStorage.getItem('lootGrabPlayedBefore');
+                if (!hasPlayed) {
+                    startModal.classList.remove('hidden');
+                } else {
+                    startGameplay();
+                }
             };
 
             initGame();
@@ -2359,4 +2432,7 @@
 
 </body>
 </html>
+
+
+
 
