@@ -273,21 +273,21 @@
         <!-- =================================================================== -->
         <div class="flex-shrink-0 panel p-3 flex flex-col gap-3">
             <!-- Row 1: Core Stats (HP, Armor) & Currency -->
-            <div class="flex items-center justify-evenly text-lg">
+            <div class="flex items-center justify-evenly text-xl">
                 <div class="flex items-center gap-2">
-                    <span id="health-icon" class="text-2xl transition-transform duration-200">❤️</span>
+                    <span id="health-icon" class="text-3xl transition-transform duration-200">❤️</span>
                     <span id="health-value" class="text-left font-semibold">10</span>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span id="armor-icon" class="text-2xl text-gray-400">🛡️</span>
+                    <span id="armor-icon" class="text-3xl text-gray-400">🛡️</span>
                     <span id="armor-value" class="text-left font-semibold">3</span>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span class="text-2xl" style="text-shadow: 0 0 8px var(--accent-yellow);">💰</span>
+                    <span class="text-3xl" style="text-shadow: 0 0 8px var(--accent-yellow);">💰</span>
                     <span id="gold-value" class="text-left font-semibold">99</span>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span class="text-2xl" style="text-shadow: 0 0 8px var(--accent-blue);">🌒</span>
+                    <span class="text-3xl" style="text-shadow: 0 0 8px var(--accent-blue);">🌒</span>
                     <span id="moonstone-value" class="text-left font-semibold">3</span>
                 </div>
             </div>
@@ -302,15 +302,18 @@
                 </div>
             </div>
 
-            <!-- Row 3: Player Status Effects -->
-            <div id="player-status-effects" class="flex items-center justify-start text-xl gap-1 h-7">
-                <!-- Status icons will be managed by JS -->
-                <div class="relative status-effect-icon hidden" data-effect="⚡"><span>⚡</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold bg-black/70 text-white rounded-full w-4 h-4 flex items-center justify-center leading-none"></span></div>
-                <div class="relative status-effect-icon hidden" data-effect="🌟"><span>🌟</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold bg-black/70 text-white rounded-full w-4 h-4 flex items-center justify-center leading-none"></span></div>
-                <div class="relative status-effect-icon hidden" data-effect="❇️"><span>❇️</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold bg-black/70 text-white rounded-full w-4 h-4 flex items-center justify-center leading-none"></span></div>
-                <div class="relative status-effect-icon hidden" data-effect="🐌"><span>🐌</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold bg-black/70 text-white rounded-full w-4 h-4 flex items-center justify-center leading-none"></span></div>
-                <div class="relative status-effect-icon hidden" data-effect="🕯️"><span>🕯️</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold bg-black/70 text-white rounded-full w-4 h-4 flex items-center justify-center leading-none"></span></div>
-                <div class="relative status-effect-icon hidden" data-effect="☠️"><span>☠️</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold bg-black/70 text-white rounded-full w-4 h-4 flex items-center justify-center leading-none"></span></div>
+            <!-- Row 3: Player Status Effects & Wave Counter -->
+            <div class="flex items-end justify-between">
+                <div id="player-status-effects" class="flex items-center justify-start text-xl gap-1 h-7">
+                    <!-- Status icons will be managed by JS -->
+                    <div class="relative status-effect-icon hidden" data-effect="⚡"><span>⚡</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold bg-black/70 text-white rounded-full w-4 h-4 flex items-center justify-center leading-none"></span></div>
+                    <div class="relative status-effect-icon hidden" data-effect="🌟"><span>🌟</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold bg-black/70 text-white rounded-full w-4 h-4 flex items-center justify-center leading-none"></span></div>
+                    <div class="relative status-effect-icon hidden" data-effect="❇️"><span>❇️</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold bg-black/70 text-white rounded-full w-4 h-4 flex items-center justify-center leading-none"></span></div>
+                    <div class="relative status-effect-icon hidden" data-effect="🐌"><span>🐌</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold bg-black/70 text-white rounded-full w-4 h-4 flex items-center justify-center leading-none"></span></div>
+                    <div class="relative status-effect-icon hidden" data-effect="🕯️"><span>🕯️</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold bg-black/70 text-white rounded-full w-4 h-4 flex items-center justify-center leading-none"></span></div>
+                    <div class="relative status-effect-icon hidden" data-effect="☠️"><span>☠️</span><span class="stack-counter absolute -bottom-1 -right-1 text-xs font-bold bg-black/70 text-white rounded-full w-4 h-4 flex items-center justify-center leading-none"></span></div>
+                </div>
+                <div id="wave-counter" class="text-xs italic" style="color: var(--accent-cyan)"></div>
             </div>
         </div>
 
@@ -323,7 +326,7 @@
             <div class="flex-shrink-0 panel-inset flex flex-col justify-between p-1.5 gap-1.5">
                 <!-- Top part: Info Display / Start Button -->
                 <div id="battle-details-window" class="relative flex-shrink-0 h-16 flex items-center justify-center text-center">
-                    <div id="wave-counter" class="absolute top-1 left-2 text-xs italic" style="color: var(--accent-cyan)"></div>
+                    
                     <div id="battle-details-content" class="w-full h-full flex items-center justify-center">
                         <button id="start-battle-btn" class="btn btn-danger start-battle-btn-pulse-red text-white text-sm py-3 px-6 disabled:opacity-50 disabled:cursor-not-allowed">START</button>
                     </div>
@@ -671,12 +674,7 @@
             let luckActivatedThisBattle = false;
             
             const delay = ms => new Promise(res => setTimeout(res, ms));
-
-            // --- Fortune Helper ---
-            const hasFortune = (fortuneText) => {
-                return selectedFortunes.some(sf => sf.fortune.text === fortuneText);
-            };
-
+            
             // --- Battle Animations ---
             const showDamageNumber = (damage, element) => {
                 const damageEl = document.createElement('div');
@@ -692,7 +690,40 @@
                 gameContainer.appendChild(damageEl);
                 setTimeout(() => { damageEl.remove(); }, 1000);
             };
-            
+
+            // --- Action Disabling ---
+            const setActionsDisabled = (isDisabled) => {
+                if (isDisabled) {
+                    attackBtn.disabled = true;
+                    flameheartBtn.disabled = true;
+                    frostbiteBtn.disabled = true;
+                    armorheartBtn.disabled = true;
+                    luckBtn.disabled = true;
+                    equipSlots.forEach(s => s.disabled = true);
+                } else {
+                    if (playerState.health <= 0) return; // Don't enable if dead
+
+                    attackBtn.disabled = false;
+
+                    // Respect heartbreak curse
+                    if (!flameheartBtn.hasAttribute('data-heartbroken-this-battle')) {
+                        flameheartBtn.disabled = false;
+                    }
+                    frostbiteBtn.disabled = false;
+                    if (!armorheartBtn.hasAttribute('data-heartbroken-this-battle')) {
+                        armorheartBtn.disabled = false;
+                    }
+                    
+                    luckBtn.disabled = luckActivatedThisBattle; // only enable if not used
+                    equipSlots.forEach(s => s.disabled = false);
+                }
+            };
+
+            // --- Fortune Helper ---
+            const hasFortune = (fortuneText) => {
+                return selectedFortunes.some(sf => sf.fortune.text === fortuneText);
+            };
+
             const isActionSluggish = () => {
                 if (playerState.statusEffects['🐌'] > 0 && Math.random() < 0.5) {
                     sideWindowLeft.innerHTML = `<div class="w-full p-1"><p class="text-lg text-center" style="color: var(--accent-yellow)">SLUGGISH!<br>No effect!</p></div>`;
@@ -706,13 +737,14 @@
                 const maxActions = playerState.statusEffects['⚡'] > 0 ? 2 : 1;
 
                 if (playerActionsTaken >= maxActions) {
-                    attackBtn.disabled = true; // Disable until next player turn
+                    // Turn is fully over. Buttons are already disabled from the action handler.
                     if (!currentEnemiesInBattle.every(e => e.isDefeated)) {
                         await enemyAttackPhase();
                     }
                 } else {
+                    // RUSH! Re-enable actions for the second move.
                     sideWindowLeft.innerHTML = `<div class="w-full p-1"><p class="text-lg text-center" style="color: var(--accent-blue);">RUSH!<br>Another action!</p></div>`;
-                    if(playerState.health > 0) attackBtn.disabled = false; // Ensure enabled for next action
+                    setActionsDisabled(false);
                 }
             }
 
@@ -1215,6 +1247,8 @@
                         let uses = parseInt(slot.dataset.uses || '0', 10);
                         if (!symbol || uses <= 0) return;
                         
+                        setActionsDisabled(true); // Disable actions immediately
+
                         const magicCost = 0;
                         if (isActionSluggish()) {
                             uses--;
@@ -1266,6 +1300,9 @@
                             }
                             updateStatusEffectsUI();
                             await processEndOfPlayerAction();
+                        } else {
+                             // If turn wasn't consumed for some reason, re-enable
+                            setActionsDisabled(false);
                         }
                         
                         return;
@@ -1477,6 +1514,8 @@
 
                 if (!battleStarted || playerState.magic < currentMagicCost) return;
                 
+                setActionsDisabled(true);
+
                 playerState.magic -= currentMagicCost;
                 updatePlayerUI();
 
@@ -1707,7 +1746,7 @@
 
             const enemyAttackPhase = async () => {
                 if (playerState.health <= 0) return;
-                attackBtn.disabled = true;
+                // Actions already disabled by the function that called this
                 await delay(400);
                 const livingEnemies = currentEnemiesInBattle.filter(enemy => !enemy.isDefeated && !enemy.isGift);
                 for (const enemy of livingEnemies) {
@@ -1756,7 +1795,7 @@
                 if (playerState.health > 0) {
                     tickdownPlayerStatusEffects();
                     playerActionsTaken = 0;
-                    attackBtn.disabled = false;
+                    setActionsDisabled(false);
                     sideWindowLeft.innerHTML = '';
                 }
             };
@@ -1769,8 +1808,13 @@
                 [flameheartBtn, frostbiteBtn, armorheartBtn].forEach(btn => {
                     btn.classList.remove('btn-success');
                 });
+                
+                // Clear any heartbreak state
                 flameheartBtn.disabled = false;
                 armorheartBtn.disabled = false;
+                flameheartBtn.removeAttribute('data-heartbroken-this-battle');
+                armorheartBtn.removeAttribute('data-heartbroken-this-battle');
+
                 playerState.statusEffects = Object.keys(playerState.statusEffects).reduce((acc, key) => {
                     acc[key] = 0;
                     return acc;
@@ -2000,7 +2044,7 @@
 
             attackBtn.addEventListener('click', async () => {
                 if (!battleStarted || playerState.health <= 0 || attackBtn.disabled) return;
-                attackBtn.disabled = true;
+                setActionsDisabled(true);
 
                 if (isActionSluggish()) {
                     await processEndOfPlayerAction();
@@ -2092,6 +2136,7 @@
                     luckModal.classList.remove('hidden');
                 } else {
                     if (playerState.selectedLuck && !luckActivatedThisBattle) {
+                        setActionsDisabled(true);
                         luckActivatedThisBattle = true;
                         luckBtn.disabled = true;
 
@@ -2156,11 +2201,16 @@
                 sideWindowLeft.innerHTML = ''; 
                 if(startBattleBtn) startBattleBtn.remove();
                 
+                // Clear previous heartbreak state then re-apply if necessary
+                flameheartBtn.removeAttribute('data-heartbroken-this-battle');
+                armorheartBtn.removeAttribute('data-heartbroken-this-battle');
                 if (playerState.activeSacrifices.includes('HEARTBREAK')) {
                     if (Math.random() < 0.5) {
                         flameheartBtn.disabled = true;
+                        flameheartBtn.setAttribute('data-heartbroken-this-battle', 'true');
                     } else {
                         armorheartBtn.disabled = true;
+                        armorheartBtn.setAttribute('data-heartbroken-this-battle', 'true');
                     }
                 }
 
@@ -2309,5 +2359,4 @@
 
 </body>
 </html>
-
 
