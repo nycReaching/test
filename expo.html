@@ -94,14 +94,11 @@
             font-weight: 400; 
             text-shadow: 0 0 3px var(--text-primary);
             image-rendering: pixelated; /* Ensure emojis look pixelated */
+            -webkit-tap-highlight-color: transparent; /* Disable native mobile tap highlight */
         }
-        .btn:hover:not(:disabled) {
-            background-color: var(--accent-cyan) !important;
-            color: #000 !important;
-            text-shadow: none;
-            box-shadow: 0 0 10px var(--accent-cyan), 0 0 20px var(--accent-cyan) !important;
-            transform: translateY(-1px);
-        }
+        
+        /* Removed the :hover state to prevent sticky highlights on mobile */
+
         .btn:active {
             transform: scale(0.98) translateY(1px) !important;
             filter: brightness(0.8);
@@ -458,7 +455,8 @@
             const blurButtonOnEnd = (e) => {
                 const target = e.target.closest('.btn, .reel-item');
                 if (target) {
-                    target.blur();
+                    // Use a tiny timeout to ensure other click events fire first
+                    setTimeout(() => target.blur(), 50);
                 }
             };
             document.addEventListener('mouseup', blurButtonOnEnd);
@@ -2283,3 +2281,4 @@
 
 </body>
 </html>
+
