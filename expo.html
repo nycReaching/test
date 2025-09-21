@@ -8,27 +8,26 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Silkscreen&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- ADDED: Tone.js for audio feedback -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
     <style>
-        /* --- POLISHED 80's ARCADE / RETRO DESIGN LANGUAGE --- */
+        /* --- MODERN & CLEAN GAMING UI --- */
         :root {
-            /* Core Palette - Deep space with sunset glows */
-            --bg-main: #0d0c1d; /* Deep indigo */
-            --bg-panel: #1a182f; /* Slightly lighter indigo */
-            --bg-inset: #080714; /* Even darker for depth */
-            --border-color: #ff8c00;  /* Dark Orange */
-            --text-primary: #f0f0f0;
-            --text-secondary: #a0a0b0;
+            /* Core Palette - Cool, dark slate theme */
+            --bg-main: #0f172a;      /* Slate 900 */
+            --bg-panel: #1e293b;     /* Slate 800 */
+            --bg-inset: #0d131e;     /* Darker Slate */
+            --border-color: #334155; /* Slate 700 */
+            --text-primary: #e2e8f0; /* Slate 200 */
+            --text-secondary: #94a3b8;/* Slate 400 */
 
-            /* Accent Palette - Sunset & Twilight Neons */
-            --accent-cyan: #40e0d0;   /* Turquoise */
-            --accent-magenta: #ff577f; /* Coral Pink */
-            --accent-red: #ff4d4d;    /* Bright Red */
-            --accent-green: #39ff14;  /* Neon Green */
-            --accent-orange: #ff8c00; /* Dark Orange */
-            --accent-yellow: #f1fa8c; /* Pale Yellow */
-            --accent-blue: #87cefa;   /* Light Sky Blue */
+            /* Accent Palette - Vibrant */
+            --accent-cyan: #22d3ee;   /* Cyan 400 */
+            --accent-magenta: #f472b6; /* Pink 400 */
+            --accent-red: #f87171;    /* Red 400 */
+            --accent-green: #34d399;  /* Emerald 400 */
+            --accent-orange: #fb923c; /* Orange 400 */
+            --accent-yellow: #fbbf24; /* Amber 400 */
+            --accent-blue: #60a5fa;   /* Blue 400 */
+            --accent-indigo: #818cf8; /* Indigo 400 */
             
             --font-main: 'Silkscreen', sans-serif;
         }
@@ -38,51 +37,52 @@
             background-color: var(--bg-main);
             color: var(--text-primary);
             touch-action: manipulation;
-            -webkit-font-smoothing: none; /* Keep fonts sharp and pixelated */
+            -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            font-size: 12px; /* Base size for new font */
+            font-size: 12px;
         }
         
         #game-container {
             background-color: var(--bg-main);
-            border-radius: 0; /* Sharp corners */
-            box-shadow: 0 0 10px var(--accent-orange), 0 0 18px var(--accent-orange), inset 0 0 8px var(--accent-orange);
-            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 0 25px rgba(0,0,0,0.5), inset 0 0 15px rgba(56, 189, 248, 0.1);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
         }
 
         .panel {
-            border: 2px solid var(--border-color);
+            border: none;
             background-color: var(--bg-panel);
-            border-radius: 0;
-            box-shadow: 0 0 5px var(--border-color);
+            border-radius: 8px;
+            box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.05);
         }
         
         .panel-inset {
-            border: 2px solid var(--accent-cyan);
+            border: none;
             background-color: var(--bg-inset);
-            border-radius: 0;
+            border-radius: 6px;
             padding: 0.5rem;
-            box-shadow: inset 0 0 8px var(--accent-cyan);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
         }
 
-        /* --- RETRO BUTTON SYSTEM --- */
+        /* --- MODERN BUTTON SYSTEM --- */
         .btn {
-            border-radius: 0 !important;
-            background-color: #111 !important; 
-            border: 2px solid var(--accent-cyan) !important;
-            box-shadow: 0 0 5px var(--accent-cyan), inset 0 0 3px var(--accent-cyan) !important;
-            transition: all 0.1s linear !important; 
+            border-radius: 6px !important;
+            background-color: #293548 !important; /* Slightly lighter than panel */
+            border: 1px solid var(--border-color) !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.05) !important;
+            transition: all 0.15s ease-out !important;
             color: var(--text-primary);
             line-height: 1;
             font-weight: 400; 
-            text-shadow: 0 0 3px var(--text-primary);
-            image-rendering: pixelated; /* Ensure emojis look pixelated */
-            -webkit-tap-highlight-color: transparent; /* Disable native mobile tap highlight */
+            text-shadow: none;
+            image-rendering: auto;
+            -webkit-tap-highlight-color: transparent;
         }
         
         .btn:active {
-            transform: scale(0.98) translateY(1px) !important;
-            filter: brightness(0.8);
+            transform: scale(0.97) translateY(1px) !important;
+            filter: brightness(0.9);
         }
 
         /* --- Active state flash colors --- */
@@ -100,7 +100,7 @@
             color: #000 !important; 
             text-shadow: none;
         }
-        .btn-reroll:active   { background-color: var(--accent-cyan) !important; }
+        .btn-reroll:active   { background-color: var(--accent-blue) !important; }
         .btn-attack:active,
         .btn-danger:active   { background-color: var(--accent-red) !important; }
         .btn-luck:active,
@@ -108,68 +108,64 @@
         .btn-stone:active    { background-color: var(--accent-yellow) !important; }
         .btn-magic:active    { background-color: var(--accent-magenta) !important; }
         .btn-fortune:active,
-        .btn-action:active   { background-color: var(--accent-blue) !important; }
-        .btn-build:active    { background-color: #888 !important; }
+        .btn-action:active   { background-color: var(--accent-indigo) !important; }
+        .btn-build:active    { background-color: var(--text-secondary) !important; }
         .btn-shop:active     { background-color: var(--accent-orange) !important; }
         
         .btn:disabled {
-            background-color: #111 !important;
-            border-color: #555 !important;
-            color: #777 !important;
+            background-color: #1a2332 !important;
+            border-color: #2a3647 !important;
+            color: #64748b !important;
             cursor: not-allowed;
             opacity: 0.7;
             box-shadow: none !important;
             text-shadow: none !important;
         }
 
-        .btn-grad-reroll, .btn-grad-attack, .btn-grad-luck, .btn-grad-stone, .btn-striped-fortune, .btn-striped-build, .btn-striped-shop, .btn-magic {
-            background-image: none !important;
-        }
-
         /* Semantic Button Colors (using border and glow) */
-        .btn-reroll   { border-color: var(--accent-cyan) !important; box-shadow: 0 0 5px var(--accent-cyan), inset 0 0 3px var(--accent-cyan) !important; }
-        .btn-attack   { border-color: var(--accent-red) !important; box-shadow: 0 0 5px var(--accent-red), inset 0 0 3px var(--accent-red) !important; }
-        .btn-luck     { border-color: var(--accent-green) !important; box-shadow: 0 0 5px var(--accent-green), inset 0 0 3px var(--accent-green) !important; }
-        .btn-stone    { border-color: var(--accent-yellow) !important; box-shadow: 0 0 5px var(--accent-yellow), inset 0 0 3px var(--accent-yellow) !important; }
-        .btn-magic    { border-color: var(--accent-magenta) !important; box-shadow: 0 0 5px var(--accent-magenta), inset 0 0 3px var(--accent-magenta) !important; }
-        .btn-fortune  { border-color: var(--accent-blue) !important; box-shadow: 0 0 5px var(--accent-blue), inset 0 0 3px var(--accent-blue) !important; }
-        .btn-build    { border-color: #888 !important; box-shadow: 0 0 5px #888, inset 0 0 3px #888 !important; }
-        .btn-shop     { border-color: var(--accent-orange) !important; box-shadow: 0 0 5px var(--accent-orange), inset 0 0 3px var(--accent-orange) !important; }
-        .btn-danger   { border-color: var(--accent-red) !important; box-shadow: 0 0 5px var(--accent-red), inset 0 0 3px var(--accent-red) !important; }
-        .btn-success  { border-color: var(--accent-green) !important; box-shadow: 0 0 5px var(--accent-green), inset 0 0 3px var(--accent-green) !important; }
-        .btn-action  { border-color: var(--accent-blue) !important; box-shadow: 0 0 5px var(--accent-blue), inset 0 0 3px var(--accent-blue) !important; }
+        .btn-reroll   { border-color: var(--accent-blue) !important; box-shadow: 0 0 8px -2px var(--accent-blue), 0 2px 4px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.05) !important; }
+        .btn-attack   { border-color: var(--accent-red) !important; box-shadow: 0 0 8px -2px var(--accent-red), 0 2px 4px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.05) !important; }
+        .btn-luck     { border-color: var(--accent-green) !important; box-shadow: 0 0 8px -2px var(--accent-green), 0 2px 4px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.05) !important; }
+        .btn-stone    { border-color: var(--accent-yellow) !important; box-shadow: 0 0 8px -2px var(--accent-yellow), 0 2px 4px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.05) !important; }
+        .btn-magic    { border-color: var(--accent-magenta) !important; box-shadow: 0 0 8px -2px var(--accent-magenta), 0 2px 4px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.05) !important; }
+        .btn-fortune  { border-color: var(--accent-indigo) !important; box-shadow: 0 0 8px -2px var(--accent-indigo), 0 2px 4px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.05) !important; }
+        .btn-build    { border-color: var(--text-secondary) !important; box-shadow: 0 0 8px -2px var(--text-secondary), 0 2px 4px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.05) !important; }
+        .btn-shop     { border-color: var(--accent-orange) !important; box-shadow: 0 0 8px -2px var(--accent-orange), 0 2px 4px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.05) !important; }
+        .btn-danger   { border-color: var(--accent-red) !important; box-shadow: 0 0 8px -2px var(--accent-red), 0 2px 4px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.05) !important; }
+        .btn-success  { border-color: var(--accent-green) !important; box-shadow: 0 0 8px -2px var(--accent-green), 0 2px 4px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.05) !important; }
+        .btn-action  { border-color: var(--accent-blue) !important; box-shadow: 0 0 8px -2px var(--accent-blue), 0 2px 4px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.05) !important; }
         
-        @keyframes neon-flicker-green { 0%, 100% { box-shadow: 0 0 8px var(--accent-green), 0 0 12px var(--accent-green); filter: brightness(1); } 50% { box-shadow: 0 0 12px var(--accent-green), 0 0 20px var(--accent-green); filter: brightness(1.2); } }
-        .start-battle-btn-pulse { animation: neon-flicker-green 1.5s infinite ease-in-out; }
+        @keyframes subtle-pulse-green { 0%, 100% { box-shadow: 0 0 10px -2px var(--accent-green), 0 2px 4px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.05); } 50% { box-shadow: 0 0 15px -2px var(--accent-green), 0 2px 4px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.05); } }
+        .start-battle-btn-pulse { animation: subtle-pulse-green 1.5s infinite ease-in-out; }
 
-        @keyframes neon-flicker-red { 0%, 100% { box-shadow: 0 0 8px var(--accent-red), 0 0 12px var(--accent-red); filter: brightness(1); } 50% { box-shadow: 0 0 12px var(--accent-red), 0 0 20px var(--accent-red); filter: brightness(1.2); } }
-        .start-battle-btn-pulse-red { animation: neon-flicker-red 1.5s infinite ease-in-out; }
+        @keyframes subtle-pulse-red { 0%, 100% { box-shadow: 0 0 10px -2px var(--accent-red), 0 2px 4px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.05); } 50% { box-shadow: 0 0 15px -2px var(--accent-red), 0 2px 4px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.05); } }
+        .start-battle-btn-pulse-red { animation: subtle-pulse-red 1.5s infinite ease-in-out; }
 
         /* Progress Bars */
         .progress-bar-container {
-            border: 2px solid var(--accent-cyan);
+            border: 1px solid var(--border-color);
             height: 12px;
-            padding: 1px;
+            padding: 2px;
             background-color: var(--bg-inset);
-            border-radius: 0;
+            border-radius: 99px;
         }
         .progress-bar-fill {
             transition: width 0.2s linear;
             height: 100%;
-            border-radius: 0;
+            border-radius: 99px;
             box-shadow: 0 0 10px var(--color);
             background-color: var(--color);
         }
 
         /* Modals */
         .modal-backdrop {
-             background-color: rgba(13, 12, 29, 0.8);
-             backdrop-filter: none;
+             background-color: rgba(15, 23, 42, 0.8);
+             backdrop-filter: blur(4px);
         }
         .modal-content {
-            border: 2px solid var(--accent-magenta);
+            border: 1px solid var(--accent-magenta);
             background-color: var(--bg-panel);
-            border-radius: 0;
+            border-radius: 8px;
             box-shadow: 0 0 20px var(--accent-magenta);
         }
 
@@ -177,21 +173,21 @@
         .modal-backdrop.bottom-half {
             align-items: flex-end;
             background-color: transparent !important;
+            backdrop-filter: none;
         }
         .modal-backdrop.bottom-half .modal-content {
             height: 50%;
             width: 100%;
             margin: 0;
-            border-radius: 0;
-            border-top: 2px solid var(--border-color);
+            border-radius: 12px 12px 0 0;
+            border-top: 1px solid var(--border-color);
             border-left: 0;
             border-right: 0;
             border-bottom: 0;
-            box-shadow: 0 -10px 20px -5px var(--border-color);
+            box-shadow: 0 -10px 20px -5px rgba(0,0,0,0.5);
         }
 
-
-        /* --- EMOJI & ANIMATION STYLES (Retro) --- */
+        /* --- EMOJI & ANIMATION STYLES --- */
         .emoji-elite-stamp {
             animation: intimidating-pulse 1.2s infinite ease-in-out;
             text-shadow: 0 0 8px var(--accent-red), 0 0 12px var(--accent-red);
@@ -208,10 +204,10 @@
         @keyframes lunge-animation { 50% { transform: scale(1.15) translateY(-5px); } }
         .lunge-animation { animation: lunge-animation 0.6s ease-in-out; }
 
-        @keyframes border-pulse { 50% { box-shadow: 0 0 0 4px var(--accent-red), 0 0 20px var(--accent-red); } }
+        @keyframes border-pulse { 50% { box-shadow: 0 0 0 4px var(--accent-red), 0 0 20px var(--accent-red), 0 0 25px rgba(0,0,0,0.5), inset 0 0 15px rgba(56, 189, 248, 0.1); } }
         .border-pulse-animation { animation: border-pulse 1s infinite; }
 
-        .screen-flash { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: white; opacity: 0; pointer-events: none; z-index: 999; border-radius: 0; }
+        .screen-flash { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: white; opacity: 0; pointer-events: none; z-index: 999; border-radius: 12px; }
         @keyframes screen-flash-anim { from { opacity: 0.5; } to { opacity: 0; } }
         .flash-animation { animation: screen-flash-anim 0.3s ease-out; }
         
@@ -227,12 +223,12 @@
             box-shadow: 0 0 6px var(--accent-yellow);
             transition: all 0.1s linear;
             animation: corner-flicker 1s infinite;
-            border-radius: 0;
+            border-radius: 2px;
         }
-        .corner-tl { top: -2px; left: -2px; border-width: 1px 0 0 1px; }
-        .corner-tr { top: -2px; right: -2px; border-width: 1px 1px 0 0; }
-        .corner-bl { bottom: -2px; left: -2px; border-width: 0 0 1px 1px; }
-        .corner-br { bottom: -2px; right: -2px; border-width: 0 1px 1px 0; }
+        .corner-tl { top: -2px; left: -2px; border-width: 2px 0 0 2px; }
+        .corner-tr { top: -2px; right: -2px; border-width: 2px 2px 0 0; }
+        .corner-bl { bottom: -2px; left: -2px; border-width: 0 0 2px 2px; }
+        .corner-br { bottom: -2px; right: -2px; border-width: 0 2px 2px 0; }
 
         @keyframes pulse-orange { 50% { background-color: var(--accent-orange); box-shadow: 0 0 15px var(--accent-orange); } }
         .pulse-orange-animation { animation: pulse-orange 1s infinite; }
@@ -257,23 +253,12 @@
         .enemy-fade-out { animation: fade-out-and-shrink 0.4s ease-out forwards; }
         .enemy-defeated { transition: width 0.3s ease-out, padding 0.3s ease-out, margin 0.3s ease-out; width: 0px !important; padding: 0 !important; margin: 0 !important; overflow: hidden; }
 
-        /* NEW: Turn indicator animation */
-        @keyframes turn-indicator-anim {
-            0% { transform: scale(0.8); opacity: 0; }
-            20% { transform: scale(1.1); opacity: 1; }
-            80% { transform: scale(1); opacity: 1; }
-            100% { transform: scale(0.8); opacity: 0; }
-        }
-        .turn-indicator-show {
-            animation: turn-indicator-anim 1.5s ease-in-out forwards;
-        }
-
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-2 text-sm">
 
     <!-- Mobile Screen Container -->
-    <div id="game-container" class="w-full max-w-sm h-[95vh] max-h-[850px] p-3 flex flex-col gap-3 relative overflow-hidden">
+    <div id="game-container" class="w-full max-w-sm h-[95vh] max-h-[850px] p-3 flex flex-col gap-3 relative">
         <div id="screen-flash-overlay" class="screen-flash"></div>
         
         <!-- =================================================================== -->
@@ -339,8 +324,6 @@
             <div class="flex-shrink-0 panel-inset flex flex-col justify-between p-1.5 gap-1.5">
                 <!-- Top part: Info Display / Start Button -->
                 <div id="battle-details-window" class="relative flex-shrink-0 h-16 flex items-center justify-center text-center">
-                    <!-- ADDED: Turn Indicator -->
-                    <div id="turn-indicator" class="absolute inset-0 flex items-center justify-center text-2xl font-bold pointer-events-none z-10" style="display: none;"></div>
                     <div id="battle-details-content" class="w-full h-full flex items-center justify-center">
                        <!-- Content injected by JS -->
                     </div>
@@ -362,32 +345,36 @@
                 <div id="side-window-left" class="h-24 flex flex-col items-center justify-center panel-inset p-2 overflow-hidden text-center" style="line-height: 1.3;">
                 </div>
 
-                <!-- REVAMPED: Streamlined Action Layout -->
-                <div class="flex-grow flex flex-col gap-2">
-                    <!-- Primary Actions -->
-                    <div class="grid grid-cols-5 gap-2">
-                        <button id="reshuffleBtn" class="h-14 relative btn btn-reroll focus:outline-none flex items-center justify-center text-2xl">
+                <!-- Action Button Grid -->
+                <div class="flex-grow flex flex-col gap-2 text-sm">
+                    <!-- Top Row: Core Actions -->
+                    <div class="flex-1 flex gap-2">
+                        <button id="reshuffleBtn" class="flex-[1_1_0%] h-full relative btn btn-reroll focus:outline-none flex items-center justify-center text-2xl">
                             🔃
                             <span id="reshuffle-counter" class="absolute bottom-1 right-2 text-sm bg-black/75 rounded-sm px-1 py-0.5"></span>
                         </button>
-                        <button id="attackBtn" class="col-span-3 h-14 btn btn-attack focus:outline-none flex items-center justify-center text-xl gap-1" disabled><span id="attack-icon">💥</span><span id="attack-value">10</span></button>
-                        <button id="luckBtn" class="h-14 btn btn-luck focus:outline-none flex items-center justify-center text-base gap-1"><span class="text-xl">🍀</span><span id="luck-value">10</span>%</button>
+                        <button id="attackBtn" class="flex-[2_2_0%] h-full btn btn-attack focus:outline-none flex items-center justify-center text-xl gap-1" disabled><span id="attack-icon">💥</span><span id="attack-value">10</span></button>
+                        <button id="luckBtn" class="flex-[1_1_0%] h-full btn btn-luck focus:outline-none flex items-center justify-center text-base gap-1"><span class="text-xl">🍀</span><span id="luck-value">10</span>%</button>
                     </div>
-                    <!-- Secondary Actions: Spells & Stones -->
-                    <div class="flex-grow grid grid-cols-3 grid-rows-2 gap-2 text-sm">
-                        <button id="flameheartBtn" class="h-full btn btn-magic focus:outline-none text-2xl flex items-center justify-center">❤️‍🔥</button>
-                        <button id="frostbiteBtn" class="h-full btn btn-magic focus:outline-none text-2xl flex items-center justify-center">❄️</button>
-                        <button id="armorheartBtn" class="h-full btn btn-magic focus:outline-none text-2xl flex items-center justify-center">🩶</button>
-                        
-                        <button class="equip-slot h-full relative btn btn-stone focus:outline-none text-2xl flex items-center justify-center"><span class="opacity-50">?</span></button>
-                        <button class="equip-slot h-full relative btn btn-stone focus:outline-none text-2xl flex items-center justify-center"><span class="opacity-50">?</span></button>
-                        <button class="equip-slot h-full relative btn btn-stone focus:outline-none text-2xl flex items-center justify-center"><span class="opacity-50">?</span></button>
+                    
+                    <!-- Middle Row: Magic -->
+                    <div class="flex-1 flex gap-2">
+                        <button id="flameheartBtn" class="flex-1 h-full btn btn-magic focus:outline-none text-2xl flex items-center justify-center">❤️‍🔥</button>
+                        <button id="frostbiteBtn" class="flex-1 h-full btn btn-magic focus:outline-none text-2xl flex items-center justify-center">❄️</button>
+                        <button id="armorheartBtn" class="flex-1 h-full btn btn-magic focus:outline-none text-2xl flex items-center justify-center">🩶</button>
                     </div>
-                     <!-- Tertiary Actions: Menus -->
-                    <div class="grid grid-cols-3 gap-2">
-                        <button id="fortunesBtn" class="h-12 btn btn-fortune text-2xl focus:outline-none flex items-center justify-center">🔮</button>
-                        <button id="buildBtn" class="h-12 btn btn-build text-2xl focus:outline-none flex items-center justify-center">🔨</button>
-                        <button id="shopBtn" class="h-12 btn btn-shop text-2xl focus:outline-none flex items-center justify-center">🪙</button>
+                    
+                    <!-- Moon Arts Row -->
+                    <div class="flex-1 flex gap-2">
+                        <button class="equip-slot h-full relative btn btn-stone focus:outline-none text-2xl flex items-center justify-center flex-1"><span class="opacity-50">?</span></button>
+                        <button class="equip-slot h-full relative btn btn-stone focus:outline-none text-2xl flex items-center justify-center flex-1"><span class="opacity-50">?</span></button>
+                    </div>
+                    
+                    <!-- Bottom Row: Menus -->
+                    <div class="flex-1 flex gap-2">
+                        <button id="fortunesBtn" class="flex-1 h-full btn btn-fortune text-2xl focus:outline-none flex items-center justify-center">🔮</button>
+                        <button id="buildBtn" class="flex-1 h-full btn btn-build text-2xl focus:outline-none flex items-center justify-center">🔨</button>
+                        <button id="shopBtn" class="flex-1 h-full btn btn-shop text-2xl focus:outline-none flex items-center justify-center">🪙</button>
                     </div>
                 </div>
             </div>
@@ -512,9 +499,9 @@
             <div class="relative modal-content p-6 w-full flex flex-col">
                 <h2 class="text-xl mb-4 text-center" style="color: var(--accent-yellow); text-shadow: 0 0 8px var(--accent-yellow);">HOW TO PLAY</h2>
                 <div class="text-left space-y-3 flex-grow" style="line-height: 1.5;">
-                    <p><strong style="color: var(--accent-cyan);">Reroll (🔃)</strong> for new enemies. 25% chance for a <strong style="color: var(--accent-yellow);">Gift (🎁)</strong>, 25% for a stronger <strong style="color: var(--accent-red);">Elite</strong>.</p>
+                    <p><strong style="color: var(--accent-blue);">Reroll (🔃)</strong> for new enemies. 25% chance for a <strong style="color: var(--accent-yellow);">Gift (🎁)</strong>, 25% for a stronger <strong style="color: var(--accent-red);">Elite</strong>.</p>
                     <p><strong style="color: var(--accent-green);">XP Bar:</strong> Fills when defeating enemies. When full, pick an <strong style="color: var(--accent-orange);">Upgrade</strong>.</p>
-                    <p><strong style="color: var(--accent-blue);">Fortunes (🔮):</strong> Make a permanent <strong style="color: var(--accent-red);">Sacrifice</strong> to gain a powerful, run-altering <strong style="color: var(--accent-yellow);">Fortune</strong>.</p>
+                    <p><strong style="color: var(--accent-indigo);">Fortunes (🔮):</strong> Make a permanent <strong style="color: var(--accent-red);">Sacrifice</strong> to gain a powerful, run-altering <strong style="color: var(--accent-yellow);">Fortune</strong>.</p>
                     <p><strong style="color: var(--accent-magenta);">Magic Bar:</strong> Fuels powerful spells.</p>
                     <p><strong style="color: var(--accent-blue);">Moon Arts (🌒):</strong> Spend Moonstones on limited-use skills in the <strong class="text-gray-400">?</strong> slots.</p>
                     <p><strong style="color: var(--accent-green);">Luck (🍀):</strong> Choose luck pre-battle. Activate in combat for a chance at a powerful bonus.</p>
@@ -596,7 +583,6 @@
             const closeTutorialBtn = document.getElementById('close-tutorial-btn');
             const playerStatusEffectsEl = document.getElementById('player-status-effects');
             const startBattleContainer = document.getElementById('start-battle-container');
-            const turnIndicatorEl = document.getElementById('turn-indicator');
             
             const modalMap = {
                 fortunesBtn: { modal: document.getElementById('fortunesModal'), button: document.getElementById('fortunesBtn') },
@@ -604,51 +590,6 @@
                 shopBtn: { modal: document.getElementById('shopModal'), button: document.getElementById('shopBtn') }
             };
             const allModals = Object.values(modalMap).map(item => item.modal);
-
-            // --- Audio Feedback ---
-            let isAudioReady = false;
-            const synths = {
-                click: new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.01, decay: 0.1, sustain: 0.1, release: 0.1 } }).toDestination(),
-                playerAttack: new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.01, decay: 0.15, sustain: 0, release: 0.1 } }).toDestination(),
-                playerDamage: new Tone.Synth({ oscillator: { type: 'sawtooth' }, envelope: { attack: 0.01, decay: 0.3, sustain: 0, release: 0.1 } }).toDestination(),
-                enemyDefeat: new Tone.MembraneSynth({ pitchDecay: 0.01, octaves: 6, envelope: { attack: 0.01, decay: 0.5, sustain: 0, release: 0.1 } }).toDestination(),
-                reshuffle: new Tone.PluckSynth().toDestination(),
-                buy: new Tone.Synth({ oscillator: { type: 'triangle' }, envelope: { attack: 0.01, decay: 0.1, sustain: 0.1, release: 0.1 } }).toDestination(),
-                useItem: new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.01, decay: 0.2, sustain: 0.2, release: 0.1 } }).toDestination(),
-                spell: new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'fmsine' }, envelope: { attack: 0.05, decay: 0.3, sustain: 0.1, release: 0.2 } }).toDestination(),
-            };
-
-            const playSound = (sound) => {
-                if (!isAudioReady || !synths[sound]) return;
-                try {
-                    switch (sound) {
-                        case 'click': synths.click.triggerAttackRelease('C5', '8n'); break;
-                        case 'playerAttack': synths.playerAttack.triggerAttackRelease('0.1'); break;
-                        case 'playerDamage': synths.playerDamage.triggerAttackRelease('G2', '8n'); break;
-                        case 'enemyDefeat': synths.enemyDefeat.triggerAttackRelease('C2', '8n', Tone.now()); break;
-                        case 'reshuffle': synths.reshuffle.triggerAttackRelease('G4', Tone.now()); break;
-                        case 'buy':
-                            synths.buy.triggerAttackRelease('E5', '8n');
-                            synths.buy.triggerAttackRelease('G5', '8n', Tone.now() + 0.1);
-                            break;
-                        case 'useItem': synths.useItem.triggerAttackRelease('A5', '8n'); break;
-                        case 'spell': synths.spell.triggerAttackRelease(['C4', 'E4', 'G4'], '4n'); break;
-                    }
-                } catch (error) {
-                    console.error(`Error playing sound ${sound}:`, error);
-                }
-            };
-
-            const initAudio = async () => {
-                if (isAudioReady) return;
-                try {
-                    await Tone.start();
-                    isAudioReady = true;
-                    console.log("Audio is ready.");
-                } catch (e) {
-                    console.error("Could not start audio context:", e);
-                }
-            };
             
             // --- Game Data ---
             const shopItems = [
@@ -716,15 +657,15 @@
                 { title: 'UNSTABLE MIND', desc: 'Share 🍶 with enemy' }
             ];
             const fortunes = [
-                { text: 'Durable Stones', rarity: 'RARE', desc: '+1 Status stone use', color: 'text-sky-400' },
-                { text: 'Efficient Magic', rarity: 'RARE', desc: '1/2 MP cost', color: 'text-sky-400' },
-                { text: 'Bartering Edge', rarity: 'RARE', desc: '15% shop discount', color: 'text-sky-400' },
-                { text: 'Archer\'s Edge', rarity: 'EPIC', desc: 'Attacks all with 🏹', color: 'text-yellow-400' },
-                { text: 'Enchantment', rarity: 'EPIC', desc: '🧚🏼also grants ❇️', color: 'text-yellow-400' },
-                { text: 'Battle Grace', rarity: 'EPIC', desc: 'Buffs restore 1 🛡️', color: 'text-yellow-400' },
-                { text: 'Prolonged Torment', rarity: 'LEGENDARY', desc: '2x 🕯️and 🐌 durations', color: 'text-pink-400' },
-                { text: 'Thief Strike', rarity: 'LEGENDARY', desc: 'Steal 2 gold with 🗡️', color: 'text-pink-400' },
-                { text: 'Toxic Decay', rarity: 'LEGENDARY', desc: '☠️ can stack', color: 'text-pink-400' }
+                { text: 'Durable Stones', rarity: 'RARE', desc: '+1 Status stone use', color: 'var(--accent-blue)' },
+                { text: 'Efficient Magic', rarity: 'RARE', desc: '1/2 MP cost', color: 'var(--accent-blue)' },
+                { text: 'Bartering Edge', rarity: 'RARE', desc: '15% shop discount', color: 'var(--accent-blue)' },
+                { text: 'Archer\'s Edge', rarity: 'EPIC', desc: 'Attacks all with 🏹', color: 'var(--accent-yellow)' },
+                { text: 'Enchantment', rarity: 'EPIC', desc: '🧚🏼also grants ❇️', color: 'var(--accent-yellow)' },
+                { text: 'Battle Grace', rarity: 'EPIC', desc: 'Buffs restore 1 🛡️', color: 'var(--accent-yellow)' },
+                { text: 'Prolonged Torment', rarity: 'LEGENDARY', desc: '2x 🕯️and 🐌 durations', color: 'var(--accent-magenta)' },
+                { text: 'Thief Strike', rarity: 'LEGENDARY', desc: 'Steal 2 gold with 🗡️', color: 'var(--accent-magenta)' },
+                { text: 'Toxic Decay', rarity: 'LEGENDARY', desc: '☠️ can stack', color: 'var(--accent-magenta)' }
             ];
 
             // --- State ---
@@ -904,7 +845,7 @@
                 reshuffleCounter.textContent = playerState.rerolls;
                 armorValueEl.textContent = playerState.armor;
                 healthValueEl.textContent = playerState.health;
-                if (luckValueEl) luckValueEl.textContent = playerState.luck;
+                luckValueEl.textContent = playerState.luck;
                 
                 updateAttackValueUI();
                 
@@ -1044,20 +985,6 @@
                 });
             };
 
-             // --- Turn Indicator Logic ---
-            const showTurnIndicator = (text, color) => {
-                if (!turnIndicatorEl) return;
-                turnIndicatorEl.textContent = text;
-                turnIndicatorEl.style.color = color;
-                turnIndicatorEl.style.textShadow = `0 0 8px ${color}`;
-                turnIndicatorEl.style.display = 'flex';
-                turnIndicatorEl.classList.remove('turn-indicator-show');
-                // Use a timeout to re-trigger animation
-                setTimeout(() => {
-                    turnIndicatorEl.classList.add('turn-indicator-show');
-                }, 10);
-            };
-
             // --- Fortunes Modal Logic ---
             const showFortunes = () => {
                 fortunePhase = 'fortune';
@@ -1078,12 +1005,11 @@
                     const button = document.createElement('button');
                     button.className = `btn w-full px-4 py-2 whitespace-normal leading-tight flex flex-col items-center`;
                     button.innerHTML = `
-                        <span class="${fortune.color}">${fortune.text}</span>
-                        <span class="text-sm font-normal text-gray-300">${fortune.desc}</span>
+                        <span style="color: ${fortune.color}; text-shadow: 0 0 6px ${fortune.color};">${fortune.text}</span>
+                        <span class="text-sm font-normal" style="color: var(--text-secondary);">${fortune.desc}</span>
                     `;
                     button.addEventListener('click', (e) => {
                         e.stopPropagation(); 
-                        playSound('click');
                         if (currentSacrifice && selectedFortunes.length < 4) {
                             selectedFortunes.push({ sacrifice: currentSacrifice, fortune: fortune });
 
@@ -1148,11 +1074,10 @@
 
                         button.innerHTML = `
                             <span>${sacrifice.title}</span>
-                            <span class="text-sm font-normal text-gray-300">${sacrifice.desc}</span>
+                            <span class="text-sm font-normal" style="color: var(--text-secondary);">${sacrifice.desc}</span>
                         `;
                         button.addEventListener('click', (e) => {
                             e.stopPropagation();
-                            playSound('click');
                             if (!canSelect) return;
 
                             // Apply sacrifice effect
@@ -1196,11 +1121,10 @@
                     selectedFortunes.forEach(sf => {
                         const fortuneEntry = document.createElement('div');
                         fortuneEntry.className = 'p-2 bg-black rounded-sm w-2/5 cursor-pointer';
-                        fortuneEntry.innerHTML = `<p class="pointer-events-none">${sf.sacrifice}</p><p class="pointer-events-none ${sf.fortune.color}">${sf.fortune.text}</p>`;
+                        fortuneEntry.innerHTML = `<p class="pointer-events-none">${sf.sacrifice}</p><p class="pointer-events-none" style="color: ${sf.fortune.color};">${sf.fortune.text}</p>`;
                         fortuneEntry.addEventListener('click', () => {
-                            playSound('click');
                             fortuneDetailContent.innerHTML = `
-                                <h3 class="text-xl ${sf.fortune.color}">${sf.fortune.text}</h3>
+                                <h3 class="text-xl" style="color: ${sf.fortune.color};">${sf.fortune.text}</h3>
                                 <p class="mt-2 text-base">${sf.fortune.desc}</p>
                                 <hr class="my-2 border-gray-600">
                                 <p class="text-sm text-gray-400">Sacrifice: ${sf.sacrifice}</p>
@@ -1265,8 +1189,7 @@
                 }
 
                 if (playerState.gold < currentCost) return;
-                
-                playSound('buy');
+
                 playerState.gold -= currentCost;
                 playerState.inventory[item.id]++;
                 if (item.id === 'moonstone') {
@@ -1283,8 +1206,7 @@
                 if (!item || item.id === 'moonstone') return;
                 
                 if (item.id === 'cross' && playerState.statusEffects['🕯️'] <= 0) return;
-                
-                playSound('useItem');
+
                 let isFreeUse = false;
                 if (luckActivatedThisBattle && playerState.selectedLuck === 'choices') {
                     if (Math.random() * 100 < playerState.luck) {
@@ -1398,7 +1320,6 @@
             // --- Modal, Equipment & Build Logic ---
             const openModal = (modalToOpen) => {
                 if (!modalToOpen) return;
-                playSound('click');
                 if (modalToOpen.id === 'shopModal') {
                     renderShop();
                     if (battleStarted) {
@@ -1413,7 +1334,6 @@
             };
             const closeModal = (modalToClose) => { 
                 if (modalToClose) {
-                    playSound('click');
                     modalToClose.classList.add('hidden');
                      if (modalToClose.id === 'shopModal') {
                         modalToClose.classList.remove('bottom-half');
@@ -1428,7 +1348,6 @@
                         let uses = parseInt(slot.dataset.uses || '0', 10);
                         if (!symbol || uses <= 0) return;
                         
-                        playSound('useItem');
                         setActionsDisabled(true);
 
                         let isFreeUse = false;
@@ -1495,7 +1414,6 @@
                         
                         return;
                     }
-                    playSound('click');
                     const symbol = slot.dataset.symbol;
                     if (symbol) {
                         const info = symbolDescriptions[symbol];
@@ -1514,7 +1432,6 @@
 
             reelItems.forEach(item => {
                 item.addEventListener('click', () => {
-                    playSound('click');
                     if (activeEquipSlot) {
                         playerState.moonstones--;
                         playerState.inventory.moonstone--; 
@@ -1536,7 +1453,7 @@
                     }
                 });
             });
-            reelModal.addEventListener('click', (e) => { if (e.target === reelModal) { playSound('click'); reelModal.classList.add('hidden'); } });
+            reelModal.addEventListener('click', (e) => { if (e.target === reelModal) reelModal.classList.add('hidden'); });
             
             const openEquipmentChoiceModal = (slotType) => {
                 equipmentChoiceContent.innerHTML = '';
@@ -1559,7 +1476,6 @@
                     `;
                     itemButton.addEventListener('click', (e) => {
                         e.stopPropagation();
-                        playSound('click');
                         if (activeBuildSlot) {
                             const currentSlotType = activeBuildSlot.dataset.slotType;
                             const oldItem = playerState.equipment[currentSlotType]; // Store old item
@@ -1595,12 +1511,11 @@
 
             document.querySelectorAll('[data-slot-type]').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    playSound('click');
                     activeBuildSlot = btn;
                     openEquipmentChoiceModal(btn.dataset.slotType);
                 });
             });
-            equipmentChoiceModal.addEventListener('click', (e) => { if (e.target === equipmentChoiceModal) { playSound('click'); equipmentChoiceModal.classList.add('hidden'); } });
+            equipmentChoiceModal.addEventListener('click', (e) => { if (e.target === equipmentChoiceModal) equipmentChoiceModal.classList.add('hidden'); });
 
             // --- Enemy Drawing & Reshuffle Logic ---
             const shuffle = (array) => {
@@ -1610,7 +1525,7 @@
 
             const reshuffleEnemies = (isInitial = false) => {
                 if (isReshuffling || (!isInitial && playerState.rerolls <= 0)) return;
-                if (!isInitial) { playSound('reshuffle'); playerState.rerolls--; updatePlayerUI(); }
+                if (!isInitial) { playerState.rerolls--; updatePlayerUI(); }
                 isReshuffling = true;
                 if(startBattleBtn) startBattleBtn.disabled = true;
 
@@ -1710,12 +1625,8 @@
                     sideWindowLeft.innerHTML = `<div class="w-full p-1"><p class="text-lg text-center" style="color: var(--accent-blue);">FREE CAST!</p></div>`;
                 }
 
-                if (!battleStarted || playerState.magic < currentMagicCost) {
-                    if (battleStarted) playSound('playerDamage'); // Error/fail sound
-                    return;
-                }
-
-                playSound('spell');
+                if (!battleStarted || playerState.magic < currentMagicCost) return;
+                
                 setActionsDisabled(true);
 
                 playerState.magic -= currentMagicCost;
@@ -1788,7 +1699,6 @@
                         if (battleStarted) {
                             executeSpell(key);
                         } else {
-                            playSound('click');
                             displaySpellInfo(key);
                         }
                     });
@@ -1808,7 +1718,6 @@
 
             fortuneDetailModal.addEventListener('click', (e) => {
                 if (e.target === fortuneDetailModal) {
-                    playSound('click');
                     fortuneDetailModal.classList.add('hidden');
                 }
             });
@@ -1852,7 +1761,6 @@
                     if (coords.x >= wrapperRect.left && coords.x <= wrapperRect.right) { targetIndex = i; break; }
                 }
                 if (targetIndex !== -1 && targetIndex !== currentBattleTargetIndex) {
-                    playSound('click');
                     currentBattleTargetIndex = targetIndex;
                     positionBattleSelector(enemyWrappers[currentBattleTargetIndex]);
                     updateEnemyDisplay(currentEnemiesInBattle[currentBattleTargetIndex]);
@@ -1878,7 +1786,6 @@
                 const newIndex = enemySpans.indexOf(clickedSpan);
 
                 if (newIndex !== -1 && newIndex !== currentBattleTargetIndex) {
-                    playSound('click');
                     currentBattleTargetIndex = newIndex;
                     positionBattleSelector(clickedSpan);
                     const displayStats = getDisplayEnemyStats(currentPreBattleEnemies[newIndex]);
@@ -1892,13 +1799,13 @@
 
                 if (waveCount >= 6 && !unlocks.extraVigor) {
                     unlocks.extraVigor = true;
-                    message += "<p class='mt-3 text-green-400'>Your rebirth is infused with vigor.</p>";
+                    message += "<p class='mt-3' style='color: var(--accent-green)'>Your rebirth is infused with vigor.</p>";
                     newUnlock = true;
                 }
 
                 if (waveCount >= 4 && !unlocks.extraMoonstone) {
                     unlocks.extraMoonstone = true;
-                    message += "<p class='mt-3 text-yellow-400'>An extra moonstone stays with you.</p>";
+                    message += "<p class='mt-3' style='color: var(--accent-yellow)'>An extra moonstone stays with you.</p>";
                     newUnlock = true;
                 }
 
@@ -1912,7 +1819,6 @@
 
             // --- BATTLE LOGIC ---
             const playerTakesDamage = (damage) => {
-                playSound('playerDamage');
                 const damageAbsorbed = Math.min(playerState.armor, damage);
                 if (damageAbsorbed > 0) {
                     playerState.armor -= damageAbsorbed;
@@ -1972,7 +1878,6 @@
 
             const enemyAttackPhase = async () => {
                 if (playerState.health <= 0) return;
-                showTurnIndicator('ENEMY TURN', 'var(--accent-red)');
                 await delay(400);
                 const livingEnemies = currentEnemiesInBattle.filter(enemy => !enemy.isDefeated && !enemy.isGift);
                 for (const enemy of livingEnemies) {
@@ -2023,7 +1928,6 @@
                     playerActionsTaken = 0;
                     setActionsDisabled(false);
                     sideWindowLeft.innerHTML = '';
-                    showTurnIndicator('YOUR TURN', 'var(--accent-green)');
                 }
             };
             const endBattle = () => {
@@ -2099,7 +2003,6 @@
                 const enemy = currentEnemiesInBattle[defeatedIndex];
                 if (!enemy || enemy.isDefeated) return false;
 
-                playSound('enemyDefeat');
                 enemy.isDefeated = true;
                 const enemyWrapper = enemy.ref;
                 enemyWrapper.style.pointerEvents = 'none';
@@ -2173,7 +2076,6 @@
                 let spinCount = 0;
 
                 const continueGameHandler = async () => {
-                    playSound('click');
                     giftModal.classList.add('hidden');
                     handleEnemyDefeat(giftIndex);
                     await processEndOfPlayerAction();
@@ -2216,7 +2118,7 @@
                         awardGiftBuff(winningRewardType, winningValue);
                         return;
                     }
-                    playSound('click');
+
                     rewards.forEach(r => r.className = r.className.replace(/reward-highlight-.*-anim/g, ''));
                     
                     const highlightIndex = spinCount % numRewards;
@@ -2276,8 +2178,6 @@
 
             attackBtn.addEventListener('click', async () => {
                 if (!battleStarted || playerState.health <= 0 || attackBtn.disabled) return;
-                
-                playSound('playerAttack');
                 setActionsDisabled(true);
 
                 if (isActionSluggish()) {
@@ -2365,7 +2265,6 @@
 
 
             luckBtn.addEventListener('click', async () => {
-                playSound('click');
                 if (!battleStarted) {
                     updateLuckModalUI();
                     luckModal.classList.remove('hidden');
@@ -2393,14 +2292,12 @@
             luckModal.addEventListener('click', (e) => {
                 const button = e.target.closest('button[data-luck]');
                 if (button) {
-                    playSound('click');
                     playerState.selectedLuck = button.dataset.luck;
                     updateLuckModalUI();
                     setTimeout(() => {
                         luckModal.classList.add('hidden');
                     }, 500);
                 } else if (e.target === luckModal) {
-                    playSound('click');
                     luckModal.classList.add('hidden');
                 }
             });
@@ -2408,7 +2305,7 @@
             killMeterRewards.addEventListener('click', (e) => {
                 const button = e.target.closest('button');
                 if (!button) return;
-                playSound('useItem');
+
                 const upgradeType = button.dataset.upgrade;
                 
                 if (upgradeType === 'health') {
@@ -2427,7 +2324,6 @@
 
             const startBattle = () => {
                 if (battleStarted || isReshuffling) return;
-                playSound('click');
                 playerActionsTaken = 0;
                 attackBtn.disabled = false;
                 const flashOverlay = document.getElementById('screen-flash-overlay');
@@ -2437,7 +2333,6 @@
                 }
                 
                 battleStarted = true; 
-                showTurnIndicator('YOUR TURN', 'var(--accent-green)');
                 sideWindowLeft.innerHTML = '';
                 
                 startBattleContainer.classList.add('hidden');
@@ -2498,10 +2393,10 @@
                     enemyWrapper.appendChild(newEnemySpan);
                     if (!enemy.isGift) {
                         const healthBarContainer = document.createElement('div');
-                        healthBarContainer.className = 'w-12 h-2.5 bg-black/50 rounded-none border border-gray-900 mt-1';
+                        healthBarContainer.className = 'w-12 h-2.5 bg-black/50 rounded-full border border-gray-900 mt-1';
                         
                         const healthBarFill = document.createElement('div');
-                        healthBarFill.className = 'health-bar-fill h-full rounded-none transition-all duration-300';
+                        healthBarFill.className = 'health-bar-fill h-full rounded-full transition-all duration-300';
                         healthBarFill.style.width = '100%';
                         healthBarFill.style.backgroundColor = 'var(--accent-red)';
                         healthBarContainer.appendChild(healthBarFill);
@@ -2511,7 +2406,6 @@
                     enemy.ref = enemyWrapper; 
                     enemyWrapper.addEventListener('click', () => {
                         if (isDragging || enemy.isDefeated) return;
-                        playSound('click');
                         currentBattleTargetIndex = index;
                         positionBattleSelector(enemyWrapper);
                         updateEnemyDisplay(currentEnemiesInBattle[index]);
@@ -2532,7 +2426,6 @@
             };
             
             const resetGame = () => {
-                playSound('click');
                 deathModal.classList.add('hidden');
 
                 loadUnlocks();
@@ -2605,20 +2498,15 @@
                 enemyContainer.addEventListener('click', handlePreBattleTargeting);
 
                 startGameBtn.addEventListener('click', () => {
-                    initAudio(); // Initialize audio on first real interaction
-                    playSound('click');
                     startModal.classList.add('hidden');
                     startGameplay();
                 });
 
                 howToPlayBtn.addEventListener('click', () => {
-                    initAudio();
-                    playSound('click');
                     tutorialModal.classList.remove('hidden');
                 });
 
                 closeTutorialBtn.addEventListener('click', () => {
-                    playSound('click');
                     tutorialModal.classList.add('hidden');
                 });
 
@@ -2631,4 +2519,3 @@
 
 </body>
 </html>
-
