@@ -321,22 +321,13 @@
         <div class="flex-grow flex flex-col gap-3 panel p-3">
             
             <!-- UNIFIED BATTLE WINDOW -->
-            <div class="flex-shrink-0 panel-inset flex flex-col justify-between p-1.5 gap-1.5">
-                <!-- Top part: Info Display / Start Button -->
-                <div id="battle-details-window" class="relative flex-shrink-0 h-16 flex items-center justify-center text-center">
-                    <div id="battle-details-content" class="w-full h-full flex items-center justify-center">
-                       <!-- Content injected by JS -->
-                    </div>
-                </div>
-
-                <!-- Bottom part: NEW Enemy Display -->
-                <div id="enemy-container" class="relative flex items-center select-none overflow-hidden h-24 panel-inset">
-                    <div id="battle-selector" class="hidden absolute top-0 left-0 pointer-events-none z-30">
+            <div class="flex-shrink-0 panel-inset flex flex-col p-1.5 h-40">
+                <div id="enemy-display-container" class="relative flex-1 flex items-center justify-around gap-2 select-none">
+                     <div id="battle-selector" class="hidden absolute top-0 left-0 pointer-events-none z-30">
                         <div class="corner corner-tl"></div><div class="corner corner-tr"></div>
                         <div class="corner corner-bl"></div><div class="corner corner-br"></div>
                     </div>
-                    <div id="enemy-list" class="absolute inset-0 flex items-center justify-center gap-4 z-20">
-                    </div>
+                    <!-- This container is where the 3 enemy blocks will go. JS will populate it. -->
                 </div>
             </div>
             
@@ -540,7 +531,7 @@
             const moonstoneValueEl = document.getElementById('moonstone-value');
             const reshuffleCounter = document.getElementById('reshuffle-counter');
             const shopItemsContainer = document.getElementById('shop-items-container');
-            let enemyContainer = document.getElementById('enemy-container');
+            const enemyDisplayContainer = document.getElementById('enemy-display-container');
             let battleSelector = document.getElementById('battle-selector');
             const reshuffleBtn = document.getElementById('reshuffleBtn');
             const reelModal = document.getElementById('reelModal');
@@ -550,8 +541,6 @@
             const equipmentChoiceContent = document.getElementById('equipmentChoiceContent');
             const startBattleBtn = document.getElementById('start-battle-btn');
             const sideWindowLeft = document.getElementById('side-window-left');
-            const battleDetailsWindow = document.getElementById('battle-details-window');
-            const battleDetailsContentEl = document.getElementById('battle-details-content');
             const waveCounterEl = document.getElementById('wave-counter');
             const flameheartBtn = document.getElementById('flameheartBtn');
             const frostbiteBtn = document.getElementById('frostbiteBtn');
@@ -876,29 +865,64 @@
                      reshuffleBtn.disabled = false;
                 }
             };
-            const updateEnemyStatusUI = (enemyIndex) => {
+
+            const getEnemyStatsHTML = (enemy) => {
+                if (!enemy || enemy.isGift) {
+                    return '<div class="h-12"></div>'; // Placeholder for gift or empty slot
+                }
+                const data = enemyData[enemy.emoji];
+                const hp = enemy.hp;
+                const dmg = enemy.attack;
+                const specialIcon = data.special ? `<span class="text-yellow-400">${data.special}</span>` : '';
+                
+                const statusIcons = Object.entries(enemy.statusEffects)
+                    .filter(([_, value]) => value > 0)
+                    .map(([key, value]) => {
+                        let stackText = '';
+                        if (['🐌', '🕯️'].includes(key) || (key === '☠️' && hasFortune('Toxic Decay'))) {
+                            stackText = `${value}`;
+                        }
+                        return `<span class="text-sm">${key}${stackText ? `<sup class="font-bold text-xs">${stackText}</sup>` : ''}</span>`;
+                    })
+                    .join(' ');
+                
+                return `<div class="h-12 text-xs leading-tight mt-1 flex flex-col items-center justify-start">
+                            <div class="flex gap-2">
+                                <span class="enemy-hp">❤️${hp}</span>
+                                <span class="enemy-atk">💥${dmg}</span>
+                                ${specialIcon}
+                            </div>
+                            <div class="h-4 mt-0.5 text-center">${statusIcons}</div>
+                         </div>`;
+            };
+
+            const updateSingleEnemyDisplay = (enemyIndex) => {
                 const enemy = currentEnemiesInBattle[enemyIndex];
                 if (!enemy || !enemy.ref) return;
 
-                const enemyWrapper = enemy.ref;
-                const healthBarFill = enemyWrapper.querySelector('.health-bar-fill');
+                const statsContainer = enemy.ref.querySelector('.enemy-stats-container');
+                if (statsContainer) {
+                    statsContainer.innerHTML = getEnemyStatsHTML(enemy);
+                }
 
-                if (!healthBarFill) return;
+                const healthBarFill = enemy.ref.querySelector('.health-bar-fill');
+                if (healthBarFill) {
+                    healthBarFill.style.width = `${(enemy.hp / enemy.maxHp) * 100}%`;
+                    const debuffColors = {
+                        '☠️': 'var(--accent-magenta)',
+                        '🐌': 'var(--accent-yellow)', 
+                        '🕯️': '#888'
+                    };
+                    const defaultColor = 'var(--accent-red)';
+                    const newColor = debuffColors[enemy.lastDebuff] || defaultColor;
+                    healthBarFill.style.backgroundColor = newColor;
+                }
 
-                const debuffColors = {
-                    '☠️': 'var(--accent-magenta)',
-                    '🐌': 'var(--accent-yellow)', 
-                    '🕯️': '#888'
-                };
-                const defaultColor = 'var(--accent-red)';
-
-                const newColor = debuffColors[enemy.lastDebuff] || defaultColor;
-                healthBarFill.style.backgroundColor = newColor;
-                
-                if (enemyIndex === currentBattleTargetIndex) {
-                    updateEnemyDisplay(enemy);
+                if (enemy.isDefeated) {
+                    enemy.ref.classList.add('opacity-30');
                 }
             };
+            
             const updateWaveCounterUI = () => { if (waveCounterEl) waveCounterEl.textContent = `WAVE ${waveCount}`; };
 
             const getDisplayEnemyStats = (preBattleEnemy) => {
@@ -926,41 +950,7 @@
                     statusEffects: {}
                 };
             };
-            
-            const updateEnemyDisplay = (enemy) => {
-                if (!enemy) {
-                    battleDetailsContentEl.innerHTML = ''; // Clear display if no enemy
-                    return;
-                };
-                const data = enemyData[enemy.emoji];
-                const name = data?.name || 'Unknown';
-                let statsHtml = '<div class="h-4"></div>';
-                if (!enemy.isGift) {
-                    const hp = enemy.hp;
-                    const dmg = enemy.attack;
-                    const specialIcon = data.special ? ` (${data.special})` : '';
-                    
-                    const statusIcons = Object.entries(enemy.statusEffects)
-                        .filter(([_, value]) => value > 0)
-                        .map(([key, value]) => {
-                            let stackText = '';
-                            if (['🐌', '🕯️'].includes(key)) {
-                                stackText = `${value}`;
-                            } else if (key === '☠️' && hasFortune('Toxic Decay')) {
-                                stackText = `${value}`;
-                            }
-                            return `<span class="text-xl">${key}${stackText ? `<sup class="font-bold">${stackText}</sup>` : ''}</span>`;
-                        })
-                        .join('');
 
-                    statsHtml = `<div class="text-sm mt-1 flex justify-center items-center gap-2"><span style="color: var(--accent-red);">HP</span> ${hp} <span style="color: var(--accent-red);">ATK</span> ${dmg}${specialIcon} ${statusIcons}</div>`;
-                }
-                battleDetailsContentEl.innerHTML = `
-                    <div class="h-full flex flex-col justify-center items-center">
-                        <div class="text-lg">${enemy.emoji} ${name}</div>
-                        ${statsHtml}
-                    </div>`;
-            };
             const displayInfoInSideWindow = (title, ...descriptions) => {
                 if (battleStarted) return; 
                  sideWindowLeft.innerHTML = `
@@ -1230,14 +1220,7 @@
                             if (livingEnemies.length > 0) {
                                 const randomEnemy = livingEnemies[Math.floor(Math.random() * livingEnemies.length)];
                                 randomEnemy.hp = Math.min(randomEnemy.maxHp, randomEnemy.hp + 6);
-                                const enemyHealthBar = randomEnemy.ref.querySelector('.health-bar-fill');
-                                if (enemyHealthBar) {
-                                    enemyHealthBar.style.width = `${(randomEnemy.hp / randomEnemy.maxHp) * 100}%`;
-                                }
-                                const enemyIndex = currentEnemiesInBattle.findIndex(e => e === randomEnemy);
-                                if (enemyIndex === currentBattleTargetIndex) {
-                                    updateEnemyDisplay(randomEnemy);
-                                }
+                                updateSingleEnemyDisplay(currentEnemiesInBattle.indexOf(randomEnemy));
                             }
                         }
                         break;
@@ -1312,8 +1295,7 @@
                 }
 
                 enemy.lastDebuff = debuff;
-                updateEnemyDisplay(enemy);
-                updateEnemyStatusUI(enemyIndex);
+                updateSingleEnemyDisplay(enemyIndex);
             };
 
 
@@ -1529,14 +1511,14 @@
                 isReshuffling = true;
                 if(startBattleBtn) startBattleBtn.disabled = true;
 
-                const enemyList = document.getElementById('enemy-list');
-                const enemySpans = Array.from(enemyList.children);
+                const enemyBlocks = Array.from(enemyDisplayContainer.children);
                 const fadeOutDuration = isInitial ? 0 : 200;
 
-                enemySpans.forEach(span => {
-                    span.style.transition = `opacity ${fadeOutDuration}ms ease-out, transform 0.2s ease-out`;
-                    span.style.opacity = '0';
-                    span.style.transform = 'scale(0.8)';
+                enemyBlocks.forEach(block => {
+                    if (block.id === 'battle-selector') return;
+                    block.style.transition = `opacity ${fadeOutDuration}ms ease-out, transform 0.2s ease-out`;
+                    block.style.opacity = '0';
+                    block.style.transform = 'scale(0.8)';
                 });
 
                 setTimeout(() => {
@@ -1569,26 +1551,41 @@
                     }
                     
                     currentPreBattleEnemies = shuffle(drawnSet);
+                    enemyDisplayContainer.innerHTML = '';
+                    enemyDisplayContainer.appendChild(battleSelector);
 
-                    enemyList.innerHTML = '';
-                    currentPreBattleEnemies.forEach(enemy => {
-                        const span = document.createElement('span');
-                        span.className = 'text-5xl relative transition-all duration-300';
-                        span.textContent = enemy.emoji;
-                        if (enemy.isRed) {
-                            span.classList.add('emoji-elite-stamp');
+                    currentPreBattleEnemies.forEach(preBattleEnemy => {
+                        const enemyStats = getDisplayEnemyStats(preBattleEnemy);
+                        
+                        const enemyBlock = document.createElement('div');
+                        enemyBlock.className = 'h-full w-1/3 flex flex-col items-center justify-center p-1 transition-all duration-300';
+                        enemyBlock.style.opacity = '0';
+                        enemyBlock.style.transform = 'scale(0.8)';
+                        
+                        const emojiSpan = document.createElement('span');
+                        emojiSpan.className = 'text-6xl relative';
+                        emojiSpan.textContent = preBattleEnemy.emoji;
+                        if (preBattleEnemy.isRed) {
+                            emojiSpan.classList.add('emoji-elite-stamp');
                         }
-                        span.style.opacity = '0';
-                        span.style.transform = 'scale(0.8)';
-                        enemyList.appendChild(span);
+                        
+                        const statsDiv = document.createElement('div');
+                        statsDiv.className = 'enemy-stats-container';
+                        statsDiv.innerHTML = getEnemyStatsHTML(enemyStats);
+                        
+                        enemyBlock.appendChild(emojiSpan);
+                        enemyBlock.appendChild(statsDiv);
+                        
+                        enemyDisplayContainer.appendChild(enemyBlock);
                     });
 
-                    const newSpans = Array.from(enemyList.children);
+
+                    const newBlocks = Array.from(enemyDisplayContainer.children).filter(c => c.id !== 'battle-selector');
                     const totalRevealTime = 1000;
-                    newSpans.forEach((span, index) => {
+                    newBlocks.forEach((block, index) => {
                         setTimeout(() => {
-                            span.style.opacity = '1';
-                            span.style.transform = 'scale(1)';
+                            block.style.opacity = '1';
+                            block.style.transform = 'scale(1)';
                         }, (index * 250));
                     });
 
@@ -1598,17 +1595,14 @@
                             if(startBattleBtn) startBattleBtn.disabled = false;
                             updatePlayerUI();
                             
-                            // NEW: Select first enemy by default pre-battle
                             const firstValidIndex = currentPreBattleEnemies.findIndex(e => e.emoji !== giftEmoji);
                             currentBattleTargetIndex = (firstValidIndex !== -1) ? firstValidIndex : 0;
                             
-                            const enemySpans = Array.from(document.getElementById('enemy-list').children);
-                            if (enemySpans.length > currentBattleTargetIndex) {
-                                const targetSpan = enemySpans[currentBattleTargetIndex];
-                                positionBattleSelector(targetSpan);
+                            const enemyBlocksForSelector = Array.from(enemyDisplayContainer.children).filter(c => c.id !== 'battle-selector');
+                            if (enemyBlocksForSelector.length > currentBattleTargetIndex) {
+                                const targetBlock = enemyBlocksForSelector[currentBattleTargetIndex];
+                                positionBattleSelector(targetBlock);
                                 battleSelector.classList.remove('hidden');
-                                const displayStats = getDisplayEnemyStats(currentPreBattleEnemies[currentBattleTargetIndex]);
-                                updateEnemyDisplay(displayStats);
                             }
                         }
                     }, totalRevealTime);
@@ -1647,9 +1641,7 @@
                             const damage = 5;
                             showDamageNumber(damage, enemyWrapper);
                             targetEnemy.hp = Math.max(0, targetEnemy.hp - damage);
-                            const healthBarFill = enemyWrapper.querySelector('.health-bar-fill');
-                            if (healthBarFill) healthBarFill.style.width = `${(targetEnemy.hp / targetEnemy.maxHp) * 100}%`;
-                            updateEnemyDisplay(targetEnemy);
+                            updateSingleEnemyDisplay(currentBattleTargetIndex);
                             if (targetEnemy.hp <= 0) {
                                 upgradeTriggered = handleEnemyDefeat(currentBattleTargetIndex);
                             }
@@ -1664,12 +1656,7 @@
                             const damage = 5;
                             showDamageNumber(damage, enemyWrapper);
                             targetEnemy.hp = Math.max(0, targetEnemy.hp - damage);
-                            const healthBarFill = enemyWrapper.querySelector('.health-bar-fill');
-                            if (healthBarFill) healthBarFill.style.width = `${(targetEnemy.hp / targetEnemy.maxHp) * 100}%`;
-                            
                             applyDebuffToEnemy(currentBattleTargetIndex, '🐌');
-
-                            updateEnemyDisplay(targetEnemy);
                             if (targetEnemy.hp <= 0) {
                                 upgradeTriggered = handleEnemyDefeat(currentBattleTargetIndex);
                             }
@@ -1724,7 +1711,7 @@
 
             const positionBattleSelector = (targetElement) => {
                  if (!targetElement) return;
-                 const containerRect = enemyContainer.getBoundingClientRect();
+                 const containerRect = enemyDisplayContainer.getBoundingClientRect();
                  const targetRect = targetElement.getBoundingClientRect();
                  
                  const newWidth = targetRect.width + 4;
@@ -1763,7 +1750,6 @@
                 if (targetIndex !== -1 && targetIndex !== currentBattleTargetIndex) {
                     currentBattleTargetIndex = targetIndex;
                     positionBattleSelector(enemyWrappers[currentBattleTargetIndex]);
-                    updateEnemyDisplay(currentEnemiesInBattle[currentBattleTargetIndex]);
                 }
             };
             const battleDragEnd = (e) => {
@@ -1777,19 +1763,15 @@
             const handlePreBattleTargeting = (e) => {
                 if (battleStarted) return; 
 
-                const clickedSpan = e.target.closest('span');
-                const enemyList = document.getElementById('enemy-list');
+                const clickedBlock = e.target.closest('.h-full.w-1\\/3');
+                if (!clickedBlock || !enemyDisplayContainer.contains(clickedBlock)) return;
 
-                if (!clickedSpan || !enemyList || !enemyList.contains(clickedSpan)) return;
-
-                const enemySpans = Array.from(enemyList.children);
-                const newIndex = enemySpans.indexOf(clickedSpan);
+                const enemyBlocks = Array.from(enemyDisplayContainer.children).filter(c => c.id !== 'battle-selector');
+                const newIndex = enemyBlocks.indexOf(clickedBlock);
 
                 if (newIndex !== -1 && newIndex !== currentBattleTargetIndex) {
                     currentBattleTargetIndex = newIndex;
-                    positionBattleSelector(clickedSpan);
-                    const displayStats = getDisplayEnemyStats(currentPreBattleEnemies[newIndex]);
-                    updateEnemyDisplay(displayStats);
+                    positionBattleSelector(clickedBlock);
                 }
             };
 
@@ -1916,8 +1898,7 @@
 
                     const enemyIndex = currentEnemiesInBattle.findIndex(e => e === enemy);
                     if (enemyIndex !== -1) {
-                         updateEnemyDisplay(currentEnemiesInBattle[enemyIndex]);
-                         updateEnemyStatusUI(enemyIndex);
+                         updateSingleEnemyDisplay(enemyIndex);
                     }
 
                     await delay(400);
@@ -1932,7 +1913,6 @@
             };
             const endBattle = () => {
                 battleStarted = false; currentEnemiesInBattle = []; playerState.armor = playerState.maxArmor; sideWindowLeft.innerHTML = ''; 
-                updateEnemyDisplay(null);
                 attackBtn.disabled = true;
                 luckActivatedThisBattle = false;
                 luckBtn.disabled = false;
@@ -1960,16 +1940,8 @@
                 waveCount++; 
                 updateWaveCounterUI();
                 
-                enemyContainer.innerHTML = `
-                <div id="battle-selector" class="hidden absolute top-0 left-0 pointer-events-none z-30">
-                        <div class="corner corner-tl"></div><div class="corner corner-tr"></div>
-                        <div class="corner corner-bl"></div><div class="corner corner-br"></div>
-                </div>
-                <div id="enemy-list" class="absolute inset-0 flex items-center justify-center gap-4 z-20">
-                </div>`;
-                battleSelector = document.getElementById('battle-selector');
-                enemyContainer.removeEventListener('mousedown', battleDragStart);
-                enemyContainer.removeEventListener('touchstart', battleDragStart);
+                enemyDisplayContainer.removeEventListener('mousedown', battleDragStart);
+                enemyDisplayContainer.removeEventListener('touchstart', battleDragStart);
                 
                 startBattleContainer.classList.remove('hidden');
                 playerStatusEffectsEl.classList.add('hidden');
@@ -2023,12 +1995,12 @@
 
                 setTimeout(() => {
                     enemyWrapper.classList.add('enemy-defeated'); 
-                    
+                    updateSingleEnemyDisplay(defeatedIndex);
+
                     if (nextTargetIndex !== -1) {
                         currentBattleTargetIndex = nextTargetIndex;
                         const nextTargetWrapper = currentEnemiesInBattle[nextTargetIndex].ref;
                         positionBattleSelector(nextTargetWrapper);
-                        updateEnemyDisplay(currentEnemiesInBattle[nextTargetIndex]);
                     } else {
                         battleSelector.classList.add('hidden');
                     }
@@ -2228,13 +2200,8 @@
                         playerState.gold += 2;
                         updatePlayerUI();
                     }
-
-                    const healthBarFill = enemyWrapper.querySelector('.health-bar-fill');
-                    if (healthBarFill) healthBarFill.style.width = `${(enemy.hp / enemy.maxHp) * 100}%`;
-
-                    if (index === currentBattleTargetIndex) {
-                        updateEnemyDisplay(enemy);
-                    }
+                    
+                    updateSingleEnemyDisplay(index);
 
                     if (enemy.hp <= 0) {
                         return handleEnemyDefeat(index);
@@ -2380,20 +2347,29 @@
                         lastDebuff: null 
                     };
                 });
-                enemyContainer.innerHTML = ''; 
-                enemyContainer.appendChild(battleSelector);
-                enemyContainer.classList.add('justify-center', 'gap-4');
+                
+                enemyDisplayContainer.innerHTML = ''; 
+                enemyDisplayContainer.appendChild(battleSelector);
 
                 currentEnemiesInBattle.forEach((enemy, index) => {
-                    const enemyWrapper = document.createElement('div');
-                    enemyWrapper.className = 'relative cursor-pointer w-[60px] flex flex-col items-center justify-center transition-opacity duration-300';
-                    const newEnemySpan = document.createElement('span');
-                    newEnemySpan.className = 'text-5xl relative z-10'; newEnemySpan.textContent = enemy.emoji;
-                    if (enemy.isStamped) newEnemySpan.classList.add('emoji-elite-stamp');
-                    enemyWrapper.appendChild(newEnemySpan);
+                    const enemyBlock = document.createElement('div');
+                    enemyBlock.className = 'h-full w-1/3 flex flex-col items-center justify-center p-1 cursor-pointer';
+
+                    const emojiSpan = document.createElement('span');
+                    emojiSpan.className = 'text-6xl relative z-10';
+                    emojiSpan.textContent = enemy.emoji;
+                    if (enemy.isStamped) emojiSpan.classList.add('emoji-elite-stamp');
+
+                    const statsDiv = document.createElement('div');
+                    statsDiv.className = 'enemy-stats-container';
+                    statsDiv.innerHTML = getEnemyStatsHTML(enemy);
+                    
+                    enemyBlock.appendChild(emojiSpan);
+                    enemyBlock.appendChild(statsDiv);
+
                     if (!enemy.isGift) {
                         const healthBarContainer = document.createElement('div');
-                        healthBarContainer.className = 'w-12 h-2.5 bg-black/50 rounded-full border border-gray-900 mt-1';
+                        healthBarContainer.className = 'w-16 h-2.5 bg-black/50 rounded-full border border-gray-900 mt-1';
                         
                         const healthBarFill = document.createElement('div');
                         healthBarFill.className = 'health-bar-fill h-full rounded-full transition-all duration-300';
@@ -2401,27 +2377,25 @@
                         healthBarFill.style.backgroundColor = 'var(--accent-red)';
                         healthBarContainer.appendChild(healthBarFill);
 
-                        enemyWrapper.appendChild(healthBarContainer);
+                        enemyBlock.appendChild(healthBarContainer);
                     }
-                    enemy.ref = enemyWrapper; 
-                    enemyWrapper.addEventListener('click', () => {
+                    enemy.ref = enemyBlock; 
+                    enemyBlock.addEventListener('click', () => {
                         if (isDragging || enemy.isDefeated) return;
                         currentBattleTargetIndex = index;
-                        positionBattleSelector(enemyWrapper);
-                        updateEnemyDisplay(currentEnemiesInBattle[index]);
+                        positionBattleSelector(enemyBlock);
                     });
-                    enemyContainer.appendChild(enemyWrapper);
+                    enemyDisplayContainer.appendChild(enemyBlock);
                 });
                 const firstLivingEnemyIndex = currentEnemiesInBattle.findIndex(e => !e.isDefeated);
                 if (firstLivingEnemyIndex !== -1) {
                     const firstEnemyWrapper = currentEnemiesInBattle[firstLivingEnemyIndex].ref;
                     battleSelector.classList.remove('hidden');
                     currentBattleTargetIndex = firstLivingEnemyIndex;
-                    updateEnemyDisplay(currentEnemiesInBattle[firstLivingEnemyIndex]);
                     setTimeout(() => positionBattleSelector(firstEnemyWrapper), 50);
                 }
-                enemyContainer.addEventListener('mousedown', battleDragStart);
-                enemyContainer.addEventListener('touchstart', battleDragStart);
+                enemyDisplayContainer.addEventListener('mousedown', battleDragStart);
+                enemyDisplayContainer.addEventListener('touchstart', battleDragStart);
                 if (!modalMap.shopBtn.modal.classList.contains('hidden')) renderShop();
             };
             
@@ -2464,19 +2438,11 @@
                 });
 
                 sideWindowLeft.innerHTML = '';
-                enemyContainer.innerHTML = `
-                    <div id="battle-selector" class="hidden absolute top-0 left-0 pointer-events-none z-30">
-                        <div class="corner corner-tl"></div><div class="corner corner-tr"></div>
-                        <div class="corner corner-bl"></div><div class="corner corner-br"></div>
-                    </div>
-                    <div id="enemy-list" class="absolute inset-0 flex items-center justify-center gap-4 z-20"></div>`;
-                battleSelector = document.getElementById('battle-selector');
-                enemyContainer.removeEventListener('mousedown', battleDragStart);
-                enemyContainer.removeEventListener('touchstart', battleDragStart);
+                enemyDisplayContainer.removeEventListener('mousedown', battleDragStart);
+                enemyDisplayContainer.removeEventListener('touchstart', battleDragStart);
                 
                 startBattleContainer.classList.remove('hidden');
                 playerStatusEffectsEl.classList.add('hidden');
-                updateEnemyDisplay(null);
 
                 reshuffleEnemies(true);
             };
@@ -2495,7 +2461,7 @@
                 if (startBattleBtn) startBattleBtn.addEventListener('click', startBattle);
                 reshuffleBtn.addEventListener('click', () => { if (!battleStarted && !isReshuffling) reshuffleEnemies(); });
                 continueBtn.addEventListener('click', resetGame);
-                enemyContainer.addEventListener('click', handlePreBattleTargeting);
+                enemyDisplayContainer.addEventListener('click', handlePreBattleTargeting);
 
                 startGameBtn.addEventListener('click', () => {
                     startModal.classList.add('hidden');
@@ -2519,3 +2485,4 @@
 
 </body>
 </html>
+
