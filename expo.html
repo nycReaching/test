@@ -6,7 +6,7 @@
     <title>LOOT GRAB: 1988</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Silkscreen&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* --- POLISHED 80's ARCADE / RETRO DESIGN LANGUAGE --- */
@@ -28,7 +28,7 @@
             --accent-yellow: #f1fa8c; /* Pale Yellow */
             --accent-blue: #87cefa;   /* Light Sky Blue */
             
-            --font-main: 'Press Start 2P', monospace;
+            --font-main: 'Silkscreen', sans-serif;
         }
 
         /* Add a subtle scanline effect to the whole game */
@@ -57,7 +57,7 @@
             touch-action: manipulation;
             -webkit-font-smoothing: none; /* Keep fonts sharp and pixelated */
             -moz-osx-font-smoothing: grayscale;
-            font-size: 9px; /* Base size for pixel font - REDUCED */
+            font-size: 10px; /* Base size for new font */
         }
         
         #game-container {
@@ -363,7 +363,7 @@
             
             <div class="flex-grow flex flex-col gap-3">
                 <!-- Side Window / Spell Info -->
-                <div id="side-window-left" class="h-24 flex flex-col items-center justify-center panel-inset p-2 overflow-hidden text-center" style="font-size: 10px; line-height: 1.3;">
+                <div id="side-window-left" class="h-24 flex flex-col items-center justify-center panel-inset p-2 overflow-hidden text-center" style="line-height: 1.3;">
                 </div>
 
                 <!-- Symmetrical Button Grid -->
@@ -508,7 +508,7 @@
         <div id="tutorialModal" class="hidden absolute inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
             <div class="relative modal-content p-6 w-full flex flex-col">
                 <h2 class="text-xl mb-4 text-center" style="color: var(--accent-yellow); text-shadow: 0 0 8px var(--accent-yellow);">HOW TO PLAY</h2>
-                <div class="text-left space-y-3 flex-grow" style="line-height: 1.5; font-size: 9px;">
+                <div class="text-left space-y-3 flex-grow" style="line-height: 1.5;">
                     <p><strong style="color: var(--accent-cyan);">Reroll (🔃)</strong> for new enemies. 25% chance for a <strong style="color: var(--accent-yellow);">Gift (🎁)</strong>, 25% for a stronger <strong style="color: var(--accent-red);">Elite</strong>.</p>
                     <p><strong style="color: var(--accent-green);">XP Bar:</strong> Fills when defeating enemies. When full, pick an <strong style="color: var(--accent-orange);">Upgrade</strong>.</p>
                     <p><strong style="color: var(--accent-blue);">Fortunes (🔮):</strong> Make a permanent <strong style="color: var(--accent-red);">Sacrifice</strong> to gain a powerful, run-altering <strong style="color: var(--accent-yellow);">Fortune</strong>.</p>
@@ -1953,8 +1953,11 @@
                 equipSlots.forEach(s => s.classList.remove('btn-success'));
                 if(modalMap.shopBtn.button) modalMap.shopBtn.button.classList.remove('btn-success');
                 
+                // Clear any heartbreak state
                 flameheartBtn.disabled = false;
+                frostbiteBtn.disabled = false;
                 armorheartBtn.disabled = false;
+                equipSlots.forEach(s => s.disabled = false);
                 flameheartBtn.removeAttribute('data-heartbroken-this-battle');
                 armorheartBtn.removeAttribute('data-heartbroken-this-battle');
 
