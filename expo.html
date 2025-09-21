@@ -31,25 +31,6 @@
             --font-main: 'Silkscreen', sans-serif;
         }
 
-        /* Add a subtle scanline effect to the whole game */
-        #game-container::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: repeating-linear-gradient(
-                0deg,
-                rgba(0,0,0,0.5) 0px,
-                rgba(0,0,0,0.5) 1px,
-                transparent 1px,
-                transparent 3px
-            );
-            pointer-events: none;
-            z-index: 100;
-        }
-
         body {
             font-family: var(--font-main);
             background-color: var(--bg-main);
@@ -2529,5 +2510,6 @@
 
 </body>
 </html>
+
 
 
