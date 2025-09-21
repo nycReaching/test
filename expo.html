@@ -8,6 +8,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Silkscreen&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- ADDED: Tone.js for audio feedback -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
     <style>
         /* --- POLISHED 80's ARCADE / RETRO DESIGN LANGUAGE --- */
         :root {
@@ -69,7 +71,7 @@
             background-color: #111 !important; 
             border: 2px solid var(--accent-cyan) !important;
             box-shadow: 0 0 5px var(--accent-cyan), inset 0 0 3px var(--accent-cyan) !important;
-            transition: all 0.2s linear !important; /* UPDATE: Longer animation */
+            transition: all 0.1s linear !important; 
             color: var(--text-primary);
             line-height: 1;
             font-weight: 400; 
@@ -255,6 +257,17 @@
         .enemy-fade-out { animation: fade-out-and-shrink 0.4s ease-out forwards; }
         .enemy-defeated { transition: width 0.3s ease-out, padding 0.3s ease-out, margin 0.3s ease-out; width: 0px !important; padding: 0 !important; margin: 0 !important; overflow: hidden; }
 
+        /* NEW: Turn indicator animation */
+        @keyframes turn-indicator-anim {
+            0% { transform: scale(0.8); opacity: 0; }
+            20% { transform: scale(1.1); opacity: 1; }
+            80% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(0.8); opacity: 0; }
+        }
+        .turn-indicator-show {
+            animation: turn-indicator-anim 1.5s ease-in-out forwards;
+        }
+
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-2 text-sm">
@@ -326,8 +339,10 @@
             <div class="flex-shrink-0 panel-inset flex flex-col justify-between p-1.5 gap-1.5">
                 <!-- Top part: Info Display / Start Button -->
                 <div id="battle-details-window" class="relative flex-shrink-0 h-16 flex items-center justify-center text-center">
+                    <!-- ADDED: Turn Indicator -->
+                    <div id="turn-indicator" class="absolute inset-0 flex items-center justify-center text-2xl font-bold pointer-events-none z-10" style="display: none;"></div>
                     <div id="battle-details-content" class="w-full h-full flex items-center justify-center">
-                       <!-- Start button has been moved -->
+                       <!-- Content injected by JS -->
                     </div>
                 </div>
 
@@ -347,26 +362,33 @@
                 <div id="side-window-left" class="h-24 flex flex-col items-center justify-center panel-inset p-2 overflow-hidden text-center" style="line-height: 1.3;">
                 </div>
 
-                <!-- Symmetrical Button Grid -->
-                <div class="flex-grow grid grid-cols-3 grid-rows-4 gap-2 text-sm">
-                    <button id="reshuffleBtn" class="h-full relative btn btn-reroll focus:outline-none flex items-center justify-center text-2xl">
-                        🔃
-                        <span id="reshuffle-counter" class="absolute bottom-1 right-2 text-sm bg-black/75 rounded-sm px-1 py-0.5"></span>
-                    </button>
-                    <button id="attackBtn" class="h-full btn btn-attack focus:outline-none flex items-center justify-center text-xl gap-1" disabled><span id="attack-icon">💥</span><span id="attack-value">10</span></button>
-                    <button id="luckBtn" class="h-full btn btn-luck focus:outline-none flex items-center justify-center text-base gap-1"><span class="text-xl">🍀</span><span id="luck-value">10</span>%</button>
-                    
-                    <button id="flameheartBtn" class="h-full btn btn-magic focus:outline-none text-2xl flex items-center justify-center">❤️‍🔥</button>
-                    <button id="frostbiteBtn" class="h-full btn btn-magic focus:outline-none text-2xl flex items-center justify-center">❄️</button>
-                    <button id="armorheartBtn" class="h-full btn btn-magic focus:outline-none text-2xl flex items-center justify-center">🩶</button>
-                    
-                    <button class="equip-slot h-full relative btn btn-stone focus:outline-none text-2xl flex items-center justify-center"><span class="opacity-50">?</span></button>
-                    <button class="equip-slot h-full relative btn btn-stone focus:outline-none text-2xl flex items-center justify-center"><span class="opacity-50">?</span></button>
-                    <button class="equip-slot h-full relative btn btn-stone focus:outline-none text-2xl flex items-center justify-center"><span class="opacity-50">?</span></button>
-                    
-                    <button id="fortunesBtn" class="h-full btn btn-fortune text-2xl focus:outline-none flex items-center justify-center">🔮</button>
-                    <button id="buildBtn" class="h-full btn btn-build text-2xl focus:outline-none flex items-center justify-center">🔨</button>
-                    <button id="shopBtn" class="h-full btn btn-shop text-2xl focus:outline-none flex items-center justify-center">🪙</button>
+                <!-- REVAMPED: Streamlined Action Layout -->
+                <div class="flex-grow flex flex-col gap-2">
+                    <!-- Primary Actions -->
+                    <div class="grid grid-cols-5 gap-2">
+                        <button id="reshuffleBtn" class="h-14 relative btn btn-reroll focus:outline-none flex items-center justify-center text-2xl">
+                            🔃
+                            <span id="reshuffle-counter" class="absolute bottom-1 right-2 text-sm bg-black/75 rounded-sm px-1 py-0.5"></span>
+                        </button>
+                        <button id="attackBtn" class="col-span-3 h-14 btn btn-attack focus:outline-none flex items-center justify-center text-xl gap-1" disabled><span id="attack-icon">💥</span><span id="attack-value">10</span></button>
+                        <button id="luckBtn" class="h-14 btn btn-luck focus:outline-none flex items-center justify-center text-base gap-1"><span class="text-xl">🍀</span><span id="luck-value">10</span>%</button>
+                    </div>
+                    <!-- Secondary Actions: Spells & Stones -->
+                    <div class="flex-grow grid grid-cols-3 grid-rows-2 gap-2 text-sm">
+                        <button id="flameheartBtn" class="h-full btn btn-magic focus:outline-none text-2xl flex items-center justify-center">❤️‍🔥</button>
+                        <button id="frostbiteBtn" class="h-full btn btn-magic focus:outline-none text-2xl flex items-center justify-center">❄️</button>
+                        <button id="armorheartBtn" class="h-full btn btn-magic focus:outline-none text-2xl flex items-center justify-center">🩶</button>
+                        
+                        <button class="equip-slot h-full relative btn btn-stone focus:outline-none text-2xl flex items-center justify-center"><span class="opacity-50">?</span></button>
+                        <button class="equip-slot h-full relative btn btn-stone focus:outline-none text-2xl flex items-center justify-center"><span class="opacity-50">?</span></button>
+                        <button class="equip-slot h-full relative btn btn-stone focus:outline-none text-2xl flex items-center justify-center"><span class="opacity-50">?</span></button>
+                    </div>
+                     <!-- Tertiary Actions: Menus -->
+                    <div class="grid grid-cols-3 gap-2">
+                        <button id="fortunesBtn" class="h-12 btn btn-fortune text-2xl focus:outline-none flex items-center justify-center">🔮</button>
+                        <button id="buildBtn" class="h-12 btn btn-build text-2xl focus:outline-none flex items-center justify-center">🔨</button>
+                        <button id="shopBtn" class="h-12 btn btn-shop text-2xl focus:outline-none flex items-center justify-center">🪙</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -574,6 +596,7 @@
             const closeTutorialBtn = document.getElementById('close-tutorial-btn');
             const playerStatusEffectsEl = document.getElementById('player-status-effects');
             const startBattleContainer = document.getElementById('start-battle-container');
+            const turnIndicatorEl = document.getElementById('turn-indicator');
             
             const modalMap = {
                 fortunesBtn: { modal: document.getElementById('fortunesModal'), button: document.getElementById('fortunesBtn') },
@@ -581,6 +604,51 @@
                 shopBtn: { modal: document.getElementById('shopModal'), button: document.getElementById('shopBtn') }
             };
             const allModals = Object.values(modalMap).map(item => item.modal);
+
+            // --- Audio Feedback ---
+            let isAudioReady = false;
+            const synths = {
+                click: new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.01, decay: 0.1, sustain: 0.1, release: 0.1 } }).toDestination(),
+                playerAttack: new Tone.NoiseSynth({ noise: { type: 'white' }, envelope: { attack: 0.01, decay: 0.15, sustain: 0, release: 0.1 } }).toDestination(),
+                playerDamage: new Tone.Synth({ oscillator: { type: 'sawtooth' }, envelope: { attack: 0.01, decay: 0.3, sustain: 0, release: 0.1 } }).toDestination(),
+                enemyDefeat: new Tone.MembraneSynth({ pitchDecay: 0.01, octaves: 6, envelope: { attack: 0.01, decay: 0.5, sustain: 0, release: 0.1 } }).toDestination(),
+                reshuffle: new Tone.PluckSynth().toDestination(),
+                buy: new Tone.Synth({ oscillator: { type: 'triangle' }, envelope: { attack: 0.01, decay: 0.1, sustain: 0.1, release: 0.1 } }).toDestination(),
+                useItem: new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.01, decay: 0.2, sustain: 0.2, release: 0.1 } }).toDestination(),
+                spell: new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'fmsine' }, envelope: { attack: 0.05, decay: 0.3, sustain: 0.1, release: 0.2 } }).toDestination(),
+            };
+
+            const playSound = (sound) => {
+                if (!isAudioReady || !synths[sound]) return;
+                try {
+                    switch (sound) {
+                        case 'click': synths.click.triggerAttackRelease('C5', '8n'); break;
+                        case 'playerAttack': synths.playerAttack.triggerAttackRelease('0.1'); break;
+                        case 'playerDamage': synths.playerDamage.triggerAttackRelease('G2', '8n'); break;
+                        case 'enemyDefeat': synths.enemyDefeat.triggerAttackRelease('C2', '8n', Tone.now()); break;
+                        case 'reshuffle': synths.reshuffle.triggerAttackRelease('G4', Tone.now()); break;
+                        case 'buy':
+                            synths.buy.triggerAttackRelease('E5', '8n');
+                            synths.buy.triggerAttackRelease('G5', '8n', Tone.now() + 0.1);
+                            break;
+                        case 'useItem': synths.useItem.triggerAttackRelease('A5', '8n'); break;
+                        case 'spell': synths.spell.triggerAttackRelease(['C4', 'E4', 'G4'], '4n'); break;
+                    }
+                } catch (error) {
+                    console.error(`Error playing sound ${sound}:`, error);
+                }
+            };
+
+            const initAudio = async () => {
+                if (isAudioReady) return;
+                try {
+                    await Tone.start();
+                    isAudioReady = true;
+                    console.log("Audio is ready.");
+                } catch (e) {
+                    console.error("Could not start audio context:", e);
+                }
+            };
             
             // --- Game Data ---
             const shopItems = [
@@ -836,7 +904,7 @@
                 reshuffleCounter.textContent = playerState.rerolls;
                 armorValueEl.textContent = playerState.armor;
                 healthValueEl.textContent = playerState.health;
-                luckValueEl.textContent = playerState.luck;
+                if (luckValueEl) luckValueEl.textContent = playerState.luck;
                 
                 updateAttackValueUI();
                 
@@ -976,6 +1044,20 @@
                 });
             };
 
+             // --- Turn Indicator Logic ---
+            const showTurnIndicator = (text, color) => {
+                if (!turnIndicatorEl) return;
+                turnIndicatorEl.textContent = text;
+                turnIndicatorEl.style.color = color;
+                turnIndicatorEl.style.textShadow = `0 0 8px ${color}`;
+                turnIndicatorEl.style.display = 'flex';
+                turnIndicatorEl.classList.remove('turn-indicator-show');
+                // Use a timeout to re-trigger animation
+                setTimeout(() => {
+                    turnIndicatorEl.classList.add('turn-indicator-show');
+                }, 10);
+            };
+
             // --- Fortunes Modal Logic ---
             const showFortunes = () => {
                 fortunePhase = 'fortune';
@@ -1001,6 +1083,7 @@
                     `;
                     button.addEventListener('click', (e) => {
                         e.stopPropagation(); 
+                        playSound('click');
                         if (currentSacrifice && selectedFortunes.length < 4) {
                             selectedFortunes.push({ sacrifice: currentSacrifice, fortune: fortune });
 
@@ -1069,6 +1152,7 @@
                         `;
                         button.addEventListener('click', (e) => {
                             e.stopPropagation();
+                            playSound('click');
                             if (!canSelect) return;
 
                             // Apply sacrifice effect
@@ -1114,6 +1198,7 @@
                         fortuneEntry.className = 'p-2 bg-black rounded-sm w-2/5 cursor-pointer';
                         fortuneEntry.innerHTML = `<p class="pointer-events-none">${sf.sacrifice}</p><p class="pointer-events-none ${sf.fortune.color}">${sf.fortune.text}</p>`;
                         fortuneEntry.addEventListener('click', () => {
+                            playSound('click');
                             fortuneDetailContent.innerHTML = `
                                 <h3 class="text-xl ${sf.fortune.color}">${sf.fortune.text}</h3>
                                 <p class="mt-2 text-base">${sf.fortune.desc}</p>
@@ -1180,7 +1265,8 @@
                 }
 
                 if (playerState.gold < currentCost) return;
-
+                
+                playSound('buy');
                 playerState.gold -= currentCost;
                 playerState.inventory[item.id]++;
                 if (item.id === 'moonstone') {
@@ -1197,7 +1283,8 @@
                 if (!item || item.id === 'moonstone') return;
                 
                 if (item.id === 'cross' && playerState.statusEffects['🕯️'] <= 0) return;
-
+                
+                playSound('useItem');
                 let isFreeUse = false;
                 if (luckActivatedThisBattle && playerState.selectedLuck === 'choices') {
                     if (Math.random() * 100 < playerState.luck) {
@@ -1311,6 +1398,7 @@
             // --- Modal, Equipment & Build Logic ---
             const openModal = (modalToOpen) => {
                 if (!modalToOpen) return;
+                playSound('click');
                 if (modalToOpen.id === 'shopModal') {
                     renderShop();
                     if (battleStarted) {
@@ -1325,6 +1413,7 @@
             };
             const closeModal = (modalToClose) => { 
                 if (modalToClose) {
+                    playSound('click');
                     modalToClose.classList.add('hidden');
                      if (modalToClose.id === 'shopModal') {
                         modalToClose.classList.remove('bottom-half');
@@ -1339,6 +1428,7 @@
                         let uses = parseInt(slot.dataset.uses || '0', 10);
                         if (!symbol || uses <= 0) return;
                         
+                        playSound('useItem');
                         setActionsDisabled(true);
 
                         let isFreeUse = false;
@@ -1405,6 +1495,7 @@
                         
                         return;
                     }
+                    playSound('click');
                     const symbol = slot.dataset.symbol;
                     if (symbol) {
                         const info = symbolDescriptions[symbol];
@@ -1423,6 +1514,7 @@
 
             reelItems.forEach(item => {
                 item.addEventListener('click', () => {
+                    playSound('click');
                     if (activeEquipSlot) {
                         playerState.moonstones--;
                         playerState.inventory.moonstone--; 
@@ -1444,7 +1536,7 @@
                     }
                 });
             });
-            reelModal.addEventListener('click', (e) => { if (e.target === reelModal) reelModal.classList.add('hidden'); });
+            reelModal.addEventListener('click', (e) => { if (e.target === reelModal) { playSound('click'); reelModal.classList.add('hidden'); } });
             
             const openEquipmentChoiceModal = (slotType) => {
                 equipmentChoiceContent.innerHTML = '';
@@ -1467,6 +1559,7 @@
                     `;
                     itemButton.addEventListener('click', (e) => {
                         e.stopPropagation();
+                        playSound('click');
                         if (activeBuildSlot) {
                             const currentSlotType = activeBuildSlot.dataset.slotType;
                             const oldItem = playerState.equipment[currentSlotType]; // Store old item
@@ -1502,11 +1595,12 @@
 
             document.querySelectorAll('[data-slot-type]').forEach(btn => {
                 btn.addEventListener('click', () => {
+                    playSound('click');
                     activeBuildSlot = btn;
                     openEquipmentChoiceModal(btn.dataset.slotType);
                 });
             });
-            equipmentChoiceModal.addEventListener('click', (e) => { if (e.target === equipmentChoiceModal) equipmentChoiceModal.classList.add('hidden'); });
+            equipmentChoiceModal.addEventListener('click', (e) => { if (e.target === equipmentChoiceModal) { playSound('click'); equipmentChoiceModal.classList.add('hidden'); } });
 
             // --- Enemy Drawing & Reshuffle Logic ---
             const shuffle = (array) => {
@@ -1516,7 +1610,7 @@
 
             const reshuffleEnemies = (isInitial = false) => {
                 if (isReshuffling || (!isInitial && playerState.rerolls <= 0)) return;
-                if (!isInitial) { playerState.rerolls--; updatePlayerUI(); }
+                if (!isInitial) { playSound('reshuffle'); playerState.rerolls--; updatePlayerUI(); }
                 isReshuffling = true;
                 if(startBattleBtn) startBattleBtn.disabled = true;
 
@@ -1616,8 +1710,12 @@
                     sideWindowLeft.innerHTML = `<div class="w-full p-1"><p class="text-lg text-center" style="color: var(--accent-blue);">FREE CAST!</p></div>`;
                 }
 
-                if (!battleStarted || playerState.magic < currentMagicCost) return;
-                
+                if (!battleStarted || playerState.magic < currentMagicCost) {
+                    if (battleStarted) playSound('playerDamage'); // Error/fail sound
+                    return;
+                }
+
+                playSound('spell');
                 setActionsDisabled(true);
 
                 playerState.magic -= currentMagicCost;
@@ -1690,6 +1788,7 @@
                         if (battleStarted) {
                             executeSpell(key);
                         } else {
+                            playSound('click');
                             displaySpellInfo(key);
                         }
                     });
@@ -1709,6 +1808,7 @@
 
             fortuneDetailModal.addEventListener('click', (e) => {
                 if (e.target === fortuneDetailModal) {
+                    playSound('click');
                     fortuneDetailModal.classList.add('hidden');
                 }
             });
@@ -1752,6 +1852,7 @@
                     if (coords.x >= wrapperRect.left && coords.x <= wrapperRect.right) { targetIndex = i; break; }
                 }
                 if (targetIndex !== -1 && targetIndex !== currentBattleTargetIndex) {
+                    playSound('click');
                     currentBattleTargetIndex = targetIndex;
                     positionBattleSelector(enemyWrappers[currentBattleTargetIndex]);
                     updateEnemyDisplay(currentEnemiesInBattle[currentBattleTargetIndex]);
@@ -1777,6 +1878,7 @@
                 const newIndex = enemySpans.indexOf(clickedSpan);
 
                 if (newIndex !== -1 && newIndex !== currentBattleTargetIndex) {
+                    playSound('click');
                     currentBattleTargetIndex = newIndex;
                     positionBattleSelector(clickedSpan);
                     const displayStats = getDisplayEnemyStats(currentPreBattleEnemies[newIndex]);
@@ -1810,6 +1912,7 @@
 
             // --- BATTLE LOGIC ---
             const playerTakesDamage = (damage) => {
+                playSound('playerDamage');
                 const damageAbsorbed = Math.min(playerState.armor, damage);
                 if (damageAbsorbed > 0) {
                     playerState.armor -= damageAbsorbed;
@@ -1869,6 +1972,7 @@
 
             const enemyAttackPhase = async () => {
                 if (playerState.health <= 0) return;
+                showTurnIndicator('ENEMY TURN', 'var(--accent-red)');
                 await delay(400);
                 const livingEnemies = currentEnemiesInBattle.filter(enemy => !enemy.isDefeated && !enemy.isGift);
                 for (const enemy of livingEnemies) {
@@ -1919,6 +2023,7 @@
                     playerActionsTaken = 0;
                     setActionsDisabled(false);
                     sideWindowLeft.innerHTML = '';
+                    showTurnIndicator('YOUR TURN', 'var(--accent-green)');
                 }
             };
             const endBattle = () => {
@@ -1994,6 +2099,7 @@
                 const enemy = currentEnemiesInBattle[defeatedIndex];
                 if (!enemy || enemy.isDefeated) return false;
 
+                playSound('enemyDefeat');
                 enemy.isDefeated = true;
                 const enemyWrapper = enemy.ref;
                 enemyWrapper.style.pointerEvents = 'none';
@@ -2067,6 +2173,7 @@
                 let spinCount = 0;
 
                 const continueGameHandler = async () => {
+                    playSound('click');
                     giftModal.classList.add('hidden');
                     handleEnemyDefeat(giftIndex);
                     await processEndOfPlayerAction();
@@ -2109,7 +2216,7 @@
                         awardGiftBuff(winningRewardType, winningValue);
                         return;
                     }
-
+                    playSound('click');
                     rewards.forEach(r => r.className = r.className.replace(/reward-highlight-.*-anim/g, ''));
                     
                     const highlightIndex = spinCount % numRewards;
@@ -2169,6 +2276,8 @@
 
             attackBtn.addEventListener('click', async () => {
                 if (!battleStarted || playerState.health <= 0 || attackBtn.disabled) return;
+                
+                playSound('playerAttack');
                 setActionsDisabled(true);
 
                 if (isActionSluggish()) {
@@ -2256,6 +2365,7 @@
 
 
             luckBtn.addEventListener('click', async () => {
+                playSound('click');
                 if (!battleStarted) {
                     updateLuckModalUI();
                     luckModal.classList.remove('hidden');
@@ -2283,12 +2393,14 @@
             luckModal.addEventListener('click', (e) => {
                 const button = e.target.closest('button[data-luck]');
                 if (button) {
+                    playSound('click');
                     playerState.selectedLuck = button.dataset.luck;
                     updateLuckModalUI();
                     setTimeout(() => {
                         luckModal.classList.add('hidden');
                     }, 500);
                 } else if (e.target === luckModal) {
+                    playSound('click');
                     luckModal.classList.add('hidden');
                 }
             });
@@ -2296,7 +2408,7 @@
             killMeterRewards.addEventListener('click', (e) => {
                 const button = e.target.closest('button');
                 if (!button) return;
-
+                playSound('useItem');
                 const upgradeType = button.dataset.upgrade;
                 
                 if (upgradeType === 'health') {
@@ -2315,6 +2427,7 @@
 
             const startBattle = () => {
                 if (battleStarted || isReshuffling) return;
+                playSound('click');
                 playerActionsTaken = 0;
                 attackBtn.disabled = false;
                 const flashOverlay = document.getElementById('screen-flash-overlay');
@@ -2324,6 +2437,7 @@
                 }
                 
                 battleStarted = true; 
+                showTurnIndicator('YOUR TURN', 'var(--accent-green)');
                 sideWindowLeft.innerHTML = '';
                 
                 startBattleContainer.classList.add('hidden');
@@ -2397,6 +2511,7 @@
                     enemy.ref = enemyWrapper; 
                     enemyWrapper.addEventListener('click', () => {
                         if (isDragging || enemy.isDefeated) return;
+                        playSound('click');
                         currentBattleTargetIndex = index;
                         positionBattleSelector(enemyWrapper);
                         updateEnemyDisplay(currentEnemiesInBattle[index]);
@@ -2417,6 +2532,7 @@
             };
             
             const resetGame = () => {
+                playSound('click');
                 deathModal.classList.add('hidden');
 
                 loadUnlocks();
@@ -2489,15 +2605,20 @@
                 enemyContainer.addEventListener('click', handlePreBattleTargeting);
 
                 startGameBtn.addEventListener('click', () => {
+                    initAudio(); // Initialize audio on first real interaction
+                    playSound('click');
                     startModal.classList.add('hidden');
                     startGameplay();
                 });
 
                 howToPlayBtn.addEventListener('click', () => {
+                    initAudio();
+                    playSound('click');
                     tutorialModal.classList.remove('hidden');
                 });
 
                 closeTutorialBtn.addEventListener('click', () => {
+                    playSound('click');
                     tutorialModal.classList.add('hidden');
                 });
 
@@ -2510,6 +2631,4 @@
 
 </body>
 </html>
-
-
 
