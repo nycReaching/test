@@ -211,24 +211,12 @@
         @keyframes screen-flash-anim { from { opacity: 0.5; } to { opacity: 0; } }
         .flash-animation { animation: screen-flash-anim 0.3s ease-out; }
         
-        #battle-selector { border: none !important; background: transparent !important; box-shadow: none !important; transition: all 0.1s linear; }
-
-        @keyframes corner-flicker { 50% { border-color: var(--accent-yellow); box-shadow: 0 0 4px var(--accent-yellow); } }
-        .corner {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            border-style: solid;
-            border-color: var(--accent-yellow);
-            box-shadow: 0 0 6px var(--accent-yellow);
-            transition: all 0.1s linear;
-            animation: corner-flicker 1s infinite;
-            border-radius: 2px;
+        #battle-selector {
+            border: 2px solid var(--accent-yellow);
+            box-shadow: 0 0 8px var(--accent-yellow);
+            border-radius: 6px;
+            transition: all 0.2s ease-out;
         }
-        .corner-tl { top: -2px; left: -2px; border-width: 2px 0 0 2px; }
-        .corner-tr { top: -2px; right: -2px; border-width: 2px 2px 0 0; }
-        .corner-bl { bottom: -2px; left: -2px; border-width: 0 0 2px 2px; }
-        .corner-br { bottom: -2px; right: -2px; border-width: 0 2px 2px 0; }
 
         @keyframes pulse-orange { 50% { background-color: var(--accent-orange); box-shadow: 0 0 15px var(--accent-orange); } }
         .pulse-orange-animation { animation: pulse-orange 1s infinite; }
@@ -251,7 +239,7 @@
         .damage-flash-animation { animation: damage-flash 0.4s ease-in-out; }
         @keyframes fade-out-and-shrink { to { transform: scale(0.5); opacity: 0; } }
         .enemy-fade-out { animation: fade-out-and-shrink 0.4s ease-out forwards; }
-        .enemy-defeated { transition: width 0.3s ease-out, padding 0.3s ease-out, margin 0.3s ease-out; width: 0px !important; padding: 0 !important; margin: 0 !important; overflow: hidden; }
+        
 
     </style>
 </head>
@@ -323,10 +311,7 @@
             <!-- UNIFIED BATTLE WINDOW -->
             <div class="flex-shrink-0 panel-inset flex flex-col p-1.5 h-40">
                 <div id="enemy-display-container" class="relative flex-1 flex items-center justify-around gap-2 select-none">
-                     <div id="battle-selector" class="hidden absolute top-0 left-0 pointer-events-none z-30">
-                        <div class="corner corner-tl"></div><div class="corner corner-tr"></div>
-                        <div class="corner corner-bl"></div><div class="corner corner-br"></div>
-                    </div>
+                     <div id="battle-selector" class="hidden absolute top-0 left-0 pointer-events-none z-30"></div>
                     <!-- This container is where the 3 enemy blocks will go. JS will populate it. -->
                 </div>
             </div>
@@ -866,56 +851,49 @@
                 }
             };
 
-            const getEnemyStatsHTML = (enemy) => {
-                if (!enemy || enemy.isGift) {
-                    return '<div class="h-12"></div>'; // Placeholder for gift or empty slot
-                }
-                const data = enemyData[enemy.emoji];
-                const hp = enemy.hp;
-                const dmg = enemy.attack;
-                const specialIcon = data.special ? `<span class="text-yellow-400">${data.special}</span>` : '';
-                
-                const statusIcons = Object.entries(enemy.statusEffects)
-                    .filter(([_, value]) => value > 0)
-                    .map(([key, value]) => {
-                        let stackText = '';
-                        if (['🐌', '🕯️'].includes(key) || (key === '☠️' && hasFortune('Toxic Decay'))) {
-                            stackText = `${value}`;
-                        }
-                        return `<span class="text-sm">${key}${stackText ? `<sup class="font-bold text-xs">${stackText}</sup>` : ''}</span>`;
-                    })
-                    .join(' ');
-                
-                return `<div class="h-12 text-xs leading-tight mt-1 flex flex-col items-center justify-start">
-                            <div class="flex gap-2">
-                                <span class="enemy-hp">❤️${hp}</span>
-                                <span class="enemy-atk">💥${dmg}</span>
-                                ${specialIcon}
-                            </div>
-                            <div class="h-4 mt-0.5 text-center">${statusIcons}</div>
-                         </div>`;
-            };
-
             const updateSingleEnemyDisplay = (enemyIndex) => {
                 const enemy = currentEnemiesInBattle[enemyIndex];
                 if (!enemy || !enemy.ref) return;
 
                 const statsContainer = enemy.ref.querySelector('.enemy-stats-container');
-                if (statsContainer) {
-                    statsContainer.innerHTML = getEnemyStatsHTML(enemy);
-                }
-
+                const hpText = enemy.ref.querySelector('.enemy-hp-text');
                 const healthBarFill = enemy.ref.querySelector('.health-bar-fill');
-                if (healthBarFill) {
-                    healthBarFill.style.width = `${(enemy.hp / enemy.maxHp) * 100}%`;
-                    const debuffColors = {
-                        '☠️': 'var(--accent-magenta)',
-                        '🐌': 'var(--accent-yellow)', 
-                        '🕯️': '#888'
-                    };
-                    const defaultColor = 'var(--accent-red)';
-                    const newColor = debuffColors[enemy.lastDebuff] || defaultColor;
-                    healthBarFill.style.backgroundColor = newColor;
+                
+                if (!enemy.isGift) {
+                    const data = enemyData[enemy.emoji];
+                    const specialIcon = data.special ? `<span class="text-yellow-400">${data.special}</span>` : '';
+                    const statusIcons = Object.entries(enemy.statusEffects)
+                        .filter(([_, value]) => value > 0)
+                        .map(([key, value]) => {
+                            let stackText = '';
+                            if (['🐌', '🕯️'].includes(key) || (key === '☠️' && hasFortune('Toxic Decay'))) {
+                                stackText = `${value}`;
+                            }
+                            return `<span class="text-sm">${key}${stackText ? `<sup class="font-bold text-xs">${stackText}</sup>` : ''}</span>`;
+                        })
+                        .join(' ');
+
+                    if (statsContainer) {
+                         statsContainer.innerHTML = `
+                            <span class="enemy-atk">💥${enemy.attack}</span>
+                            ${specialIcon}
+                            <span class="ml-1">${statusIcons}</span>
+                        `;
+                    }
+                    if (hpText) {
+                        hpText.textContent = enemy.hp;
+                    }
+                    if (healthBarFill) {
+                        healthBarFill.style.width = `${(enemy.hp / enemy.maxHp) * 100}%`;
+                        const debuffColors = {
+                            '☠️': 'var(--accent-magenta)',
+                            '🐌': 'var(--accent-yellow)', 
+                            '🕯️': '#888'
+                        };
+                        const defaultColor = 'var(--accent-red)';
+                        const newColor = debuffColors[enemy.lastDebuff] || defaultColor;
+                        healthBarFill.style.backgroundColor = newColor;
+                    }
                 }
 
                 if (enemy.isDefeated) {
@@ -1563,18 +1541,40 @@
                         enemyBlock.style.transform = 'scale(0.8)';
                         
                         const emojiSpan = document.createElement('span');
-                        emojiSpan.className = 'text-6xl relative';
+                        emojiSpan.className = 'text-5xl relative';
                         emojiSpan.textContent = preBattleEnemy.emoji;
                         if (preBattleEnemy.isRed) {
                             emojiSpan.classList.add('emoji-elite-stamp');
                         }
                         
                         const statsDiv = document.createElement('div');
-                        statsDiv.className = 'enemy-stats-container';
-                        statsDiv.innerHTML = getEnemyStatsHTML(enemyStats);
+                        statsDiv.className = 'enemy-stats-container text-xs text-center h-4 flex items-center justify-center gap-1';
+                        
+                        const healthContainer = document.createElement('div');
+                        healthContainer.className = 'w-full px-2 mt-1 text-center';
+
+                        if (!enemyStats.isGift) {
+                            const data = enemyData[enemyStats.emoji];
+                            const specialIcon = data.special ? `<span class="text-yellow-400">${data.special}</span>` : '';
+                            statsDiv.innerHTML = `
+                                <span class="enemy-atk">💥${enemyStats.attack}</span>
+                                ${specialIcon}
+                            `;
+                            
+                            healthContainer.innerHTML = `
+                                <span class="enemy-hp-text text-lg font-bold">${enemyStats.hp}</span>
+                                <div class="w-full h-2.5 bg-black/50 rounded-full border border-gray-900 mt-1 p-0.5">
+                                    <div class="health-bar-fill h-full rounded-full transition-all duration-300" style="width: 100%; background-color: var(--accent-red);"></div>
+                                </div>
+                            `;
+                        } else {
+                             statsDiv.innerHTML = '<div class="h-4"></div>';
+                             healthContainer.innerHTML = '<div class="h-8"></div>';
+                        }
                         
                         enemyBlock.appendChild(emojiSpan);
                         enemyBlock.appendChild(statsDiv);
+                        enemyBlock.appendChild(healthContainer);
                         
                         enemyDisplayContainer.appendChild(enemyBlock);
                     });
@@ -1994,7 +1994,6 @@
                 const nextTargetIndex = findNextTarget(defeatedIndex);
 
                 setTimeout(() => {
-                    enemyWrapper.classList.add('enemy-defeated'); 
                     updateSingleEnemyDisplay(defeatedIndex);
 
                     if (nextTargetIndex !== -1) {
@@ -2356,29 +2355,39 @@
                     enemyBlock.className = 'h-full w-1/3 flex flex-col items-center justify-center p-1 cursor-pointer';
 
                     const emojiSpan = document.createElement('span');
-                    emojiSpan.className = 'text-6xl relative z-10';
+                    emojiSpan.className = 'text-5xl relative z-10';
                     emojiSpan.textContent = enemy.emoji;
                     if (enemy.isStamped) emojiSpan.classList.add('emoji-elite-stamp');
 
                     const statsDiv = document.createElement('div');
-                    statsDiv.className = 'enemy-stats-container';
-                    statsDiv.innerHTML = getEnemyStatsHTML(enemy);
+                    statsDiv.className = 'enemy-stats-container text-xs text-center h-4 flex items-center justify-center gap-1';
+                    
+                    const healthContainer = document.createElement('div');
+                    healthContainer.className = 'w-full px-2 mt-1 text-center';
+                    
+                    if (!enemy.isGift) {
+                        const data = enemyData[enemy.emoji];
+                        const specialIcon = data.special ? `<span class="text-yellow-400">${data.special}</span>` : '';
+                        statsDiv.innerHTML = `
+                            <span class="enemy-atk">💥${enemy.attack}</span>
+                            ${specialIcon}
+                        `;
+
+                        healthContainer.innerHTML = `
+                            <span class="enemy-hp-text text-lg font-bold">${enemy.hp}</span>
+                            <div class="w-full h-2.5 bg-black/50 rounded-full border border-gray-900 mt-1 p-0.5">
+                                <div class="health-bar-fill h-full rounded-full transition-all duration-300" style="width: 100%; background-color: var(--accent-red);"></div>
+                            </div>
+                        `;
+                    } else {
+                         statsDiv.innerHTML = '<div class="h-4"></div>';
+                         healthContainer.innerHTML = '<div class="h-8"></div>';
+                    }
                     
                     enemyBlock.appendChild(emojiSpan);
                     enemyBlock.appendChild(statsDiv);
-
-                    if (!enemy.isGift) {
-                        const healthBarContainer = document.createElement('div');
-                        healthBarContainer.className = 'w-16 h-2.5 bg-black/50 rounded-full border border-gray-900 mt-1';
-                        
-                        const healthBarFill = document.createElement('div');
-                        healthBarFill.className = 'health-bar-fill h-full rounded-full transition-all duration-300';
-                        healthBarFill.style.width = '100%';
-                        healthBarFill.style.backgroundColor = 'var(--accent-red)';
-                        healthBarContainer.appendChild(healthBarFill);
-
-                        enemyBlock.appendChild(healthBarContainer);
-                    }
+                    enemyBlock.appendChild(healthContainer);
+                    
                     enemy.ref = enemyBlock; 
                     enemyBlock.addEventListener('click', () => {
                         if (isDragging || enemy.isDefeated) return;
@@ -2485,4 +2494,5 @@
 
 </body>
 </html>
+
 
