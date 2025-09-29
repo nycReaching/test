@@ -1,179 +1,49 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flowing Grid Background</title>
-    <style>
-        :root {
-            --vh: 1vh; /* Fallback for the dynamic viewport height unit */
-        }
+import React from "react";
+import { motion } from "framer-motion";
 
-        body {
-            margin: 0;
-            overflow: hidden;
-            background-color: #1a1a1a; /* Slightly lighter dark background for contrast */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: calc(var(--vh, 1vh) * 100); /* Use dynamic viewport height */
-            font-family: 'Inter', sans-serif;
-        }
-
-        *, *::before, *::after {
-            box-sizing: border-box; /* Ensures padding and border are included in the element's total width and height */
-        }
-
-        .phone-silhouette {
-            position: relative;
-            width: 90%;
-            max-width: 400px; /* Max width of the phone */
-            max-height: 90%; /* Use percentage of parent (body) height */
-            aspect-ratio: 9 / 19.5; /* A common modern phone aspect ratio */
-            background-color: #050505;
-            border-radius: 50px;
-            border: 8px solid #111;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 2px 2px rgba(255, 255, 255, 0.1);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 5px;
-        }
-
-        .phone-screen {
-            width: 100%;
-            height: 100%;
-            background: #0a0a0a; /* Original canvas background color */
-            border-radius: 45px;
-            overflow: hidden; /* This clips the canvas to the screen's rounded corners */
-            position: relative;
-        }
-
-        canvas {
-            display: block;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-    </style>
-    <!-- Using Google Fonts for a clean look on overlay text -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
-</head>
-<body>
-    <div class="phone-silhouette">
-        <div class="phone-screen">
-            <canvas id="gridCanvas"></canvas>
+export default function GameUI() {
+  return (
+    <div className="flex justify-center items-center h-screen bg-gradient-to-b from-purple-700 to-indigo-900">
+      {/* Phone-like container */}
+      <div className="relative aspect-[9/16] w-[400px] max-w-full bg-black rounded-2xl shadow-2xl overflow-hidden border-4 border-gray-800">
+        {/* Header Bar */}
+        <div className="absolute top-0 left-0 w-full flex justify-between items-center bg-black/60 p-3 text-white text-sm">
+          <span>Level 12</span>
+          <span>⏱ 02:15</span>
+          <span>⭐ 350</span>
         </div>
+
+        {/* Main Content */}
+        <div className="flex flex-col justify-center items-center h-full text-white">
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="text-3xl font-bold mb-6"
+          >
+            Game Area
+          </motion.div>
+
+          {/* Placeholder game board */}
+          <div className="grid grid-cols-4 gap-2 w-3/4">
+            {Array.from({ length: 16 }).map((_, i) => (
+              <div
+                key={i}
+                className="aspect-square bg-purple-500 rounded-xl flex items-center justify-center text-lg font-bold"
+              >
+                {i + 1}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Bottom Navigation */}
+        <div className="absolute bottom-0 left-0 w-full flex justify-around items-center bg-black/70 p-4 text-white text-base">
+          <button className="bg-indigo-600 px-4 py-2 rounded-xl shadow-md">Menu</button>
+          <button className="bg-green-600 px-4 py-2 rounded-xl shadow-md">Play</button>
+          <button className="bg-red-600 px-4 py-2 rounded-xl shadow-md">Exit</button>
+        </div>
+      </div>
     </div>
-   
-    <script>
-        // --- Viewport Height Fix for Mobile Browsers ---
-        function setRealViewportHeight() {
-            // This calculates the real viewport height, ignoring browser UI.
-            // It sets a CSS custom property (--vh) that we can use in our CSS.
-            document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
-        }
-
-        // Set the value on initial page load
-        setRealViewportHeight();
-
-        // Re-calculate whenever the window is resized or orientation changes
-        window.addEventListener('resize', setRealViewportHeight);
-        window.addEventListener('orientationchange', setRealViewportHeight);
-        // --- End of Viewport Fix ---
-
-        const canvas = document.getElementById('gridCanvas');
-        const screenElement = canvas.parentElement;
-        const ctx = canvas.getContext('2d');
-
-        let time = 0;
-        const baseGridSize = 25; // Starting grid size
-        const zoomAmount = 50; // How much larger the grid gets (the zoom intensity)
-        const zoomSpeed = 0.2; // How fast the zoom cycles
-        const distortionFactor = 60; // How much the grid bulges
-        const speed = 0.0005; // How fast the pattern moves
-
-        function resizeCanvas() {
-            // Set canvas dimensions based on its container, the phone screen
-            canvas.width = screenElement.clientWidth;
-            canvas.height = screenElement.clientHeight;
-        }
-
-        // Handles resizing of the browser window, which resizes the phone
-        window.addEventListener('resize', resizeCanvas);
-
-        function drawGrid(currentGridSize) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.strokeStyle = 'rgba(0, 255, 255, 0.2)'; // A cool cyan color with transparency
-            ctx.lineWidth = 1;
-
-            const cols = Math.ceil(canvas.width / currentGridSize) + 2; // +2 to prevent edges from appearing
-            const rows = Math.ceil(canvas.height / currentGridSize) + 2;
-
-            // Create a 2D array to store the distorted grid points
-            const points = [];
-
-            for (let i = 0; i < rows; i++) {
-                points[i] = [];
-                for (let j = 0; j < cols; j++) {
-                    // Center the grid to make the zoom feel more natural
-                    const x = j * currentGridSize - currentGridSize / 2;
-                    const y = i * currentGridSize - currentGridSize / 2;
-
-                    // Calculate the distortion using sine waves
-                    // The combination of sin waves creates a more complex, flowing pattern
-                    const distortionX = Math.sin(i * 0.1 + time * 2) * Math.cos(j * 0.05 + time) * distortionFactor;
-                    const distortionY = Math.cos(j * 0.1 + time) * Math.sin(i * 0.05 + time * 2) * distortionFactor;
-
-                    points[i][j] = {
-                        x: x + distortionX,
-                        y: y + distortionY
-                    };
-                }
-            }
-            
-            ctx.beginPath();
-            
-            // Draw horizontal lines
-            for (let i = 0; i < rows; i++) {
-                ctx.moveTo(points[i][0].x, points[i][0].y);
-                for (let j = 1; j < cols; j++) {
-                    ctx.lineTo(points[i][j].x, points[i][j].y);
-                }
-            }
-
-            // Draw vertical lines
-            for (let j = 0; j < cols; j++) {
-                ctx.moveTo(points[0][j].x, points[0][j].y);
-                for (let i = 1; i < rows; i++) {
-                    ctx.lineTo(points[i][j].x, points[i][j].y);
-                }
-            }
-            
-            ctx.stroke();
-        }
-
-        function animate() {
-            time += speed * 10; // Increment time for animation
-            
-            // Calculate a smoothly oscillating zoom factor between 0 and 1
-            const zoomFactor = (Math.sin(time * zoomSpeed) + 1) / 2;
-            const currentGridSize = baseGridSize + zoomFactor * zoomAmount;
-
-            drawGrid(currentGridSize);
-            requestAnimationFrame(animate);
-        }
-
-        // Initial setup
-        resizeCanvas();
-        animate();
-    </script>
-</body>
-</html>
-
-
-
+  );
+}
