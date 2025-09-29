@@ -20,6 +20,7 @@
             position: relative;
             width: 90%;
             max-width: 400px; /* Max width of the phone */
+            max-height: 90vh; /* Ensures the phone fits on screen vertically */
             aspect-ratio: 9 / 19.5; /* A common modern phone aspect ratio */
             background-color: #050505;
             border-radius: 50px;
@@ -67,7 +68,9 @@
         const ctx = canvas.getContext('2d');
 
         let time = 0;
-        const gridSize = 30; // Spacing between grid lines
+        const baseGridSize = 25; // Starting grid size
+        const zoomAmount = 50; // How much larger the grid gets (the zoom intensity)
+        const zoomSpeed = 0.2; // How fast the zoom cycles
         const distortionFactor = 60; // How much the grid bulges
         const speed = 0.0005; // How fast the pattern moves
 
@@ -80,13 +83,13 @@
         // Handles resizing of the browser window, which resizes the phone
         window.addEventListener('resize', resizeCanvas);
 
-        function drawGrid() {
+        function drawGrid(currentGridSize) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.strokeStyle = 'rgba(0, 255, 255, 0.2)'; // A cool cyan color with transparency
             ctx.lineWidth = 1;
 
-            const cols = Math.ceil(canvas.width / gridSize) + 1;
-            const rows = Math.ceil(canvas.height / gridSize) + 1;
+            const cols = Math.ceil(canvas.width / currentGridSize) + 2; // +2 to prevent edges from appearing
+            const rows = Math.ceil(canvas.height / currentGridSize) + 2;
 
             // Create a 2D array to store the distorted grid points
             const points = [];
@@ -94,8 +97,9 @@
             for (let i = 0; i < rows; i++) {
                 points[i] = [];
                 for (let j = 0; j < cols; j++) {
-                    const x = j * gridSize;
-                    const y = i * gridSize;
+                    // Center the grid to make the zoom feel more natural
+                    const x = j * currentGridSize - currentGridSize / 2;
+                    const y = i * currentGridSize - currentGridSize / 2;
 
                     // Calculate the distortion using sine waves
                     // The combination of sin waves creates a more complex, flowing pattern
@@ -132,7 +136,12 @@
 
         function animate() {
             time += speed * 10; // Increment time for animation
-            drawGrid();
+            
+            // Calculate a smoothly oscillating zoom factor between 0 and 1
+            const zoomFactor = (Math.sin(time * zoomSpeed) + 1) / 2;
+            const currentGridSize = baseGridSize + zoomFactor * zoomAmount;
+
+            drawGrid(currentGridSize);
             requestAnimationFrame(animate);
         }
 
@@ -142,4 +151,5 @@
     </script>
 </body>
 </html>
+
 
