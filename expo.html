@@ -1,251 +1,145 @@
-
-                        <!DOCTYPE html>
-                        <html lang="en">
-                        <head>
-                            <meta charset="UTF-8">
-                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <style>
-                body {
-                  background-color: white; /* Ensure the iframe has a white background */
-                }
-    
-                
-              </style>
-                        </head>
-                        <body>
-                            <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Mobile Game UI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flowing Grid Background</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-            background-attachment: fixed;
-        }
-        
-        .game-container {
-            width: 95vw;
-            height: 85vh;
-            max-width: 400px;
-            max-height: 800px;
-            background-color: #0d1b2a;
-            border-radius: 25px;
+            margin: 0;
             overflow: hidden;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+            background-color: #1a1a1a; /* Slightly lighter dark background for contrast */
             display: flex;
-            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .phone-silhouette {
             position: relative;
-        }
-        
-        .top-text {
-            position: absolute;
-            top: 3.5%;
-            left: 0;
-            width: 100%;
-            text-align: center;
-            color: #e0e1dd;
-            font-size: 4.5vw;
-            font-weight: bold;
-            text-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
-            z-index: 2;
-        }
-        
-        .top-section {
-            height: 30%;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            padding: 4.5vw;
-            background: linear-gradient(to bottom, #1b263b, #0f1c2e);
-            border-bottom: 2px solid #415a77;
-            margin-top: 6vh; /* Space for top text */
-        }
-        
-        .square {
-            width: 16vw;
-            height: 16vw;
-            max-width: 70px;
-            max-height: 70px;
-            min-width: 50px;
-            min-height: 50px;
-            border-radius: 12px;
+            width: 90%;
+            max-width: 400px; /* Max width of the phone */
+            aspect-ratio: 9 / 19.5; /* A common modern phone aspect ratio */
+            background-color: #050505;
+            border-radius: 50px;
+            border: 8px solid #111;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 2px 2px rgba(255, 255, 255, 0.1);
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 5vw;
-            font-weight: bold;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            transition: transform 0.2s, box-shadow 0.2s;
-            background: linear-gradient(135deg, #4a69bd, #6a89cc);
-            color: white;
+            padding: 5px;
         }
-        
-        .square:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
-        }
-        
-        .sim-space {
-            height: 15%;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            padding: 2.5vw;
-            background: linear-gradient(to bottom, #415a77, #1b263b);
-        }
-        
-        .small-square {
-            width: 9vw;
-            height: 9vw;
-            max-width: 40px;
-            max-height: 40px;
-            min-width: 30px;
-            min-height: 30px;
-            border-radius: 8px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 4vw;
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
-            background: linear-gradient(135deg, #f6d365, #fda085);
-            color: white;
-        }
-        
-        .bottom-section {
-            height: 30%;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            padding: 4.5vw;
-            background: linear-gradient(to top, #1b263b, #0f1c2e);
-            border-top: 2px solid #415a77;
-        }
-        
-        .bottom-text {
-            position: absolute;
-            bottom: 3.5%;
-            left: 0;
-            width: 100%;
-            text-align: center;
-            color: #e0e1dd;
-            font-size: 4.5vw;
-            font-weight: bold;
-            text-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
-            z-index: 2;
-        }
-        
-        .center-area {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: linear-gradient(135deg, #0d1b2a, #1b263b);
-            padding: 2.5vw;
-        }
-        
-        .game-element {
+
+        .phone-screen {
             width: 100%;
             height: 100%;
-            background: rgba(65, 90, 119, 0.3);
-            border-radius: 15px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: #e0e1dd;
-            font-size: 4vw;
-            text-align: center;
-            padding: 3vw;
-            border: 2px dashed #415a77;
+            background: #0a0a0a; /* Original canvas background color */
+            border-radius: 45px;
+            overflow: hidden; /* This clips the canvas to the screen's rounded corners */
+            position: relative;
         }
-        
-        @media (max-width: 400px) {
-            .square {
-                width: 18vw;
-                height: 18vw;
-            }
-            
-            .small-square {
-                width: 10vw;
-                height: 10vw;
-            }
-        }
-        
-        @media (min-width: 768px) {
-            .game-container {
-                width: 70vw;
-                height: 70vh;
-            }
-            
-            .top-text, .bottom-text {
-                font-size: 2.5vw;
-            }
-            
-            .square {
-                width: 8vw;
-                height: 8vw;
-            }
-            
-            .small-square {
-                width: 4vw;
-                height: 4vw;
-            }
+
+        canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
         }
     </style>
+    <!-- Using Google Fonts for a clean look on overlay text -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="game-container">
-        <div class="top-text">Game Status: Active</div>
-        
-        <div class="top-section">
-            <div class="square">A</div>
-            <div class="square">B</div>
-            <div class="square">C</div>
+    <div class="phone-silhouette">
+        <div class="phone-screen">
+            <canvas id="gridCanvas"></canvas>
         </div>
-        
-        <div class="center-area">
-            <div class="game-element">
-                Game Elements Appear Here<br>
-                (Sim Space)
-            </div>
-        </div>
-        
-        <div class="sim-space">
-            <div class="small-square">1</div>
-            <div class="small-square">2</div>
-            <div class="small-square">3</div>
-            <div class="small-square">4</div>
-        </div>
-        
-        <div class="bottom-section">
-            <div class="square">X</div>
-            <div class="square">Y</div>
-            <div class="square">Z</div>
-        </div>
-        
-        <div class="bottom-text">Score: 1250</div>
     </div>
+   
+    <script>
+        const canvas = document.getElementById('gridCanvas');
+        const screenElement = canvas.parentElement;
+        const ctx = canvas.getContext('2d');
+
+        let time = 0;
+        const gridSize = 30; // Spacing between grid lines
+        const distortionFactor = 60; // How much the grid bulges
+        const speed = 0.0005; // How fast the pattern moves
+
+        function resizeCanvas() {
+            // Set canvas dimensions based on its container, the phone screen
+            canvas.width = screenElement.clientWidth;
+            canvas.height = screenElement.clientHeight;
+        }
+
+        // Handles resizing of the browser window, which resizes the phone
+        window.addEventListener('resize', resizeCanvas);
+
+        function drawGrid() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = 'rgba(0, 255, 255, 0.2)'; // A cool cyan color with transparency
+            ctx.lineWidth = 1;
+
+            const cols = Math.ceil(canvas.width / gridSize) + 1;
+            const rows = Math.ceil(canvas.height / gridSize) + 1;
+
+            // Create a 2D array to store the distorted grid points
+            const points = [];
+
+            for (let i = 0; i < rows; i++) {
+                points[i] = [];
+                for (let j = 0; j < cols; j++) {
+                    const x = j * gridSize;
+                    const y = i * gridSize;
+
+                    // Calculate the distortion using sine waves
+                    // The combination of sin waves creates a more complex, flowing pattern
+                    const distortionX = Math.sin(i * 0.1 + time * 2) * Math.cos(j * 0.05 + time) * distortionFactor;
+                    const distortionY = Math.cos(j * 0.1 + time) * Math.sin(i * 0.05 + time * 2) * distortionFactor;
+
+                    points[i][j] = {
+                        x: x + distortionX,
+                        y: y + distortionY
+                    };
+                }
+            }
+            
+            ctx.beginPath();
+            
+            // Draw horizontal lines
+            for (let i = 0; i < rows; i++) {
+                ctx.moveTo(points[i][0].x, points[i][0].y);
+                for (let j = 1; j < cols; j++) {
+                    ctx.lineTo(points[i][j].x, points[i][j].y);
+                }
+            }
+
+            // Draw vertical lines
+            for (let j = 0; j < cols; j++) {
+                ctx.moveTo(points[0][j].x, points[0][j].y);
+                for (let i = 1; i < rows; i++) {
+                    ctx.lineTo(points[i][j].x, points[i][j].y);
+                }
+            }
+            
+            ctx.stroke();
+        }
+
+        function animate() {
+            time += speed * 10; // Increment time for animation
+            drawGrid();
+            requestAnimationFrame(animate);
+        }
+
+        // Initial setup
+        resizeCanvas();
+        animate();
+    </script>
 </body>
 </html>
 
-
-    
-              <script>
-                              
-              </script>
-                        </body>
-                        </html>
-                    
