@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flowing Grid Background</title>
     <style>
+        :root {
+            --vh: 1vh; /* Fallback for the dynamic viewport height unit */
+        }
+
         body {
             margin: 0;
             overflow: hidden;
@@ -12,15 +16,19 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
+            height: calc(var(--vh, 1vh) * 100); /* Use dynamic viewport height */
             font-family: 'Inter', sans-serif;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box; /* Ensures padding and border are included in the element's total width and height */
         }
 
         .phone-silhouette {
             position: relative;
             width: 90%;
             max-width: 400px; /* Max width of the phone */
-            max-height: 90vh; /* Ensures the phone fits on screen vertically */
+            max-height: 90%; /* Use percentage of parent (body) height */
             aspect-ratio: 9 / 19.5; /* A common modern phone aspect ratio */
             background-color: #050505;
             border-radius: 50px;
@@ -63,6 +71,21 @@
     </div>
    
     <script>
+        // --- Viewport Height Fix for Mobile Browsers ---
+        function setRealViewportHeight() {
+            // This calculates the real viewport height, ignoring browser UI.
+            // It sets a CSS custom property (--vh) that we can use in our CSS.
+            document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+        }
+
+        // Set the value on initial page load
+        setRealViewportHeight();
+
+        // Re-calculate whenever the window is resized or orientation changes
+        window.addEventListener('resize', setRealViewportHeight);
+        window.addEventListener('orientationchange', setRealViewportHeight);
+        // --- End of Viewport Fix ---
+
         const canvas = document.getElementById('gridCanvas');
         const screenElement = canvas.parentElement;
         const ctx = canvas.getContext('2d');
@@ -151,5 +174,6 @@
     </script>
 </body>
 </html>
+
 
 
