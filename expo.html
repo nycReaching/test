@@ -1,49 +1,72 @@
-import React from "react";
-import { motion } from "framer-motion";
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mobile Game UI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body, html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body class="flex justify-center items-center h-screen bg-gradient-to-b from-purple-700 to-indigo-900">
+    <!-- Phone-like container -->
+    <div class="relative aspect-[9/16] w-[400px] max-w-full bg-black rounded-2xl shadow-2xl overflow-hidden border-4 border-gray-800 flex flex-col">
+      <!-- Header Section -->
+      <div class="w-full flex justify-between items-center bg-black/60 p-3 text-white text-sm">
+        <span>Level 12</span>
+        <span>⏱ 02:15</span>
+        <span>⭐ 350</span>
+      </div>
 
-export default function GameUI() {
-  return (
-    <div className="flex justify-center items-center h-screen bg-gradient-to-b from-purple-700 to-indigo-900">
-      {/* Phone-like container */}
-      <div className="relative aspect-[9/16] w-[400px] max-w-full bg-black rounded-2xl shadow-2xl overflow-hidden border-4 border-gray-800">
-        {/* Header Bar */}
-        <div className="absolute top-0 left-0 w-full flex justify-between items-center bg-black/60 p-3 text-white text-sm">
-          <span>Level 12</span>
-          <span>⏱ 02:15</span>
-          <span>⭐ 350</span>
+      <!-- Info Section -->
+      <div class="bg-indigo-800/40 text-white text-center py-2 text-sm border-b border-indigo-600">
+        Mission: Collect all stars
+      </div>
+
+      <!-- Main Game Section -->
+      <div class="flex-1 flex flex-col justify-center items-center text-white px-2">
+        <div class="text-3xl font-bold mb-6">
+          Game Area
         </div>
 
-        {/* Main Content */}
-        <div className="flex flex-col justify-center items-center h-full text-white">
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="text-3xl font-bold mb-6"
-          >
-            Game Area
-          </motion.div>
-
-          {/* Placeholder game board */}
-          <div className="grid grid-cols-4 gap-2 w-3/4">
-            {Array.from({ length: 16 }).map((_, i) => (
-              <div
-                key={i}
-                className="aspect-square bg-purple-500 rounded-xl flex items-center justify-center text-lg font-bold"
-              >
-                {i + 1}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Bottom Navigation */}
-        <div className="absolute bottom-0 left-0 w-full flex justify-around items-center bg-black/70 p-4 text-white text-base">
-          <button className="bg-indigo-600 px-4 py-2 rounded-xl shadow-md">Menu</button>
-          <button className="bg-green-600 px-4 py-2 rounded-xl shadow-md">Play</button>
-          <button className="bg-red-600 px-4 py-2 rounded-xl shadow-md">Exit</button>
+        <!-- Placeholder game board -->
+        <div class="grid grid-cols-4 gap-2 w-3/4">
+          <div class="aspect-square bg-purple-500 rounded-xl flex items-center justify-center text-lg font-bold">1</div>
+          <div class="aspect-square bg-purple-500 rounded-xl flex items-center justify-center text-lg font-bold">2</div>
+          <div class="aspect-square bg-purple-500 rounded-xl flex items-center justify-center text-lg font-bold">3</div>
+          <div class="aspect-square bg-purple-500 rounded-xl flex items-center justify-center text-lg font-bold">4</div>
+          <div class="aspect-square bg-purple-500 rounded-xl flex items-center justify-center text-lg font-bold">5</div>
+          <div class="aspect-square bg-purple-500 rounded-xl flex items-center justify-center text-lg font-bold">6</div>
+          <div class="aspect-square bg-purple-500 rounded-xl flex items-center justify-center text-lg font-bold">7</div>
+          <div class="aspect-square bg-purple-500 rounded-xl flex items-center justify-center text-lg font-bold">8</div>
+          <div class="aspect-square bg-purple-500 rounded-xl flex items-center justify-center text-lg font-bold">9</div>
+          <div class="aspect-square bg-purple-500 rounded-xl flex items-center justify-center text-lg font-bold">10</div>
+          <div class="aspect-square bg-purple-500 rounded-xl flex items-center justify-center text-lg font-bold">11</div>
+          <div class="aspect-square bg-purple-500 rounded-xl flex items-center justify-center text-lg font-bold">12</div>
+          <div class="aspect-square bg-purple-500 rounded-xl flex items-center justify-center text-lg font-bold">13</div>
+          <div class="aspect-square bg-purple-500 rounded-xl flex items-center justify-center text-lg font-bold">14</div>
+          <div class="aspect-square bg-purple-500 rounded-xl flex items-center justify-center text-lg font-bold">15</div>
+          <div class="aspect-square bg-purple-500 rounded-xl flex items-center justify-center text-lg font-bold">16</div>
         </div>
       </div>
+
+      <!-- Status/Progress Section -->
+      <div class="bg-indigo-800/60 text-white p-3 text-sm flex justify-between items-center border-t border-indigo-600">
+        <span>Health: ❤️❤️❤️</span>
+        <span>Score: 1250</span>
+      </div>
+
+      <!-- Bottom Navigation -->
+      <div class="w-full flex justify-around items-center bg-black/70 p-4 text-white text-base border-t border-gray-700">
+        <button class="bg-indigo-600 px-4 py-2 rounded-xl shadow-md">Menu</button>
+        <button class="bg-green-600 px-4 py-2 rounded-xl shadow-md">Play</button>
+        <button class="bg-red-600 px-4 py-2 rounded-xl shadow-md">Exit</button>
+      </div>
     </div>
-  );
-}
+  </body>
+</html>
