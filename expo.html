@@ -17,7 +17,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Mobile Game UI</title>
     <style>
         * {
@@ -29,19 +29,21 @@
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 10px;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+            background-attachment: fixed;
         }
         
         .game-container {
-            width: 100%;
-            max-width: 360px;
-            height: 640px;
+            width: 95vw;
+            height: 85vh;
+            max-width: 400px;
+            max-height: 800px;
             background-color: #0d1b2a;
-            border-radius: 20px;
+            border-radius: 25px;
             overflow: hidden;
             box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
             display: flex;
@@ -51,14 +53,15 @@
         
         .top-text {
             position: absolute;
-            top: 8px;
+            top: 3.5%;
             left: 0;
             width: 100%;
             text-align: center;
             color: #e0e1dd;
-            font-size: 18px;
+            font-size: 4.5vw;
             font-weight: bold;
             text-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
+            z-index: 2;
         }
         
         .top-section {
@@ -66,20 +69,24 @@
             display: flex;
             justify-content: space-around;
             align-items: center;
-            padding: 15px;
+            padding: 4.5vw;
             background: linear-gradient(to bottom, #1b263b, #0f1c2e);
             border-bottom: 2px solid #415a77;
-            margin-top: 25px; /* Space for top text */
+            margin-top: 6vh; /* Space for top text */
         }
         
         .square {
-            width: 70px;
-            height: 70px;
+            width: 16vw;
+            height: 16vw;
+            max-width: 70px;
+            max-height: 70px;
+            min-width: 50px;
+            min-height: 50px;
             border-radius: 12px;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 24px;
+            font-size: 5vw;
             font-weight: bold;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
             transition: transform 0.2s, box-shadow 0.2s;
@@ -97,18 +104,22 @@
             display: flex;
             justify-content: space-around;
             align-items: center;
-            padding: 8px;
+            padding: 2.5vw;
             background: linear-gradient(to bottom, #415a77, #1b263b);
         }
         
         .small-square {
-            width: 40px;
-            height: 40px;
+            width: 9vw;
+            height: 9vw;
+            max-width: 40px;
+            max-height: 40px;
+            min-width: 30px;
+            min-height: 30px;
             border-radius: 8px;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 18px;
+            font-size: 4vw;
             box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
             background: linear-gradient(135deg, #f6d365, #fda085);
             color: white;
@@ -119,21 +130,22 @@
             display: flex;
             justify-content: space-around;
             align-items: center;
-            padding: 15px;
+            padding: 4.5vw;
             background: linear-gradient(to top, #1b263b, #0f1c2e);
             border-top: 2px solid #415a77;
         }
         
         .bottom-text {
             position: absolute;
-            bottom: 8px;
+            bottom: 3.5%;
             left: 0;
             width: 100%;
             text-align: center;
             color: #e0e1dd;
-            font-size: 18px;
+            font-size: 4.5vw;
             font-weight: bold;
             text-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
+            z-index: 2;
         }
         
         .center-area {
@@ -142,7 +154,7 @@
             justify-content: center;
             align-items: center;
             background: linear-gradient(135deg, #0d1b2a, #1b263b);
-            padding: 10px;
+            padding: 2.5vw;
         }
         
         .game-element {
@@ -154,22 +166,43 @@
             justify-content: center;
             align-items: center;
             color: #e0e1dd;
-            font-size: 18px;
+            font-size: 4vw;
             text-align: center;
-            padding: 15px;
+            padding: 3vw;
             border: 2px dashed #415a77;
         }
         
-        .section-title {
-            position: absolute;
-            top: 50%;
-            left: 0;
-            width: 100%;
-            text-align: center;
-            color: #e0e1dd;
-            font-size: 16px;
-            font-weight: bold;
-            opacity: 0.7;
+        @media (max-width: 400px) {
+            .square {
+                width: 18vw;
+                height: 18vw;
+            }
+            
+            .small-square {
+                width: 10vw;
+                height: 10vw;
+            }
+        }
+        
+        @media (min-width: 768px) {
+            .game-container {
+                width: 70vw;
+                height: 70vh;
+            }
+            
+            .top-text, .bottom-text {
+                font-size: 2.5vw;
+            }
+            
+            .square {
+                width: 8vw;
+                height: 8vw;
+            }
+            
+            .small-square {
+                width: 4vw;
+                height: 4vw;
+            }
         }
     </style>
 </head>
