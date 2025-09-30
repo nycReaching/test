@@ -3,274 +3,102 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Mobile Game UI - Emoji Path</title>
+    <title>Flexible Game UI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-      body,
-      html {
+      body, html {
         margin: 0;
         padding: 0;
         height: 100%;
-        font-family: 'Inter', sans-serif;
-        /* Prevent text selection while dragging */
-        user-select: none;
-        -webkit-user-select: none;
       }
-      /* To use Inter font */
-      @import url('https://rsms.me/inter/inter.css');
-
-      #game-board {
-        display: grid;
-        gap: 5px;
+      .board {
+        position: relative;
+        width: 100%;
+        height: 100%;
       }
-
-      .path-tile.selected {
-        background-color: #a78bfa; /* A lighter purple for selected path */
-        transform: scale(1.1);
-        box-shadow: 0 0 15px gold;
+      .cell {
+        position: absolute;
       }
     </style>
   </head>
-  <body
-    class="flex justify-center items-center h-screen bg-gradient-to-b from-purple-700 to-indigo-900"
-  >
+  <body class="flex justify-center items-center h-screen bg-gradient-to-b from-purple-700 to-indigo-900">
     <!-- Flexible Phone-like container -->
-    <div
-      class="relative w-full h-full max-w-sm md:max-w-md lg:max-w-lg bg-black rounded-2xl shadow-2xl overflow-hidden border-4 border-gray-800 flex flex-col"
-    >
+    <div class="relative w-full h-full max-w-sm md:max-w-md lg:max-w-lg bg-black rounded-2xl shadow-2xl overflow-hidden border-4 border-gray-800 flex flex-col">
       <!-- Header Section -->
-      <div
-        class="w-full flex justify-between items-center bg-black/60 p-3 text-white text-sm"
-      >
-        <span>Level 12</span>
-        <span>⏱ 02:15</span>
-        <span>⭐ 350</span>
-      </div>
+      <header class="w-full flex justify-between items-center bg-black/60 p-3 text-white text-sm">
+        <span id="game-level">Level 12</span>
+        <span id="game-timer">⏱ 02:15</span>
+        <span id="game-stars">⭐ 350</span>
+      </header>
 
-      <!-- Info Section -->
-      <div
-        class="bg-indigo-800/40 text-white text-center py-2 text-sm border-b border-indigo-600"
-      >
-        Mission: Find the path
-      </div>
+      <!-- Info / Mission Section -->
+      <section class="bg-indigo-800/40 text-white text-center py-2 text-sm border-b border-indigo-600">
+        <span id="game-mission">Mission: Collect all stars</span>
+      </section>
 
       <!-- Main Game Section -->
-      <div
-        class="flex-1 flex flex-col justify-center items-center text-white px-2 overflow-hidden"
-      >
-        <div id="game-container" class="relative" style="width: 90%; height: 90%;">
-          <div id="game-board" class="w-full h-full">
-            <!-- Grid will be generated here by JavaScript -->
-          </div>
-          <canvas id="path-canvas" class="absolute top-0 left-0 w-full h-full pointer-events-none"></canvas>
-        </div>
-      </div>
+      <main class="flex-1 flex flex-col justify-center items-center text-white px-2 overflow-y-auto">
+        <!-- Dynamic game board placeholder -->
+        <div id="board" class="board"></div>
+      </main>
 
       <!-- Status/Progress Section -->
-      <div
-        class="bg-indigo-800/60 text-white p-3 text-sm flex justify-around items-center border-t border-indigo-600"
-      >
-        <span class="flex items-center">❤️❤️❤️</span>
-        <span class="flex items-center">🌙🌙🌙</span>
-        <span class="flex items-center">🪙🪙🪙</span>
-        <span class="flex items-center">✨✨✨</span>
-      </div>
+      <section class="bg-indigo-800/60 text-white p-3 text-sm flex justify-between items-center border-t border-indigo-600">
+        <span id="game-health">Health: ❤️❤️❤️</span>
+        <span id="game-score">Score: 1250</span>
+      </section>
 
       <!-- Bottom Navigation -->
-      <div
-        class="w-full flex justify-around items-center bg-black/70 p-4 text-white text-base border-t border-gray-700"
-      >
-        <button
-          class="bg-indigo-600 px-4 py-2 rounded-xl shadow-md hover:bg-indigo-500 transition-colors"
-        >
-          Menu
-        </button>
-        <button
-          class="bg-green-600 px-4 py-2 rounded-xl shadow-md hover:bg-green-500 transition-colors"
-        >
-          Play
-        </button>
-        <button
-          class="bg-red-600 px-4 py-2 rounded-xl shadow-md hover:bg-red-500 transition-colors"
-        >
-          Exit
-        </button>
-      </div>
+      <nav class="w-full flex justify-around items-center bg-black/70 p-4 text-white text-base border-t border-gray-700">
+        <button class="bg-indigo-600 px-4 py-2 rounded-xl shadow-md">Menu</button>
+        <button class="bg-green-600 px-4 py-2 rounded-xl shadow-md">Play</button>
+        <button class="bg-red-600 px-4 py-2 rounded-xl shadow-md">Exit</button>
+      </nav>
     </div>
 
     <script>
-      document.addEventListener('DOMContentLoaded', () => {
-        const gameBoard = document.getElementById('game-board');
-        const canvas = document.getElementById('path-canvas');
-        if (!gameBoard || !canvas) return;
-        
-        const ctx = canvas.getContext('2d');
+      // Example dynamic board generator - can be replaced for other game types
+      function generatePath() {
+        const board = document.getElementById('board');
+        board.innerHTML = '';
+        const size = 50; // cell size
+        let x = 0, y = 0;
+        const used = new Set();
 
-        const GRID_WIDTH = 8;
-        const GRID_HEIGHT = 10;
-        const NUMBER_OF_PATHS = 2;
-        const fantasyEmojis = ['🧙', '🐉', '🏰', '🦄', '🔮', '⚔️', '🛡️', '💎', '🧪', '📜'];
+        for (let i = 1; i <= 16; i++) {
+          const cell = document.createElement('div');
+          cell.className = 'cell bg-purple-500 rounded-xl flex items-center justify-center text-lg font-bold text-white';
+          cell.style.width = size + 'px';
+          cell.style.height = size + 'px';
+          cell.style.left = x + 'px';
+          cell.style.top = y + 'px';
+          cell.textContent = i;
+          board.appendChild(cell);
 
-        gameBoard.style.gridTemplateColumns = `repeat(${GRID_WIDTH}, 1fr)`;
-        gameBoard.style.gridTemplateRows = `repeat(${GRID_HEIGHT}, 1fr)`;
+          used.add(`${x},${y}`);
 
-        const pathCoords = new Set();
-        let isDrawing = false;
-        let drawnPath = []; // Array of tile elements
+          let direction;
+          let tries = 0;
+          do {
+            direction = Math.floor(Math.random() * 4);
+            let newX = x;
+            let newY = y;
+            if (direction === 0) newX += size + 10;
+            if (direction === 1) newX -= size + 10;
+            if (direction === 2) newY += size + 10;
+            if (direction === 3) newY -= size + 10;
 
-        const generatePath = () => {
-          let currentX = Math.floor(Math.random() * GRID_WIDTH);
-          for (let y = 0; y < GRID_HEIGHT; y++) {
-            pathCoords.add(`${currentX},${y}`);
-            if (Math.random() > 0.7) {
-              const branchDirection = Math.random() > 0.5 ? 1 : -1;
-              const branchX = currentX + branchDirection;
-              if (branchX >= 0 && branchX < GRID_WIDTH) {
-                pathCoords.add(`${branchX},${y}`);
-              }
+            if (!used.has(`${newX},${newY}`) && newX >= 0 && newY >= 0 && newX < board.clientWidth - size && newY < board.clientHeight - size) {
+              x = newX;
+              y = newY;
+              break;
             }
-            const move = Math.floor(Math.random() * 3) - 1;
-            currentX = Math.max(0, Math.min(GRID_WIDTH - 1, currentX));
-          }
-        };
-
-        for (let i = 0; i < NUMBER_OF_PATHS; i++) {
-          generatePath();
+            tries++;
+          } while (tries < 10);
         }
+      }
 
-        for (let y = 0; y < GRID_HEIGHT; y++) {
-          for (let x = 0; x < GRID_WIDTH; x++) {
-            const tile = document.createElement('div');
-            tile.dataset.x = x;
-            tile.dataset.y = y;
-
-            if (pathCoords.has(`${x},${y}`)) {
-              tile.className = 'path-tile bg-purple-500 rounded-lg flex items-center justify-center text-2xl shadow-md cursor-pointer transition-transform hover:scale-110';
-              const randomEmoji = fantasyEmojis[Math.floor(Math.random() * fantasyEmojis.length)];
-              tile.textContent = randomEmoji;
-            } else {
-              tile.className = 'bg-black/20 rounded-lg';
-            }
-            gameBoard.appendChild(tile);
-          }
-        }
-        
-        function setupCanvas() {
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
-        }
-        
-        // Setup canvas after a short delay to ensure layout is complete
-        setTimeout(setupCanvas, 0);
-        window.addEventListener('resize', setupCanvas);
-
-        const getTileCenter = (tile) => {
-            return {
-                x: tile.offsetLeft + tile.offsetWidth / 2,
-                y: tile.offsetTop + tile.offsetHeight / 2
-            };
-        }
-
-        const updateLine = () => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            if (drawnPath.length < 2) return;
-
-            ctx.beginPath();
-            ctx.strokeStyle = 'gold';
-            ctx.lineWidth = 3;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            
-            const firstPoint = getTileCenter(drawnPath[0]);
-            ctx.moveTo(firstPoint.x, firstPoint.y);
-
-            for(let i = 1; i < drawnPath.length; i++) {
-                const point = getTileCenter(drawnPath[i]);
-                ctx.lineTo(point.x, point.y);
-            }
-            ctx.stroke();
-        }
-
-        const getTileFromCoords = (x, y) => {
-             const touch = y.touches ? y.touches[0] : null;
-             const clientX = touch ? touch.clientX : x;
-             const clientY = touch ? touch.clientY : y;
-             return document.elementFromPoint(clientX, clientY);
-        }
-
-        const startDraw = (e) => {
-          e.preventDefault();
-          const targetTile = getTileFromCoords(e.clientX, e.clientY || e);
-
-          if (targetTile && targetTile.classList.contains('path-tile') && targetTile.dataset.y == GRID_HEIGHT - 1) {
-            // Clear previous path only when a new one starts
-            drawnPath.forEach(tile => tile.classList.remove('selected'));
-            isDrawing = true;
-            drawnPath = [targetTile];
-            targetTile.classList.add('selected');
-            updateLine();
-          }
-        };
-
-        const draw = (e) => {
-          if (!isDrawing) return;
-          e.preventDefault();
-          const targetTile = getTileFromCoords(e.clientX, e.clientY || e);
-
-          if (targetTile && targetTile.classList.contains('path-tile')) {
-              const lastTile = drawnPath[drawnPath.length - 1];
-
-              // Check for backtracking: is the target the second to last tile?
-              if (drawnPath.length > 1 && targetTile === drawnPath[drawnPath.length - 2]) {
-                  lastTile.classList.remove('selected');
-                  drawnPath.pop();
-                  updateLine();
-              } else if (!drawnPath.includes(targetTile)) {
-                  const lastX = parseInt(lastTile.dataset.x);
-                  const lastY = parseInt(lastTile.dataset.y);
-                  const nextX = parseInt(targetTile.dataset.x);
-                  const nextY = parseInt(targetTile.dataset.y);
-
-                  const isAdjacent = Math.abs(lastX - nextX) + Math.abs(lastY - nextY) === 1;
-
-                  if(isAdjacent){
-                      drawnPath.push(targetTile);
-                      targetTile.classList.add('selected');
-                      updateLine();
-                  }
-              }
-          }
-        };
-
-        const endDraw = (e) => {
-          if (!isDrawing) return;
-          isDrawing = false;
-          
-          const lastTile = drawnPath[drawnPath.length - 1];
-          if(lastTile && lastTile.dataset.y == 0) {
-            console.log("Success!");
-            // Add success effect, e.g., make line flash
-          }
-
-          setTimeout(() => {
-            drawnPath.forEach(tile => tile.classList.remove('selected'));
-            drawnPath = [];
-            updateLine(); // Clear the line
-          }, 500);
-        };
-
-        // Mouse events
-        gameBoard.addEventListener('mousedown', startDraw);
-        gameBoard.addEventListener('mousemove', draw);
-        window.addEventListener('mouseup', endDraw);
-
-        // Touch events
-        gameBoard.addEventListener('touchstart', startDraw);
-        gameBoard.addEventListener('touchmove', draw);
-        window.addEventListener('touchend', endDraw);
-
-      });
+      window.onload = generatePath;
     </script>
   </body>
 </html>
-
