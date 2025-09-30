@@ -12,6 +12,37 @@
         padding: 0;
         height: 100%;
       }
+      /* Custom styles for the vertical toggles */
+      .vertical-toggle {
+        width: 40px; /* Chunky width */
+        height: 100px; /* Vertical height */
+        background-color: #2d3748; /* gray-800 */
+        border-radius: 9999px; /* pill shape */
+        position: relative;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        border: 2px solid #4a5568; /* gray-600 */
+      }
+      .vertical-toggle .thumb {
+        width: 30px;
+        height: 30px;
+        background-color: white;
+        border-radius: 50%;
+        position: absolute;
+        left: 3px;
+        transition: transform 0.3s ease;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+      }
+      .vertical-toggle.off .thumb {
+        transform: translateY(61px); /* Position at the bottom */
+      }
+      .vertical-toggle.on .thumb {
+        transform: translateY(5px); /* Position at the top */
+      }
+      .vertical-toggle.on {
+        background-color: #805ad5; /* purple-600 */
+        border-color: #b794f4; /* purple-400 */
+      }
     </style>
   </head>
   <body
@@ -53,11 +84,28 @@
         >
           <p class="text-gray-300 text-lg">Inventory / Map</p>
         </div>
-        <!-- Window 3 -->
+        <!-- Window 3: Game Toggles -->
         <div
-          class="w-full h-full bg-black/30 rounded-lg border-2 border-purple-500/50 p-4 flex justify-center items-center shadow-inner"
+          class="w-full h-full bg-black/30 rounded-lg border-2 border-purple-500/50 p-4 flex justify-around items-center shadow-inner"
         >
-          <p class="text-gray-300 text-lg">Dialogue / Log</p>
+          <div class="vertical-toggle on">
+            <div class="thumb"></div>
+          </div>
+          <div class="vertical-toggle off">
+            <div class="thumb"></div>
+          </div>
+          <div class="vertical-toggle on">
+            <div class="thumb"></div>
+          </div>
+          <div class="vertical-toggle off">
+            <div class="thumb"></div>
+          </div>
+          <div class="vertical-toggle off">
+            <div class="thumb"></div>
+          </div>
+          <div class="vertical-toggle on">
+            <div class="thumb"></div>
+          </div>
         </div>
       </main>
 
@@ -90,5 +138,19 @@
         </button>
       </nav>
     </div>
+
+    <script>
+      // Make the toggles interactive
+      document.addEventListener("DOMContentLoaded", () => {
+        const toggles = document.querySelectorAll(".vertical-toggle");
+        toggles.forEach((toggle) => {
+          toggle.addEventListener("click", () => {
+            toggle.classList.toggle("on");
+            toggle.classList.toggle("off");
+          });
+        });
+      });
+    </script>
   </body>
 </html>
+
