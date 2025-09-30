@@ -6,99 +6,89 @@
     <title>Flexible Game UI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-      body, html {
+      body,
+      html {
         margin: 0;
         padding: 0;
         height: 100%;
       }
-      .board {
-        position: relative;
-        width: 100%;
-        height: 100%;
-      }
-      .cell {
-        position: absolute;
-      }
     </style>
   </head>
-  <body class="flex justify-center items-center h-screen bg-gradient-to-b from-purple-700 to-indigo-900">
+  <body
+    class="flex justify-center items-center h-screen bg-gradient-to-b from-purple-700 to-indigo-900 font-sans"
+  >
     <!-- Flexible Phone-like container -->
-    <div class="relative w-full h-full max-w-sm md:max-w-md lg:max-w-lg bg-black rounded-2xl shadow-2xl overflow-hidden border-4 border-gray-800 flex flex-col">
+    <div
+      class="relative w-full h-full max-w-sm md:max-w-md lg:max-w-lg bg-black rounded-2xl shadow-2xl overflow-hidden border-4 border-gray-800 flex flex-col"
+    >
       <!-- Header Section -->
-      <header class="w-full flex justify-between items-center bg-black/60 p-3 text-white text-sm">
+      <header
+        class="w-full flex justify-between items-center bg-black/60 p-5 text-white text-lg"
+      >
         <span id="game-level">Level 12</span>
         <span id="game-timer">⏱ 02:15</span>
         <span id="game-stars">⭐ 350</span>
       </header>
 
       <!-- Info / Mission Section -->
-      <section class="bg-indigo-800/40 text-white text-center py-2 text-sm border-b border-indigo-600">
+      <section
+        class="bg-indigo-800/40 text-white text-center py-4 text-base border-b-2 border-indigo-600"
+      >
         <span id="game-mission">Mission: Collect all stars</span>
       </section>
 
       <!-- Main Game Section -->
-      <main class="flex-1 flex flex-col justify-center items-center text-white px-2 overflow-y-auto">
-        <!-- Dynamic game board placeholder -->
-        <div id="board" class="board"></div>
+      <main
+        class="flex-1 flex flex-col justify-around items-center text-white p-4 gap-4 overflow-y-auto"
+      >
+        <!-- Window 1 -->
+        <div
+          class="w-full h-full bg-black/30 rounded-lg border-2 border-purple-500/50 p-4 flex justify-center items-center shadow-inner"
+        >
+          <p class="text-gray-300 text-lg">Character / Stats</p>
+        </div>
+        <!-- Window 2 -->
+        <div
+          class="w-full h-full bg-black/30 rounded-lg border-2 border-purple-500/50 p-4 flex justify-center items-center shadow-inner"
+        >
+          <p class="text-gray-300 text-lg">Inventory / Map</p>
+        </div>
+        <!-- Window 3 -->
+        <div
+          class="w-full h-full bg-black/30 rounded-lg border-2 border-purple-500/50 p-4 flex justify-center items-center shadow-inner"
+        >
+          <p class="text-gray-300 text-lg">Dialogue / Log</p>
+        </div>
       </main>
 
       <!-- Status/Progress Section -->
-      <section class="bg-indigo-800/60 text-white p-3 text-sm flex justify-between items-center border-t border-indigo-600">
+      <section
+        class="bg-indigo-800/60 text-white p-5 text-lg flex justify-between items-center border-t-2 border-indigo-600"
+      >
         <span id="game-health">Health: ❤️❤️❤️</span>
         <span id="game-score">Score: 1250</span>
       </section>
 
       <!-- Bottom Navigation -->
-      <nav class="w-full flex justify-around items-center bg-black/70 p-4 text-white text-base border-t border-gray-700">
-        <button class="bg-indigo-600 px-4 py-2 rounded-xl shadow-md">Menu</button>
-        <button class="bg-green-600 px-4 py-2 rounded-xl shadow-md">Play</button>
-        <button class="bg-red-600 px-4 py-2 rounded-xl shadow-md">Exit</button>
+      <nav
+        class="w-full flex justify-around items-center bg-black/70 p-5 text-white text-xl border-t-2 border-gray-700"
+      >
+        <button
+          class="bg-indigo-600 hover:bg-indigo-500 transition-colors px-5 py-3 rounded-xl shadow-md"
+        >
+          Menu
+        </button>
+        <button
+          class="bg-green-600 hover:bg-green-500 transition-colors px-5 py-3 rounded-xl shadow-md"
+        >
+          Play
+        </button>
+        <button
+          class="bg-red-600 hover:bg-red-500 transition-colors px-5 py-3 rounded-xl shadow-md"
+        >
+          Exit
+        </button>
       </nav>
     </div>
-
-    <script>
-      // Example dynamic board generator - can be replaced for other game types
-      function generatePath() {
-        const board = document.getElementById('board');
-        board.innerHTML = '';
-        const size = 50; // cell size
-        let x = 0, y = 0;
-        const used = new Set();
-
-        for (let i = 1; i <= 16; i++) {
-          const cell = document.createElement('div');
-          cell.className = 'cell bg-purple-500 rounded-xl flex items-center justify-center text-lg font-bold text-white';
-          cell.style.width = size + 'px';
-          cell.style.height = size + 'px';
-          cell.style.left = x + 'px';
-          cell.style.top = y + 'px';
-          cell.textContent = i;
-          board.appendChild(cell);
-
-          used.add(`${x},${y}`);
-
-          let direction;
-          let tries = 0;
-          do {
-            direction = Math.floor(Math.random() * 4);
-            let newX = x;
-            let newY = y;
-            if (direction === 0) newX += size + 10;
-            if (direction === 1) newX -= size + 10;
-            if (direction === 2) newY += size + 10;
-            if (direction === 3) newY -= size + 10;
-
-            if (!used.has(`${newX},${newY}`) && newX >= 0 && newY >= 0 && newX < board.clientWidth - size && newY < board.clientHeight - size) {
-              x = newX;
-              y = newY;
-              break;
-            }
-            tries++;
-          } while (tries < 10);
-        }
-      }
-
-      window.onload = generatePath;
-    </script>
   </body>
 </html>
