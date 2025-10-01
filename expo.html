@@ -17,8 +17,9 @@
         position: relative;
         /* Width and height are now set by JS to be square */
         display: grid;
-        grid-template-columns: repeat(10, 1fr);
-        grid-template-rows: repeat(10, 1fr);
+        /* Updated to 8x8 grid */
+        grid-template-columns: repeat(8, 1fr);
+        grid-template-rows: repeat(8, 1fr);
         gap: 2px;
         padding: 4px;
         box-sizing: border-box;
@@ -52,7 +53,8 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        font-size: clamp(12px, 4vw, 24px); /* Larger font for larger tiles */
+        /* Adjusted font size for better scaling on larger tiles */
+        font-size: clamp(16px, 5vw, 32px);
         user-select: none;
       }
     </style>
@@ -69,7 +71,8 @@
     <script>
       const EMOJI_POOL = ['🍏', '🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🍒', '🍑', '🍍', '🥝', '🍅', '🍆', '🥑', '🥦', '🌽', '🥕', '🥐', '🍞', '🥖', '🥨', '🧀', '🍔', '🍟', '🍕', '🌮', '🍩', '🍪', '🎂', '🍰', '🍦', '🍭', '🍿', '🥓'];
       const gameBoard = document.getElementById('game-board');
-      const GRID_SIZE = 10;
+      // Changed GRID_SIZE to 8
+      const GRID_SIZE = 8;
       let gridCells = [];
       let tileElements = [];
       // Data structure to track occupied grid cells
@@ -81,8 +84,8 @@
 
       function updateTilePosition(tile, gridX, gridY) {
           const boardRect = gameBoard.getBoundingClientRect();
-          const cellWidth = (boardRect.width - 2 * (GRID_SIZE -1) - 8) / GRID_SIZE;
-          const cellHeight = (boardRect.height - 2 * (GRID_SIZE -1) - 8) / GRID_SIZE;
+          const cellWidth = (boardRect.width - 2 * (GRID_SIZE - 1) - 8) / GRID_SIZE;
+          const cellHeight = (boardRect.height - 2 * (GRID_SIZE - 1) - 8) / GRID_SIZE;
           
           tile.style.left = `${4 + gridX * (cellWidth + 2)}px`;
           tile.style.top = `${4 + gridY * (cellHeight + 2)}px`;
@@ -219,16 +222,17 @@
             const tileWidth = cellWidth * 2 + 2;
             const tileHeight = cellHeight * 2 + 2;
 
-            const NUM_TILES = 10;
+            // Changed NUM_TILES to 8
+            const NUM_TILES = 8;
 
             const startPositions = [];
-            // Add positions for the first row of tiles (grid row 6)
+            // Add positions for the first row of tiles (grid row 4)
+            for (let x = 0; x < GRID_SIZE; x += 2) {
+                startPositions.push({ x: x, y: 4 });
+            }
+            // Add positions for the second row of tiles (grid row 6)
             for (let x = 0; x < GRID_SIZE; x += 2) {
                 startPositions.push({ x: x, y: 6 });
-            }
-            // Add positions for the second row of tiles (grid row 8)
-            for (let x = 0; x < GRID_SIZE; x += 2) {
-                startPositions.push({ x: x, y: 8 });
             }
 
             for (let i = 0; i < NUM_TILES; i++) {
@@ -252,4 +256,3 @@
     </script>
   </body>
 </html>
-
