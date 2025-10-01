@@ -11,158 +11,245 @@
         padding: 0;
         height: 100%;
         font-family: 'Inter', sans-serif;
-        touch-action: none; /* Prevents scrolling on touch devices while dragging */
+        touch-action: none; 
       }
       .game-board {
         position: relative;
-        width: 100%;
-        height: 100%;
-        overflow: hidden; /* Keep tiles within the board */
+        /* Width and height are now set by JS to be square */
+        display: grid;
+        grid-template-columns: repeat(10, 1fr);
+        grid-template-rows: repeat(10, 1fr);
+        gap: 2px;
+        padding: 4px;
+        box-sizing: border-box;
+      }
+      .grid-cell {
+        background-color: rgba(255, 255, 255, 0.05);
+        border-radius: 2px;
       }
       .emoji-tile {
-        position: absolute;
-        width: 80px; /* Made tiles smaller */
-        height: 80px; /* Made tiles smaller */
-        background: radial-gradient(circle at 20% 20%, #4A6E9C, #1A202C); /* Dark blue with shine */
-        border-radius: 0px; /* Sharp corners */
+        /* Size and Position are now controlled by JavaScript */
+        position: absolute; 
+        background: radial-gradient(circle at 20% 20%, #4A6E9C, #1A202C);
         cursor: grab;
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         grid-template-rows: repeat(2, 1fr);
-        padding: 6px; /* Adjusted padding */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-        transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
+        padding: 4px; /* A bit more padding for the larger size */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+        transition: transform 0.1s ease-out, box-shadow 0.1s ease-out, top 0.2s ease, left 0.2s ease;
+        box-sizing: border-box;
+        z-index: 10;
       }
       .emoji-tile.dragging {
         cursor: grabbing;
         z-index: 1000;
         transform: scale(1.05);
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+        transition: transform 0.1s ease-out, box-shadow 0.1s ease-out; /* Remove snapping transition while dragging */
       }
       .emoji-cell {
         display: flex;
         justify-content: center;
         align-items: center;
-        font-size: 24px; /* Adjusted font size for smaller tiles */
-        user-select: none; /* Prevent text selection while dragging */
+        font-size: clamp(12px, 4vw, 24px); /* Larger font for larger tiles */
+        user-select: none;
       }
     </style>
   </head>
   <body class="flex justify-center items-center h-screen bg-gray-900">
-    <!-- Flexible Phone-like container -->
     <div class="relative w-full h-full max-w-sm md:max-w-md lg:max-w-lg bg-black rounded-2xl shadow-2xl overflow-hidden border-4 border-gray-800 flex flex-col">
-      
-      <!-- Main Game Section: This is where your game canvas or primary UI will live -->
-      <main class="flex-1 flex flex-col justify-center items-center text-white">
-        <!-- Dynamic game board placeholder -->
+      <main class="flex-1 flex flex-col justify-center items-center text-white overflow-hidden">
         <div id="game-board" class="game-board bg-gray-800/50">
-            <!-- Emoji tiles will be rendered here -->
+            <!-- Grid cells are the background, tiles are positioned on top -->
         </div>
       </main>
-
     </div>
 
     <script>
-      // Limited the emoji pool to just food items
       const EMOJI_POOL = ['🍏', '🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🍒', '🍑', '🍍', '🥝', '🍅', '🍆', '🥑', '🥦', '🌽', '🥕', '🥐', '🍞', '🥖', '🥨', '🧀', '🍔', '🍟', '🍕', '🌮', '🍩', '🍪', '🎂', '🍰', '🍦', '🍭', '🍿', '🥓'];
-
       const gameBoard = document.getElementById('game-board');
+      const GRID_SIZE = 10;
+      let gridCells = [];
+      let tileElements = [];
+      // Data structure to track occupied grid cells
+      let gridOccupation = Array(GRID_SIZE * GRID_SIZE).fill(false);
 
       function getRandomEmoji() {
         return EMOJI_POOL[Math.floor(Math.random() * EMOJI_POOL.length)];
       }
 
+      function updateTilePosition(tile, gridX, gridY) {
+          const boardRect = gameBoard.getBoundingClientRect();
+          const cellWidth = (boardRect.width - 2 * (GRID_SIZE -1) - 8) / GRID_SIZE;
+          const cellHeight = (boardRect.height - 2 * (GRID_SIZE -1) - 8) / GRID_SIZE;
+          
+          tile.style.left = `${4 + gridX * (cellWidth + 2)}px`;
+          tile.style.top = `${4 + gridY * (cellHeight + 2)}px`;
+          tile.dataset.gridX = gridX;
+          tile.dataset.gridY = gridY;
+      }
+
+      function setOccupation(gridX, gridY, isOccupied) {
+          for(let y = 0; y < 2; y++) {
+              for(let x = 0; x < 2; x++) {
+                  const index = (gridY + y) * GRID_SIZE + (gridX + x);
+                  if (index < gridOccupation.length) {
+                    gridOccupation[index] = isOccupied;
+                  }
+              }
+          }
+      }
+
+      function isAreaFree(gridX, gridY) {
+          if (gridX < 0 || gridY < 0) return false;
+          if (gridX + 1 >= GRID_SIZE || gridY + 1 >= GRID_SIZE) return false; // Out of bounds
+          for(let y = 0; y < 2; y++) {
+              for(let x = 0; x < 2; x++) {
+                  const index = (gridY + y) * GRID_SIZE + (gridX + x);
+                  if (gridOccupation[index]) return false;
+              }
+          }
+          return true;
+      }
+
       function createEmojiTile() {
         const tile = document.createElement('div');
         tile.className = 'emoji-tile';
-
         for (let i = 0; i < 4; i++) {
           const cell = document.createElement('div');
           cell.className = 'emoji-cell';
           cell.textContent = getRandomEmoji();
           tile.appendChild(cell);
         }
-        
+        makeDraggable(tile);
         return tile;
       }
-
+      
       function makeDraggable(element) {
         let isDragging = false;
-        let offsetX, offsetY;
+        let originalGridX, originalGridY;
 
         function onDown(e) {
           isDragging = true;
-          element.classList.add('dragging');
+          originalGridX = parseInt(element.dataset.gridX);
+          originalGridY = parseInt(element.dataset.gridY);
           
-          const event = e.touches ? e.touches[0] : e;
-          const rect = element.getBoundingClientRect();
-          const boardRect = gameBoard.getBoundingClientRect();
+          setOccupation(originalGridX, originalGridY, false);
 
-          offsetX = event.clientX - rect.left;
-          offsetY = event.clientY - rect.top;
-
+          element.classList.add('dragging');
+          onMove(e);
+          
           document.addEventListener('mousemove', onMove);
           document.addEventListener('mouseup', onUp);
           document.addEventListener('touchmove', onMove, { passive: false });
           document.addEventListener('touchend', onUp);
-          
           e.preventDefault();
         }
 
         function onMove(e) {
           if (!isDragging) return;
-          
           const event = e.touches ? e.touches[0] : e;
           const boardRect = gameBoard.getBoundingClientRect();
-
-          let x = event.clientX - boardRect.left - offsetX;
-          let y = event.clientY - boardRect.top - offsetY;
-
-          // Constrain movement within the game board
-          x = Math.max(0, Math.min(x, boardRect.width - element.offsetWidth));
-          y = Math.max(0, Math.min(y, boardRect.height - element.offsetHeight));
-
-          element.style.left = `${x}px`;
-          element.style.top = `${y}px`;
-          
-           e.preventDefault();
+          const rect = element.getBoundingClientRect();
+          element.style.left = `${event.clientX - boardRect.left - rect.width / 2}px`;
+          element.style.top = `${event.clientY - boardRect.top - rect.height / 2}px`;
+          e.preventDefault();
         }
 
-        function onUp() {
-          isDragging = false;
-          element.classList.remove('dragging');
-          
-          document.removeEventListener('mousemove', onMove);
-          document.removeEventListener('mouseup', onUp);
-          document.removeEventListener('touchmove', onMove);
-          document.removeEventListener('touchend', onUp);
+        function onUp(e) {
+            if (!isDragging) return;
+            isDragging = false;
+            
+            const boardRect = gameBoard.getBoundingClientRect();
+            const cellWidth = (boardRect.width - 2 * (GRID_SIZE -1) - 8) / GRID_SIZE;
+            const cellHeight = (boardRect.height - 2 * (GRID_SIZE -1) - 8) / GRID_SIZE;
+            
+            const currentLeft = parseFloat(element.style.left);
+            const currentTop = parseFloat(element.style.top);
+
+            const gridX = Math.round(currentLeft / (cellWidth + 2));
+            const gridY = Math.round(currentTop / (cellHeight + 2));
+
+            if (isAreaFree(gridX, gridY)) {
+                updateTilePosition(element, gridX, gridY);
+                setOccupation(gridX, gridY, true);
+            } else {
+                updateTilePosition(element, originalGridX, originalGridY);
+                setOccupation(originalGridX, originalGridY, true);
+            }
+
+            element.classList.remove('dragging');
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onUp);
+            document.removeEventListener('touchmove', onMove);
+            document.removeEventListener('touchend', onUp);
         }
 
         element.addEventListener('mousedown', onDown);
         element.addEventListener('touchstart', onDown, { passive: false });
       }
 
-      window.onload = function() {
-        const boardRect = gameBoard.getBoundingClientRect();
-        
-        for (let i = 0; i < 10; i++) {
-          const tile = createEmojiTile();
-          
-          // Set initial random position
-          const tileWidth = 80; // Updated to match CSS
-          const tileHeight = 80; // Updated to match CSS
-          const randomX = Math.random() * (boardRect.width - tileWidth);
-          const randomY = Math.random() * (boardRect.height - tileHeight);
+      function initializeBoard() {
+        gameBoard.innerHTML = '';
+        gridOccupation.fill(false);
+        gridCells = [];
+        tileElements = [];
 
-          tile.style.left = `${randomX}px`;
-          tile.style.top = `${randomY}px`;
+        // Make the board a perfect square
+        const parentRect = gameBoard.parentElement.getBoundingClientRect();
+        const boardSize = Math.min(parentRect.width, parentRect.height);
+        gameBoard.style.width = `${boardSize}px`;
+        gameBoard.style.height = `${boardSize}px`;
 
-          gameBoard.appendChild(tile);
-          makeDraggable(tile);
+        for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
+          const cell = document.createElement('div');
+          cell.className = 'grid-cell';
+          gameBoard.appendChild(cell);
+          gridCells.push(cell);
         }
-      };
+
+        // Wait for the layout to be calculated
+        requestAnimationFrame(() => {
+            const boardRect = gameBoard.getBoundingClientRect();
+            if (boardRect.width === 0) return; // Don't run if board isn't visible
+            
+            const cellWidth = (boardRect.width - 2 * (GRID_SIZE - 1) - 8) / GRID_SIZE;
+            const cellHeight = (boardRect.height - 2 * (GRID_SIZE - 1) - 8) / GRID_SIZE;
+            const tileWidth = cellWidth * 2 + 2;
+            const tileHeight = cellHeight * 2 + 2;
+
+            const NUM_TILES = 10;
+
+            const startPositions = [];
+            // Add positions for the first row of tiles (grid row 6)
+            for (let x = 0; x < GRID_SIZE; x += 2) {
+                startPositions.push({ x: x, y: 6 });
+            }
+            // Add positions for the second row of tiles (grid row 8)
+            for (let x = 0; x < GRID_SIZE; x += 2) {
+                startPositions.push({ x: x, y: 8 });
+            }
+
+            for (let i = 0; i < NUM_TILES; i++) {
+                const tile = createEmojiTile();
+                tile.style.width = `${tileWidth}px`;
+                tile.style.height = `${tileHeight}px`;
+
+                const pos = startPositions[i];
+                if (pos) { 
+                     updateTilePosition(tile, pos.x, pos.y);
+                     setOccupation(pos.x, pos.y, true);
+                     gameBoard.appendChild(tile);
+                     tileElements.push(tile);
+                }
+            }
+        });
+      }
+
+      window.onload = initializeBoard;
+      window.onresize = initializeBoard;
     </script>
   </body>
 </html>
-
 
