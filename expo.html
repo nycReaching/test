@@ -155,8 +155,22 @@
           const event = e.touches ? e.touches[0] : e;
           const boardRect = gameBoard.getBoundingClientRect();
           const rect = element.getBoundingClientRect();
-          element.style.left = `${event.clientX - boardRect.left - rect.width / 2}px`;
-          element.style.top = `${event.clientY - boardRect.top - rect.height / 2}px`;
+          
+          // Calculate the new position relative to the board's top-left corner
+          let newLeft = event.clientX - boardRect.left - rect.width / 2;
+          let newTop = event.clientY - boardRect.top - rect.height / 2;
+
+          // Constrain the tile's position to be within the game board's boundaries
+          const minX = 0;
+          const minY = 0;
+          const maxX = boardRect.width - rect.width;
+          const maxY = boardRect.height - rect.height;
+
+          newLeft = Math.max(minX, Math.min(newLeft, maxX));
+          newTop = Math.max(minY, Math.min(newTop, maxY));
+
+          element.style.left = `${newLeft}px`;
+          element.style.top = `${newTop}px`;
           e.preventDefault();
         }
 
@@ -256,3 +270,4 @@
     </script>
   </body>
 </html>
+
