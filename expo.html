@@ -21,16 +21,15 @@
       }
       .emoji-tile {
         position: absolute;
-        width: 100px;
-        height: 100px;
-        background-color: rgba(255, 255, 255, 0.1);
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        border-radius: 12px;
+        width: 80px; /* Made tiles smaller */
+        height: 80px; /* Made tiles smaller */
+        background: radial-gradient(circle at 20% 20%, #4A6E9C, #1A202C); /* Dark blue with shine */
+        border-radius: 0px; /* Sharp corners */
         cursor: grab;
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         grid-template-rows: repeat(2, 1fr);
-        padding: 8px;
+        padding: 6px; /* Adjusted padding */
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
         transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
       }
@@ -44,7 +43,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        font-size: 28px;
+        font-size: 24px; /* Adjusted font size for smaller tiles */
         user-select: none; /* Prevent text selection while dragging */
       }
     </style>
@@ -64,7 +63,8 @@
     </div>
 
     <script>
-      const EMOJI_POOL = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🍏', '🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🍒', '🍑', '🍍', '🥝', '🚗', '🚕', '🚲', '🛴', '🚂', '🚁', '✈️', '🚀', '❤️', '🧡', '💛', '💚', '💙', '💜'];
+      // Limited the emoji pool to just food items
+      const EMOJI_POOL = ['🍏', '🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🍒', '🍑', '🍍', '🥝', '🍅', '🍆', '🥑', '🥦', '🌽', '🥕', '🥐', '🍞', '🥖', '🥨', '🧀', '🍔', '🍟', '🍕', '🌮', '🍩', '🍪', '🎂', '🍰', '🍦', '🍭', '🍿', '🥓'];
 
       const gameBoard = document.getElementById('game-board');
 
@@ -149,8 +149,8 @@
           const tile = createEmojiTile();
           
           // Set initial random position
-          const tileWidth = 100; // as defined in CSS
-          const tileHeight = 100;
+          const tileWidth = 80; // Updated to match CSS
+          const tileHeight = 80; // Updated to match CSS
           const randomX = Math.random() * (boardRect.width - tileWidth);
           const randomY = Math.random() * (boardRect.height - tileHeight);
 
@@ -164,4 +164,5 @@
     </script>
   </body>
 </html>
+
 
