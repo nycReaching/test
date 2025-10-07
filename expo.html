@@ -26,15 +26,17 @@
             background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%233f3f46' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
         }
 
-        /* This container simulates the phone's screen */
+        /* This container simulates the phone's screen and is designed to be responsive */
         .mobile-viewport {
-            max-width: 420px; /* Common phone width */
+            /* Fills the width of its parent, up to a maximum of 420px. */
+            max-width: 420px; 
             width: 100%;
-            /* A common portrait aspect ratio (19.5:9) */
+            /* Maintains a consistent portrait aspect ratio (like a modern phone). */
             aspect-ratio: 9 / 19.5;
-            max-height: 95vh; /* Ensure it doesn't exceed viewport height */
+            /* Prevents the container from being taller than the screen on unusually tall devices. */
+            max-height: 95vh;
             box-shadow: 0 0 40px rgba(0,0,0,0.7);
-            border-radius: 2rem; /* Rounded corners for the phone body */
+            border-radius: 2rem;
         }
 
         /* Styles for the decorative SVG border */
@@ -63,13 +65,13 @@
         <!-- Ornamental SVG Border -->
         <!-- This SVG is drawn over the game screen to create a decorative frame -->
         <svg class="ornamental-border" viewBox="0 0 400 850" preserveAspectRatio="none" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- The dark outer path -->
+            <!-- The outer green path. vector-effect="non-scaling-stroke" keeps the border thickness consistent when the UI scales. -->
             <path d="M46,16 L180,16 C190,6 210,6 220,16 L354,16 C374,16 384,26 384,50 L384,400 C394,415 394,435 384,450 L384,800 C384,824 374,834 354,834 L220,834 C210,844 190,844 180,834 L46,834 C26,834 16,824 16,800 L16,450 C6,435 6,415 16,400 L16,50 C16,26 26,16 46,16 Z"
-                stroke="limegreen" stroke-width="2" stroke-linecap="round"
+                stroke="limegreen" stroke-width="2" stroke-linecap="round" vector-effect="non-scaling-stroke"
             />
-            <!-- The inset gold path, creating a clear space from the outer path -->
+            <!-- The inset gold path. vector-effect="non-scaling-stroke" keeps the detail thickness consistent. -->
             <path d="M54,24 L180,24 C190,14 210,14 220,24 L346,24 C366,24 376,34 376,50 L376,400 C386,415 386,435 376,450 L376,800 C376,816 366,826 346,826 L220,826 C210,836 190,836 180,826 L54,826 C34,826 24,816 24,800 L24,450 C14,435 14,415 24,400 L24,50 C24,34 34,24 54,24 Z"
-                stroke="gold" stroke-width="1.5" stroke-linecap="round"
+                stroke="gold" stroke-width="1.5" stroke-linecap="round" vector-effect="non-scaling-stroke"
             />
         </svg>
 
@@ -77,6 +79,4 @@
 
 </body>
 </html>
-
-
 
