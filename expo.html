@@ -1,273 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Emoji Tile Game</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fantasy RPG Template</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
     <style>
-      body, html {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        font-family: 'Inter', sans-serif;
-        touch-action: none; 
-      }
-      .game-board {
-        position: relative;
-        /* Width and height are now set by JS to be square */
-        display: grid;
-        /* Updated to 8x8 grid */
-        grid-template-columns: repeat(8, 1fr);
-        grid-template-rows: repeat(8, 1fr);
-        gap: 2px;
-        padding: 4px;
-        box-sizing: border-box;
-      }
-      .grid-cell {
-        background-color: rgba(255, 255, 255, 0.05);
-        border-radius: 2px;
-      }
-      .emoji-tile {
-        /* Size and Position are now controlled by JavaScript */
-        position: absolute; 
-        background: radial-gradient(circle at 20% 20%, #4A6E9C, #1A202C);
-        cursor: grab;
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        grid-template-rows: repeat(2, 1fr);
-        padding: 4px; /* A bit more padding for the larger size */
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-        transition: transform 0.1s ease-out, box-shadow 0.1s ease-out, top 0.2s ease, left 0.2s ease;
-        box-sizing: border-box;
-        z-index: 10;
-      }
-      .emoji-tile.dragging {
-        cursor: grabbing;
-        z-index: 1000;
-        transform: scale(1.05);
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
-        transition: transform 0.1s ease-out, box-shadow 0.1s ease-out; /* Remove snapping transition while dragging */
-      }
-      .emoji-cell {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        /* Adjusted font size for better scaling on larger tiles */
-        font-size: clamp(16px, 5vw, 32px);
-        user-select: none;
-      }
+        /* Disabling the default browser scrollbar for a cleaner look */
+        html, body {
+            scrollbar-width: none; /* For Firefox */
+            -ms-overflow-style: none;  /* For Internet Explorer and Edge */
+        }
+        body::-webkit-scrollbar {
+            display: none; /* For Chrome, Safari, and Opera */
+        }
+
+        /* Applying a custom fantasy-style font and background */
+        body {
+            font-family: 'Cinzel', serif;
+            background-color: #1a1a1a;
+            /* A subtle texture for the background */
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%233f3f46' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        /* This container simulates the phone's screen */
+        .mobile-viewport {
+            max-width: 420px; /* Common phone width */
+            width: 100%;
+            /* A common portrait aspect ratio (19.5:9) */
+            aspect-ratio: 9 / 19.5;
+            max-height: 95vh; /* Ensure it doesn't exceed viewport height */
+            box-shadow: 0 0 40px rgba(0,0,0,0.7);
+            border-radius: 2rem; /* Rounded corners for the phone body */
+        }
+
+        /* Styles for the decorative SVG border */
+        .ornamental-border {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* The border should not interfere with game interactions */
+            pointer-events: none; 
+        }
     </style>
-  </head>
-  <body class="flex justify-center items-center h-screen bg-gray-900">
-    <div class="relative w-full h-full max-w-sm md:max-w-md lg:max-w-lg bg-black rounded-2xl shadow-2xl overflow-hidden border-4 border-gray-800 flex flex-col">
-      <main class="flex-1 flex flex-col justify-center items-center text-white overflow-hidden">
-        <div id="game-board" class="game-board bg-gray-800/50">
-            <!-- Grid cells are the background, tiles are positioned on top -->
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <!-- This is the main container that simulates a phone's viewport -->
+    <div class="mobile-viewport relative bg-black border-4 border-zinc-800 flex flex-col overflow-hidden">
+        
+        <!-- Game Screen Area -->
+        <!-- All your game content, canvas, or UI elements will go inside this div -->
+        <div id="game-screen" class="w-full h-full flex-grow relative">
+            <!-- This area is intentionally left blank for your game content -->
         </div>
-      </main>
+
+        <!-- Ornamental SVG Border -->
+        <!-- This SVG is drawn over the game screen to create a decorative frame -->
+        <svg class="ornamental-border" viewBox="0 0 400 850" preserveAspectRatio="none" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- The dark outer path -->
+            <path d="M50,20 L180,20 C190,10 210,10 220,20 L350,20 C370,20 380,30 380,50 L380,400 C390,415 390,435 380,450 L380,800 C380,820 370,830 350,830 L220,830 C210,840 190,840 180,830 L50,830 C30,830 20,820 20,800 L20,450 C10,435 10,415 20,400 L20,50 C20,30 30,20 50,20 Z"
+                stroke="green" stroke-width="2" stroke-linecap="round"
+            />
+            <!-- The inset gold path, creating a clear space from the outer path -->
+            <path d="M54,24 L180,24 C190,14 210,14 220,24 L346,24 C366,24 376,34 376,50 L376,400 C386,415 386,435 376,450 L376,800 C376,816 366,826 346,826 L220,826 C210,836 190,836 180,826 L54,826 C34,826 24,816 24,800 L24,450 C14,435 14,415 24,400 L24,50 C24,34 34,24 54,24 Z"
+                stroke="gold" stroke-width="1.5" stroke-linecap="round"
+            />
+        </svg>
+
     </div>
 
-    <script>
-      const EMOJI_POOL = ['🍏', '🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🍒', '🍑', '🍍', '🥝', '🍅', '🍆', '🥑', '🥦', '🌽', '🥕', '🥐', '🍞', '🥖', '🥨', '🧀', '🍔', '🍟', '🍕', '🌮', '🍩', '🍪', '🎂', '🍰', '🍦', '🍭', '🍿', '🥓'];
-      const gameBoard = document.getElementById('game-board');
-      // Changed GRID_SIZE to 8
-      const GRID_SIZE = 8;
-      let gridCells = [];
-      let tileElements = [];
-      // Data structure to track occupied grid cells
-      let gridOccupation = Array(GRID_SIZE * GRID_SIZE).fill(false);
-
-      function getRandomEmoji() {
-        return EMOJI_POOL[Math.floor(Math.random() * EMOJI_POOL.length)];
-      }
-
-      function updateTilePosition(tile, gridX, gridY) {
-          const boardRect = gameBoard.getBoundingClientRect();
-          const cellWidth = (boardRect.width - 2 * (GRID_SIZE - 1) - 8) / GRID_SIZE;
-          const cellHeight = (boardRect.height - 2 * (GRID_SIZE - 1) - 8) / GRID_SIZE;
-          
-          tile.style.left = `${4 + gridX * (cellWidth + 2)}px`;
-          tile.style.top = `${4 + gridY * (cellHeight + 2)}px`;
-          tile.dataset.gridX = gridX;
-          tile.dataset.gridY = gridY;
-      }
-
-      function setOccupation(gridX, gridY, isOccupied) {
-          for(let y = 0; y < 2; y++) {
-              for(let x = 0; x < 2; x++) {
-                  const index = (gridY + y) * GRID_SIZE + (gridX + x);
-                  if (index < gridOccupation.length) {
-                    gridOccupation[index] = isOccupied;
-                  }
-              }
-          }
-      }
-
-      function isAreaFree(gridX, gridY) {
-          if (gridX < 0 || gridY < 0) return false;
-          if (gridX + 1 >= GRID_SIZE || gridY + 1 >= GRID_SIZE) return false; // Out of bounds
-          for(let y = 0; y < 2; y++) {
-              for(let x = 0; x < 2; x++) {
-                  const index = (gridY + y) * GRID_SIZE + (gridX + x);
-                  if (gridOccupation[index]) return false;
-              }
-          }
-          return true;
-      }
-
-      function createEmojiTile() {
-        const tile = document.createElement('div');
-        tile.className = 'emoji-tile';
-        for (let i = 0; i < 4; i++) {
-          const cell = document.createElement('div');
-          cell.className = 'emoji-cell';
-          cell.textContent = getRandomEmoji();
-          tile.appendChild(cell);
-        }
-        makeDraggable(tile);
-        return tile;
-      }
-      
-      function makeDraggable(element) {
-        let isDragging = false;
-        let originalGridX, originalGridY;
-
-        function onDown(e) {
-          isDragging = true;
-          originalGridX = parseInt(element.dataset.gridX);
-          originalGridY = parseInt(element.dataset.gridY);
-          
-          setOccupation(originalGridX, originalGridY, false);
-
-          element.classList.add('dragging');
-          onMove(e);
-          
-          document.addEventListener('mousemove', onMove);
-          document.addEventListener('mouseup', onUp);
-          document.addEventListener('touchmove', onMove, { passive: false });
-          document.addEventListener('touchend', onUp);
-          e.preventDefault();
-        }
-
-        function onMove(e) {
-          if (!isDragging) return;
-          const event = e.touches ? e.touches[0] : e;
-          const boardRect = gameBoard.getBoundingClientRect();
-          const rect = element.getBoundingClientRect();
-          
-          // Calculate the new position relative to the board's top-left corner
-          let newLeft = event.clientX - boardRect.left - rect.width / 2;
-          let newTop = event.clientY - boardRect.top - rect.height / 2;
-
-          // Constrain the tile's position to be within the game board's boundaries
-          const minX = 0;
-          const minY = 0;
-          const maxX = boardRect.width - rect.width;
-          const maxY = boardRect.height - rect.height;
-
-          newLeft = Math.max(minX, Math.min(newLeft, maxX));
-          newTop = Math.max(minY, Math.min(newTop, maxY));
-
-          element.style.left = `${newLeft}px`;
-          element.style.top = `${newTop}px`;
-          e.preventDefault();
-        }
-
-        function onUp(e) {
-            if (!isDragging) return;
-            isDragging = false;
-            
-            const boardRect = gameBoard.getBoundingClientRect();
-            const cellWidth = (boardRect.width - 2 * (GRID_SIZE -1) - 8) / GRID_SIZE;
-            const cellHeight = (boardRect.height - 2 * (GRID_SIZE -1) - 8) / GRID_SIZE;
-            
-            const currentLeft = parseFloat(element.style.left);
-            const currentTop = parseFloat(element.style.top);
-
-            const gridX = Math.round(currentLeft / (cellWidth + 2));
-            const gridY = Math.round(currentTop / (cellHeight + 2));
-
-            if (isAreaFree(gridX, gridY)) {
-                updateTilePosition(element, gridX, gridY);
-                setOccupation(gridX, gridY, true);
-            } else {
-                updateTilePosition(element, originalGridX, originalGridY);
-                setOccupation(originalGridX, originalGridY, true);
-            }
-
-            element.classList.remove('dragging');
-            document.removeEventListener('mousemove', onMove);
-            document.removeEventListener('mouseup', onUp);
-            document.removeEventListener('touchmove', onMove);
-            document.removeEventListener('touchend', onUp);
-        }
-
-        element.addEventListener('mousedown', onDown);
-        element.addEventListener('touchstart', onDown, { passive: false });
-      }
-
-      function initializeBoard() {
-        gameBoard.innerHTML = '';
-        gridOccupation.fill(false);
-        gridCells = [];
-        tileElements = [];
-
-        // Make the board a perfect square
-        const parentRect = gameBoard.parentElement.getBoundingClientRect();
-        const boardSize = Math.min(parentRect.width, parentRect.height);
-        gameBoard.style.width = `${boardSize}px`;
-        gameBoard.style.height = `${boardSize}px`;
-
-        for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
-          const cell = document.createElement('div');
-          cell.className = 'grid-cell';
-          gameBoard.appendChild(cell);
-          gridCells.push(cell);
-        }
-
-        // Wait for the layout to be calculated
-        requestAnimationFrame(() => {
-            const boardRect = gameBoard.getBoundingClientRect();
-            if (boardRect.width === 0) return; // Don't run if board isn't visible
-            
-            const cellWidth = (boardRect.width - 2 * (GRID_SIZE - 1) - 8) / GRID_SIZE;
-            const cellHeight = (boardRect.height - 2 * (GRID_SIZE - 1) - 8) / GRID_SIZE;
-            const tileWidth = cellWidth * 2 + 2;
-            const tileHeight = cellHeight * 2 + 2;
-
-            // Changed NUM_TILES to 8
-            const NUM_TILES = 8;
-
-            const startPositions = [];
-            // Add positions for the first row of tiles (grid row 4)
-            for (let x = 0; x < GRID_SIZE; x += 2) {
-                startPositions.push({ x: x, y: 4 });
-            }
-            // Add positions for the second row of tiles (grid row 6)
-            for (let x = 0; x < GRID_SIZE; x += 2) {
-                startPositions.push({ x: x, y: 6 });
-            }
-
-            for (let i = 0; i < NUM_TILES; i++) {
-                const tile = createEmojiTile();
-                tile.style.width = `${tileWidth}px`;
-                tile.style.height = `${tileHeight}px`;
-
-                const pos = startPositions[i];
-                if (pos) { 
-                     updateTilePosition(tile, pos.x, pos.y);
-                     setOccupation(pos.x, pos.y, true);
-                     gameBoard.appendChild(tile);
-                     tileElements.push(tile);
-                }
-            }
-        });
-      }
-
-      window.onload = initializeBoard;
-      window.onresize = initializeBoard;
-    </script>
-  </body>
+</body>
 </html>
+
 
