@@ -13,6 +13,7 @@
         html, body {
             scrollbar-width: none; /* For Firefox */
             -ms-overflow-style: none;  /* For Internet Explorer and Edge */
+            overflow: hidden; /* Hide scrollbars */
         }
         body::-webkit-scrollbar {
             display: none; /* For Chrome, Safari, and Opera */
@@ -21,22 +22,13 @@
         /* Applying a custom fantasy-style font and background */
         body {
             font-family: 'Cinzel', serif;
-            background-color: #1a1a1a;
-            /* A subtle texture for the background */
-            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%233f3f46' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            background-color: #000; /* Background is black to match the viewport */
         }
 
-        /* This container simulates the phone's screen and is designed to be responsive */
+        /* This container is now the full screen */
         .mobile-viewport {
-            /* Fills the width of its parent, up to a maximum of 420px. */
-            max-width: 420px; 
-            width: 100%;
-            /* Maintains a consistent portrait aspect ratio (like a modern phone). */
-            aspect-ratio: 9 / 19.5;
-            /* Prevents the container from being taller than the screen on unusually tall devices. */
-            max-height: 95vh;
-            box-shadow: 0 0 40px rgba(0,0,0,0.7);
-            border-radius: 2rem;
+            width: 100vw;
+            height: 100vh;
         }
 
         /* Styles for the decorative SVG border */
@@ -51,10 +43,10 @@
         }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-4">
+<body>
 
-    <!-- This is the main container that simulates a phone's viewport -->
-    <div class="mobile-viewport relative bg-black border-4 border-zinc-800 flex flex-col overflow-hidden">
+    <!-- This is the main container that fills the entire device screen -->
+    <div class="mobile-viewport relative bg-black flex flex-col overflow-hidden">
         
         <!-- Game Screen Area -->
         <!-- All your game content, canvas, or UI elements will go inside this div -->
@@ -95,3 +87,4 @@
 
 </body>
 </html>
+
