@@ -56,6 +56,29 @@
             /* The border should not interfere with game interactions */
             pointer-events: none; 
         }
+
+        /* Keyframe animations for the pulsing glow effects */
+        @keyframes pulse-red {
+          0%, 100% { 
+            transform: translateX(-50%) scale(1); 
+            box-shadow: 0 0 10px 0px rgba(153, 27, 27, 0.5); 
+          }
+          50% { 
+            transform: translateX(-50%) scale(1.05); 
+            box-shadow: 0 0 20px 5px rgba(153, 27, 27, 0.7); 
+          }
+        }
+        .animate-pulse-red {
+            animation: pulse-red 3s infinite cubic-bezier(0.4, 0, 0.6, 1);
+        }
+
+        @keyframes pulse-blue {
+          0%, 100% { transform: scale(1); box-shadow: 0 0 10px 0px rgba(59, 130, 246, 0.5); }
+          50% { transform: scale(1.05); box-shadow: 0 0 20px 5px rgba(59, 130, 246, 0.7); }
+        }
+        .animate-pulse-blue {
+            animation: pulse-blue 3s infinite cubic-bezier(0.4, 0, 0.6, 1);
+        }
     </style>
 </head>
 <body>
@@ -95,11 +118,11 @@
         </svg>
 
         <!-- Equipment Slots -->
-        <div class="absolute bottom-[1.5%] left-[10%] w-16 h-16 bg-blue-900 border-2 border-[#a78bfa] rounded-lg shadow-lg"></div>
-        <div class="absolute bottom-[1.5%] right-[10%] w-16 h-16 bg-blue-900 border-2 border-[#a78bfa] rounded-lg shadow-lg"></div>
+        <div class="absolute bottom-[1.5%] left-[10%] w-16 h-16 bg-blue-950 border-2 border-blue-700 rounded-lg animate-pulse-blue"></div>
+        <div class="absolute bottom-[1.5%] right-[10%] w-16 h-16 bg-blue-950 border-2 border-blue-700 rounded-lg animate-pulse-blue"></div>
 
         <!-- Central Display Circle -->
-        <div class="absolute bottom-[4%] left-1/2 -translate-x-1/2 w-16 h-16 bg-blue-900 border-2 border-[#e5e7eb] rounded-full shadow-lg"></div>
+        <div class="absolute bottom-[4%] left-1/2 -translate-x-1/2 w-16 h-16 bg-red-950 border-2 border-red-800 rounded-full animate-pulse-red"></div>
 
     </div>
 
