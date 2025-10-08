@@ -188,19 +188,19 @@
                     <!-- Bottom half with 2x2 grid -->
                     <div class="h-1/2 w-full grid grid-cols-2 grid-rows-2 gap-2">
                         <div id="card-a" class="win95-button flex flex-col p-2 text-center cursor-pointer transition-colors justify-center">
-                            <p class="text-gray-800 text-lg flex-grow flex items-center justify-center"><span class="text-2xl mr-2">🍇</span>3 wins removes 🍇 permanently.</p>
+                            <p class="text-gray-800 text-lg flex-grow flex items-center justify-center"><span class="text-2xl mr-2">🍇</span>Win with 🍇 3x to remove.</p>
                             <div id="cost-a" class="text-lg font-semibold text-black mt-1">25 🪙</div>
                         </div>
                          <div id="card-b" class="win95-button flex flex-col p-2 text-center cursor-pointer transition-colors justify-center">
-                            <p class="text-gray-800 text-lg flex-grow flex items-center justify-center"><span class="text-2xl mr-2">🎁</span>Wins pay 10x for the next 20 spins.</p>
+                            <p class="text-gray-800 text-lg flex-grow flex items-center justify-center"><span class="text-2xl mr-2">🎁</span>🎁 wins pay 10x for 20 spins.</p>
                             <div id="cost-b" class="text-lg font-semibold text-black mt-1">25 🪙</div>
                         </div>
                         <div id="card-c" class="win95-button flex flex-col p-2 text-center cursor-pointer transition-colors justify-center">
-                            <p class="text-gray-800 text-lg flex-grow flex items-center justify-center"><span class="text-2xl mr-2">🥥</span>Wins discount cards by 10 🪙.</p>
+                            <p class="text-gray-800 text-lg flex-grow flex items-center justify-center"><span class="text-2xl mr-2">🥥</span>🥥 wins discount cards 10 🪙.</p>
                             <div id="cost-c" class="text-lg font-semibold text-black mt-1">25 🪙</div>
                         </div>
                         <div id="card-d" class="win95-button flex flex-col p-2 text-center cursor-pointer transition-colors justify-center">
-                            <p class="text-gray-800 text-lg flex-grow flex items-center justify-center"><span class="text-2xl mr-2">🌶️</span>Wins pay 2x & increase spin multi by 1x.</p>
+                            <p class="text-gray-800 text-lg flex-grow flex items-center justify-center"><span class="text-2xl mr-2">🌶️</span>🌶️ wins pay 2x, add 1x multi.</p>
                             <div id="cost-d" class="text-lg font-semibold text-black mt-1">25 🪙</div>
                         </div>
                     </div>
@@ -213,8 +213,8 @@
                         <button id="spin-button-bottom" class="win95-button w-full flex-1 flex items-center justify-center text-lg">1x</button>
                     </div>
                     <!-- Bottom half for emoji column -->
-                    <div class="h-1/2 w-full">
-                        <div id="emoji-column" class="win95-inset bg-black h-full w-full flex flex-col items-center justify-around p-1 overflow-hidden">
+                    <div class="h-1/2 w-full flex items-center justify-center">
+                        <div id="emoji-column" class="win95-inset bg-black h-auto w-full flex flex-col items-center justify-around p-1 overflow-hidden">
                             <!-- Emojis will be dynamically inserted here -->
                         </div>
                     </div>
@@ -269,8 +269,9 @@
         let selectableEmojis = [...allEmojis];
         let currentIndex = 0;
         let isSpinning = false;
-        const visibleEmojiCount = 5;
-        const centerVisibleIndex = Math.floor(visibleEmojiCount / 2);
+        const isMobile = window.innerWidth < 640;
+        const visibleEmojiCount = isMobile ? 4 : 5;
+        const centerVisibleIndex = Math.floor((visibleEmojiCount - 1) / 2);
         const reelCount = 5;
         const cardCosts = { a: 25, b: 25, c: 25, d: 25 };
         let purchasedCards = { a: false, b: false, c: false, d: false };
@@ -290,7 +291,7 @@
             if (purchasedCards.b) {
                 const cardDescription = cardB.querySelector('p');
                 if (bigGiftSpinsLeft > 0) {
-                    cardDescription.innerHTML = `<span class="text-2xl mr-2">🎁</span> Wins are 10x for ${bigGiftSpinsLeft} more spins.`;
+                    cardDescription.innerHTML = `<span class="text-2xl mr-2">🎁</span> Wins pay 10x for ${bigGiftSpinsLeft} spins.`;
                 } else {
                     cardDescription.innerHTML = `<span class="text-2xl mr-2">🎁</span> Bonus has expired.`;
                     cardB.classList.add('opacity-50');
@@ -491,7 +492,7 @@
                     selectableEmojis = selectableEmojis.filter(e => e !== '🍇');
                     if (currentIndex >= selectableEmojis.length) { currentIndex = 0; }
                     renderEmojis();
-                    cardA.querySelector('p').innerHTML = '<span class="text-2xl mr-2">🍇</span> has been permanently removed!';
+                    cardA.querySelector('p').innerHTML = '<span class="text-2xl mr-2">🍇</span> has been removed!';
                     cardA.classList.add('opacity-50');
                     document.getElementById('cost-a').textContent = 'Completed';
                 }
@@ -512,7 +513,7 @@
                 finalWinAmount *= 2;
                 spinMultiplierBonus++;
                 updateSpinButtonText();
-                cardD.querySelector('p').innerHTML = `<span class="text-2xl mr-2">🌶️</span> Spin multi bonus: +${spinMultiplierBonus}x`;
+                cardD.querySelector('p').innerHTML = `<span class="text-2xl mr-2">🌶️</span> Multi Bonus: +${spinMultiplierBonus}x`;
             }
             return finalWinAmount;
         }
@@ -621,6 +622,7 @@
     </script>
 </body>
 </html>
+
 
 
 
