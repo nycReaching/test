@@ -136,7 +136,8 @@
                 reel.className = 'flex-1 h-full bg-gray-900/50 rounded-lg flex flex-col items-center justify-around shadow-inner overflow-hidden py-1';
                 for (let j = 0; j < 3; j++) {
                     const emojiElement = document.createElement('div');
-                    emojiElement.className = 'text-xl sm:text-3xl';
+                    // Increased the emoji font size for better visibility on all screens
+                    emojiElement.className = 'text-3xl sm:text-4xl';
                     const randomIndex = Math.floor(Math.random() * allEmojis.length);
                     emojiElement.textContent = allEmojis[randomIndex];
                     reel.appendChild(emojiElement);
