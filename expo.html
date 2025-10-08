@@ -23,10 +23,10 @@
         /* Styles for the win-line visual effect */
         .win-line {
             position: absolute;
-            background-color: #39FF14; /* Neon green */
+            background-color: #FFD700; /* Neon Yellow/Gold */
             height: 5px;
             border-radius: 3px;
-            box-shadow: 0 0 10px #39FF14, 0 0 20px #39FF14, 0 0 30px #39FF14;
+            box-shadow: 0 0 10px #FFD700, 0 0 20px #FFD700, 0 0 30px #FFD700;
             opacity: 0;
             transition: opacity 0.3s ease-in-out;
             z-index: 10;
@@ -42,8 +42,14 @@
 
         <!-- Header -->
         <header class="flex-shrink-0 p-4 bg-gray-900/50 backdrop-blur-sm rounded-b-xl z-10">
-            <div class="h-12">
-                <!-- Header content -->
+            <div class="h-12 flex items-center justify-center">
+                <!-- Header content: Coins Display -->
+                <div class="flex items-center justify-center h-full bg-gray-900/40 px-6 rounded-full">
+                    <svg class="w-8 h-8 text-yellow-400 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
+                    </svg>
+                    <span id="coins-display" class="text-2xl font-bold text-white transition-all duration-300">100</span>
+                </div>
             </div>
         </header>
 
@@ -118,8 +124,12 @@
         const winLinesContainer = document.getElementById('win-lines-container');
         const spinButtonTop = document.getElementById('spin-button-top');
         const spinButtonBottom = document.getElementById('spin-button-bottom');
+        const coinsDisplay = document.getElementById('coins-display');
 
         // --- Game State & Config ---
+        let playerCoins = 100;
+        const spinCost = 1;
+        const payouts = { 3: 10, 4: 50, 5: 300 };
         const allEmojis = ['🌶️', '🍇', '🥕', '🥥', '🍌', '🍋‍🟩', '🎁'];
         const selectableEmojis = allEmojis; // Use the same emojis for the selector column
         let currentIndex = 0; // For the emoji selector
@@ -128,64 +138,95 @@
         const centerVisibleIndex = Math.floor(visibleEmojiCount / 2);
         const reelCount = 5;
 
+        // --- UI Update Functions ---
+        function updateCoinsDisplay() {
+            coinsDisplay.textContent = playerCoins;
+        }
+
         // --- Slot Machine Logic ---
+        function createReel(reelIndex) {
+            const reel = document.createElement('div');
+            reel.className = 'flex-1 h-full bg-gray-900/50 rounded-lg flex flex-col items-center justify-around shadow-inner overflow-hidden py-1';
+            
+            for (let j = 0; j < 3; j++) {
+                // Check if it's the target slot (reel 5, middle row)
+                if (reelIndex === reelCount - 1 && j === 1) {
+                    const borderWrapper = document.createElement('div');
+                    borderWrapper.className = 'w-12 h-12 flex items-center justify-center border-2 border-purple-500 rounded-md';
+                    const emojiElement = document.createElement('div');
+                    // Emojis are created hidden (opacity-0, scale-75) to be faded in.
+                    emojiElement.className = 'text-3xl sm:text-4xl transition-all duration-500 ease-in-out opacity-0 scale-75';
+                    emojiElement.textContent = allEmojis[Math.floor(Math.random() * allEmojis.length)];
+                    borderWrapper.appendChild(emojiElement);
+                    reel.appendChild(borderWrapper);
+                } else {
+                    const emojiElement = document.createElement('div');
+                    emojiElement.className = 'text-3xl sm:text-4xl transition-all duration-500 ease-in-out opacity-0 scale-75';
+                    emojiElement.textContent = allEmojis[Math.floor(Math.random() * allEmojis.length)];
+                    reel.appendChild(emojiElement);
+                }
+            }
+            return reel;
+        }
+        
         function initializeSlots() {
             slotMachine.innerHTML = ''; // Clear existing reels
             for (let i = 0; i < reelCount; i++) {
-                const reel = document.createElement('div');
-                reel.className = 'flex-1 h-full bg-gray-900/50 rounded-lg flex flex-col items-center justify-around shadow-inner overflow-hidden py-1';
-                for (let j = 0; j < 3; j++) {
-                    const emojiElement = document.createElement('div');
-                    let classes = 'text-3xl sm:text-4xl transition-all duration-200';
-                    
-                    // Add a border to the middle emoji of the 5th reel
-                    if (i === reelCount - 1 && j === 1) {
-                         // Adjust vertical padding to make the frame taller.
-                         classes += ' px-px py-1 border-2 border-green-400 rounded-md bg-gray-600/50';
-                    }
-
-                    emojiElement.className = classes;
-                    const randomIndex = Math.floor(Math.random() * allEmojis.length);
-                    emojiElement.textContent = allEmojis[randomIndex];
-                    reel.appendChild(emojiElement);
-                }
+                const reel = createReel(i);
                 slotMachine.appendChild(reel);
+                // Reveal the emojis on initial load without animation delay
+                const emojiElements = reel.querySelectorAll('.text-3xl, .text-4xl');
+                emojiElements.forEach(el => {
+                    el.classList.remove('opacity-0', 'scale-75');
+                });
             }
         }
 
         function spinReels() {
-            if (isSpinning) return;
+            if (isSpinning || playerCoins < spinCost) return;
             isSpinning = true;
-            clearWins(); // Clear previous win lines at the start of a spin
+            
+            // Deduct cost and update display
+            playerCoins -= spinCost;
+            updateCoinsDisplay();
+            
+            clearWins();
 
-            const reels = slotMachine.children;
-            const spinDuration = 1000; // Time before first reel stops
-            const reelStopDelay = 400; // Staggered stop time
+            // 1. Instantly clear the entire board.
+            slotMachine.innerHTML = '';
 
-            for (let i = 0; i < reels.length; i++) {
-                const reel = reels[i];
-                const emojiElements = reel.children;
-                
-                const animationInterval = setInterval(() => {
-                    for (const emojiElement of emojiElements) {
-                        const randomIndex = Math.floor(Math.random() * allEmojis.length);
-                        emojiElement.textContent = allEmojis[randomIndex];
-                    }
-                }, 100);
+            const revealDelay = 200; 
+            const transitionDuration = 500;
 
-                setTimeout(() => {
-                    clearInterval(animationInterval);
-                    // Set final random emojis for each slot in the reel
-                    for (const emojiElement of emojiElements) {
-                        const finalRandomIndex = Math.floor(Math.random() * allEmojis.length);
-                        emojiElement.textContent = allEmojis[finalRandomIndex];
-                    }
-                    if (i === reels.length - 1) {
-                        isSpinning = false; // Re-enable spin on last reel stop
-                        checkForWins(); // Check for wins after the spin is complete
-                    }
-                }, spinDuration + (i * reelStopDelay));
+            // 2. Create a document fragment to build the new reels in memory, off-screen.
+            const fragment = document.createDocumentFragment();
+            for (let i = 0; i < reelCount; i++) {
+                const reel = createReel(i); // createReel makes them hidden by default
+                fragment.appendChild(reel);
             }
+
+            // 3. Add all the new reels to the DOM at once.
+            slotMachine.appendChild(fragment);
+
+            // 4. Animate the reels in sequentially.
+            const reels = Array.from(slotMachine.children);
+            reels.forEach((reel, i) => {
+                setTimeout(() => {
+                    requestAnimationFrame(() => {
+                        const emojiElements = reel.querySelectorAll('.text-3xl, .text-4xl');
+                        emojiElements.forEach(el => {
+                            el.classList.remove('opacity-0', 'scale-75');
+                        });
+                    });
+                }, i * revealDelay);
+            });
+
+            // 5. After the total animation time, re-enable spinning and check for wins.
+            const totalAnimationTime = (reels.length - 1) * revealDelay + transitionDuration;
+            setTimeout(() => {
+                isSpinning = false;
+                checkForWins(); 
+            }, totalAnimationTime);
         }
         
         // --- Win Logic and Visuals ---
@@ -204,26 +245,25 @@
             // Populate a 2D grid with the final symbols from the DOM
             for (let c = 0; c < numCols; c++) {
                 for (let r = 0; r < numRows; r++) {
-                    grid[r][c] = reels[c].children[r].textContent;
+                    const element = reels[c].children[r];
+                    const emojiElement = element.children.length > 0 ? element.children[0] : element;
+                    grid[r][c] = emojiElement.textContent;
                 }
             }
 
             const winningSequences = [];
-            // Iterate over each row to find horizontal sequences of 3 or more, starting from reel 1.
+            // Iterate over each row to find horizontal sequences of 3 or more
             for (let r = 0; r < numRows; r++) {
                 const firstSymbol = grid[r][0];
                 let streak = 1;
-                // Check subsequent reels for a matching symbol.
                 for (let c = 1; c < numCols; c++) {
                     if (grid[r][c] === firstSymbol) {
                         streak++;
                     } else {
-                        // If the sequence is broken, stop checking this row.
                         break; 
                     }
                 }
                 
-                // If the streak from the first reel is 3 or more, it's a valid win.
                 if (streak >= 3) {
                     winningSequences.push({ row: r, startCol: 0, length: streak });
                 }
@@ -236,41 +276,55 @@
         
         function displayWins(wins) {
             const containerRect = slotMachineContainer.getBoundingClientRect();
+            let totalWinnings = 0;
 
             wins.forEach(win => {
-                const firstEmoji = slotMachine.children[win.startCol].children[win.row];
-                const lastEmoji = slotMachine.children[win.startCol + win.length - 1].children[win.row];
-                if (!firstEmoji || !lastEmoji) return;
+                // --- Calculate Payout ---
+                totalWinnings += payouts[win.length] || 0;
 
-                const firstRect = firstEmoji.getBoundingClientRect();
-                const lastRect = lastEmoji.getBoundingClientRect();
+                // --- Draw Win Line ---
+                const firstElement = slotMachine.children[win.startCol].children[win.row];
+                const lastElement = slotMachine.children[win.startCol + win.length - 1].children[win.row];
+                if (!firstElement || !lastElement) return;
+
+                const firstRect = firstElement.getBoundingClientRect();
+                const lastRect = lastElement.getBoundingClientRect();
                 
                 const line = document.createElement('div');
                 line.className = 'win-line';
                 
-                // Calculate position relative to the container
                 line.style.top = `${firstRect.top + firstRect.height / 2 - containerRect.top - 2.5}px`;
                 line.style.left = `${firstRect.left - containerRect.left}px`;
                 line.style.width = `${lastRect.right - firstRect.left}px`;
                 
                 winLinesContainer.appendChild(line);
 
-                // Use a tiny timeout to trigger the CSS opacity transition for a fade-in effect
                 setTimeout(() => { line.style.opacity = '1'; }, 10);
             });
+
+            // --- Update Coins After Payout ---
+            if (totalWinnings > 0) {
+                playerCoins += totalWinnings;
+                // Add a small delay for the win animation before updating the coin total
+                setTimeout(() => {
+                    updateCoinsDisplay();
+                    // Animate the coin display on win
+                    coinsDisplay.classList.add('scale-125', 'text-yellow-300');
+                    setTimeout(() => coinsDisplay.classList.remove('scale-125', 'text-yellow-300'), 300);
+                }, 400);
+            }
         }
 
         // --- Emoji Cycling Logic (for right-hand column) ---
         function renderEmojis() {
             emojiColumn.innerHTML = '';
             for (let i = 0; i < visibleEmojiCount; i++) {
-                // Ensure the selector can handle fewer emojis than visible slots
                 if (selectableEmojis.length === 0) break;
                 const emojiIndex = (currentIndex + i) % selectableEmojis.length;
                 const emoji = selectableEmojis[emojiIndex];
                 const emojiElement = document.createElement('div');
                 if (i === centerVisibleIndex) {
-                    emojiElement.className = 'text-2xl transition-transform transform p-1 border-2 border-green-400 rounded-md bg-gray-600/50';
+                    emojiElement.className = 'text-2xl transition-transform transform p-1 border-2 border-purple-500 rounded-md';
                 } else {
                     emojiElement.className = 'text-2xl transition-transform transform p-1';
                 }
@@ -298,8 +352,8 @@
         // --- Initial Calls on Load ---
         renderEmojis();
         initializeSlots();
+        updateCoinsDisplay(); // Set initial coin display
 
-        console.log("Mobile game UI loaded with taller target frame.");
     </script>
 </body>
 </html>
