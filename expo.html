@@ -48,6 +48,25 @@
             pointer-events: none; /* Prevent interaction */
             transform: translateX(-50%); /* Center the text */
         }
+        /* Style for the yellow glow on match wins */
+        .glow-win {
+            border-color: #FFD700 !important; /* Use important to override existing border */
+            box-shadow: 0 0 8px #FFD700, 0 0 16px #FFD700;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        /* Style for the match win amount text */
+        .match-win-amount-text {
+            position: absolute;
+            color: white;
+            font-weight: bold;
+            font-size: 1.25rem;
+            text-shadow: 0 0 5px black, 0 0 10px black;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            z-index: 11;
+            pointer-events: none;
+            transform: translate(-50%, -50%); /* Center the text perfectly */
+        }
     </style>
 </head>
 <body class="bg-gray-900 flex items-center justify-center">
@@ -83,9 +102,20 @@
                         <!-- Container for the win line visuals -->
                         <div id="win-lines-container" class="absolute top-0 left-0 w-full h-full pointer-events-none"></div>
                     </div>
-                    <!-- Bottom half placeholder -->
-                    <div class="h-1/2 w-full flex items-center justify-center">
-                        <p class="text-gray-600 text-sm">Game content area</p>
+                    <!-- Bottom half with 2x2 grid -->
+                    <div class="h-1/2 w-full grid grid-cols-2 grid-rows-2 gap-2">
+                        <div class="bg-gray-900/30 rounded-lg flex items-center justify-center">
+                            <span class="text-white text-2xl font-bold">A</span>
+                        </div>
+                        <div class="bg-gray-900/30 rounded-lg flex items-center justify-center">
+                            <span class="text-white text-2xl font-bold">B</span>
+                        </div>
+                        <div class="bg-gray-900/30 rounded-lg flex items-center justify-center">
+                            <span class="text-white text-2xl font-bold">C</span>
+                        </div>
+                        <div class="bg-gray-900/30 rounded-lg flex items-center justify-center">
+                            <span class="text-white text-2xl font-bold">D</span>
+                        </div>
                     </div>
                 </div>
                 <!-- 
@@ -151,6 +181,7 @@
         let playerCoins = 100;
         const spinCost = 1;
         const payouts = { 3: 10, 4: 50, 5: 300 };
+        const matchWinPayout = 10;
         const allEmojis = ['🌶️', '🍇', '🥕', '🥥', '🍌', '🍋‍🟩', '🎁'];
         const selectableEmojis = allEmojis; // Use the same emojis for the selector column
         let currentIndex = 0; // For the emoji selector
@@ -209,47 +240,31 @@
             if (isSpinning || playerCoins < currentCost) return;
             isSpinning = true;
             
-            // Deduct cost and update display
             playerCoins -= currentCost;
             updateCoinsDisplay();
-            
             clearWins();
 
-            // 1. Instantly clear the entire board.
             slotMachine.innerHTML = '';
-
             const revealDelay = 200; 
             const transitionDuration = 500;
-
-            // 2. Create a document fragment to build the new reels in memory, off-screen.
             const fragment = document.createDocumentFragment();
             for (let i = 0; i < reelCount; i++) {
-                const reel = createReel(i); // createReel makes them hidden by default
-                fragment.appendChild(reel);
+                fragment.appendChild(createReel(i));
             }
-
-            // 3. Add all the new reels to the DOM at once.
             slotMachine.appendChild(fragment);
 
-            // 4. Animate the reels in sequentially.
             const reels = Array.from(slotMachine.children);
             reels.forEach((reel, i) => {
                 setTimeout(() => {
                     requestAnimationFrame(() => {
-                        const emojiElements = reel.querySelectorAll('.text-3xl, .text-4xl');
-                        emojiElements.forEach(el => {
-                            el.classList.remove('opacity-0', 'scale-75');
-                        });
+                        reel.querySelectorAll('.text-3xl, .text-4xl').forEach(el => el.classList.remove('opacity-0', 'scale-75'));
                     });
                 }, i * revealDelay);
             });
 
-            // 5. After the total animation time, check for wins.
             const totalAnimationTime = (reels.length - 1) * revealDelay + transitionDuration;
             setTimeout(() => {
-                const hasWon = checkForWins(multiplier);
-                // If there's no win, allow spinning again immediately.
-                // If there is a win, displayWins() will handle the delay.
+                const hasWon = evaluateWins(multiplier);
                 if (!hasWon) {
                     isSpinning = false;
                 }
@@ -259,54 +274,74 @@
         // --- Win Logic and Visuals ---
         function clearWins() {
             winLinesContainer.innerHTML = '';
+            // Remove glow effect from any previously winning elements
+            document.querySelectorAll('.glow-win').forEach(el => el.classList.remove('glow-win'));
         }
 
-        function checkForWins(multiplier) {
+        function evaluateWins(multiplier) {
+            // Check for line wins
+            const winningSequences = checkForLineWins();
+            // Check for the special match win
+            const matchInfo = checkForMatchWin();
+
+            const hasAnyWin = winningSequences.length > 0 || matchInfo.matched;
+            if (hasAnyWin) {
+                displayWins(winningSequences, multiplier, matchInfo);
+            }
+            return hasAnyWin;
+        }
+
+        function checkForLineWins() {
             const reels = slotMachine.children;
-            if (!reels.length || !reels[0].children.length) return false;
+            const winningSequences = [];
+            if (!reels.length || !reels[0].children.length) return winningSequences;
 
             const numRows = reels[0].children.length;
             const numCols = reels.length;
             const grid = Array(numRows).fill(null).map(() => Array(numCols).fill(null));
 
-            // Populate a 2D grid with the final symbols from the DOM
             for (let c = 0; c < numCols; c++) {
                 for (let r = 0; r < numRows; r++) {
                     const element = reels[c].children[r];
-                    const emojiElement = element.children.length > 0 ? element.children[0] : element;
-                    grid[r][c] = emojiElement.textContent;
+                    grid[r][c] = (element.children.length > 0 ? element.children[0] : element).textContent;
                 }
             }
 
-            const winningSequences = [];
-            // Iterate over each row to find horizontal sequences of 3 or more
             for (let r = 0; r < numRows; r++) {
                 const firstSymbol = grid[r][0];
                 let streak = 1;
                 for (let c = 1; c < numCols; c++) {
-                    if (grid[r][c] === firstSymbol) {
-                        streak++;
-                    } else {
-                        break; 
-                    }
+                    if (grid[r][c] === firstSymbol) streak++;
+                    else break;
                 }
-                
                 if (streak >= 3) {
                     winningSequences.push({ row: r, startCol: 0, length: streak });
                 }
             }
-
-            if (winningSequences.length > 0) {
-                displayWins(winningSequences, multiplier);
-                return true; // A win occurred
-            }
-            return false; // No win
+            return winningSequences;
         }
         
-        function displayWins(wins, multiplier) {
+        function checkForMatchWin() {
+            // BUG FIX: Correctly identify the symbol in the center of the selector column
+            const selectedSymbolIndex = (currentIndex + centerVisibleIndex) % selectableEmojis.length;
+            const selectedSymbol = selectableEmojis[selectedSymbolIndex];
+
+            const targetReelElement = slotMachine.children[reelCount - 1];
+            const targetSymbolWrapper = targetReelElement.children[1];
+            const targetSymbolElement = targetSymbolWrapper.children[0];
+            const targetSymbol = targetSymbolElement.textContent;
+
+            if (targetSymbol === selectedSymbol) {
+                return { matched: true, amount: matchWinPayout };
+            }
+            return { matched: false, amount: 0 };
+        }
+
+        function displayWins(wins, multiplier, matchInfo) {
             const containerRect = slotMachineContainer.getBoundingClientRect();
             let totalWinnings = 0;
 
+            // 1. Process and display line wins
             wins.forEach(win => {
                 const winAmount = (payouts[win.length] || 0) * multiplier;
                 totalWinnings += winAmount;
@@ -318,7 +353,6 @@
                 const firstRect = firstElement.getBoundingClientRect();
                 const lastRect = lastElement.getBoundingClientRect();
                 
-                // --- Create and position the win line ---
                 const line = document.createElement('div');
                 line.className = 'win-line';
                 line.style.top = `${firstRect.top + firstRect.height / 2 - containerRect.top - 2.5}px`;
@@ -326,37 +360,50 @@
                 line.style.width = `${lastRect.right - firstRect.left}px`;
                 winLinesContainer.appendChild(line);
 
-                // --- Create and position the win amount text ---
                 const winText = document.createElement('div');
                 winText.className = 'win-amount-text';
                 winText.textContent = `+${winAmount}`;
-                const lineCenter = (firstRect.left + lastRect.right) / 2;
-                winText.style.top = `${firstRect.top + firstRect.height / 2 - containerRect.top - 18}px`; // Position above the line
-                winText.style.left = `${lineCenter - containerRect.left}px`;
+                winText.style.top = `${firstRect.top + firstRect.height / 2 - containerRect.top - 18}px`;
+                winText.style.left = `${(firstRect.left + lastRect.right) / 2 - containerRect.left}px`;
                 winLinesContainer.appendChild(winText);
 
-                // --- Animate them both in ---
                 setTimeout(() => { 
                     line.style.opacity = '1'; 
                     winText.style.opacity = '1';
                 }, 10);
             });
 
-            // --- Update Coins After Payout ---
+            // 2. Process and display match win
+            if (matchInfo.matched) {
+                totalWinnings += matchInfo.amount;
+                const targetReelElement = slotMachine.children[reelCount - 1].children[1];
+                const selectorElement = emojiColumn.children[centerVisibleIndex];
+
+                targetReelElement.classList.add('glow-win');
+                selectorElement.classList.add('glow-win');
+
+                const targetRect = targetReelElement.getBoundingClientRect();
+                const winText = document.createElement('div');
+                winText.className = 'match-win-amount-text';
+                winText.textContent = `+${matchInfo.amount}`;
+                winText.style.top = `${targetRect.top + targetRect.height / 2 - containerRect.top}px`;
+                winText.style.left = `${targetRect.left + targetRect.width / 2 - containerRect.left}px`;
+                winLinesContainer.appendChild(winText);
+
+                setTimeout(() => { winText.style.opacity = '1'; }, 10);
+            }
+
+            // 3. Update coin total and set re-spin delay
             if (totalWinnings > 0) {
-                playerCoins += totalWinnings;
-                // Add a small delay for the win animation before updating the coin total
                 setTimeout(() => {
+                    playerCoins += totalWinnings;
                     updateCoinsDisplay();
-                    // Animate the coin display on win
                     coinsDisplay.classList.add('scale-125', 'text-yellow-300');
                     setTimeout(() => coinsDisplay.classList.remove('scale-125', 'text-yellow-300'), 300);
                 }, 400);
             }
 
-            // --- Add delay before allowing another spin ---
-            // The coin update animation starts after 400ms. We add 500ms to that.
-            const reSpinDelay = 400 + 500; // 900ms total
+            const reSpinDelay = 900;
             setTimeout(() => {
                 isSpinning = false;
             }, reSpinDelay);
@@ -370,10 +417,10 @@
                 const emojiIndex = (currentIndex + i) % selectableEmojis.length;
                 const emoji = selectableEmojis[emojiIndex];
                 const emojiElement = document.createElement('div');
+                // Always clear glow class on re-render
+                emojiElement.className = 'text-2xl transition-transform transform p-1 rounded-md';
                 if (i === centerVisibleIndex) {
-                    emojiElement.className = 'text-2xl transition-transform transform p-1 border-2 border-purple-500 rounded-md';
-                } else {
-                    emojiElement.className = 'text-2xl transition-transform transform p-1';
+                    emojiElement.classList.add('border-2', 'border-purple-500');
                 }
                 emojiElement.textContent = emoji;
                 emojiColumn.appendChild(emojiElement);
@@ -399,7 +446,7 @@
         // --- Initial Calls on Load ---
         renderEmojis();
         initializeSlots();
-        updateCoinsDisplay(); // Set initial coin display
+        updateCoinsDisplay();
 
     </script>
 </body>
