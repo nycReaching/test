@@ -4,69 +4,110 @@
     <meta charset="UTF-8">
     <!-- The viewport meta tag is crucial for responsive design -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Mobile Game UI</title>
+    <title>Slot Machine 98</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
-        /* Custom styles for the game */
+        /* Custom styles for the 90s retro aesthetic */
         body {
-            font-family: 'Inter', sans-serif;
-            overflow: hidden; /* Prevents scrollbars from appearing */
-            -webkit-tap-highlight-color: transparent; /* Removes tap highlight on mobile */
+            font-family: 'VT323', monospace;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+            image-rendering: pixelated; /* Makes fonts and emojis look more blocky */
         }
-        /* Style to ensure the game container looks good on desktop */
-        .game-container {
-            /* On desktop, constrain the width and add a subtle shadow to simulate a device */
+
+        .game-container-desktop {
+            /* On desktop, constrain the width and add a hard shadow to simulate a window */
             max-width: 450px;
-            box-shadow: 0 0 40px rgba(0,0,0,0.1);
+            box-shadow: 4px 4px 0px 0px rgba(0,0,0,1);
         }
+        
+        /* General Retro Styles */
+        .text-shadow-retro {
+            text-shadow: 2px 2px #000;
+        }
+
+        /* Win95 UI Element Styles */
+        .win95-container {
+            background-color: #C0C0C0; /* Classic light gray */
+            border: 2px solid;
+            border-color: #FFFFFF #808080 #808080 #FFFFFF; /* Top/Left white, Bottom/Right gray for outset effect */
+        }
+
+        .win95-inset {
+            border: 2px solid;
+            border-color: #808080 #FFFFFF #FFFFFF #808080; /* Inverse of outset for inset effect */
+            box-shadow: inset 2px 2px 2px rgba(0,0,0,0.4);
+        }
+
+        .win95-header {
+            background: linear-gradient(to right, #000080, #1084d0); /* Classic Windows blue gradient */
+            color: white;
+            padding: 2px 6px;
+            text-shadow: 1px 1px #000;
+            font-size: 1.25rem;
+            line-height: 1.75rem;
+        }
+
+        .win95-button {
+            background-color: #C0C0C0;
+            color: #000000;
+            border: 2px solid;
+            border-color: #FFFFFF #808080 #808080 #FFFFFF;
+            box-shadow: 2px 2px 0px 0px rgba(0,0,0,1);
+        }
+
+        .win95-button:active {
+            border-color: #808080 #FFFFFF #FFFFFF #808080; /* Inset on click */
+            transform: translateY(1px) translateX(1px); /* Move button slightly on click */
+            box-shadow: none;
+        }
+
         /* Styles for the win-line visual effect */
         .win-line {
             position: absolute;
-            background-color: #FFD700; /* Neon Yellow/Gold */
-            height: 5px;
-            border-radius: 3px;
-            box-shadow: 0 0 10px #FFD700, 0 0 20px #FFD700, 0 0 30px #FFD700;
+            background-color: #00FF00; /* Bright Green */
+            height: 8px;
+            border: 2px solid black;
             opacity: 0;
-            transition: opacity 0.3s ease-in-out;
+            transition: opacity 0.1s ease-in-out;
             z-index: 10;
         }
-        /* Tailwind CSS JIT class for aspect-ratio */
-        .aspect-square {
-            aspect-ratio: 1 / 1;
-        }
-        /* Style for the win amount text */
+
         .win-amount-text {
             position: absolute;
             color: white;
-            font-weight: bold;
-            font-size: 1.25rem; /* 20px */
-            text-shadow: 0 0 5px black, 0 0 10px black;
+            font-size: 1.5rem; 
+            text-shadow: 2px 2px 0 #000;
             opacity: 0;
-            transition: opacity 0.3s ease-in-out;
-            z-index: 11; /* Position above the win line */
-            pointer-events: none; /* Prevent interaction */
-            transform: translateX(-50%); /* Center the text */
+            transition: opacity 0.1s ease-in-out;
+            z-index: 11;
+            pointer-events: none;
+            transform: translateX(-50%);
         }
+
         /* Style for the yellow glow on match wins */
         .glow-win {
-            border-color: #FFD700 !important; /* Use important to override existing border */
-            box-shadow: 0 0 8px #FFD700, 0 0 16px #FFD700;
-            transition: border-color 0.3s, box-shadow 0.3s;
+            background-color: #FFFF00 !important; /* Bright yellow background */
+            border-color: #000000 !important;
+            box-shadow: none;
+            transition: background-color 0.1s;
         }
-        /* Style for the match win amount text */
+        
         .match-win-amount-text {
             position: absolute;
             color: white;
-            font-weight: bold;
-            font-size: 1.25rem;
-            text-shadow: 0 0 5px black, 0 0 10px black;
+            font-size: 1.5rem;
+            text-shadow: 2px 2px 0 black;
             opacity: 0;
-            transition: opacity 0.3s ease-in-out;
+            transition: opacity 0.1s ease-in-out;
             z-index: 11;
             pointer-events: none;
             transform: translate(-50%, -50%); /* Center the text perfectly */
         }
+        
         /* Shake animation for feedback on insufficient funds */
         @keyframes shake {
           10%, 90% { transform: translate3d(-1px, 0, 0); }
@@ -79,79 +120,69 @@
         }
     </style>
 </head>
-<body class="bg-gray-900 flex items-center justify-center">
+<body class="bg-[#008080] flex items-center justify-center">
 
-    <!-- 
-      This is the main game container. 
-    -->
-    <div id="game-container" class="game-container w-full h-dvh mx-auto bg-gray-800 text-white flex flex-col">
+    <!-- Main game container styled like a classic PC window -->
+    <div id="game-container" class="game-container-desktop w-full h-dvh mx-auto win95-container text-black flex flex-col">
 
-        <!-- Header -->
-        <header class="flex-shrink-0 p-4 bg-gray-900/50 backdrop-blur-sm rounded-b-xl z-10">
-            <div class="h-12 flex items-center justify-center">
-                <!-- Header content: Coins Display -->
-                <div id="coins-container" class="flex items-center justify-center h-full bg-gray-900/40 px-6 rounded-full">
+        <!-- Header styled as a window title bar -->
+        <header class="flex-shrink-0 win95-header z-10">
+            <div class="h-12 flex items-center justify-between">
+                <div>SLOTS.EXE</div>
+                <!-- Coins Display -->
+                <div id="coins-container" class="flex items-center justify-center h-10 bg-black px-4 win95-inset">
                     <span class="text-3xl mr-2">🪙</span>
-                    <span id="coins-display" class="text-2xl font-bold text-white transition-all duration-300">100</span>
+                    <span id="coins-display" class="text-2xl text-green-400 transition-all duration-300">100</span>
                 </div>
             </div>
         </header>
 
         <!-- Main Game Area -->
-        <main id="game-area" class="flex-grow relative overflow-hidden p-4">
+        <main id="game-area" class="flex-grow relative overflow-hidden p-2">
             <div class="flex h-full w-full space-x-2">
-                <!-- 
-                    Left column containing the slot machine.
-                -->
+                <!-- Left column containing the slot machine -->
                 <div class="flex-grow relative flex flex-col space-y-2 overflow-hidden">
                     <!-- Top half container for the slot machine -->
-                    <div id="slot-machine-container" class="h-1/2 w-full bg-gray-900/30 rounded-lg flex items-center justify-center p-2 relative">
+                    <div id="slot-machine-container" class="h-1/2 w-full win95-inset bg-gray-700 flex items-center justify-center p-2 relative">
                         <div id="slot-machine" class="flex space-x-2 w-full h-full">
-                            <!-- Slot machine reels will be generated by JavaScript -->
+                            <!-- Slot machine reels generated by JS -->
                         </div>
-                        <!-- Container for the win line visuals -->
                         <div id="win-lines-container" class="absolute top-0 left-0 w-full h-full pointer-events-none"></div>
                     </div>
                     <!-- Bottom half with 2x2 grid -->
                     <div class="h-1/2 w-full grid grid-cols-2 grid-rows-2 gap-2">
-                        <div id="card-a" class="bg-gray-900/30 rounded-lg flex flex-col p-2 text-center cursor-pointer border-2 border-transparent transition-colors">
+                        <div id="card-a" class="win95-button flex flex-col p-2 text-center cursor-pointer transition-colors">
                             <div class="font-bold text-xs leading-tight"><span class="text-lg">🍇</span> Sour Grapes</div>
-                            <p class="text-gray-300/80 text-[11px] flex-grow flex items-center justify-center">3 wins with 🍇 will remove 🍇 permanently.</p>
-                            <div id="cost-a" class="text-[10px] font-semibold text-yellow-400">25 🪙</div>
+                            <p class="text-gray-800 text-[11px] flex-grow flex items-center justify-center">3 wins with 🍇 will remove 🍇 permanently.</p>
+                            <div id="cost-a" class="text-[10px] font-semibold text-black">25 🪙</div>
                         </div>
-                        <div id="card-b" class="bg-gray-900/30 rounded-lg flex flex-col p-2 text-center cursor-pointer border-2 border-transparent transition-colors">
+                         <div id="card-b" class="win95-button flex flex-col p-2 text-center cursor-pointer transition-colors">
                             <div class="font-bold text-xs leading-tight"><span class="text-lg">🎁</span> Big Gift</div>
-                            <p class="text-gray-300/80 text-[11px] flex-grow flex items-center justify-center">Wins with 🎁 pay 10x if within the next 20 spins.</p>
-                            <div id="cost-b" class="text-[10px] font-semibold text-yellow-400">25 🪙</div>
+                            <p class="text-gray-800 text-[11px] flex-grow flex items-center justify-center">Wins with 🎁 pay 10x if within the next 20 spins.</p>
+                            <div id="cost-b" class="text-[10px] font-semibold text-black">25 🪙</div>
                         </div>
-                        <div id="card-c" class="bg-gray-900/30 rounded-lg flex flex-col p-2 text-center cursor-pointer border-2 border-transparent transition-colors">
+                        <div id="card-c" class="win95-button flex flex-col p-2 text-center cursor-pointer transition-colors">
                             <div class="font-bold text-xs leading-tight"><span class="text-lg">🥥</span> Coco Cost</div>
-                            <p class="text-gray-300/80 text-[11px] flex-grow flex items-center justify-center">Wins with 🥥 pay nothing, but discount cards by 10 🪙.</p>
-                            <div id="cost-c" class="text-[10px] font-semibold text-yellow-400">25 🪙</div>
+                            <p class="text-gray-800 text-[11px] flex-grow flex items-center justify-center">Wins with 🥥 pay nothing, but discount cards by 10 🪙.</p>
+                            <div id="cost-c" class="text-[10px] font-semibold text-black">25 🪙</div>
                         </div>
-                        <div id="card-d" class="bg-gray-900/30 rounded-lg flex flex-col p-2 text-center cursor-pointer border-2 border-transparent transition-colors">
+                        <div id="card-d" class="win95-button flex flex-col p-2 text-center cursor-pointer transition-colors">
                             <div class="font-bold text-xs leading-tight"><span class="text-lg">🌶️</span> Spicy Spins</div>
-                            <p class="text-gray-300/80 text-[11px] flex-grow flex items-center justify-center">🌶️ Wins pay 2x and increase spin multis by 1x.</p>
-                            <div id="cost-d" class="text-[10px] font-semibold text-yellow-400">25 🪙</div>
+                            <p class="text-gray-800 text-[11px] flex-grow flex items-center justify-center">🌶️ Wins pay 2x and increase spin multis by 1x.</p>
+                            <div id="cost-d" class="text-[10px] font-semibold text-black">25 🪙</div>
                         </div>
                     </div>
                 </div>
-                <!-- 
-                    Right column for spin buttons and emoji list.
-                -->
+                <!-- Right column for spin buttons and emoji list -->
                 <div class="flex-shrink-0 flex flex-col w-16 space-y-2">
                     <!-- Top half for spin buttons -->
                     <div class="h-1/2 w-full flex flex-col items-center justify-center space-y-2">
-                        <button id="spin-button-top" class="w-full flex-1 bg-red-500 rounded-2xl flex items-center justify-center text-white text-md font-bold shadow-lg transform active:scale-95 transition-transform">
-                            2x
-                        </button>
-                        <button id="spin-button-bottom" class="w-full flex-1 bg-blue-500 rounded-2xl flex items-center justify-center text-white text-md font-bold shadow-lg transform active:scale-95 transition-transform">
-                            1x
-                        </button>
+                        <button id="spin-button-top" class="win95-button w-full flex-1 flex items-center justify-center text-lg">2x</button>
+                        <button id="spin-button-bottom" class="win95-button w-full flex-1 flex items-center justify-center text-lg">1x</button>
                     </div>
                     <!-- Bottom half for emoji column -->
                     <div class="h-1/2 w-full">
-                        <div id="emoji-column" class="bg-gray-700/50 rounded-lg h-full w-full flex flex-col items-center justify-around p-1 overflow-hidden">
+                        <div id="emoji-column" class="win95-inset bg-white h-full w-full flex flex-col items-center justify-around p-1 overflow-hidden">
                             <!-- Emojis will be dynamically inserted here -->
                         </div>
                     </div>
@@ -160,23 +191,20 @@
         </main>
 
         <!-- Footer: Game controls -->
-        <footer class="flex-shrink-0 p-4 bg-gray-900/50 backdrop-blur-sm rounded-t-xl z-10">
+        <footer class="flex-shrink-0 p-2 z-10">
             <div class="flex items-center justify-between space-x-2">
-                 <!-- Main button area -->
                 <div class="flex-grow flex gap-2">
-                     <button class="control-button flex-1 h-16 bg-purple-800 rounded-2xl flex items-center justify-center text-white text-xl font-bold shadow-lg transform active:scale-95 transition-transform">A</button>
-                     <button class="control-button flex-1 h-16 bg-purple-700 rounded-2xl flex items-center justify-center text-white text-xl font-bold shadow-lg transform active:scale-95 transition-transform">B</button>
-                     <button class="control-button flex-1 h-16 bg-purple-600 rounded-2xl flex items-center justify-center text-white text-xl font-bold shadow-lg transform active:scale-95 transition-transform">C</button>
-                     <button class="control-button flex-1 h-16 bg-purple-500 rounded-2xl flex items-center justify-center text-white text-xl font-bold shadow-lg transform active:scale-95 transition-transform">D</button>
+                     <button class="win95-button flex-1 h-16 flex items-center justify-center text-xl">A</button>
+                     <button class="win95-button flex-1 h-16 flex items-center justify-center text-xl">B</button>
+                     <button class="win95-button flex-1 h-16 flex items-center justify-center text-xl">C</button>
+                     <button class="win95-button flex-1 h-16 flex items-center justify-center text-xl">D</button>
                 </div>
-                <!-- Side d-pad area -->
                 <div class="flex-shrink-0 flex flex-col space-y-1">
-                    <button id="up-button" class="control-button w-16 h-12 bg-green-500 rounded-lg flex items-center justify-center text-white font-bold shadow-lg transform active:scale-95 transition-transform"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg></button>
-                    <button id="down-button" class="control-button w-16 h-12 bg-green-500 rounded-lg flex items-center justify-center text-white font-bold shadow-lg transform active:scale-95 transition-transform"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></button>
+                    <button id="up-button" class="win95-button w-16 h-12 flex items-center justify-center">▲</button>
+                    <button id="down-button" class="win95-button w-16 h-12 flex items-center justify-center">▼</button>
                 </div>
             </div>
         </footer>
-        
     </div>
 
     <script>
@@ -246,9 +274,7 @@
 
         // --- Card Purchasing Logic ---
         function handleCardPurchase(cardId) {
-            if (purchasedCards[cardId]) {
-                return; // Already purchased
-            }
+            if (purchasedCards[cardId]) return;
 
             const cost = cardCosts[cardId];
             if (playerCoins >= cost) {
@@ -260,10 +286,13 @@
                 const costElement = document.getElementById(`cost-${cardId}`);
                 const cardDescription = cardElement.querySelector('p');
 
-                cardElement.classList.replace('border-transparent', 'border-gray-300');
+                // Visual feedback for active card
+                cardElement.style.borderColor = '#808080 #FFFFFF #FFFFFF #808080';
+                cardElement.style.backgroundColor = '#a0a0a0';
+
+
                 costElement.textContent = 'Active';
-                costElement.classList.remove('text-yellow-400');
-                costElement.classList.add('text-green-400'); 
+                costElement.classList.add('text-green-600'); 
 
                 if (cardId === 'a') {
                     cardDescription.innerHTML = `Wins with 🍇: <span id="sour-grapes-counter">0</span>/3`;
@@ -274,22 +303,19 @@
 
             } else {
                 coinsContainer.classList.add('animate-shake');
-                setTimeout(() => {
-                    coinsContainer.classList.remove('animate-shake');
-                }, 500);
+                setTimeout(() => coinsContainer.classList.remove('animate-shake'), 500);
             }
         }
-
 
         // --- Slot Machine Logic ---
         function createReel(reelIndex) {
             const reel = document.createElement('div');
-            reel.className = 'flex-1 h-full bg-gray-900/50 rounded-lg flex flex-col items-center justify-around shadow-inner overflow-hidden py-1';
+            reel.className = 'flex-1 h-full win95-inset bg-black flex flex-col items-center justify-around overflow-hidden py-1';
             
             for (let j = 0; j < 3; j++) {
                 if (reelIndex === reelCount - 1 && j === 1) {
                     const borderWrapper = document.createElement('div');
-                    borderWrapper.className = 'w-full aspect-square flex items-center justify-center border-2 border-purple-500 rounded-md p-1';
+                    borderWrapper.className = 'w-full aspect-square flex items-center justify-center border-4 border-double border-black p-1';
                     const emojiElement = document.createElement('div');
                     emojiElement.className = 'text-3xl sm:text-4xl transition-all duration-500 ease-in-out opacity-0 scale-75';
                     emojiElement.textContent = allEmojis[Math.floor(Math.random() * allEmojis.length)];
@@ -332,7 +358,6 @@
             }
 
             updateCoinsDisplay();
-            clearWins();
 
             slotMachine.innerHTML = '';
             const revealDelay = 200; 
@@ -409,7 +434,6 @@
         
         function checkForMatchWin() {
             const selectedSymbolIndex = (currentIndex + centerVisibleIndex) % selectableEmojis.length;
-            // Guard against the selectable emoji list being empty
             if (selectableEmojis.length === 0) return { matched: false, amount: 0, symbol: null };
             const selectedSymbol = selectableEmojis[selectedSymbolIndex];
             const targetReelElement = slotMachine.children[reelCount - 1];
@@ -417,7 +441,6 @@
             const targetSymbolElement = targetSymbolWrapper.children[0];
             const targetSymbol = targetSymbolElement.textContent;
             if (targetSymbol === selectedSymbol) {
-                // Return the matched symbol along with win info
                 return { matched: true, amount: matchWinPayout, symbol: targetSymbol };
             }
             return { matched: false, amount: 0, symbol: null };
@@ -426,7 +449,6 @@
         function applyCardEffects(winningSymbol, baseWinAmount) {
             let finalWinAmount = baseWinAmount;
 
-            // --- CARD EFFECTS LOGIC ---
             if (purchasedCards.a && winningSymbol === '🍇' && sourGrapesWins < 3) {
                 sourGrapesWins++;
                 document.getElementById('sour-grapes-counter').textContent = sourGrapesWins;
@@ -440,14 +462,11 @@
                     document.getElementById('cost-a').textContent = 'Completed';
                 }
             }
-
-            if (purchasedCards.b && winningSymbol === '🎁' && bigGiftSpinsLeft >= 0) { // check >=0 because it was decremented before spin
+            if (purchasedCards.b && winningSymbol === '🎁' && bigGiftSpinsLeft >= 0) {
                 finalWinAmount *= 10;
             }
-
             if (purchasedCards.c && winningSymbol === '🥥') {
                 finalWinAmount = 0;
-                // This effect triggers on a win condition, even if the base payout was 0
                 Object.keys(cardCosts).forEach(cardId => {
                     if (!purchasedCards[cardId]) {
                         cardCosts[cardId] = Math.max(0, cardCosts[cardId] - 10);
@@ -455,14 +474,12 @@
                     }
                 });
             }
-            
             if (purchasedCards.d && winningSymbol === '🌶️') {
                 finalWinAmount *= 2;
                 spinMultiplierBonus++;
                 updateSpinButtonText();
                 cardD.querySelector('p').textContent = `Spin multi bonus: +${spinMultiplierBonus}x`;
             }
-
             return finalWinAmount;
         }
 
@@ -470,54 +487,40 @@
             const containerRect = slotMachineContainer.getBoundingClientRect();
             let totalWinnings = 0;
 
-            // 1. Process line wins
             wins.forEach(win => {
                 const winningSymbol = (slotMachine.children[win.startCol].children[win.row].children.length > 0 ? slotMachine.children[win.startCol].children[win.row].children[0] : slotMachine.children[win.startCol].children[win.row]).textContent;
-
                 const baseWinAmount = (payouts[win.length] || 0) * multiplier;
                 const finalWinAmount = applyCardEffects(winningSymbol, baseWinAmount);
                 totalWinnings += finalWinAmount;
-
                 if (finalWinAmount > 0) {
                     const firstElement = slotMachine.children[win.startCol].children[win.row];
                     const lastElement = slotMachine.children[win.startCol + win.length - 1].children[win.row];
                     if (!firstElement || !lastElement) return;
-
                     const firstRect = firstElement.getBoundingClientRect();
                     const lastRect = lastElement.getBoundingClientRect();
                     const line = document.createElement('div');
                     line.className = 'win-line';
-                    line.style.top = `${firstRect.top + firstRect.height / 2 - containerRect.top - 2.5}px`;
+                    line.style.top = `${firstRect.top + firstRect.height / 2 - containerRect.top - 5}px`;
                     line.style.left = `${firstRect.left - containerRect.left}px`;
                     line.style.width = `${lastRect.right - firstRect.left}px`;
                     winLinesContainer.appendChild(line);
-
                     const winText = document.createElement('div');
                     winText.className = 'win-amount-text';
                     winText.textContent = `+${finalWinAmount}`;
-                    winText.style.top = `${firstRect.top + firstRect.height / 2 - containerRect.top - 18}px`;
+                    winText.style.top = `${firstRect.top + firstRect.height / 2 - containerRect.top - 22}px`;
                     winText.style.left = `${(firstRect.left + lastRect.right) / 2 - containerRect.left}px`;
                     winLinesContainer.appendChild(winText);
-
-                    setTimeout(() => { 
-                        line.style.opacity = '1'; 
-                        winText.style.opacity = '1';
-                    }, 10);
+                    setTimeout(() => { line.style.opacity = '1'; winText.style.opacity = '1'; }, 10);
                 }
             });
-
-            // 2. Process match win, applying card effects
             if (matchInfo.matched) {
-                const baseMatchAmount = matchInfo.amount * multiplier; // Apply spin multiplier here
+                const baseMatchAmount = matchInfo.amount * multiplier;
                 const finalMatchAmount = applyCardEffects(matchInfo.symbol, baseMatchAmount);
                 totalWinnings += finalMatchAmount;
-                
                 const targetReelElement = slotMachine.children[reelCount - 1].children[1];
                 const selectorElement = emojiColumn.children[centerVisibleIndex];
-
                 targetReelElement.classList.add('glow-win');
                 if (selectorElement) selectorElement.classList.add('glow-win');
-
                 const targetRect = targetReelElement.getBoundingClientRect();
                 const winText = document.createElement('div');
                 winText.className = 'match-win-amount-text';
@@ -525,11 +528,8 @@
                 winText.style.top = `${targetRect.top + targetRect.height / 2 - containerRect.top}px`;
                 winText.style.left = `${targetRect.left + targetRect.width / 2 - containerRect.left}px`;
                 winLinesContainer.appendChild(winText);
-
                 setTimeout(() => { winText.style.opacity = '1'; }, 10);
             }
-
-            // 3. Update coin total and set re-spin delay
             if (totalWinnings > 0) {
                 setTimeout(() => {
                     playerCoins += totalWinnings;
@@ -538,14 +538,11 @@
                     setTimeout(() => coinsDisplay.classList.remove('scale-125', 'text-yellow-300'), 300);
                 }, 400);
             }
-
             const reSpinDelay = 900;
-            setTimeout(() => {
-                isSpinning = false;
-            }, reSpinDelay);
+            setTimeout(() => { isSpinning = false; clearWins(); }, reSpinDelay);
         }
 
-        // --- Emoji Cycling Logic (for right-hand column) ---
+        // --- Emoji Cycling Logic ---
         function renderEmojis() {
             emojiColumn.innerHTML = '';
             for (let i = 0; i < visibleEmojiCount; i++) {
@@ -553,9 +550,9 @@
                 const emojiIndex = (currentIndex + i) % selectableEmojis.length;
                 const emoji = selectableEmojis[emojiIndex];
                 const emojiElement = document.createElement('div');
-                emojiElement.className = 'text-2xl transition-transform transform p-1 rounded-md';
+                emojiElement.className = 'text-2xl transition-transform transform p-1';
                 if (i === centerVisibleIndex) {
-                    emojiElement.classList.add('border-2', 'border-purple-500');
+                    emojiElement.classList.add('border-2', 'border-black', 'bg-yellow-300');
                 }
                 emojiElement.textContent = emoji;
                 emojiColumn.appendChild(emojiElement);
@@ -592,5 +589,3 @@
     </script>
 </body>
 </html>
-
-
