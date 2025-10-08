@@ -154,6 +154,30 @@
         .animate-shake {
             animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
         }
+
+        /* New animation for the reel symbols */
+        @keyframes emoji-reveal {
+            0% {
+                transform: translateY(-100%) scale(0.5);
+                opacity: 0;
+            }
+            60% {
+                transform: translateY(10%) scale(1.2);
+                opacity: 1;
+            }
+            80% {
+                transform: translateY(-5%) scale(0.95);
+            }
+            100% {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .animate-emoji-reveal {
+            /* A bit of a bounce-in effect */
+            animation: emoji-reveal 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+        }
     </style>
 </head>
 <body class="bg-[#008080] flex items-center justify-center">
@@ -185,23 +209,11 @@
                         </div>
                         <div id="win-lines-container" class="absolute top-0 left-0 w-full h-full pointer-events-none"></div>
                     </div>
-                    <!-- Bottom half with 2x2 grid -->
-                    <div class="h-1/2 w-full grid grid-cols-2 grid-rows-2 gap-2">
-                        <div id="card-a" class="win95-button flex flex-col p-2 text-center cursor-pointer transition-colors justify-center">
-                            <p class="text-gray-800 text-lg flex-grow flex items-center justify-center"><span class="text-2xl mr-2">🍇</span>Win with 🍇 3x to remove.</p>
-                            <div id="cost-a" class="text-lg font-semibold text-black mt-1">25 🪙</div>
-                        </div>
-                         <div id="card-b" class="win95-button flex flex-col p-2 text-center cursor-pointer transition-colors justify-center">
-                            <p class="text-gray-800 text-lg flex-grow flex items-center justify-center"><span class="text-2xl mr-2">🎁</span>🎁 wins pay 10x for 20 spins.</p>
-                            <div id="cost-b" class="text-lg font-semibold text-black mt-1">25 🪙</div>
-                        </div>
-                        <div id="card-c" class="win95-button flex flex-col p-2 text-center cursor-pointer transition-colors justify-center">
-                            <p class="text-gray-800 text-lg flex-grow flex items-center justify-center"><span class="text-2xl mr-2">🥥</span>🥥 wins discount cards 10 🪙.</p>
-                            <div id="cost-c" class="text-lg font-semibold text-black mt-1">25 🪙</div>
-                        </div>
-                        <div id="card-d" class="win95-button flex flex-col p-2 text-center cursor-pointer transition-colors justify-center">
-                            <p class="text-gray-800 text-lg flex-grow flex items-center justify-center"><span class="text-2xl mr-2">🌶️</span>🌶️ wins pay 2x, add 1x multi.</p>
-                            <div id="cost-d" class="text-lg font-semibold text-black mt-1">25 🪙</div>
+                    <!-- Bottom half with text window -->
+                    <div id="text-window" class="h-1/2 w-full win95-inset bg-black p-2 flex flex-col justify-between text-green-400 text-xl">
+                        <p id="message-display">> Awaiting events...</p>
+                        <div id="message-options" class="flex gap-2 justify-end">
+                            <!-- Buttons for choices will appear here -->
                         </div>
                     </div>
                 </div>
@@ -255,10 +267,8 @@
         const spinButtonBottom = document.getElementById('spin-button-bottom');
         const coinsDisplay = document.getElementById('coins-display');
         const coinsContainer = document.getElementById('coins-container');
-        const cardA = document.getElementById('card-a');
-        const cardB = document.getElementById('card-b');
-        const cardC = document.getElementById('card-c');
-        const cardD = document.getElementById('card-d');
+        const messageDisplay = document.getElementById('message-display');
+        const messageOptions = document.getElementById('message-options');
 
         // --- Game State & Config ---
         let playerCoins = 100;
@@ -273,13 +283,10 @@
         const visibleEmojiCount = isMobile ? 4 : 5;
         const centerVisibleIndex = Math.floor((visibleEmojiCount - 1) / 2);
         const reelCount = 5;
-        const cardCosts = { a: 25, b: 25, c: 25, d: 25 };
-        let purchasedCards = { a: false, b: false, c: false, d: false };
 
-        // --- State for Card Effects ---
-        let sourGrapesWins = 0;
-        let bigGiftSpinsLeft = 0;
-        let spinMultiplierBonus = 0;
+        // --- Event State ---
+        let nextSpinBonus = 1;
+        let spinsUntilEvent = getRandomInt(5, 15);
 
 
         // --- UI Update Functions ---
@@ -287,57 +294,10 @@
             coinsDisplay.textContent = playerCoins;
         }
 
-        function updateBigGiftSpinsDisplay() {
-            if (purchasedCards.b) {
-                const cardDescription = cardB.querySelector('p');
-                if (bigGiftSpinsLeft > 0) {
-                    cardDescription.innerHTML = `<span class="text-2xl mr-2">🎁</span> Wins pay 10x for ${bigGiftSpinsLeft} spins.`;
-                } else {
-                    cardDescription.innerHTML = `<span class="text-2xl mr-2">🎁</span> Bonus has expired.`;
-                    cardB.classList.add('opacity-50');
-                    document.getElementById('cost-b').textContent = 'Expired';
-                }
-            }
-        }
-
-        function updateSpinButtonText() {
-            spinButtonBottom.textContent = `${1 + spinMultiplierBonus}x`;
-            spinButtonTop.textContent = `${2 + spinMultiplierBonus}x`;
-        }
-
-        // --- Card Purchasing Logic ---
-        function handleCardPurchase(cardId) {
-            if (purchasedCards[cardId]) return;
-
-            const cost = cardCosts[cardId];
-            if (playerCoins >= cost) {
-                playerCoins -= cost;
-                updateCoinsDisplay();
-                purchasedCards[cardId] = true;
-
-                const cardElement = document.getElementById(`card-${cardId}`);
-                const costElement = document.getElementById(`cost-${cardId}`);
-                const cardDescription = cardElement.querySelector('p');
-
-                // Visual feedback for active card
-                cardElement.style.borderColor = '#808080 #FFFFFF #FFFFFF #808080';
-                cardElement.style.backgroundColor = '#a0a0a0';
-
-
-                costElement.textContent = 'Active';
-                costElement.classList.add('text-green-600'); 
-
-                if (cardId === 'a') {
-                    cardDescription.innerHTML = `<span class="text-2xl mr-2">🍇</span> Wins: <span id="sour-grapes-counter">0</span>/3`;
-                } else if (cardId === 'b') {
-                    bigGiftSpinsLeft = 20;
-                    updateBigGiftSpinsDisplay();
-                }
-
-            } else {
-                coinsContainer.classList.add('animate-shake');
-                setTimeout(() => coinsContainer.classList.remove('animate-shake'), 500);
-            }
+        function getRandomInt(min, max) {
+            min = Math.ceil(min);
+            max = Math.floor(max);
+            return Math.floor(Math.random() * (max - min + 1)) + min;
         }
 
         // --- Slot Machine Logic ---
@@ -350,13 +310,13 @@
                     const borderWrapper = document.createElement('div');
                     borderWrapper.className = 'w-full aspect-square flex items-center justify-center border-4 border-double border-yellow-400 p-1';
                     const emojiElement = document.createElement('div');
-                    emojiElement.className = 'text-3xl sm:text-4xl transition-all duration-500 ease-in-out opacity-0 scale-75';
+                    emojiElement.className = 'text-3xl sm:text-4xl opacity-0';
                     emojiElement.textContent = allEmojis[Math.floor(Math.random() * allEmojis.length)];
                     borderWrapper.appendChild(emojiElement);
                     reel.appendChild(borderWrapper);
                 } else {
                     const emojiElement = document.createElement('div');
-                    emojiElement.className = 'text-3xl sm:text-4xl transition-all duration-500 ease-in-out opacity-0 scale-75';
+                    emojiElement.className = 'text-3xl sm:text-4xl opacity-0';
                     emojiElement.textContent = allEmojis[Math.floor(Math.random() * allEmojis.length)];
                     reel.appendChild(emojiElement);
                 }
@@ -377,23 +337,33 @@
         }
 
         function spinReels(multiplier) {
-            const effectiveMultiplier = multiplier + spinMultiplierBonus;
-            const currentCost = spinCost * effectiveMultiplier;
+            const currentCost = spinCost * multiplier;
+            const hasActiveChoice = messageOptions.children.length > 0;
 
-            if (isSpinning || playerCoins < currentCost) return;
-            isSpinning = true;
+            if (isSpinning || playerCoins < currentCost || hasActiveChoice) {
+                if (playerCoins < currentCost && !isSpinning) {
+                    coinsContainer.classList.add('animate-shake');
+                    setTimeout(() => coinsContainer.classList.remove('animate-shake'), 500);
+                }
+                 if (hasActiveChoice && !isSpinning) {
+                    const textWindow = document.getElementById('text-window');
+                    textWindow.classList.add('animate-shake');
+                    setTimeout(() => textWindow.classList.remove('animate-shake'), 500);
+                }
+                return;
+            }
             
+            isSpinning = true;
             playerCoins -= currentCost;
 
-            if (purchasedCards.b && bigGiftSpinsLeft > 0) {
-                bigGiftSpinsLeft--;
-                updateBigGiftSpinsDisplay();
+            if (nextSpinBonus === 1) { // Only count down if no bonus is active
+                spinsUntilEvent--;
             }
 
             updateCoinsDisplay();
 
             slotMachine.innerHTML = '';
-            const revealDelay = 200; 
+            const revealDelay = 150; // Adjusted delay for a quicker sequence
             const transitionDuration = 500;
             const fragment = document.createDocumentFragment();
             for (let i = 0; i < reelCount; i++) {
@@ -405,14 +375,25 @@
             reels.forEach((reel, i) => {
                 setTimeout(() => {
                     requestAnimationFrame(() => {
-                        reel.querySelectorAll('.text-3xl, .text-4xl').forEach(el => el.classList.remove('opacity-0', 'scale-75'));
+                        reel.querySelectorAll('.text-3xl, .text-4xl').forEach(el => {
+                            el.classList.remove('opacity-0');
+                            el.classList.add('animate-emoji-reveal');
+                        });
                     });
                 }, i * revealDelay);
             });
 
             const totalAnimationTime = (reels.length - 1) * revealDelay + transitionDuration;
             setTimeout(() => {
-                const hasWon = evaluateWins(effectiveMultiplier);
+                const finalMultiplier = multiplier * nextSpinBonus;
+                const hasWon = evaluateWins(finalMultiplier);
+                nextSpinBonus = 1; // Reset bonus after the spin uses it
+                
+                if (spinsUntilEvent <= 0) {
+                    triggerRandomEvent();
+                    spinsUntilEvent = getRandomInt(5, 15);
+                }
+
                 if (!hasWon) {
                     isSpinning = false;
                 }
@@ -481,52 +462,14 @@
             return { matched: false, amount: 0, symbol: null };
         }
 
-        function applyCardEffects(winningSymbol, baseWinAmount) {
-            let finalWinAmount = baseWinAmount;
-
-            if (purchasedCards.a && winningSymbol === '🍇' && sourGrapesWins < 3) {
-                sourGrapesWins++;
-                document.getElementById('sour-grapes-counter').textContent = sourGrapesWins;
-                if (sourGrapesWins === 3) {
-                    allEmojis = allEmojis.filter(e => e !== '🍇');
-                    selectableEmojis = selectableEmojis.filter(e => e !== '🍇');
-                    if (currentIndex >= selectableEmojis.length) { currentIndex = 0; }
-                    renderEmojis();
-                    cardA.querySelector('p').innerHTML = '<span class="text-2xl mr-2">🍇</span> has been removed!';
-                    cardA.classList.add('opacity-50');
-                    document.getElementById('cost-a').textContent = 'Completed';
-                }
-            }
-            if (purchasedCards.b && winningSymbol === '🎁' && bigGiftSpinsLeft >= 0) {
-                finalWinAmount *= 10;
-            }
-            if (purchasedCards.c && winningSymbol === '🥥') {
-                finalWinAmount = 0;
-                Object.keys(cardCosts).forEach(cardId => {
-                    if (!purchasedCards[cardId]) {
-                        cardCosts[cardId] = Math.max(0, cardCosts[cardId] - 10);
-                        document.getElementById(`cost-${cardId}`).textContent = `${cardCosts[cardId]} 🪙`;
-                    }
-                });
-            }
-            if (purchasedCards.d && winningSymbol === '🌶️') {
-                finalWinAmount *= 2;
-                spinMultiplierBonus++;
-                updateSpinButtonText();
-                cardD.querySelector('p').innerHTML = `<span class="text-2xl mr-2">🌶️</span> Multi Bonus: +${spinMultiplierBonus}x`;
-            }
-            return finalWinAmount;
-        }
-
         function displayWins(wins, multiplier, matchInfo) {
             const containerRect = slotMachineContainer.getBoundingClientRect();
             let totalWinnings = 0;
 
             wins.forEach(win => {
-                const winningSymbol = (slotMachine.children[win.startCol].children[win.row].children.length > 0 ? slotMachine.children[win.startCol].children[win.row].children[0] : slotMachine.children[win.startCol].children[win.row]).textContent;
-                const baseWinAmount = (payouts[win.length] || 0) * multiplier;
-                const finalWinAmount = applyCardEffects(winningSymbol, baseWinAmount);
+                const finalWinAmount = (payouts[win.length] || 0) * multiplier;
                 totalWinnings += finalWinAmount;
+
                 if (finalWinAmount > 0) {
                     const firstElement = slotMachine.children[win.startCol].children[win.row];
                     const lastElement = slotMachine.children[win.startCol + win.length - 1].children[win.row];
@@ -548,8 +491,7 @@
                 }
             });
             if (matchInfo.matched) {
-                const baseMatchAmount = matchInfo.amount * multiplier;
-                const finalMatchAmount = applyCardEffects(matchInfo.symbol, baseMatchAmount);
+                const finalMatchAmount = matchInfo.amount * multiplier;
                 totalWinnings += finalMatchAmount;
                 const targetReelElement = slotMachine.children[reelCount - 1].children[1];
                 const selectorElement = emojiColumn.children[centerVisibleIndex];
@@ -573,6 +515,47 @@
             }
             const reSpinDelay = 900;
             setTimeout(() => { isSpinning = false; clearWins(); }, reSpinDelay);
+        }
+
+        // --- Event and Choice Logic ---
+        function triggerRandomEvent() {
+            // For now, there's only one event
+            displayChoice("Spend 10🪙 for 10x your next spin?");
+        }
+
+        function displayChoice(text) {
+            messageDisplay.textContent = `> ${text}`;
+            messageOptions.innerHTML = ''; // Clear previous options
+
+            const yesButton = document.createElement('button');
+            yesButton.className = 'win95-button px-4 py-1 text-lg';
+            yesButton.textContent = 'Yes';
+            yesButton.onclick = () => {
+                if (playerCoins >= 10) {
+                    playerCoins -= 10;
+                    nextSpinBonus = 10;
+                    updateCoinsDisplay();
+                    clearChoice();
+                } else {
+                    coinsContainer.classList.add('animate-shake');
+                    setTimeout(() => coinsContainer.classList.remove('animate-shake'), 500);
+                }
+            };
+
+            const noButton = document.createElement('button');
+            noButton.className = 'win95-button px-4 py-1 text-lg';
+            noButton.textContent = 'No';
+            noButton.onclick = () => {
+                clearChoice();
+            };
+
+            messageOptions.appendChild(yesButton);
+            messageOptions.appendChild(noButton);
+        }
+
+        function clearChoice() {
+            messageDisplay.textContent = '> Awaiting events...';
+            messageOptions.innerHTML = '';
         }
 
         // --- Emoji Cycling Logic ---
@@ -608,23 +591,13 @@
         spinButtonTop.addEventListener('click', () => spinReels(2));
         spinButtonBottom.addEventListener('click', () => spinReels(1));
         
-        cardA.addEventListener('click', () => handleCardPurchase('a'));
-        cardB.addEventListener('click', () => handleCardPurchase('b'));
-        cardC.addEventListener('click', () => handleCardPurchase('c'));
-        cardD.addEventListener('click', () => handleCardPurchase('d'));
-
         // --- Initial Calls on Load ---
         renderEmojis();
         initializeSlots();
         updateCoinsDisplay();
-        updateSpinButtonText();
 
     </script>
 </body>
 </html>
-
-
-
-
 
 
