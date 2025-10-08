@@ -200,26 +200,48 @@
         const cardC = document.getElementById('card-c');
         const cardD = document.getElementById('card-d');
 
-
         // --- Game State & Config ---
         let playerCoins = 100;
         const spinCost = 1;
         const payouts = { 3: 10, 4: 50, 5: 300 };
         const matchWinPayout = 10;
-        const allEmojis = ['🌶️', '🍇', '🥕', '🥥', '🍌', '🍋‍🟩', '🎁'];
-        const selectableEmojis = allEmojis; // Use the same emojis for the selector column
-        let currentIndex = 0; // For the emoji selector
-        let isSpinning = false; // To prevent multiple spins
+        let allEmojis = ['🌶️', '🍇', '🥕', '🥥', '🍌', '🍋‍🟩', '🎁'];
+        let selectableEmojis = [...allEmojis];
+        let currentIndex = 0;
+        let isSpinning = false;
         const visibleEmojiCount = 5;
         const centerVisibleIndex = Math.floor(visibleEmojiCount / 2);
         const reelCount = 5;
         const cardCosts = { a: 25, b: 25, c: 25, d: 25 };
         let purchasedCards = { a: false, b: false, c: false, d: false };
 
+        // --- State for Card Effects ---
+        let sourGrapesWins = 0;
+        let bigGiftSpinsLeft = 0;
+        let spinMultiplierBonus = 0;
+
 
         // --- UI Update Functions ---
         function updateCoinsDisplay() {
             coinsDisplay.textContent = playerCoins;
+        }
+
+        function updateBigGiftSpinsDisplay() {
+            if (purchasedCards.b) {
+                const cardDescription = cardB.querySelector('p');
+                if (bigGiftSpinsLeft > 0) {
+                    cardDescription.textContent = `🎁 wins are 10x for ${bigGiftSpinsLeft} more spins.`;
+                } else {
+                    cardDescription.textContent = `🎁 bonus has expired.`;
+                    cardB.classList.add('opacity-50');
+                    document.getElementById('cost-b').textContent = 'Expired';
+                }
+            }
+        }
+
+        function updateSpinButtonText() {
+            spinButtonBottom.textContent = `${1 + spinMultiplierBonus}x`;
+            spinButtonTop.textContent = `${2 + spinMultiplierBonus}x`;
         }
 
         // --- Card Purchasing Logic ---
@@ -230,21 +252,27 @@
 
             const cost = cardCosts[cardId];
             if (playerCoins >= cost) {
-                // Sufficient funds
                 playerCoins -= cost;
                 updateCoinsDisplay();
-
                 purchasedCards[cardId] = true;
 
                 const cardElement = document.getElementById(`card-${cardId}`);
                 const costElement = document.getElementById(`cost-${cardId}`);
+                const cardDescription = cardElement.querySelector('p');
 
-                cardElement.classList.replace('border-transparent', 'border-gray-300'); // Silver border
-                costElement.textContent = 'Purchased';
+                cardElement.classList.replace('border-transparent', 'border-gray-300');
+                costElement.textContent = 'Active';
                 costElement.classList.remove('text-yellow-400');
                 costElement.classList.add('text-green-400'); 
+
+                if (cardId === 'a') {
+                    cardDescription.innerHTML = `Wins with 🍇: <span id="sour-grapes-counter">0</span>/3`;
+                } else if (cardId === 'b') {
+                    bigGiftSpinsLeft = 20;
+                    updateBigGiftSpinsDisplay();
+                }
+
             } else {
-                // Insufficient funds
                 coinsContainer.classList.add('animate-shake');
                 setTimeout(() => {
                     coinsContainer.classList.remove('animate-shake');
@@ -259,13 +287,10 @@
             reel.className = 'flex-1 h-full bg-gray-900/50 rounded-lg flex flex-col items-center justify-around shadow-inner overflow-hidden py-1';
             
             for (let j = 0; j < 3; j++) {
-                // Check if it's the target slot (reel 5, middle row)
                 if (reelIndex === reelCount - 1 && j === 1) {
                     const borderWrapper = document.createElement('div');
-                    // Changed to be responsive: w-full makes it fit the reel, aspect-square keeps it square.
                     borderWrapper.className = 'w-full aspect-square flex items-center justify-center border-2 border-purple-500 rounded-md p-1';
                     const emojiElement = document.createElement('div');
-                    // Emojis are created hidden (opacity-0, scale-75) to be faded in.
                     emojiElement.className = 'text-3xl sm:text-4xl transition-all duration-500 ease-in-out opacity-0 scale-75';
                     emojiElement.textContent = allEmojis[Math.floor(Math.random() * allEmojis.length)];
                     borderWrapper.appendChild(emojiElement);
@@ -281,11 +306,10 @@
         }
         
         function initializeSlots() {
-            slotMachine.innerHTML = ''; // Clear existing reels
+            slotMachine.innerHTML = '';
             for (let i = 0; i < reelCount; i++) {
                 const reel = createReel(i);
                 slotMachine.appendChild(reel);
-                // Reveal the emojis on initial load without animation delay
                 const emojiElements = reel.querySelectorAll('.text-3xl, .text-4xl');
                 emojiElements.forEach(el => {
                     el.classList.remove('opacity-0', 'scale-75');
@@ -294,11 +318,19 @@
         }
 
         function spinReels(multiplier) {
-            const currentCost = spinCost * multiplier;
+            const effectiveMultiplier = multiplier + spinMultiplierBonus;
+            const currentCost = spinCost * effectiveMultiplier;
+
             if (isSpinning || playerCoins < currentCost) return;
             isSpinning = true;
             
             playerCoins -= currentCost;
+
+            if (purchasedCards.b && bigGiftSpinsLeft > 0) {
+                bigGiftSpinsLeft--;
+                updateBigGiftSpinsDisplay();
+            }
+
             updateCoinsDisplay();
             clearWins();
 
@@ -322,7 +354,7 @@
 
             const totalAnimationTime = (reels.length - 1) * revealDelay + transitionDuration;
             setTimeout(() => {
-                const hasWon = evaluateWins(multiplier);
+                const hasWon = evaluateWins(effectiveMultiplier);
                 if (!hasWon) {
                     isSpinning = false;
                 }
@@ -332,16 +364,12 @@
         // --- Win Logic and Visuals ---
         function clearWins() {
             winLinesContainer.innerHTML = '';
-            // Remove glow effect from any previously winning elements
             document.querySelectorAll('.glow-win').forEach(el => el.classList.remove('glow-win'));
         }
 
         function evaluateWins(multiplier) {
-            // Check for line wins
             const winningSequences = checkForLineWins();
-            // Check for the special match win
             const matchInfo = checkForMatchWin();
-
             const hasAnyWin = winningSequences.length > 0 || matchInfo.matched;
             if (hasAnyWin) {
                 displayWins(winningSequences, multiplier, matchInfo);
@@ -380,70 +408,120 @@
         }
         
         function checkForMatchWin() {
-            // BUG FIX: Correctly identify the symbol in the center of the selector column
             const selectedSymbolIndex = (currentIndex + centerVisibleIndex) % selectableEmojis.length;
+            // Guard against the selectable emoji list being empty
+            if (selectableEmojis.length === 0) return { matched: false, amount: 0, symbol: null };
             const selectedSymbol = selectableEmojis[selectedSymbolIndex];
-
             const targetReelElement = slotMachine.children[reelCount - 1];
             const targetSymbolWrapper = targetReelElement.children[1];
             const targetSymbolElement = targetSymbolWrapper.children[0];
             const targetSymbol = targetSymbolElement.textContent;
-
             if (targetSymbol === selectedSymbol) {
-                return { matched: true, amount: matchWinPayout };
+                // Return the matched symbol along with win info
+                return { matched: true, amount: matchWinPayout, symbol: targetSymbol };
             }
-            return { matched: false, amount: 0 };
+            return { matched: false, amount: 0, symbol: null };
+        }
+
+        function applyCardEffects(winningSymbol, baseWinAmount) {
+            let finalWinAmount = baseWinAmount;
+
+            // --- CARD EFFECTS LOGIC ---
+            if (purchasedCards.a && winningSymbol === '🍇' && sourGrapesWins < 3) {
+                sourGrapesWins++;
+                document.getElementById('sour-grapes-counter').textContent = sourGrapesWins;
+                if (sourGrapesWins === 3) {
+                    allEmojis = allEmojis.filter(e => e !== '🍇');
+                    selectableEmojis = selectableEmojis.filter(e => e !== '🍇');
+                    if (currentIndex >= selectableEmojis.length) { currentIndex = 0; }
+                    renderEmojis();
+                    cardA.querySelector('p').textContent = '🍇 has been permanently removed!';
+                    cardA.classList.add('opacity-50');
+                    document.getElementById('cost-a').textContent = 'Completed';
+                }
+            }
+
+            if (purchasedCards.b && winningSymbol === '🎁' && bigGiftSpinsLeft >= 0) { // check >=0 because it was decremented before spin
+                finalWinAmount *= 10;
+            }
+
+            if (purchasedCards.c && winningSymbol === '🥥') {
+                finalWinAmount = 0;
+                // This effect triggers on a win condition, even if the base payout was 0
+                Object.keys(cardCosts).forEach(cardId => {
+                    if (!purchasedCards[cardId]) {
+                        cardCosts[cardId] = Math.max(0, cardCosts[cardId] - 10);
+                        document.getElementById(`cost-${cardId}`).textContent = `${cardCosts[cardId]} 🪙`;
+                    }
+                });
+            }
+            
+            if (purchasedCards.d && winningSymbol === '🌶️') {
+                finalWinAmount *= 2;
+                spinMultiplierBonus++;
+                updateSpinButtonText();
+                cardD.querySelector('p').textContent = `Spin multi bonus: +${spinMultiplierBonus}x`;
+            }
+
+            return finalWinAmount;
         }
 
         function displayWins(wins, multiplier, matchInfo) {
             const containerRect = slotMachineContainer.getBoundingClientRect();
             let totalWinnings = 0;
 
-            // 1. Process and display line wins
+            // 1. Process line wins
             wins.forEach(win => {
-                const winAmount = (payouts[win.length] || 0) * multiplier;
-                totalWinnings += winAmount;
+                const winningSymbol = (slotMachine.children[win.startCol].children[win.row].children.length > 0 ? slotMachine.children[win.startCol].children[win.row].children[0] : slotMachine.children[win.startCol].children[win.row]).textContent;
 
-                const firstElement = slotMachine.children[win.startCol].children[win.row];
-                const lastElement = slotMachine.children[win.startCol + win.length - 1].children[win.row];
-                if (!firstElement || !lastElement) return;
+                const baseWinAmount = (payouts[win.length] || 0) * multiplier;
+                const finalWinAmount = applyCardEffects(winningSymbol, baseWinAmount);
+                totalWinnings += finalWinAmount;
 
-                const firstRect = firstElement.getBoundingClientRect();
-                const lastRect = lastElement.getBoundingClientRect();
-                
-                const line = document.createElement('div');
-                line.className = 'win-line';
-                line.style.top = `${firstRect.top + firstRect.height / 2 - containerRect.top - 2.5}px`;
-                line.style.left = `${firstRect.left - containerRect.left}px`;
-                line.style.width = `${lastRect.right - firstRect.left}px`;
-                winLinesContainer.appendChild(line);
+                if (finalWinAmount > 0) {
+                    const firstElement = slotMachine.children[win.startCol].children[win.row];
+                    const lastElement = slotMachine.children[win.startCol + win.length - 1].children[win.row];
+                    if (!firstElement || !lastElement) return;
 
-                const winText = document.createElement('div');
-                winText.className = 'win-amount-text';
-                winText.textContent = `+${winAmount}`;
-                winText.style.top = `${firstRect.top + firstRect.height / 2 - containerRect.top - 18}px`;
-                winText.style.left = `${(firstRect.left + lastRect.right) / 2 - containerRect.left}px`;
-                winLinesContainer.appendChild(winText);
+                    const firstRect = firstElement.getBoundingClientRect();
+                    const lastRect = lastElement.getBoundingClientRect();
+                    const line = document.createElement('div');
+                    line.className = 'win-line';
+                    line.style.top = `${firstRect.top + firstRect.height / 2 - containerRect.top - 2.5}px`;
+                    line.style.left = `${firstRect.left - containerRect.left}px`;
+                    line.style.width = `${lastRect.right - firstRect.left}px`;
+                    winLinesContainer.appendChild(line);
 
-                setTimeout(() => { 
-                    line.style.opacity = '1'; 
-                    winText.style.opacity = '1';
-                }, 10);
+                    const winText = document.createElement('div');
+                    winText.className = 'win-amount-text';
+                    winText.textContent = `+${finalWinAmount}`;
+                    winText.style.top = `${firstRect.top + firstRect.height / 2 - containerRect.top - 18}px`;
+                    winText.style.left = `${(firstRect.left + lastRect.right) / 2 - containerRect.left}px`;
+                    winLinesContainer.appendChild(winText);
+
+                    setTimeout(() => { 
+                        line.style.opacity = '1'; 
+                        winText.style.opacity = '1';
+                    }, 10);
+                }
             });
 
-            // 2. Process and display match win
+            // 2. Process match win, applying card effects
             if (matchInfo.matched) {
-                totalWinnings += matchInfo.amount;
+                const baseMatchAmount = matchInfo.amount * multiplier; // Apply spin multiplier here
+                const finalMatchAmount = applyCardEffects(matchInfo.symbol, baseMatchAmount);
+                totalWinnings += finalMatchAmount;
+                
                 const targetReelElement = slotMachine.children[reelCount - 1].children[1];
                 const selectorElement = emojiColumn.children[centerVisibleIndex];
 
                 targetReelElement.classList.add('glow-win');
-                selectorElement.classList.add('glow-win');
+                if (selectorElement) selectorElement.classList.add('glow-win');
 
                 const targetRect = targetReelElement.getBoundingClientRect();
                 const winText = document.createElement('div');
                 winText.className = 'match-win-amount-text';
-                winText.textContent = `+${matchInfo.amount}`;
+                winText.textContent = `+${finalMatchAmount}`;
                 winText.style.top = `${targetRect.top + targetRect.height / 2 - containerRect.top}px`;
                 winText.style.left = `${targetRect.left + targetRect.width / 2 - containerRect.left}px`;
                 winLinesContainer.appendChild(winText);
@@ -475,7 +553,6 @@
                 const emojiIndex = (currentIndex + i) % selectableEmojis.length;
                 const emoji = selectableEmojis[emojiIndex];
                 const emojiElement = document.createElement('div');
-                // Always clear glow class on re-render
                 emojiElement.className = 'text-2xl transition-transform transform p-1 rounded-md';
                 if (i === centerVisibleIndex) {
                     emojiElement.classList.add('border-2', 'border-purple-500');
@@ -510,8 +587,10 @@
         renderEmojis();
         initializeSlots();
         updateCoinsDisplay();
+        updateSpinButtonText();
 
     </script>
 </body>
 </html>
+
 
