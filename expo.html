@@ -153,23 +153,23 @@
                     <div class="h-1/2 w-full grid grid-cols-2 grid-rows-2 gap-2">
                         <div id="card-a" class="win95-button flex flex-col p-2 text-center cursor-pointer transition-colors">
                             <div class="font-bold text-xs leading-tight"><span class="text-lg">🍇</span> Sour Grapes</div>
-                            <p class="text-gray-800 text-[11px] flex-grow flex items-center justify-center">3 wins with 🍇 will remove 🍇 permanently.</p>
-                            <div id="cost-a" class="text-[10px] font-semibold text-black">25 🪙</div>
+                            <p class="text-gray-800 text-xs flex-grow flex items-center justify-center">3 wins with 🍇 will remove 🍇 permanently.</p>
+                            <div id="cost-a" class="text-xs font-semibold text-black">25 🪙</div>
                         </div>
                          <div id="card-b" class="win95-button flex flex-col p-2 text-center cursor-pointer transition-colors">
                             <div class="font-bold text-xs leading-tight"><span class="text-lg">🎁</span> Big Gift</div>
-                            <p class="text-gray-800 text-[11px] flex-grow flex items-center justify-center">Wins with 🎁 pay 10x if within the next 20 spins.</p>
-                            <div id="cost-b" class="text-[10px] font-semibold text-black">25 🪙</div>
+                            <p class="text-gray-800 text-xs flex-grow flex items-center justify-center">Wins with 🎁 pay 10x if within the next 20 spins.</p>
+                            <div id="cost-b" class="text-xs font-semibold text-black">25 🪙</div>
                         </div>
                         <div id="card-c" class="win95-button flex flex-col p-2 text-center cursor-pointer transition-colors">
                             <div class="font-bold text-xs leading-tight"><span class="text-lg">🥥</span> Coco Cost</div>
-                            <p class="text-gray-800 text-[11px] flex-grow flex items-center justify-center">Wins with 🥥 pay nothing, but discount cards by 10 🪙.</p>
-                            <div id="cost-c" class="text-[10px] font-semibold text-black">25 🪙</div>
+                            <p class="text-gray-800 text-xs flex-grow flex items-center justify-center">Wins with 🥥 pay nothing, but discount cards by 10 🪙.</p>
+                            <div id="cost-c" class="text-xs font-semibold text-black">25 🪙</div>
                         </div>
                         <div id="card-d" class="win95-button flex flex-col p-2 text-center cursor-pointer transition-colors">
                             <div class="font-bold text-xs leading-tight"><span class="text-lg">🌶️</span> Spicy Spins</div>
-                            <p class="text-gray-800 text-[11px] flex-grow flex items-center justify-center">🌶️ Wins pay 2x and increase spin multis by 1x.</p>
-                            <div id="cost-d" class="text-[10px] font-semibold text-black">25 🪙</div>
+                            <p class="text-gray-800 text-xs flex-grow flex items-center justify-center">🌶️ Wins pay 2x and increase spin multis by 1x.</p>
+                            <div id="cost-d" class="text-xs font-semibold text-black">25 🪙</div>
                         </div>
                     </div>
                 </div>
@@ -315,7 +315,7 @@
             for (let j = 0; j < 3; j++) {
                 if (reelIndex === reelCount - 1 && j === 1) {
                     const borderWrapper = document.createElement('div');
-                    borderWrapper.className = 'w-full aspect-square flex items-center justify-center border-4 border-double border-black p-1';
+                    borderWrapper.className = 'w-full aspect-square flex items-center justify-center border-4 border-double border-yellow-400 p-1';
                     const emojiElement = document.createElement('div');
                     emojiElement.className = 'text-3xl sm:text-4xl transition-all duration-500 ease-in-out opacity-0 scale-75';
                     emojiElement.textContent = allEmojis[Math.floor(Math.random() * allEmojis.length)];
@@ -589,3 +589,4 @@
     </script>
 </body>
 </html>
+
