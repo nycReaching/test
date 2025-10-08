@@ -95,10 +95,10 @@
                     <!-- Top half for spin buttons -->
                     <div class="h-1/2 w-full flex flex-col items-center justify-center space-y-2">
                         <button id="spin-button-top" class="w-full flex-1 bg-red-500 rounded-2xl flex items-center justify-center text-white text-md font-bold shadow-lg transform active:scale-95 transition-transform">
-                            SPIN
+                            2x
                         </button>
                         <button id="spin-button-bottom" class="w-full flex-1 bg-blue-500 rounded-2xl flex items-center justify-center text-white text-md font-bold shadow-lg transform active:scale-95 transition-transform">
-                            SPIN
+                            1x
                         </button>
                     </div>
                     <!-- Bottom half for emoji column -->
@@ -113,10 +113,16 @@
 
         <!-- Footer: Game controls -->
         <footer class="flex-shrink-0 p-4 bg-gray-900/50 backdrop-blur-sm rounded-t-xl z-10">
-            <div class="flex items-center justify-around space-x-2">
-                <button class="control-button flex-1 h-20 bg-red-500 rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-lg transform active:scale-95 transition-transform">A</button>
-                <button class="control-button flex-1 h-20 bg-blue-500 rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-lg transform active:scale-95 transition-transform">B</button>
-                <div class="flex flex-col space-y-1">
+            <div class="flex items-center justify-between space-x-2">
+                 <!-- Main button area -->
+                <div class="flex-grow flex gap-2">
+                     <button class="control-button flex-1 h-16 bg-red-500 rounded-2xl flex items-center justify-center text-white text-xl font-bold shadow-lg transform active:scale-95 transition-transform">A</button>
+                     <button class="control-button flex-1 h-16 bg-blue-500 rounded-2xl flex items-center justify-center text-white text-xl font-bold shadow-lg transform active:scale-95 transition-transform">B</button>
+                     <button class="control-button flex-1 h-16 bg-yellow-500 rounded-2xl flex items-center justify-center text-white text-xl font-bold shadow-lg transform active:scale-95 transition-transform">C</button>
+                     <button class="control-button flex-1 h-16 bg-indigo-500 rounded-2xl flex items-center justify-center text-white text-xl font-bold shadow-lg transform active:scale-95 transition-transform">D</button>
+                </div>
+                <!-- Side d-pad area -->
+                <div class="flex-shrink-0 flex flex-col space-y-1">
                     <button id="up-button" class="control-button w-16 h-12 bg-green-500 rounded-lg flex items-center justify-center text-white font-bold shadow-lg transform active:scale-95 transition-transform"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg></button>
                     <button id="down-button" class="control-button w-16 h-12 bg-green-500 rounded-lg flex items-center justify-center text-white font-bold shadow-lg transform active:scale-95 transition-transform"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></button>
                 </div>
@@ -198,12 +204,13 @@
             }
         }
 
-        function spinReels() {
-            if (isSpinning || playerCoins < spinCost) return;
+        function spinReels(multiplier) {
+            const currentCost = spinCost * multiplier;
+            if (isSpinning || playerCoins < currentCost) return;
             isSpinning = true;
             
             // Deduct cost and update display
-            playerCoins -= spinCost;
+            playerCoins -= currentCost;
             updateCoinsDisplay();
             
             clearWins();
@@ -240,7 +247,7 @@
             // 5. After the total animation time, check for wins.
             const totalAnimationTime = (reels.length - 1) * revealDelay + transitionDuration;
             setTimeout(() => {
-                const hasWon = checkForWins();
+                const hasWon = checkForWins(multiplier);
                 // If there's no win, allow spinning again immediately.
                 // If there is a win, displayWins() will handle the delay.
                 if (!hasWon) {
@@ -254,7 +261,7 @@
             winLinesContainer.innerHTML = '';
         }
 
-        function checkForWins() {
+        function checkForWins(multiplier) {
             const reels = slotMachine.children;
             if (!reels.length || !reels[0].children.length) return false;
 
@@ -290,18 +297,18 @@
             }
 
             if (winningSequences.length > 0) {
-                displayWins(winningSequences);
+                displayWins(winningSequences, multiplier);
                 return true; // A win occurred
             }
             return false; // No win
         }
         
-        function displayWins(wins) {
+        function displayWins(wins, multiplier) {
             const containerRect = slotMachineContainer.getBoundingClientRect();
             let totalWinnings = 0;
 
             wins.forEach(win => {
-                const winAmount = payouts[win.length] || 0;
+                const winAmount = (payouts[win.length] || 0) * multiplier;
                 totalWinnings += winAmount;
 
                 const firstElement = slotMachine.children[win.startCol].children[win.row];
@@ -386,8 +393,8 @@
             renderEmojis();
         });
         
-        spinButtonTop.addEventListener('click', spinReels);
-        spinButtonBottom.addEventListener('click', spinReels);
+        spinButtonTop.addEventListener('click', () => spinReels(2));
+        spinButtonBottom.addEventListener('click', () => spinReels(1));
 
         // --- Initial Calls on Load ---
         renderEmojis();
