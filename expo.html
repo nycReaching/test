@@ -96,6 +96,42 @@
             transition: background-color 0.1s;
         }
         
+        @keyframes line-flash {
+            0%, 100% { background-color: #00FF00; box-shadow: 0 0 8px #00FF00; }
+            50% { background-color: #FFFF00; box-shadow: 0 0 16px #FFFF00; }
+        }
+
+        @keyframes match-flash {
+            0%, 100% { background-color: #FFFF00; transform: scale(1); }
+            50% { background-color: #FFFFFF; transform: scale(1.1); }
+        }
+
+        @keyframes win-pop {
+            from { transform: translateX(-50%) scale(0); opacity: 0; }
+            to { transform: translateX(-50%) scale(1); opacity: 1; }
+        }
+        
+        @keyframes match-win-pop {
+             from { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+             to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        .win-line.animate {
+            animation: line-flash 0.4s infinite;
+            opacity: 1;
+        }
+        .glow-win.animate {
+            animation: match-flash 0.4s infinite;
+        }
+        .win-amount-text.animate {
+            animation: win-pop 0.3s forwards ease-out;
+            opacity: 1;
+        }
+        .match-win-amount-text.animate {
+            animation: match-win-pop 0.3s forwards ease-out;
+            opacity: 1;
+        }
+
         .match-win-amount-text {
             position: absolute;
             color: white;
@@ -151,25 +187,21 @@
                     </div>
                     <!-- Bottom half with 2x2 grid -->
                     <div class="h-1/2 w-full grid grid-cols-2 grid-rows-2 gap-2">
-                        <div id="card-a" class="win95-button flex flex-col p-2 text-center cursor-pointer transition-colors">
-                            <div class="font-bold text-xs leading-tight"><span class="text-lg">🍇</span> Sour Grapes</div>
-                            <p class="text-gray-800 text-xs flex-grow flex items-center justify-center">3 wins with 🍇 will remove 🍇 permanently.</p>
-                            <div id="cost-a" class="text-xs font-semibold text-black">25 🪙</div>
+                        <div id="card-a" class="win95-button flex flex-col p-2 text-center cursor-pointer transition-colors justify-center">
+                            <p class="text-gray-800 text-lg flex-grow flex items-center justify-center"><span class="text-2xl mr-2">🍇</span>3 wins removes 🍇 permanently.</p>
+                            <div id="cost-a" class="text-lg font-semibold text-black mt-1">25 🪙</div>
                         </div>
-                         <div id="card-b" class="win95-button flex flex-col p-2 text-center cursor-pointer transition-colors">
-                            <div class="font-bold text-xs leading-tight"><span class="text-lg">🎁</span> Big Gift</div>
-                            <p class="text-gray-800 text-xs flex-grow flex items-center justify-center">Wins with 🎁 pay 10x if within the next 20 spins.</p>
-                            <div id="cost-b" class="text-xs font-semibold text-black">25 🪙</div>
+                         <div id="card-b" class="win95-button flex flex-col p-2 text-center cursor-pointer transition-colors justify-center">
+                            <p class="text-gray-800 text-lg flex-grow flex items-center justify-center"><span class="text-2xl mr-2">🎁</span>Wins pay 10x for the next 20 spins.</p>
+                            <div id="cost-b" class="text-lg font-semibold text-black mt-1">25 🪙</div>
                         </div>
-                        <div id="card-c" class="win95-button flex flex-col p-2 text-center cursor-pointer transition-colors">
-                            <div class="font-bold text-xs leading-tight"><span class="text-lg">🥥</span> Coco Cost</div>
-                            <p class="text-gray-800 text-xs flex-grow flex items-center justify-center">Wins with 🥥 pay nothing, but discount cards by 10 🪙.</p>
-                            <div id="cost-c" class="text-xs font-semibold text-black">25 🪙</div>
+                        <div id="card-c" class="win95-button flex flex-col p-2 text-center cursor-pointer transition-colors justify-center">
+                            <p class="text-gray-800 text-lg flex-grow flex items-center justify-center"><span class="text-2xl mr-2">🥥</span>Wins discount cards by 10 🪙.</p>
+                            <div id="cost-c" class="text-lg font-semibold text-black mt-1">25 🪙</div>
                         </div>
-                        <div id="card-d" class="win95-button flex flex-col p-2 text-center cursor-pointer transition-colors">
-                            <div class="font-bold text-xs leading-tight"><span class="text-lg">🌶️</span> Spicy Spins</div>
-                            <p class="text-gray-800 text-xs flex-grow flex items-center justify-center">🌶️ Wins pay 2x and increase spin multis by 1x.</p>
-                            <div id="cost-d" class="text-xs font-semibold text-black">25 🪙</div>
+                        <div id="card-d" class="win95-button flex flex-col p-2 text-center cursor-pointer transition-colors justify-center">
+                            <p class="text-gray-800 text-lg flex-grow flex items-center justify-center"><span class="text-2xl mr-2">🌶️</span>Wins pay 2x & increase spin multi by 1x.</p>
+                            <div id="cost-d" class="text-lg font-semibold text-black mt-1">25 🪙</div>
                         </div>
                     </div>
                 </div>
@@ -182,7 +214,7 @@
                     </div>
                     <!-- Bottom half for emoji column -->
                     <div class="h-1/2 w-full">
-                        <div id="emoji-column" class="win95-inset bg-white h-full w-full flex flex-col items-center justify-around p-1 overflow-hidden">
+                        <div id="emoji-column" class="win95-inset bg-black h-full w-full flex flex-col items-center justify-around p-1 overflow-hidden">
                             <!-- Emojis will be dynamically inserted here -->
                         </div>
                     </div>
@@ -258,9 +290,9 @@
             if (purchasedCards.b) {
                 const cardDescription = cardB.querySelector('p');
                 if (bigGiftSpinsLeft > 0) {
-                    cardDescription.textContent = `🎁 wins are 10x for ${bigGiftSpinsLeft} more spins.`;
+                    cardDescription.innerHTML = `<span class="text-2xl mr-2">🎁</span> Wins are 10x for ${bigGiftSpinsLeft} more spins.`;
                 } else {
-                    cardDescription.textContent = `🎁 bonus has expired.`;
+                    cardDescription.innerHTML = `<span class="text-2xl mr-2">🎁</span> Bonus has expired.`;
                     cardB.classList.add('opacity-50');
                     document.getElementById('cost-b').textContent = 'Expired';
                 }
@@ -295,7 +327,7 @@
                 costElement.classList.add('text-green-600'); 
 
                 if (cardId === 'a') {
-                    cardDescription.innerHTML = `Wins with 🍇: <span id="sour-grapes-counter">0</span>/3`;
+                    cardDescription.innerHTML = `<span class="text-2xl mr-2">🍇</span> Wins: <span id="sour-grapes-counter">0</span>/3`;
                 } else if (cardId === 'b') {
                     bigGiftSpinsLeft = 20;
                     updateBigGiftSpinsDisplay();
@@ -389,7 +421,9 @@
         // --- Win Logic and Visuals ---
         function clearWins() {
             winLinesContainer.innerHTML = '';
-            document.querySelectorAll('.glow-win').forEach(el => el.classList.remove('glow-win'));
+            document.querySelectorAll('.glow-win').forEach(el => {
+                el.classList.remove('glow-win', 'animate');
+            });
         }
 
         function evaluateWins(multiplier) {
@@ -457,7 +491,7 @@
                     selectableEmojis = selectableEmojis.filter(e => e !== '🍇');
                     if (currentIndex >= selectableEmojis.length) { currentIndex = 0; }
                     renderEmojis();
-                    cardA.querySelector('p').textContent = '🍇 has been permanently removed!';
+                    cardA.querySelector('p').innerHTML = '<span class="text-2xl mr-2">🍇</span> has been permanently removed!';
                     cardA.classList.add('opacity-50');
                     document.getElementById('cost-a').textContent = 'Completed';
                 }
@@ -478,7 +512,7 @@
                 finalWinAmount *= 2;
                 spinMultiplierBonus++;
                 updateSpinButtonText();
-                cardD.querySelector('p').textContent = `Spin multi bonus: +${spinMultiplierBonus}x`;
+                cardD.querySelector('p').innerHTML = `<span class="text-2xl mr-2">🌶️</span> Spin multi bonus: +${spinMultiplierBonus}x`;
             }
             return finalWinAmount;
         }
@@ -499,18 +533,17 @@
                     const firstRect = firstElement.getBoundingClientRect();
                     const lastRect = lastElement.getBoundingClientRect();
                     const line = document.createElement('div');
-                    line.className = 'win-line';
+                    line.className = 'win-line animate';
                     line.style.top = `${firstRect.top + firstRect.height / 2 - containerRect.top - 5}px`;
                     line.style.left = `${firstRect.left - containerRect.left}px`;
                     line.style.width = `${lastRect.right - firstRect.left}px`;
                     winLinesContainer.appendChild(line);
                     const winText = document.createElement('div');
-                    winText.className = 'win-amount-text';
+                    winText.className = 'win-amount-text animate';
                     winText.textContent = `+${finalWinAmount}`;
                     winText.style.top = `${firstRect.top + firstRect.height / 2 - containerRect.top - 22}px`;
                     winText.style.left = `${(firstRect.left + lastRect.right) / 2 - containerRect.left}px`;
                     winLinesContainer.appendChild(winText);
-                    setTimeout(() => { line.style.opacity = '1'; winText.style.opacity = '1'; }, 10);
                 }
             });
             if (matchInfo.matched) {
@@ -519,16 +552,15 @@
                 totalWinnings += finalMatchAmount;
                 const targetReelElement = slotMachine.children[reelCount - 1].children[1];
                 const selectorElement = emojiColumn.children[centerVisibleIndex];
-                targetReelElement.classList.add('glow-win');
-                if (selectorElement) selectorElement.classList.add('glow-win');
+                targetReelElement.classList.add('glow-win', 'animate');
+                if (selectorElement) selectorElement.classList.add('glow-win', 'animate');
                 const targetRect = targetReelElement.getBoundingClientRect();
                 const winText = document.createElement('div');
-                winText.className = 'match-win-amount-text';
+                winText.className = 'match-win-amount-text animate';
                 winText.textContent = `+${finalMatchAmount}`;
                 winText.style.top = `${targetRect.top + targetRect.height / 2 - containerRect.top}px`;
                 winText.style.left = `${targetRect.left + targetRect.width / 2 - containerRect.left}px`;
                 winLinesContainer.appendChild(winText);
-                setTimeout(() => { winText.style.opacity = '1'; }, 10);
             }
             if (totalWinnings > 0) {
                 setTimeout(() => {
@@ -550,9 +582,9 @@
                 const emojiIndex = (currentIndex + i) % selectableEmojis.length;
                 const emoji = selectableEmojis[emojiIndex];
                 const emojiElement = document.createElement('div');
-                emojiElement.className = 'text-2xl transition-transform transform p-1';
+                emojiElement.className = 'text-2xl transition-transform transform p-1 flex items-center justify-center aspect-square w-full';
                 if (i === centerVisibleIndex) {
-                    emojiElement.classList.add('border-2', 'border-black', 'bg-yellow-300');
+                    emojiElement.classList.add('border-4', 'border-double', 'border-yellow-400');
                 }
                 emojiElement.textContent = emoji;
                 emojiColumn.appendChild(emojiElement);
@@ -589,4 +621,8 @@
     </script>
 </body>
 </html>
+
+
+
+
 
