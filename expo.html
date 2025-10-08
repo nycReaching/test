@@ -32,32 +32,30 @@
 
         <!-- Header: Displays score, time, and menu -->
         <header class="flex-shrink-0 p-4 bg-gray-900/50 backdrop-blur-sm rounded-b-xl z-10">
-            <div class="flex justify-between items-center">
-                <div class="text-left">
-                    <span class="text-xs text-gray-400 block">SCORE</span>
-                    <span id="score" class="text-2xl font-bold">1,250</span>
-                </div>
-                <div class="text-center">
-                    <span class="text-xs text-gray-400 block">TIME</span>
-                    <span id="time" class="text-2xl font-bold">01:45</span>
-                </div>
-                <div class="text-right">
-                    <button id="pause-button" class="w-12 h-12 bg-indigo-500 rounded-full flex items-center justify-center shadow-lg hover:bg-indigo-600 transition-colors">
-                        <!-- Pause Icon SVG -->
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    </button>
-                </div>
+            <div class="h-12">
+                <!-- Header content removed as requested -->
             </div>
         </header>
 
         <!-- Main Game Area: This will contain the canvas or game content -->
-        <main id="game-area" class="flex-grow relative overflow-hidden">
-            <!-- 
-                A placeholder for the game. You can replace this with a <canvas> element.
-                The canvas should be set to width/height 100% via JS to fit this container.
-            -->
-            <div class="absolute inset-0 flex items-center justify-center p-4">
-                 <p class="text-gray-500 text-center text-lg">Your Game Canvas or Content Goes Here</p>
+        <main id="game-area" class="flex-grow relative overflow-hidden p-4">
+            <div class="flex h-full w-full space-x-2">
+                <!-- 
+                    A placeholder for the game. You can replace this with a <canvas> element.
+                    This area will now take up the remaining space next to the new column.
+                -->
+                <div class="flex-grow relative">
+                    <div class="absolute inset-0 flex items-center justify-center p-4">
+                         <p class="text-gray-500 text-center text-lg">Your Game Canvas or Content Goes Here</p>
+                    </div>
+                </div>
+                <!-- New slim column container -->
+                <div class="flex-shrink-0 flex items-end w-16">
+                    <!-- The visible slim column -->
+                    <div id="emoji-column" class="bg-gray-700/50 rounded-lg h-1/2 w-full flex flex-col items-center justify-around p-1 overflow-hidden">
+                        <!-- Emojis will be dynamically inserted here -->
+                    </div>
+                </div>
             </div>
         </main>
 
@@ -74,11 +72,11 @@
                 </button>
                 <!-- D-pad Style Controls -->
                 <div class="flex flex-col space-y-1">
-                    <button class="control-button w-16 h-12 bg-green-500 rounded-lg flex items-center justify-center text-white font-bold shadow-lg transform active:scale-95 transition-transform">
+                    <button id="up-button" class="control-button w-16 h-12 bg-green-500 rounded-lg flex items-center justify-center text-white font-bold shadow-lg transform active:scale-95 transition-transform">
                         <!-- Up Arrow -->
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
                     </button>
-                    <button class="control-button w-16 h-12 bg-green-500 rounded-lg flex items-center justify-center text-white font-bold shadow-lg transform active:scale-95 transition-transform">
+                    <button id="down-button" class="control-button w-16 h-12 bg-green-500 rounded-lg flex items-center justify-center text-white font-bold shadow-lg transform active:scale-95 transition-transform">
                         <!-- Down Arrow -->
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                     </button>
@@ -86,44 +84,9 @@
             </div>
         </footer>
         
-        <!-- Example of a modal/popup for pause menu or messages -->
-        <div id="modal" class="hidden absolute inset-0 bg-black/70 flex items-center justify-center p-8 z-50">
-            <div class="bg-gray-800 rounded-2xl p-6 text-center w-full max-w-sm border border-gray-700 shadow-2xl">
-                <h2 class="text-3xl font-bold text-indigo-400 mb-2">Game Paused</h2>
-                <p class="text-gray-400 mb-6">Take a break!</p>
-                <button id="resume-button" class="w-full bg-indigo-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-indigo-600 transition-colors">
-                    Resume
-                </button>
-            </div>
-        </div>
-
     </div>
 
     <script>
-        // Simple script to demonstrate interactivity of the UI elements
-        const pauseButton = document.getElementById('pause-button');
-        const resumeButton = document.getElementById('resume-button');
-        const modal = document.getElementById('modal');
-        const scoreElement = document.getElementById('score');
-        
-        // --- Modal Logic ---
-        pauseButton.addEventListener('click', () => {
-            modal.classList.remove('hidden');
-        });
-        
-        resumeButton.addEventListener('click', () => {
-            modal.classList.add('hidden');
-        });
-
-        // --- Example of updating UI ---
-        // This is just for demonstration. You would update this from your game loop.
-        let score = 1250;
-        setInterval(() => {
-            score += Math.floor(Math.random() * 10);
-            // Format number with commas
-            scoreElement.textContent = score.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        }, 1000);
-        
         // --- Prevent common mobile browser issues ---
         // Prevents double tap to zoom
         document.addEventListener('dblclick', function(event) {
@@ -135,8 +98,57 @@
             event.preventDefault();
         }, { passive: false });
 
-        console.log("Mobile game UI loaded successfully.");
+        // --- Emoji Cycling Logic ---
+        const emojiColumn = document.getElementById('emoji-column');
+        const upButton = document.getElementById('up-button');
+        const downButton = document.getElementById('down-button');
+
+        // The full list of 15 emojis
+        const allEmojis = ['😀', '😂', '😍', '🤔', '😎', '😭', '🤯', '🥳', '🚀', '🔥', '👍', '💯', '🤖', '👻', '🍕'];
+        const totalEmojis = allEmojis.length;
+        const visibleEmojiCount = 5;
+        
+        // This index tracks the top-most visible emoji in the list
+        let currentIndex = 0;
+
+        // Function to render the currently visible emojis
+        function renderEmojis() {
+            // Clear any existing emojis
+            emojiColumn.innerHTML = '';
+
+            // Loop to display the next 5 emojis from the current index
+            for (let i = 0; i < visibleEmojiCount; i++) {
+                // Use the modulo operator to wrap around the array seamlessly
+                const emojiIndex = (currentIndex + i) % totalEmojis;
+                const emoji = allEmojis[emojiIndex];
+                
+                const emojiElement = document.createElement('div');
+                emojiElement.className = 'text-2xl transition-transform transform'; // Added for potential animations
+                emojiElement.textContent = emoji;
+                emojiColumn.appendChild(emojiElement);
+            }
+        }
+
+        // Event listener for the up arrow
+        upButton.addEventListener('click', () => {
+            // Move index up, wrapping around if it goes below 0
+            currentIndex = (currentIndex - 1 + totalEmojis) % totalEmojis;
+            renderEmojis();
+        });
+
+        // Event listener for the down arrow
+        downButton.addEventListener('click', () => {
+            // Move index down, wrapping around with modulo
+            currentIndex = (currentIndex + 1) % totalEmojis;
+            renderEmojis();
+        });
+
+        // Initial render to show the first set of emojis on load
+        renderEmojis();
+
+        console.log("Mobile game UI loaded successfully with emoji cycling.");
 
     </script>
 </body>
 </html>
+
