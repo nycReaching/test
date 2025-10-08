@@ -56,28 +56,11 @@
             /* The border should not interfere with game interactions */
             pointer-events: none; 
         }
-
-        /* Keyframe animations for the pulsing glow effects */
-        @keyframes pulse-red {
-          0%, 100% { 
-            transform: translateX(-50%) scale(1); 
-            box-shadow: 0 0 10px 0px rgba(153, 27, 27, 0.5); 
-          }
-          50% { 
-            transform: translateX(-50%) scale(1.05); 
-            box-shadow: 0 0 20px 5px rgba(153, 27, 27, 0.7); 
-          }
-        }
-        .animate-pulse-red {
-            animation: pulse-red 3s infinite cubic-bezier(0.4, 0, 0.6, 1);
-        }
-
-        @keyframes pulse-blue {
-          0%, 100% { transform: scale(1); box-shadow: 0 0 10px 0px rgba(59, 130, 246, 0.5); }
-          50% { transform: scale(1.05); box-shadow: 0 0 20px 5px rgba(59, 130, 246, 0.7); }
-        }
-        .animate-pulse-blue {
-            animation: pulse-blue 3s infinite cubic-bezier(0.4, 0, 0.6, 1);
+        
+        /* New unified style for background patterns on UI elements */
+        .bg-pattern-fantasy {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Cg fill='%239C92AC' fill-opacity='0.1'%3E%3Cpath fill-rule='evenodd' d='M0 0h4v4H0V0zm4 4h4v4H4V4z'/%3E%3C/g%3E%3C/svg%3E");
+            background-blend-mode: overlay;
         }
     </style>
 </head>
@@ -118,11 +101,11 @@
         </svg>
 
         <!-- Equipment Slots -->
-        <div class="absolute bottom-[1.5%] left-[10%] w-16 h-16 bg-blue-950 border-2 border-blue-700 rounded-lg animate-pulse-blue"></div>
-        <div class="absolute bottom-[1.5%] right-[10%] w-16 h-16 bg-blue-950 border-2 border-blue-700 rounded-lg animate-pulse-blue"></div>
+        <div class="absolute bottom-[4%] left-[10%] w-16 h-16 bg-blue-950 border-4 border-blue-600 rounded-lg bg-pattern-fantasy"></div>
+        <div class="absolute bottom-[4%] right-[10%] w-16 h-16 bg-blue-950 border-4 border-blue-600 rounded-lg bg-pattern-fantasy"></div>
 
         <!-- Central Display Circle -->
-        <div class="absolute bottom-[4%] left-1/2 -translate-x-1/2 w-16 h-16 bg-red-950 border-2 border-red-800 rounded-full animate-pulse-red"></div>
+        <div class="absolute bottom-[4%] left-1/2 -translate-x-1/2 w-16 h-16 bg-red-950 border-4 border-red-800 rounded-full bg-pattern-fantasy"></div>
 
     </div>
 
