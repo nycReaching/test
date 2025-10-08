@@ -121,7 +121,7 @@
 
         // --- Game State & Config ---
         const allEmojis = ['🌶️', '🍇', '🥕', '🥥', '🍌', '🍋‍🟩', '🎁'];
-        const selectableEmojis = ['😀', '😂', '😍', '🤔', '😎', '😭', '🤯', '🥳', '🚀', '🔥', '👍', '💯', '🤖', '👻', '🍕'];
+        const selectableEmojis = allEmojis; // Use the same emojis for the selector column
         let currentIndex = 0; // For the emoji selector
         let isSpinning = false; // To prevent multiple spins
         const visibleEmojiCount = 5;
@@ -136,8 +136,15 @@
                 reel.className = 'flex-1 h-full bg-gray-900/50 rounded-lg flex flex-col items-center justify-around shadow-inner overflow-hidden py-1';
                 for (let j = 0; j < 3; j++) {
                     const emojiElement = document.createElement('div');
-                    // Increased the emoji font size for better visibility on all screens
-                    emojiElement.className = 'text-3xl sm:text-4xl';
+                    let classes = 'text-3xl sm:text-4xl transition-all duration-200';
+                    
+                    // Add a border to the middle emoji of the 5th reel
+                    if (i === reelCount - 1 && j === 1) {
+                         // Adjust vertical padding to make the frame taller.
+                         classes += ' px-px py-1 border-2 border-green-400 rounded-md bg-gray-600/50';
+                    }
+
+                    emojiElement.className = classes;
                     const randomIndex = Math.floor(Math.random() * allEmojis.length);
                     emojiElement.textContent = allEmojis[randomIndex];
                     reel.appendChild(emojiElement);
@@ -257,6 +264,8 @@
         function renderEmojis() {
             emojiColumn.innerHTML = '';
             for (let i = 0; i < visibleEmojiCount; i++) {
+                // Ensure the selector can handle fewer emojis than visible slots
+                if (selectableEmojis.length === 0) break;
                 const emojiIndex = (currentIndex + i) % selectableEmojis.length;
                 const emoji = selectableEmojis[emojiIndex];
                 const emojiElement = document.createElement('div');
@@ -272,11 +281,13 @@
 
         // --- Event Listeners ---
         upButton.addEventListener('click', () => {
+            if (selectableEmojis.length === 0) return;
             currentIndex = (currentIndex - 1 + selectableEmojis.length) % selectableEmojis.length;
             renderEmojis();
         });
 
         downButton.addEventListener('click', () => {
+            if (selectableEmojis.length === 0) return;
             currentIndex = (currentIndex + 1) % selectableEmojis.length;
             renderEmojis();
         });
@@ -288,7 +299,7 @@
         renderEmojis();
         initializeSlots();
 
-        console.log("Mobile game UI loaded with updated win detection logic.");
+        console.log("Mobile game UI loaded with taller target frame.");
     </script>
 </body>
 </html>
