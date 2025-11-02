@@ -127,7 +127,10 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            /* Changed to stack items from the top and distribute space */
+            justify-content: flex-start;
+            gap: var(--spacing-medium);
+            padding-top: var(--spacing-medium);
         }
 
         #footer-bar {
@@ -229,16 +232,47 @@
             justify-content: space-between;
             align-items: center;
             width: 100%;
-            max-width: 200px; /* (tile-size * 3) + (gap * 2) = 180 + 16 = 196. Let's go with 200 */
-            margin-top: var(--spacing-large);
+            max-width: 220px; /* (tile-size * 3) + (gap * 2) = 180 + 16. A bit wider */
+            /* This makes the container fill the remaining vertical space */
+            flex-grow: 1;
+            padding-bottom: var(--spacing-small); /* Give it a little room at the bottom */
         }
 
         .icon-image {
-            width: 50px;
-            height: 50px;
+            /* Make the image fill most of the container's height */
+            height: 90%;
+            width: auto;
             object-fit: contain;
             /* Just in case the images are bright */
             filter: brightness(0.9);
+            cursor: pointer;
+            transition: transform 0.1s ease-out;
+        }
+
+        /* Quick tap feedback */
+        .icon-image:active {
+            transform: scale(0.95);
+        }
+
+        /* Animation class to be added via JS */
+        .icon-image.is-animating {
+            animation: tap-pulse 0.3s ease-out;
+        }
+
+        /* Strong tap animation */
+        @keyframes tap-pulse {
+            0% {
+                transform: scale(1);
+                filter: brightness(0.9);
+            }
+            50% {
+                transform: scale(1.15);
+                filter: brightness(1.5);
+            }
+            100% {
+                transform: scale(1);
+                filter: brightness(0.9);
+            }
         }
 
         /* Round action button in footer */
@@ -323,13 +357,15 @@
                     src="holosphere.png" 
                     alt="Holosphere Icon" 
                     class="icon-image"
-                    onerror="this.onerror=null;this.src='https_placehold.co/50x50/1f4068/f6f6f6?text=Holo';"
+                    id="holosphere-icon"
+                    onerror="this.onerror=null;this.src='https_placehold.co/120x120/1f4068/f6f6f6?text=Holo';"
                 >
                 <img 
                     src="dwennimmen.png" 
                     alt="Dwennimmen Icon" 
                     class="icon-image"
-                    onerror="this.onerror=null;this.src='https_placehold.co/50x50/1f4068/f6f6f6?text=Dwen';"
+                    id="dwennimmen-icon"
+                    onerror="this.onerror=null;this.src='https_placehold.co/120x120/1f4068/f6f6f6?text=Dwen';"
                 >
             </div>
 
@@ -378,6 +414,8 @@
             const goldStatus = document.getElementById('status-gold');
             const expStatus = document.getElementById('status-exp');
             const gemsStatus = document.getElementById('status-gems');
+            const holoIcon = document.getElementById('holosphere-icon');
+            const dwenIcon = document.getElementById('dwennimmen-icon');
 
             // --- State ---
             // AI: Define your game state variables here
@@ -424,7 +462,6 @@
                 }
             }
 
-
             // --- Game Logic ---
             // AI: Add your game logic and event listeners here.
 
@@ -433,10 +470,41 @@
             updateStatus(expStatus, exp);
             updateStatus(gemsStatus, gems);
 
+            // --- Icon Tap Animation Logic ---
+
+            /**
+             * Handles the tap animation for icons.
+             * @param {Event} event - The click/tap event.
+             */
+            function handleIconTap(event) {
+                const icon = event.currentTarget;
+                // Add the animation class.
+                // We check if it's already animating to prevent re-triggering issues.
+                if (!icon.classList.contains('is-animating')) {
+                    icon.classList.add('is-animating');
+                }
+            }
+
+            /**
+             * Removes the animation class when the animation finishes
+             * so it can be played again.
+             * @param {AnimationEvent} event - The animationend event.
+             */
+            function handleAnimationEnd(event) {
+                event.currentTarget.classList.remove('is-animating');
+            }
+
+            // Attach listeners to the icons
+            holoIcon.addEventListener('click', handleIconTap);
+            dwenIcon.addEventListener('click', handleIconTap);
+
+            // Attach animation end listeners
+            holoIcon.addEventListener('animationend', handleAnimationEnd);
+            dwenIcon.addEventListener('animationend', handleAnimationEnd);
+
         });
 
     </script>
 </body>
 </html>
-
 
