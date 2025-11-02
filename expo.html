@@ -1,510 +1,147 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <!-- CRITICAL: This meta tag ensures proper scaling and locks the viewport for a mobile game. -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-
-    <title>Game UI Layout</title>
-
-    <!-- Load a clean, readable font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
-
-    <style>
-        /*
-        ==========================================================================
-        AI WORKFLOW INSTRUCTIONS: READ THIS FIRST
-        ==========================================================================
-
-        1.  DO NOT add new <style> blocks or CSS files.
-        2.  DO NOT use inline styles (e.g., style="...").
-        3.  MODIFY CSS VARIABLES in :root to change colors, fonts, and sizes.
-        4.  ADD new, well-named CSS classes below for new components.
-        5.  USE THE "is-visible" CLASS (or opacity) to show/hide elements.
-            DO NOT add/remove elements or use `display: none`. This prevents layout shifts.
-        6.  RESPECT all `overflow: hidden` and `text-overflow: ellipsis` properties.
-            They are intentional to prevent resizing and scrollbars.
-
-        ==========================================================================
-        */
-
-        /*
-        --------------------------------------------------
-        Section 1: SINGLE SOURCE OF TRUTH (CSS Variables)
-        AI: Change these values to theme the game.
-        --------------------------------------------------
-        */
-        :root {
-            /* Colors */
-            --color-bg: #1a1a2e;        /* Dark blue background */
-            --color-surface: #162447; /* Slightly lighter surface */
-            --color-primary: #1f4068;   /* Primary button/UI color */
-            --color-accent: #e43f5a;    /* Accent color for important things */
-            --color-text-primary: #f6f6f6; /* Main text */
-            --color-text-secondary: #a0a0a0; /* Dimmer text */
-
-            /* Typography */
-            --font-family-main: 'Inter', sans-serif;
-            --font-size-small: 0.8rem;
-            --font-size-medium: 1rem;
-            --font-size-large: 1.2rem;
-
-            /* Sizing & Spacing */
-            --spacing-small: 8px;
-            --spacing-medium: 16px;
-            --spacing-large: 24px;
-
-            /* Fixed Layout Sizes */
-            --header-height: 60px;
-            --footer-height: 150px;
-            --tile-size: 60px; /* For a game board */
-            --action-button-size: 80px;
-        }
-
-        /*
-        --------------------------------------------------
-        Section 2: ROBUST GLOBAL GUARDRAILS
-        AI: Do not modify these unless instructed.
-        --------------------------------------------------
-        */
-        * {
-            box-sizing: border-box; /* Makes layout math predictable */
-            -webkit-font-smoothing: antialiased; /* Makes text look better */
-            -webkit-tap-highlight-color: transparent; /* Removes tap highlight on mobile */
-        }
-
-        html, body {
-            width: 100%;
-            height: 100dvh; /* Dynamic Viewport Height: Fills the mobile screen */
-            margin: 0;
-            padding: 0;
-
-            /* CRITICAL: This is the magic. It BANS all browser-level scrollbars
-               and prevents content from pushing the layout. */
-            overflow: hidden;
-
-            background-color: var(--color-bg);
-            color: var(--color-text-primary);
-            font-family: var(--font-family-main);
-        }
-
-        /*
-        --------------------------------------------------
-        Section 3: MAIN GAME LAYOUT
-        This creates the fixed Header, main Game Area, and Footer.
-        --------------------------------------------------
-        */
-        #game-container {
-            display: flex;
-            flex-direction: column; /* Stacks header, main, footer vertically */
-            width: 100%;
-            height: 100%; /* Fills the body */
-        }
-
-        #header-bar {
-            /* CRITICAL: flex-shrink: 0 prevents this from being crushed
-               if content in #main-content grows. */
-            flex-shrink: 0;
-            height: var(--header-height);
-            padding: 0 var(--spacing-medium);
-            background-color: var(--color-surface);
-            border-bottom: 2px solid var(--color-primary);
-
-            /* Use flex to align header items */
-            display: flex;
-            align-items: center;
-            justify-content: space-around; /* Evenly space the counters */
-        }
-
-        #main-content {
-            /* CRITICAL: flex-grow: 1 tells this element to fill ALL
-               available space between the header and footer. */
-            flex-grow: 1;
-            overflow: hidden; /* No scrollbars on the main area */
-            padding: var(--spacing-medium);
-
-            /* Center the game board/content */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            /* Changed to stack items from the top and distribute space */
-            justify-content: flex-start;
-            gap: var(--spacing-medium);
-            padding-top: var(--spacing-medium);
-        }
-
-        #footer-bar {
-            flex-shrink: 0; /* Prevents this from being crushed */
-            height: var(--footer-height);
-            background-color: var(--color-surface);
-            border-top: 2px solid var(--color-primary);
-            padding: var(--spacing-medium);
-
-            /* Align items horizontally */
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        /*
-        --------------------------------------------------
-        Section 4: COMPONENT STYLES (The "Fixes")
-        AI: Add new classes here.
-        --------------------------------------------------
-        */
-
-        /* Style for the new counters in the header */
-        .counter {
-            display: flex;
-            align-items: center;
-            font-size: var(--font-size-large);
-            font-weight: 700;
-        }
-
-        .counter span {
-            margin-left: var(--spacing-small);
-            min-width: 50px; /* Give it space */
-        }
-
-        /* * FIX for: "Text forcing new lines"
-         * AI: Add this class to any single-line text element.
-         */
-        .status-text {
-            white-space: nowrap;     /* 1. Prevent wrapping */
-            overflow: hidden;        /* 2. Hide overflow */
-            text-overflow: ellipsis; /* 3. Add "..." */
-            width: 100%;             /* 4. Must have a width to work */
-            font-size: var(--font-size-small);
-            color: var(--color-text-secondary);
-        }
-
-        /* * FIX for: "Tiles/icons causing layout shifts"
-         * AI: Add/remove the "is-visible" class in JS to show/hide.
-         */
-        #game-board {
-            display: grid;
-            /* Creates a 3-column grid */
-            grid-template-columns: repeat(3, var(--tile-size));
-            gap: var(--spacing-small);
-        }
-
-        /* 2x2 grid in the footer */
-        .action-grid {
-            display: grid;
-            grid-template-columns: repeat(2, var(--tile-size));
-            gap: var(--spacing-small);
-        }
-
-        .game-tile {
-            width: var(--tile-size);
-            height: var(--tile-size);
-            background-color: var(--color-primary);
-            border-radius: var(--spacing-small);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: var(--font-size-large);
-            cursor: pointer;
-
-            /* Smooth transition for appearing/disappearing */
-            transition: all 0.2s ease;
-        }
-        
-        /* Removed :hover rule for mobile */
-
-        .game-tile .icon {
-            /* CRITICAL: This is the fix. The icon is invisible but
-               still takes up its full space, preventing all layout shift. */
-            visibility: hidden;
-            opacity: 0;
-            transition: all 0.2s ease;
-        }
-
-        .game-tile .icon.is-visible {
-            visibility: visible;
-            opacity: 1;
-        }
-
-        /* New styles for icon images below the grid */
-        .icon-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            max-width: 220px; /* (tile-size * 3) + (gap * 2) = 180 + 16. A bit wider */
-            /* This makes the container fill the remaining vertical space */
-            flex-grow: 1;
-            padding-bottom: var(--spacing-small); /* Give it a little room at the bottom */
-        }
-
-        .icon-image {
-            /* Make the image fill most of the container's height */
-            height: 90%;
-            width: auto;
-            object-fit: contain;
-            /* Just in case the images are bright */
-            filter: brightness(0.9);
-            cursor: pointer;
-            transition: transform 0.1s ease-out;
-        }
-
-        /* Quick tap feedback */
-        .icon-image:active {
-            transform: scale(0.95);
-        }
-
-        /* Animation class to be added via JS */
-        .icon-image.is-animating {
-            animation: tap-pulse 0.3s ease-out;
-        }
-
-        /* Strong tap animation */
-        @keyframes tap-pulse {
-            0% {
-                transform: scale(1);
-                filter: brightness(0.9);
-            }
-            50% {
-                transform: scale(1.15);
-                filter: brightness(1.5);
-            }
-            100% {
-                transform: scale(1);
-                filter: brightness(0.9);
-            }
-        }
-
-        /* Round action button in footer */
-        .action-button {
-            width: var(--action-button-size);
-            height: var(--action-button-size);
-            border-radius: 50%; /* Makes it round */
-            background-color: var(--color-accent);
-            border: none;
-            color: var(--color-text-primary);
-            font-size: 2.5rem; /* Larger icon/text */
-            font-weight: 700;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        }
-
-        /* Removed :hover rule for mobile */
-
-        .action-button:active {
-            transform: scale(0.98);
-        }
-
-
-    </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emoji Factory Tycoon</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+      background: #f7f6fc;
+      color: #3d2c51;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    header {
+      width: 100vw;
+      padding: 1rem 2vw;
+      background: #ebe4fa;
+      box-shadow: 0 2px 6px #aaa2f722;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .coins {
+      font-size: 1.25rem;
+    }
+    .factory-grid {
+      margin: 1rem auto;
+      display: grid;
+      grid-template-columns: repeat(4, 60px);
+      grid-template-rows: repeat(4, 60px);
+      gap: 10px;
+      background: #fff3;
+      padding: 10px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px #0001;
+    }
+    .factory-cell {
+      background: #fff;
+      border-radius: 8px;
+      border: 2px dashed #cbc2f7;
+      box-shadow: 0 1px 3px #0001;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .factory-cell.active {
+      background: #ffefa8;
+    }
+    .sidebar {
+      margin-top: 1rem;
+      width: 90vw;
+      max-width: 420px;
+      display: flex;
+      justify-content: space-between;
+      background: #ebe4fa;
+      border-radius: 8px;
+      padding: 10px;
+    }
+    .machine-icon {
+      font-size: 2rem;
+      margin: 0 6px;
+      padding: 5px;
+      background: #fff;
+      border-radius: 6px;
+      border: 1px solid #c7bbe3;
+      cursor: grab;
+      transition: transform 0.1s;
+    }
+    .machine-icon:active {
+      transform: scale(0.87);
+      background: #ffefa8;
+    }
+    .log {
+      margin-top: 14px;
+      width: 88vw;
+      max-width: 400px;
+      min-height: 40px;
+      border-radius: 6px;
+      background: #fff6;
+      color: #644a78;
+      font-size: 0.98rem;
+      padding: 5px 10px;
+      box-shadow: 0 0.5px 3px #0001;
+      overflow-x: auto;
+    }
+    @media (max-width: 600px) {
+      .factory-grid {
+        grid-template-columns: repeat(4, 13vw);
+        grid-template-rows: repeat(4, 13vw);
+      }
+      .sidebar, .log {
+        font-size: 1.1rem;
+      }
+    }
+  </style>
 </head>
 <body>
+  <header>
+    <span>🧰 Emoji Factory Tycoon</span>
+    <span class="coins">💰 2,350</span>
+  </header>
+  
+  <div class="factory-grid">
+    <div class="factory-cell"></div>
+    <div class="factory-cell"></div>
+    <div class="factory-cell"></div>
+    <div class="factory-cell"></div>
 
-    <!--
-    ==========================================================================
-    AI WORKFLOW INSTRUCTIONS: HTML STRUCTURE
-    ==========================================================================
+    <div class="factory-cell"></div>
+    <div class="factory-cell active">⚡</div>
+    <div class="factory-cell"></div>
+    <div class="factory-cell"></div>
 
-    1.  This is your "blank" UI. Add new elements inside the existing
-        #header-bar, #main-content, and #footer-bar sections.
-    2.  Give all new interactive elements (buttons, tiles) a clear `id` or `class`
-        so you can select them in JavaScript.
+    <div class="factory-cell"></div>
+    <div class="factory-cell"></div>
+    <div class="factory-cell">🌵</div>
+    <div class="factory-cell"></div>
 
-    ==========================================================================
-    -->
+    <div class="factory-cell"></div>
+    <div class="factory-cell"></div>
+    <div class="factory-cell"></div>
+    <div class="factory-cell"></div>
+  </div>
+  
+  <div class="sidebar">
+    <div class="machine-icon" draggable="true">🍦</div>
+    <div class="machine-icon" draggable="true">🌵</div>
+    <div class="machine-icon" draggable="true">⚡</div>
+    <div class="machine-icon" draggable="true">💎</div>
+    <div class="machine-icon" draggable="true">🔥</div>
+  </div>
+  
+  <div class="log">
+    🌵 + ⚡ combo! 🌪️ Turbo Cactus activated.<br>
+    Earned 45 coins from 🍦 machine.
+  </div>
 
-    <div id="game-container">
+  <!-- (OPTIONAL: Add JS for drag-n-drop effects and interaction highlights) -->
 
-        <!-- HEADER: For scores, currency, stats, etc. -->
-        <header id="header-bar">
-            <!-- New 3-counter layout -->
-            <div class="counter">
-                <span>💰</span>
-                <span id="status-gold">0</span>
-            </div>
-            <div class="counter">
-                <span>✨</span>
-                <span id="status-exp">0</span>
-            </div>
-            <div class="counter">
-                <span>💎</span>
-                <span id="status-gems">0</span>
-            </div>
-        </header>
-
-        <!-- MAIN CONTENT: For game boards, character portraits, main interactives -->
-        <main id="main-content">
-
-            <!-- New 3x2 grid container -->
-            <div id="game-board">
-                <!-- Row 1 -->
-                <div class="game-tile"><span class="icon"></span></div>
-                <div class="game-tile"><span class="icon"></span></div>
-                <div class="game-tile"><span class="icon"></span></div>
-                <!-- Row 2 -->
-                <div class="game-tile"><span class="icon"></span></div>
-                <div class="game-tile"><span class="icon"></span></div>
-                <div class="game-tile"><span class="icon"></span></div>
-            </div>
-
-            <!-- New icon images -->
-            <div class="icon-container">
-                <img 
-                    src="holosphere.png" 
-                    alt="Holosphere Icon" 
-                    class="icon-image"
-                    id="holosphere-icon"
-                    onerror="this.onerror=null;this.src='https_placehold.co/120x120/1f4068/f6f6f6?text=Holo';"
-                >
-                <img 
-                    src="dwennimmen.png" 
-                    alt="Dwennimmen Icon" 
-                    class="icon-image"
-                    id="dwennimmen-icon"
-                    onerror="this.onerror=null;this.src='https_placehold.co/120x120/1f4068/f6f6f6?text=Dwen';"
-                >
-            </div>
-
-        </main>
-
-        <!-- FOOTER: For message logs, action buttons, menus, etc. -->
-        <footer id="footer-bar">
-
-            <!-- New 2x2 grid on the left -->
-            <div class="action-grid">
-                <div class="game-tile"><span class="icon"></span></div>
-                <div class="game-tile"><span class="icon"></span></div>
-                <div class="game-tile"><span class="icon"></span></div>
-                <div class="game-tile"><span class="icon"></span></div>
-            </div>
-
-            <!-- New round button on the right -->
-            <button class="action-button" id="action-button">
-                ⚔️
-            </button>
-
-        </footer>
-
-    </div>
-
-    <script>
-        /*
-        ==========================================================================
-        AI WORKFLOW INSTRUCTIONS: JAVASCRIPT
-        ==========================================================================
-
-        1.  Write all game logic inside this <script> tag.
-        2.  DO NOT manipulate styles directly (e.g., el.style.color = "red").
-        3.  MANIPULATE state by adding/removing CSS classes (e.g., el.classList.add("is-visible")).
-        4.  Use the provided helper functions below as a starting point.
-        5.  Wrap your initialization code in the "DOMContentLoaded" listener.
-
-        ==========================================================================
-        */
-
-        // Wait for the HTML to be fully loaded before running game logic
-        document.addEventListener('DOMContentLoaded', () => {
-
-            // --- Selectors ---
-            // AI: Select your elements here
-            const goldStatus = document.getElementById('status-gold');
-            const expStatus = document.getElementById('status-exp');
-            const gemsStatus = document.getElementById('status-gems');
-            const holoIcon = document.getElementById('holosphere-icon');
-            const dwenIcon = document.getElementById('dwennimmen-icon');
-
-            // --- State ---
-            // AI: Define your game state variables here
-            let gold = 0;
-            let exp = 0;
-            let gems = 0;
-
-            // --- Helper Functions ---
-
-            /**
-             * AI: Use this function to update single-line status text.
-             * @param {HTMLElement} element - The span element to update.
-             * @param {string} text - The new text to display.
-             */
-            function updateStatus(element, text) {
-                if (element) {
-                    element.textContent = text;
-                }
-            }
-
-
-            /**
-             * AI: Use this to show/hide icons on tiles to prevent layout shifts.
-             * @param {HTMLElement} tileElement - The .game-tile element.
-             * @param {string} [iconEmoji] - Optional. The emoji to set.
-             * @param {boolean} [show] - Optional. Force show/hide.
-             */
-            function toggleTileIcon(tileElement, iconEmoji, show) {
-                const iconSpan = tileElement.querySelector('.icon');
-                if (!iconSpan) return;
-
-                // Set the icon if provided
-                if (iconEmoji) {
-                    iconSpan.textContent = iconEmoji;
-                }
-
-                // Toggle visibility
-                if (show === true) {
-                    iconSpan.classList.add('is-visible');
-                } else if (show === false) {
-                    iconSpan.classList.remove('is-visible');
-                } else {
-                    iconSpan.classList.toggle('is-visible');
-                }
-            }
-
-            // --- Game Logic ---
-            // AI: Add your game logic and event listeners here.
-
-            // Example: Initialize status counters
-            updateStatus(goldStatus, gold);
-            updateStatus(expStatus, exp);
-            updateStatus(gemsStatus, gems);
-
-            // --- Icon Tap Animation Logic ---
-
-            /**
-             * Handles the tap animation for icons.
-             * @param {Event} event - The click/tap event.
-             */
-            function handleIconTap(event) {
-                const icon = event.currentTarget;
-                // Add the animation class.
-                // We check if it's already animating to prevent re-triggering issues.
-                if (!icon.classList.contains('is-animating')) {
-                    icon.classList.add('is-animating');
-                }
-            }
-
-            /**
-             * Removes the animation class when the animation finishes
-             * so it can be played again.
-             * @param {AnimationEvent} event - The animationend event.
-             */
-            function handleAnimationEnd(event) {
-                event.currentTarget.classList.remove('is-animating');
-            }
-
-            // Attach listeners to the icons
-            holoIcon.addEventListener('click', handleIconTap);
-            dwenIcon.addEventListener('click', handleIconTap);
-
-            // Attach animation end listeners
-            holoIcon.addEventListener('animationend', handleAnimationEnd);
-            dwenIcon.addEventListener('animationend', handleAnimationEnd);
-
-        });
-
-    </script>
 </body>
 </html>
-
