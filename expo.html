@@ -5,7 +5,7 @@
     <!-- CRITICAL: This meta tag ensures proper scaling and locks the viewport for a mobile game. -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 
-    <title>Blank Game UI</title>
+    <title>Game UI Layout</title>
 
     <!-- Load a clean, readable font -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
@@ -58,6 +58,7 @@
             --header-height: 60px;
             --footer-height: 150px;
             --tile-size: 60px; /* For a game board */
+            --action-button-size: 80px;
         }
 
         /*
@@ -111,7 +112,7 @@
             /* Use flex to align header items */
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: space-around; /* Evenly space the counters */
         }
 
         #main-content {
@@ -135,8 +136,11 @@
             border-top: 2px solid var(--color-primary);
             padding: var(--spacing-medium);
 
+            /* Align items horizontally */
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
         }
 
         /*
@@ -145,6 +149,19 @@
         AI: Add new classes here.
         --------------------------------------------------
         */
+
+        /* Style for the new counters in the header */
+        .counter {
+            display: flex;
+            align-items: center;
+            font-size: var(--font-size-large);
+            font-weight: 700;
+        }
+
+        .counter span {
+            margin-left: var(--spacing-small);
+            min-width: 50px; /* Give it space */
+        }
 
         /* * FIX for: "Text forcing new lines"
          * AI: Add this class to any single-line text element.
@@ -163,8 +180,15 @@
          */
         #game-board {
             display: grid;
-            /* Creates a 4-column grid, each column 1fr (fraction) of the space */
-            grid-template-columns: repeat(4, var(--tile-size));
+            /* Creates a 3-column grid */
+            grid-template-columns: repeat(3, var(--tile-size));
+            gap: var(--spacing-small);
+        }
+
+        /* 2x2 grid in the footer */
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(2, var(--tile-size));
             gap: var(--spacing-small);
         }
 
@@ -177,9 +201,14 @@
             align-items: center;
             justify-content: center;
             font-size: var(--font-size-large);
+            cursor: pointer;
 
             /* Smooth transition for appearing/disappearing */
             transition: all 0.2s ease;
+        }
+        
+        .game-tile:hover {
+             background-color: var(--color-accent);
         }
 
         .game-tile .icon {
@@ -195,33 +224,33 @@
             opacity: 1;
         }
 
-
-        /* * FIX for: "Text window resizing"
-         * AI: Use the addLog() function to add text here.
-         */
-        #message-log {
-            flex-grow: 1; /* Fill the footer space */
-            background: var(--color-bg);
-            border-radius: var(--spacing-small);
-            padding: var(--spacing-small);
-
-            /* CRITICAL: Hide text that overflows.
-               The JS function will manage removing old messages. */
-            overflow: hidden;
-
+        /* Round action button in footer */
+        .action-button {
+            width: var(--action-button-size);
+            height: var(--action-button-size);
+            border-radius: 50%; /* Makes it round */
+            background-color: var(--color-accent);
+            border: none;
+            color: var(--color-text-primary);
+            font-size: 2.5rem; /* Larger icon/text */
+            font-weight: 700;
+            cursor: pointer;
             display: flex;
-            flex-direction: column-reverse; /* New messages appear at bottom */
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
 
-        #message-log p {
-            margin: 0;
-            font-size: var(--font-size-small);
-            color: var(--color-text-secondary);
+        .action-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.4);
         }
 
-        #message-log p:first-child {
-            color: var(--color-text-primary); /* Newest message is brighter */
+        .action-button:active {
+            transform: scale(0.98);
         }
+
 
     </style>
 </head>
@@ -244,22 +273,34 @@
 
         <!-- HEADER: For scores, currency, stats, etc. -->
         <header id="header-bar">
-            <!-- AI: These are the empty status sections from the template -->
-            <div style="width: 100px;">
-                <div class="status-text" id="status-gold"></div>
-                <div class="status-text" id="status-power"></div>
+            <!-- New 3-counter layout -->
+            <div class="counter">
+                <span>💰</span>
+                <span id="status-gold">0</span>
             </div>
-            <div style="width: 200px; text-align: right;">
-                <div class="status-text" id="status-location"></div>
+            <div class="counter">
+                <span>✨</span>
+                <span id="status-exp">0</span>
+            </div>
+            <div class="counter">
+                <span>💎</span>
+                <span id="status-gems">0</span>
             </div>
         </header>
 
         <!-- MAIN CONTENT: For game boards, character portraits, main interactives -->
         <main id="main-content">
 
-            <!-- AI: This is the empty 4x4 grid container -->
+            <!-- New 3x2 grid container -->
             <div id="game-board">
-                <!-- AI: Add .game-tile elements here -->
+                <!-- Row 1 -->
+                <div class="game-tile"><span class="icon"></span></div>
+                <div class="game-tile"><span class="icon"></span></div>
+                <div class="game-tile"><span class="icon"></span></div>
+                <!-- Row 2 -->
+                <div class="game-tile"><span class="icon"></span></div>
+                <div class="game-tile"><span class="icon"></span></div>
+                <div class="game-tile"><span class="icon"></span></div>
             </div>
 
         </main>
@@ -267,10 +308,18 @@
         <!-- FOOTER: For message logs, action buttons, menus, etc. -->
         <footer id="footer-bar">
 
-            <!-- AI: This is the empty message log -->
-            <div id="message-log">
-                <!-- AI: Messages will be added here by the addLog() function -->
+            <!-- New 2x2 grid on the left -->
+            <div class="action-grid">
+                <div class="game-tile"><span class="icon"></span></div>
+                <div class="game-tile"><span class="icon"></span></div>
+                <div class="game-tile"><span class="icon"></span></div>
+                <div class="game-tile"><span class="icon"></span></div>
             </div>
+
+            <!-- New round button on the right -->
+            <button class="action-button" id="action-button">
+                ⚔️
+            </button>
 
         </footer>
 
@@ -297,17 +346,20 @@
             // --- Selectors ---
             // AI: Select your elements here
             const goldStatus = document.getElementById('status-gold');
-            const logWindow = document.getElementById('message-log');
+            const expStatus = document.getElementById('status-exp');
+            const gemsStatus = document.getElementById('status-gems');
 
             // --- State ---
             // AI: Define your game state variables here
             let gold = 0;
-            const MAX_LOG_MESSAGES = 10;
+            let exp = 0;
+            let gems = 0;
 
             // --- Helper Functions ---
 
             /**
              * AI: Use this function to update single-line status text.
+             * @param {HTMLElement} element - The span element to update.
              * @param {string} text - The new text to display.
              */
             function updateStatus(element, text) {
@@ -316,23 +368,6 @@
                 }
             }
 
-            /**
-             * AI: Use this to add messages to the log. It automatically
-             * handles overflow by removing old messages.
-             * @param {string} message - The message string to add.
-             */
-            function addLog(message) {
-                const newLog = document.createElement('p');
-                newLog.textContent = message;
-
-                // Add the new message to the top (which is visually the bottom)
-                logWindow.prepend(newLog);
-
-                // Remove old messages if log is full
-                if (logWindow.children.length > MAX_LOG_MESSAGES) {
-                    logWindow.lastChild.remove();
-                }
-            }
 
             /**
              * AI: Use this to show/hide icons on tiles to prevent layout shifts.
@@ -363,10 +398,10 @@
             // --- Game Logic ---
             // AI: Add your game logic and event listeners here.
 
-            // Example:
-            // updateStatus(goldStatus, "Gold: 10");
-            // addLog("Welcome to your game!");
-
+            // Example: Initialize status counters
+            updateStatus(goldStatus, gold);
+            updateStatus(expStatus, exp);
+            updateStatus(gemsStatus, gems);
 
         });
 
