@@ -128,6 +128,37 @@
         align-items: center;
         gap: 0.5rem;
       }
+      .slot-frame {
+        position: relative;
+        border-radius: 0.75rem;
+        background: radial-gradient(circle at 10% 10%, rgba(249, 115, 22, 0.6), rgba(15, 23, 42, 0.05) 40%, rgba(15, 23, 42, 0) 70%);
+        box-shadow: inset 0 0 0 1px rgba(249, 115, 22, 0.35);
+        padding: 0.3rem;
+      }
+      .slot-row {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.35rem;
+        align-items: center;
+      }
+      .slot-cell {
+        height: 82px;
+        background: radial-gradient(circle, rgba(15, 23, 42, 0.35), rgba(15, 23, 42, 0.05));
+        border-radius: 0.6rem;
+        display: grid;
+        place-items: center;
+        font-size: 2.1rem;
+        line-height: 1;
+        transform-origin: center;
+      }
+      .slot-cell.spin-pop {
+        animation: slot-pop 180ms ease-out;
+      }
+      @keyframes slot-pop {
+        0% { transform: scale(1) translateY(0); filter: drop-shadow(0 0 0 rgba(249, 115, 22, 0)); }
+        40% { transform: scale(1.1) translateY(-4px); filter: drop-shadow(0 2px 6px rgba(249, 115, 22, 0.4)); }
+        100% { transform: scale(1) translateY(0); filter: none; }
+      }
       .hp-bar {
         flex: 1 1 auto;
         height: 10px;
@@ -139,22 +170,7 @@
         height: 100%;
         background: #f97316;
         width: 100%;
-      }
-      .slot-row {
-        flex: 1 1 auto;
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 0.35rem;
-        align-items: center;
-      }
-      .slot-cell {
-        height: 85px;
-        background: rgba(15, 23, 42, 0.35);
-        border-radius: 0.6rem;
-        display: grid;
-        place-items: center;
-        font-size: 2.1rem;
-        line-height: 1;
+        transition: width 120ms ease-out;
       }
       .meta-line { font-size: 0.6rem; opacity: 0.7; }
       /* inventory chips */
@@ -171,19 +187,19 @@
         font-size: 0.6rem;
       }
       .pill { font-size: 0.65rem; padding: 0.05rem 0.4rem; background: rgba(249, 115, 22, 0.15); border-radius: 999px; }
+      .char-card {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(15, 23, 42, 0.35);
+        border-radius: 0.65rem;
+        padding: 0.35rem 0.55rem;
+      }
+      .char-emoji { font-size: 1.5rem; }
+      .char-meta { font-size: 0.6rem; line-height: 1.15; }
     </style>
   </head>
   <body>
-    <!--
-      WORKFLOW (keep):
-      1. Do NOT change outer layout wrappers.
-      2. New UI goes into GAME-VIEW and PANEL-CONTENT only.
-      3. No page scroll. Inner elements should scroll.
-      4. Keep max width at 480px.
-      5. Extend Game.* in JS, do not rewrite Game.init().
-      6. Use visibility/opacity for show/hide, not display:none.
-      7. Text should truncate. If it wraps unexpectedly, revise inside the panel.
-    -->
     <div id="app">
       <header class="top-bar">
         <div class="title text-ellipsis">Slot Roguelike RPG</div>
@@ -201,10 +217,12 @@
               </div>
               <div class="pill" id="floor-pill">F1</div>
             </div>
-            <div class="slot-row" id="slot-row">
-              <div class="slot-cell" data-reel="0">❔</div>
-              <div class="slot-cell" data-reel="1">❔</div>
-              <div class="slot-cell" data-reel="2">❔</div>
+            <div class="slot-frame">
+              <div class="slot-row" id="slot-row">
+                <div class="slot-cell" data-reel="0">❔</div>
+                <div class="slot-cell" data-reel="1">❔</div>
+                <div class="slot-cell" data-reel="2">❔</div>
+              </div>
             </div>
             <div class="meta-line" id="last-result">Spin to start.</div>
           </div>
@@ -215,6 +233,13 @@
           <!-- BEGIN: PANEL-CONTENT -->
           <div class="panel-scroll" id="panel-scroll">
             <p class="section-title">Player</p>
+            <div class="char-card" id="char-card">
+              <div class="char-emoji" id="char-emoji">🧝</div>
+              <div class="char-meta">
+                <div id="char-name">Elf Adventurer</div>
+                <div id="char-note">slot build</div>
+              </div>
+            </div>
             <div class="meta-line" id="player-line">❤️ 10/10 | 💰 0 | 🎲 ready</div>
             <div class="inv-row" id="inv-row"></div>
             <p class="section-title">How this prototype works</p>
@@ -253,6 +278,7 @@
           playerLine: null,
           invRow: null,
           lastResult: null,
+          charEmoji: null,
         },
         state: {
           logs: ["Game initialized."],
@@ -262,6 +288,8 @@
             gold: 0,
             shield: 0,
             items: [],
+            emoji: "🧝",
+            name: "Elf Adventurer",
           },
           dungeon: {
             floor: 1,
@@ -302,6 +330,7 @@
           this.dom.playerLine = document.querySelector("#player-line");
           this.dom.invRow = document.querySelector("#inv-row");
           this.dom.lastResult = document.querySelector("#last-result");
+          this.dom.charEmoji = document.querySelector("#char-emoji");
         },
         bindEvents() {
           if (this.dom.spinBtn) {
@@ -338,19 +367,23 @@
             const idx = Math.floor(Math.random() * reel.length);
             return reel[idx];
           });
-          // quick fake spin: show ? then result
-          this.dom.reelCells.forEach((cell) => (cell.textContent = "❔"));
+          // quick fake spin: show ? and anim
+          this.dom.reelCells.forEach((cell) => {
+            cell.textContent = "❔";
+            cell.classList.remove("spin-pop");
+          });
           setTimeout(() => {
             this.state.slot.spinning = false;
-            // render final
             this.dom.reelCells.forEach((cell, i) => {
               cell.textContent = results[i];
+              // trigger pop
+              void cell.offsetWidth; // force reflow
+              cell.classList.add("spin-pop");
             });
             this.resolveSpin(results);
           }, 180);
         },
         resolveSpin(results) {
-          // base effects
           const counts = results.reduce((acc, sym) => {
             acc[sym] = (acc[sym] || 0) + 1;
             return acc;
@@ -363,7 +396,6 @@
             if (sym === "🍀") this.dropItem();
             if (sym === "💥") this.enemyStrike();
           });
-          // 3 of a kind bonus
           const three = results.find((sym) => counts[sym] === 3);
           if (three) {
             if (three === "⚔️") this.dealDamage(4);
@@ -403,7 +435,6 @@
           const items = ["🧪 potion", "🪙 token", "🧲 charm", "📜 scroll"];
           const pick = items[Math.floor(Math.random() * items.length)];
           this.state.player.items.push(pick);
-          // keep light
           if (this.state.player.items.length > 8) this.state.player.items.shift();
           this.addLog(`Item found: ${pick}`);
         },
@@ -432,13 +463,12 @@
         gameOver() {
           this.addLog("You fell in the dungeon.");
           this.setStatus("game over");
-          // lock spinning
           this.state.slot.spinning = true;
         },
         addLog(msg) {
           const clean = msg.length > 90 ? msg.slice(0, 90) + "…" : msg;
           this.state.logs.unshift(clean);
-          if (this.state.logs.length > 12) this.state.logs.pop();
+          if (this.state.logs.length > 5) this.state.logs.pop();
           this.renderLogs();
         },
         renderLogs() {
@@ -470,6 +500,9 @@
             this.dom.invRow.innerHTML = p.items
               .map((it) => `<span class="inv-chip text-ellipsis">${it}</span>`)
               .join("");
+          }
+          if (this.dom.charEmoji) {
+            this.dom.charEmoji.textContent = p.emoji;
           }
         },
         setStatus(text) {
