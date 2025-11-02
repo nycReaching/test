@@ -1,350 +1,360 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Emoji Roguelike</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>Mobile Game Shell</title>
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: monospace;
-            background-color: #111;
-            color: #fff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            height: 100vh;
-            overflow: hidden;
-            touch-action: none; /* Prevent default touch behaviors */
-        }
+      :root {
+        --bg: #0f172a;
+        --surface: #111827;
+        --surface-2: #1f2937;
+        --text: #e5e7eb;
+        --accent: #f97316;
+        --gap: 0.5rem;
+        --radius: 0.75rem;
+        --maxw: 480px;
+        --bar-h: 52px;
+      }
 
-        #game-container {
-            width: 100%;
-            max-width: 400px; /* Portrait mobile friendly */
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
 
-        #map {
-            font-size: 20px; /* Adjust emoji size */
-            line-height: 1;
-            white-space: pre;
-            background-color: #222;
-            padding: 10px;
-            border: 1px solid #444;
-            overflow: hidden;
-            text-align: center;
-            flex-grow: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+      html,
+      body {
+        height: 100%;
+      }
 
-        #stats {
-            padding: 10px;
-            background-color: #333;
-            border-bottom: 1px solid #444;
-            text-align: center;
-        }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        overflow: hidden; /* no page scroll */
+      }
 
-        #inventory {
-            padding: 10px;
-            background-color: #333;
-            border-top: 1px solid #444;
-            text-align: center;
-        }
+      #app {
+        height: 100dvh;
+        width: 100%;
+        max-width: var(--maxw);
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        background: radial-gradient(circle at top, #111827, #020617 65%);
+      }
 
-        #controls {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            padding: 10px;
-            background-color: #444;
-        }
+      .top-bar {
+        flex: 0 0 var(--bar-h);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 0.15rem;
+        padding: 0 1rem;
+        background: rgba(2, 6, 23, 0.5);
+        backdrop-filter: blur(10px);
+      }
 
-        button {
-            font-size: 24px;
-            padding: 15px;
-            background-color: #555;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            touch-action: manipulation; /* Better touch handling */
-        }
+      .top-bar .title {
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
 
-        button:hover {
-            background-color: #666;
-        }
+      .top-bar .subtitle {
+        font-size: 0.7rem;
+        opacity: 0.7;
+      }
 
-        /* Portrait mode enforcement */
-        @media (orientation: landscape) {
-            body::before {
-                content: "Please rotate to portrait mode for best experience.";
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                font-size: 24px;
-                text-align: center;
-                z-index: 1000;
-            }
-            #game-container {
-                display: none;
-            }
-        }
+      .main {
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+        gap: var(--gap);
+        padding: var(--gap);
+        overflow: hidden; /* children must fit */
+      }
+
+      /* GAME SCREEN IS FIXED HEIGHT. DO NOT LET AI CHANGE THIS UNLESS HUMAN SAYS SO. */
+      #game-screen {
+        flex: 0 0 230px;
+        background: var(--surface);
+        border-radius: var(--radius);
+        padding: var(--gap);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      #side-panel {
+        flex: 1 1 auto;
+        background: var(--surface-2);
+        border-radius: var(--radius);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .panel-scroll {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        padding: var(--gap);
+        gap: 0.35rem;
+        display: flex;
+        flex-direction: column;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .bottom-bar {
+        flex: 0 0 var(--bar-h);
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        padding: 0 0.5rem 0.5rem;
+        background: rgba(2, 6, 23, 0.5);
+        backdrop-filter: blur(10px);
+      }
+
+      .status {
+        flex: 1 1 auto;
+        font-size: 0.7rem;
+        opacity: 0.8;
+        min-width: 0;
+      }
+
+      .btn {
+        flex: 0 0 auto;
+        background: var(--accent);
+        color: #0f172a;
+        border: none;
+        border-radius: 9999px;
+        padding: 0.4rem 0.9rem;
+        font-weight: 600;
+        font-size: 0.75rem;
+      }
+
+      /* UTILITIES */
+      .text-ellipsis {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .section-title {
+        font-size: 0.75rem;
+        font-weight: 600;
+      }
+
+      .section-note {
+        font-size: 0.65rem;
+        opacity: 0.75;
+      }
+
+      .warn {
+        color: #f97316;
+      }
+
+      .placeholder-box {
+        border: 1px dashed rgba(229, 231, 235, 0.12);
+        border-radius: 0.5rem;
+        padding: 0.4rem;
+        background: rgba(15, 23, 42, 0.25);
+      }
+
+      .notes {
+        list-style: disc;
+        margin: 0;
+        padding-left: 1.1rem;
+      }
+      .notes li {
+        font-size: 0.65rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .log-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: grid;
+        gap: 0.25rem;
+      }
+
+      .log-row {
+        font-size: 0.65rem;
+        background: rgba(15, 23, 42, 0.4);
+        border-radius: 0.35rem;
+        padding: 0.35rem 0.5rem;
+      }
+
+      /* Example tile defaults for future AI to reuse */
+      .tile {
+        width: 60px;
+        aspect-ratio: 1 / 1;
+        background: rgba(248, 250, 252, 0.04);
+        border-radius: 0.75rem;
+        display: grid;
+        place-items: center;
+        font-size: 1.6rem;
+        position: relative;
+      }
+
+      .tile-icon-hidden {
+        visibility: hidden; /* use this, not display:none */
+      }
     </style>
-</head>
-<body>
-    <div id="game-container">
-        <div id="stats">Health: 100 | Level: 1 | Score: 0</div>
-        <div id="map"></div>
-        <div id="inventory">Inventory: </div>
-        <div id="controls">
-            <button onclick="move('nw')">&#8598;</button>
-            <button onclick="move('n')">&#8593;</button>
-            <button onclick="move('ne')">&#8599;</button>
-            <button onclick="move('w')">&#8592;</button>
-            <button onclick="wait()">⏸️</button>
-            <button onclick="move('e')">&#8594;</button>
-            <button onclick="move('sw')">&#8601;</button>
-            <button onclick="move('s')">&#8595;</button>
-            <button onclick="move('se')">&#8600;</button>
+  </head>
+  <body>
+    <!--
+      WORKFLOW (for AI and for future you):
+
+      1. Do NOT change the layout wrappers: <body>, #app, .top-bar, .main, #game-screen, #side-panel, .bottom-bar.
+      2. All new UI goes ONLY inside the marked regions:
+         - BEGIN: GAME-VIEW
+         - BEGIN: PANEL-CONTENT
+      3. Do NOT add page-level scroll. If content overflows, make the INNER element scroll.
+      4. Keep max width at 480px for mobile portrait.
+      5. Use existing CSS variables. Do not invent new spacing unless missing.
+      6. JS edits should prefer adding functions to Game.* instead of rewriting Game.init().
+      7. Tiles or cards must NOT change size when content changes. Use visibility/opacity, not display:none.
+      8. Text must truncate, not reflow, unless explicitly asked.
+      9. If you need to change the structure, ask the human.
+    -->
+    <div id="app">
+      <header class="top-bar">
+        <div class="title text-ellipsis">Mobile Game Shell</div>
+        <div class="subtitle text-ellipsis">layout locked</div>
+      </header>
+
+      <main class="main">
+        <!-- GAME AREA -->
+        <section id="game-screen">
+          <!-- BEGIN: GAME-VIEW -->
+          <div class="placeholder-box">
+            <p class="section-title">Game view</p>
+            <p class="section-note">
+              Put board, map, idle meters, or puzzle grid here.
+            </p>
+            <p class="section-note warn">
+              Do not resize #game-screen. Fit content inside.
+            </p>
+          </div>
+          <!-- END: GAME-VIEW -->
+        </section>
+
+        <!-- PANEL / HUD / LOG -->
+        <section id="side-panel">
+          <!-- BEGIN: PANEL-CONTENT -->
+          <div class="panel-scroll">
+            <p class="section-title">Dev / AI instructions</p>
+            <ul class="notes">
+              <li>Do not introduce body scroll.</li>
+              <li>
+                If text is long, apply class <code>.text-ellipsis</code> or
+                <code>.line-clamp-2</code>.
+              </li>
+              <li>
+                If adding buttons, use <code>.btn</code> inside this panel only.
+              </li>
+              <li>
+                If adding logs, append to <code>#log-list</code> in JS.
+              </li>
+            </ul>
+            <p class="section-title">Sample log</p>
+            <ul id="log-list" class="log-list">
+              <li class="log-row text-ellipsis">Game initialized.</li>
+            </ul>
+          </div>
+          <!-- END: PANEL-CONTENT -->
+        </section>
+      </main>
+
+      <footer class="bottom-bar">
+        <div class="status text-ellipsis" id="status-line">
+          ready
         </div>
+        <button class="btn" id="demo-btn">+ log</button>
+      </footer>
     </div>
 
     <script>
-        // Game constants
-        const MAP_WIDTH = 15;
-        const MAP_HEIGHT = 20; // Taller for portrait
-        const PLAYER_EMOJI = '🧙';
-        const FLOOR_EMOJI = '🟫';
-        const WALL_EMOJI = '🌳';
-        const ENEMY_EMOJI = '👹';
-        const ITEM_EMOJIS = ['🔥', '💧', '⚡', '🌿']; // Fire, Water, Lightning, Plant for synergies
-        const SYNERGY_BONUSES = {
-            '🔥💧': { name: 'Steam Blast', bonus: 20 }, // Fire + Water
-            '⚡🌿': { name: 'Electric Vine', bonus: 15 }, // Lightning + Plant
-            '🔥⚡': { name: 'Plasma Storm', bonus: 25 }, // Fire + Lightning
-            // Add more synergies as needed
-        };
+      // GAME SHELL
+      // Rules for AI:
+      // 1. Do NOT remove Game.init() or the event listener at the bottom.
+      // 2. If adding features, extend Game.* instead of changing the root shape.
+      // 3. Keep DOM selectors in Game.dom only.
 
-        // Game state
-        let map = [];
-        let player = { x: Math.floor(MAP_WIDTH / 2), y: Math.floor(MAP_HEIGHT / 2), health: 100, level: 1, score: 0 };
-        let enemies = [];
-        let items = [];
-        let inventory = [];
-
-        function initGame() {
-            generateMap();
-            placeEnemies(5); // Place 5 enemies
-            placeItems(10); // Place 10 items
-            renderMap();
-            renderStats();
-            renderInventory();
-        }
-
-        function generateMap() {
-            map = Array.from({ length: MAP_HEIGHT }, () => Array(MAP_WIDTH).fill(FLOOR_EMOJI));
-            // Add random walls
-            for (let i = 0; i < 50; i++) {
-                const x = Math.floor(Math.random() * MAP_WIDTH);
-                const y = Math.floor(Math.random() * MAP_HEIGHT);
-                if (!(x === player.x && y === player.y)) {
-                    map[y][x] = WALL_EMOJI;
-                }
-            }
-        }
-
-        function placeEnemies(count) {
-            enemies = [];
-            for (let i = 0; i < count; i++) {
-                let x, y;
-                do {
-                    x = Math.floor(Math.random() * MAP_WIDTH);
-                    y = Math.floor(Math.random() * MAP_HEIGHT);
-                } while (map[y][x] !== FLOOR_EMOJI || (x === player.x && y === player.y));
-                enemies.push({ x, y, health: 20 });
-            }
-        }
-
-        function placeItems(count) {
-            items = [];
-            for (let i = 0; i < count; i++) {
-                let x, y;
-                do {
-                    x = Math.floor(Math.random() * MAP_WIDTH);
-                    y = Math.floor(Math.random() * MAP_HEIGHT);
-                } while (map[y][x] !== FLOOR_EMOJI || (x === player.x && y === player.y));
-                const item = ITEM_EMOJIS[Math.floor(Math.random() * ITEM_EMOJIS.length)];
-                items.push({ x, y, emoji: item });
-            }
-        }
-
-        function renderMap() {
-            let mapStr = '';
-            for (let y = 0; y < MAP_HEIGHT; y++) {
-                for (let x = 0; x < MAP_WIDTH; x++) {
-                    if (x === player.x && y === player.y) {
-                        mapStr += PLAYER_EMOJI;
-                    } else {
-                        const enemy = enemies.find(e => e.x === x && e.y === y);
-                        if (enemy) {
-                            mapStr += ENEMY_EMOJI;
-                        } else {
-                            const item = items.find(i => i.x === x && i.y === y);
-                            if (item) {
-                                mapStr += item.emoji;
-                            } else {
-                                mapStr += map[y][x];
-                            }
-                        }
-                    }
-                }
-                mapStr += '\n';
-            }
-            document.getElementById('map').innerText = mapStr;
-        }
-
-        function renderStats() {
-            document.getElementById('stats').innerText = `Health: ${player.health} | Level: ${player.level} | Score: ${player.score}`;
-        }
-
-        function renderInventory() {
-            document.getElementById('inventory').innerText = `Inventory: ${inventory.join(' ')}`;
-        }
-
-        function move(dir) {
-            let dx = 0, dy = 0;
-            switch (dir) {
-                case 'n': dy = -1; break;
-                case 's': dy = 1; break;
-                case 'w': dx = -1; break;
-                case 'e': dx = 1; break;
-                case 'nw': dx = -1; dy = -1; break;
-                case 'ne': dx = 1; dy = -1; break;
-                case 'sw': dx = -1; dy = 1; break;
-                case 'se': dx = 1; dy = 1; break;
-            }
-
-            const nx = player.x + dx;
-            const ny = player.y + dy;
-
-            if (nx < 0 || nx >= MAP_WIDTH || ny < 0 || ny >= MAP_HEIGHT || map[ny][nx] === WALL_EMOJI) {
-                return; // Invalid move
-            }
-
-            // Check for item
-            const itemIndex = items.findIndex(i => i.x === nx && i.y === ny);
-            if (itemIndex !== -1) {
-                const item = items[itemIndex];
-                inventory.push(item.emoji);
-                items.splice(itemIndex, 1);
-                player.score += 10;
-                checkSynergies();
-            }
-
-            // Check for enemy
-            const enemyIndex = enemies.findIndex(e => e.x === nx && e.y === ny);
-            if (enemyIndex !== -1) {
-                const enemy = enemies[enemyIndex];
-                enemy.health -= 10 + (player.level * 5); // Basic attack + level bonus
-                if (enemy.health <= 0) {
-                    enemies.splice(enemyIndex, 1);
-                    player.score += 50;
-                    player.level += 0.1; // Incremental level up
-                } else {
-                    player.health -= 10; // Enemy counterattack
-                    if (player.health <= 0) {
-                        alert('Game Over! Score: ' + player.score);
-                        initGame();
-                        return;
-                    }
-                }
-            } else {
-                // Move player if no enemy
-                player.x = nx;
-                player.y = ny;
-            }
-
-            // Enemy turns: simple chase
-            enemies.forEach(enemy => {
-                const dx = Math.sign(player.x - enemy.x);
-                const dy = Math.sign(player.y - enemy.y);
-                const ex = enemy.x + dx;
-                const ey = enemy.y + dy;
-                if (ex === player.x && ey === player.y) {
-                    player.health -= 10;
-                    if (player.health <= 0) {
-                        alert('Game Over! Score: ' + player.score);
-                        initGame();
-                        return;
-                    }
-                } else if (map[ey][ex] === FLOOR_EMOJI) {
-                    enemy.x = ex;
-                    enemy.y = ey;
-                }
+      const Game = {
+        dom: {
+          screen: null,
+          panel: null,
+          logList: null,
+          status: null,
+          demoBtn: null,
+        },
+        state: {
+          logs: ["Game initialized."],
+        },
+        init() {
+          this.cacheDom();
+          this.bindEvents();
+          this.renderAll();
+          this.setStatus("ready");
+        },
+        cacheDom() {
+          this.dom.screen = document.querySelector("#game-screen");
+          this.dom.panel = document.querySelector("#side-panel");
+          this.dom.logList = document.querySelector("#log-list");
+          this.dom.status = document.querySelector("#status-line");
+          this.dom.demoBtn = document.querySelector("#demo-btn");
+        },
+        bindEvents() {
+          if (this.dom.demoBtn) {
+            this.dom.demoBtn.addEventListener("click", () => {
+              this.addLog("Demo log " + new Date().toLocaleTimeString());
             });
+          }
+        },
+        addLog(msg) {
+          const clean = msg.length > 90 ? msg.slice(0, 90) + "…" : msg;
+          this.state.logs.unshift(clean);
+          if (this.state.logs.length > 10) this.state.logs.pop();
+          this.renderLogs();
+        },
+        renderLogs() {
+          if (!this.dom.logList) return;
+          this.dom.logList.innerHTML = this.state.logs
+            .map(
+              (l) =>
+                `<li class="log-row text-ellipsis" title="${l.replace(
+                  /"/g,
+                  "&quot;"
+                )}">${l}</li>`
+            )
+            .join("");
+        },
+        setStatus(text) {
+          if (this.dom.status) this.dom.status.textContent = text;
+        },
+        renderAll() {
+          this.renderLogs();
+        },
+      };
 
-            renderMap();
-            renderStats();
-            renderInventory();
-
-            // Check win condition (e.g., clear all enemies)
-            if (enemies.length === 0) {
-                alert('Level Cleared! Proceeding to next level.');
-                player.level++;
-                initGame();
-            }
-        }
-
-        function wait() {
-            // Skip turn, enemies move
-            enemies.forEach(enemy => {
-                const dx = Math.sign(player.x - enemy.x);
-                const dy = Math.sign(player.y - enemy.y);
-                const ex = enemy.x + dx;
-                const ey = enemy.y + dy;
-                if (ex === player.x && ey === player.y) {
-                    player.health -= 10;
-                    if (player.health <= 0) {
-                        alert('Game Over! Score: ' + player.score);
-                        initGame();
-                        return;
-                    }
-                } else if (map[ey][ex] === FLOOR_EMOJI) {
-                    enemy.x = ex;
-                    enemy.y = ey;
-                }
-            });
-            renderMap();
-            renderStats();
-        }
-
-        function checkSynergies() {
-            // Sort inventory to check combinations
-            const sortedInv = [...inventory].sort().join('');
-            for (const combo in SYNERGY_BONUSES) {
-                if (sortedInv.includes(combo)) {
-                    const bonus = SYNERGY_BONUSES[combo];
-                    player.score += bonus.bonus;
-                    alert(`Synergy Unlocked: ${bonus.name}! +${bonus.bonus} score`);
-                    // Remove used items (simple: remove the combo items)
-                    for (const char of combo) {
-                        const idx = inventory.indexOf(char);
-                        if (idx !== -1) inventory.splice(idx, 1);
-                    }
-                }
-            }
-            renderInventory();
-        }
-
-        initGame();
+      window.addEventListener("DOMContentLoaded", () => {
+        Game.init();
+      });
     </script>
-</body>
+  </body>
 </html>
