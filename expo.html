@@ -2,11 +2,8 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover"
-    />
-    <title>Mobile Game Shell</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Slot Roguelike RPG</title>
     <style>
       :root {
         --bg: #0f172a;
@@ -19,27 +16,15 @@
         --maxw: 480px;
         --bar-h: 52px;
       }
-
-      *,
-      *::before,
-      *::after {
-        box-sizing: border-box;
-      }
-
-      html,
-      body {
-        height: 100%;
-      }
-
+      *, *::before, *::after { box-sizing: border-box; }
+      html, body { height: 100%; }
       body {
         margin: 0;
         background: var(--bg);
         color: var(--text);
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-          sans-serif;
-        overflow: hidden; /* no page scroll */
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        overflow: hidden;
       }
-
       #app {
         height: 100dvh;
         width: 100%;
@@ -49,7 +34,6 @@
         flex-direction: column;
         background: radial-gradient(circle at top, #111827, #020617 65%);
       }
-
       .top-bar {
         flex: 0 0 var(--bar-h);
         display: flex;
@@ -60,27 +44,17 @@
         background: rgba(2, 6, 23, 0.5);
         backdrop-filter: blur(10px);
       }
-
-      .top-bar .title {
-        font-weight: 600;
-        font-size: 0.9rem;
-      }
-
-      .top-bar .subtitle {
-        font-size: 0.7rem;
-        opacity: 0.7;
-      }
-
+      .top-bar .title { font-weight: 600; font-size: 0.9rem; }
+      .top-bar .subtitle { font-size: 0.7rem; opacity: 0.7; }
       .main {
         flex: 1 1 auto;
         display: flex;
         flex-direction: column;
         gap: var(--gap);
         padding: var(--gap);
-        overflow: hidden; /* children must fit */
+        overflow: hidden;
       }
-
-      /* GAME SCREEN IS FIXED HEIGHT. DO NOT LET AI CHANGE THIS UNLESS HUMAN SAYS SO. */
+      /* DO NOT RESIZE THIS */
       #game-screen {
         flex: 0 0 230px;
         background: var(--surface);
@@ -89,8 +63,8 @@
         overflow: hidden;
         display: flex;
         flex-direction: column;
+        gap: 0.35rem;
       }
-
       #side-panel {
         flex: 1 1 auto;
         background: var(--surface-2);
@@ -99,7 +73,6 @@
         display: flex;
         flex-direction: column;
       }
-
       .panel-scroll {
         flex: 1 1 auto;
         overflow-y: auto;
@@ -109,7 +82,6 @@
         flex-direction: column;
         -webkit-overflow-scrolling: touch;
       }
-
       .bottom-bar {
         flex: 0 0 var(--bar-h);
         display: flex;
@@ -119,14 +91,7 @@
         background: rgba(2, 6, 23, 0.5);
         backdrop-filter: blur(10px);
       }
-
-      .status {
-        flex: 1 1 auto;
-        font-size: 0.7rem;
-        opacity: 0.8;
-        min-width: 0;
-      }
-
+      .status { flex: 1 1 auto; font-size: 0.7rem; opacity: 0.8; min-width: 0; }
       .btn {
         flex: 0 0 auto;
         background: var(--accent);
@@ -137,141 +102,130 @@
         font-weight: 600;
         font-size: 0.75rem;
       }
-
-      /* UTILITIES */
-      .text-ellipsis {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
+      .section-title { font-size: 0.75rem; font-weight: 600; }
+      .section-note { font-size: 0.65rem; opacity: 0.75; }
+      .text-ellipsis { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
       .line-clamp-2 {
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
       }
-
-      .section-title {
-        font-size: 0.75rem;
-        font-weight: 600;
+      .log-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.25rem; }
+      .log-row { font-size: 0.65rem; background: rgba(15, 23, 42, 0.4); border-radius: 0.35rem; padding: 0.35rem 0.5rem; }
+      .notes { list-style: disc; margin: 0; padding-left: 1.1rem; }
+      .notes li { font-size: 0.65rem; margin-bottom: 0.25rem; }
+      /* SLOT MACHINE UI */
+      .slot-shell {
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
       }
-
-      .section-note {
-        font-size: 0.65rem;
-        opacity: 0.75;
+      .slot-topline {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.5rem;
       }
-
-      .warn {
-        color: #f97316;
+      .hp-bar {
+        flex: 1 1 auto;
+        height: 10px;
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: 999px;
+        overflow: hidden;
       }
-
-      .placeholder-box {
-        border: 1px dashed rgba(229, 231, 235, 0.12);
-        border-radius: 0.5rem;
-        padding: 0.4rem;
-        background: rgba(15, 23, 42, 0.25);
+      .hp-fill {
+        height: 100%;
+        background: #f97316;
+        width: 100%;
       }
-
-      .notes {
-        list-style: disc;
-        margin: 0;
-        padding-left: 1.1rem;
-      }
-      .notes li {
-        font-size: 0.65rem;
-        margin-bottom: 0.25rem;
-      }
-
-      .log-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
+      .slot-row {
+        flex: 1 1 auto;
         display: grid;
-        gap: 0.25rem;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.35rem;
+        align-items: center;
       }
-
-      .log-row {
-        font-size: 0.65rem;
-        background: rgba(15, 23, 42, 0.4);
-        border-radius: 0.35rem;
-        padding: 0.35rem 0.5rem;
-      }
-
-      /* Example tile defaults for future AI to reuse */
-      .tile {
-        width: 60px;
-        aspect-ratio: 1 / 1;
-        background: rgba(248, 250, 252, 0.04);
-        border-radius: 0.75rem;
+      .slot-cell {
+        height: 85px;
+        background: rgba(15, 23, 42, 0.35);
+        border-radius: 0.6rem;
         display: grid;
         place-items: center;
-        font-size: 1.6rem;
-        position: relative;
+        font-size: 2.1rem;
+        line-height: 1;
       }
-
-      .tile-icon-hidden {
-        visibility: hidden; /* use this, not display:none */
+      .meta-line { font-size: 0.6rem; opacity: 0.7; }
+      /* inventory chips */
+      .inv-row {
+        display: flex;
+        gap: 0.35rem;
+        flex-wrap: wrap;
       }
+      .inv-chip {
+        background: rgba(15, 23, 42, 0.3);
+        border: 1px solid rgba(249, 115, 22, 0.4);
+        border-radius: 999px;
+        padding: 0.2rem 0.5rem;
+        font-size: 0.6rem;
+      }
+      .pill { font-size: 0.65rem; padding: 0.05rem 0.4rem; background: rgba(249, 115, 22, 0.15); border-radius: 999px; }
     </style>
   </head>
   <body>
     <!--
-      WORKFLOW (for AI and for future you):
-
-      1. Do NOT change the layout wrappers: <body>, #app, .top-bar, .main, #game-screen, #side-panel, .bottom-bar.
-      2. All new UI goes ONLY inside the marked regions:
-         - BEGIN: GAME-VIEW
-         - BEGIN: PANEL-CONTENT
-      3. Do NOT add page-level scroll. If content overflows, make the INNER element scroll.
-      4. Keep max width at 480px for mobile portrait.
-      5. Use existing CSS variables. Do not invent new spacing unless missing.
-      6. JS edits should prefer adding functions to Game.* instead of rewriting Game.init().
-      7. Tiles or cards must NOT change size when content changes. Use visibility/opacity, not display:none.
-      8. Text must truncate, not reflow, unless explicitly asked.
-      9. If you need to change the structure, ask the human.
+      WORKFLOW (keep):
+      1. Do NOT change outer layout wrappers.
+      2. New UI goes into GAME-VIEW and PANEL-CONTENT only.
+      3. No page scroll. Inner elements should scroll.
+      4. Keep max width at 480px.
+      5. Extend Game.* in JS, do not rewrite Game.init().
+      6. Use visibility/opacity for show/hide, not display:none.
+      7. Text should truncate. If it wraps unexpectedly, revise inside the panel.
     -->
     <div id="app">
       <header class="top-bar">
-        <div class="title text-ellipsis">Mobile Game Shell</div>
-        <div class="subtitle text-ellipsis">layout locked</div>
+        <div class="title text-ellipsis">Slot Roguelike RPG</div>
+        <div class="subtitle text-ellipsis">spin to fight, get gold, survive</div>
       </header>
-
       <main class="main">
         <!-- GAME AREA -->
         <section id="game-screen">
           <!-- BEGIN: GAME-VIEW -->
-          <div class="placeholder-box">
-            <p class="section-title">Game view</p>
-            <p class="section-note">
-              Put board, map, idle meters, or puzzle grid here.
-            </p>
-            <p class="section-note warn">
-              Do not resize #game-screen. Fit content inside.
-            </p>
+          <div class="slot-shell" id="slot-shell">
+            <div class="slot-topline">
+              <div style="display:flex;flex-direction:column;gap:0.15rem;min-width:0;">
+                <div class="text-ellipsis" id="enemy-name">Enemy: none</div>
+                <div class="hp-bar"><div class="hp-fill" id="enemy-hp-fill"></div></div>
+              </div>
+              <div class="pill" id="floor-pill">F1</div>
+            </div>
+            <div class="slot-row" id="slot-row">
+              <div class="slot-cell" data-reel="0">❔</div>
+              <div class="slot-cell" data-reel="1">❔</div>
+              <div class="slot-cell" data-reel="2">❔</div>
+            </div>
+            <div class="meta-line" id="last-result">Spin to start.</div>
           </div>
           <!-- END: GAME-VIEW -->
         </section>
-
         <!-- PANEL / HUD / LOG -->
         <section id="side-panel">
           <!-- BEGIN: PANEL-CONTENT -->
-          <div class="panel-scroll">
-            <p class="section-title">Dev / AI instructions</p>
+          <div class="panel-scroll" id="panel-scroll">
+            <p class="section-title">Player</p>
+            <div class="meta-line" id="player-line">❤️ 10/10 | 💰 0 | 🎲 ready</div>
+            <div class="inv-row" id="inv-row"></div>
+            <p class="section-title">How this prototype works</p>
             <ul class="notes">
-              <li>Do not introduce body scroll.</li>
-              <li>
-                If text is long, apply class <code>.text-ellipsis</code> or
-                <code>.line-clamp-2</code>.
-              </li>
-              <li>
-                If adding buttons, use <code>.btn</code> inside this panel only.
-              </li>
-              <li>
-                If adding logs, append to <code>#log-list</code> in JS.
-              </li>
+              <li>Tap <strong>Spin</strong> to roll 3 emojis.</li>
+              <li>⚔️ deals damage. 🛡️ gives shield (1 hit). 💰 gives gold. ❤️ heals. 🍀 drops item.</li>
+              <li>3 of a kind = bonus effect.</li>
+              <li>When enemy HP is 0, you auto-advance floor and generate a new enemy.</li>
+              <li>Keep the layout. Add new features inside this panel or in <code>#game-screen</code> only.</li>
             </ul>
-            <p class="section-title">Sample log</p>
+            <p class="section-title">Battle log</p>
             <ul id="log-list" class="log-list">
               <li class="log-row text-ellipsis">Game initialized.</li>
             </ul>
@@ -279,36 +233,59 @@
           <!-- END: PANEL-CONTENT -->
         </section>
       </main>
-
       <footer class="bottom-bar">
-        <div class="status text-ellipsis" id="status-line">
-          ready
-        </div>
-        <button class="btn" id="demo-btn">+ log</button>
+        <div class="status text-ellipsis" id="status-line">ready</div>
+        <button class="btn" id="spin-btn">Spin</button>
       </footer>
     </div>
-
     <script>
-      // GAME SHELL
-      // Rules for AI:
-      // 1. Do NOT remove Game.init() or the event listener at the bottom.
-      // 2. If adding features, extend Game.* instead of changing the root shape.
-      // 3. Keep DOM selectors in Game.dom only.
-
       const Game = {
         dom: {
           screen: null,
           panel: null,
           logList: null,
           status: null,
-          demoBtn: null,
+          spinBtn: null,
+          reelCells: [],
+          enemyName: null,
+          enemyHpFill: null,
+          floorPill: null,
+          playerLine: null,
+          invRow: null,
+          lastResult: null,
         },
         state: {
           logs: ["Game initialized."],
+          player: {
+            hp: 10,
+            maxHp: 10,
+            gold: 0,
+            shield: 0,
+            items: [],
+          },
+          dungeon: {
+            floor: 1,
+          },
+          enemy: {
+            name: "",
+            emoji: "",
+            hp: 0,
+            maxHp: 0,
+            reward: 0,
+          },
+          slot: {
+            spinning: false,
+            reels: [
+              ["⚔️", "🛡️", "💰", "❤️", "🍀", "💥"],
+              ["⚔️", "🛡️", "💰", "❤️", "🍀", "💥"],
+              ["⚔️", "🛡️", "💰", "❤️", "🍀", "💥"],
+            ],
+          },
         },
         init() {
           this.cacheDom();
           this.bindEvents();
+          this.spawnEnemy();
           this.renderAll();
           this.setStatus("ready");
         },
@@ -317,41 +294,193 @@
           this.dom.panel = document.querySelector("#side-panel");
           this.dom.logList = document.querySelector("#log-list");
           this.dom.status = document.querySelector("#status-line");
-          this.dom.demoBtn = document.querySelector("#demo-btn");
+          this.dom.spinBtn = document.querySelector("#spin-btn");
+          this.dom.reelCells = Array.from(document.querySelectorAll(".slot-cell"));
+          this.dom.enemyName = document.querySelector("#enemy-name");
+          this.dom.enemyHpFill = document.querySelector("#enemy-hp-fill");
+          this.dom.floorPill = document.querySelector("#floor-pill");
+          this.dom.playerLine = document.querySelector("#player-line");
+          this.dom.invRow = document.querySelector("#inv-row");
+          this.dom.lastResult = document.querySelector("#last-result");
         },
         bindEvents() {
-          if (this.dom.demoBtn) {
-            this.dom.demoBtn.addEventListener("click", () => {
-              this.addLog("Demo log " + new Date().toLocaleTimeString());
+          if (this.dom.spinBtn) {
+            this.dom.spinBtn.addEventListener("click", () => {
+              this.handleSpin();
             });
           }
+        },
+        spawnEnemy() {
+          const floor = this.state.dungeon.floor;
+          const pool = [
+            { name: "Slime", emoji: "🟢", base: 5 },
+            { name: "Skeleton", emoji: "💀", base: 6 },
+            { name: "Goblin", emoji: "👺", base: 7 },
+            { name: "Bat", emoji: "🦇", base: 4 },
+          ];
+          const pick = pool[Math.floor(Math.random() * pool.length)];
+          const hp = pick.base + Math.floor(floor * 1.25);
+          this.state.enemy = {
+            name: pick.name,
+            emoji: pick.emoji,
+            hp: hp,
+            maxHp: hp,
+            reward: 2 + floor,
+          };
+          this.addLog(`Encounter: ${pick.emoji} ${pick.name} (F${floor})`);
+          this.renderEnemy();
+        },
+        handleSpin() {
+          if (this.state.slot.spinning) return;
+          this.state.slot.spinning = true;
+          this.setStatus("spinning");
+          const results = this.state.slot.reels.map((reel) => {
+            const idx = Math.floor(Math.random() * reel.length);
+            return reel[idx];
+          });
+          // quick fake spin: show ? then result
+          this.dom.reelCells.forEach((cell) => (cell.textContent = "❔"));
+          setTimeout(() => {
+            this.state.slot.spinning = false;
+            // render final
+            this.dom.reelCells.forEach((cell, i) => {
+              cell.textContent = results[i];
+            });
+            this.resolveSpin(results);
+          }, 180);
+        },
+        resolveSpin(results) {
+          // base effects
+          const counts = results.reduce((acc, sym) => {
+            acc[sym] = (acc[sym] || 0) + 1;
+            return acc;
+          }, {});
+          results.forEach((sym) => {
+            if (sym === "⚔️") this.dealDamage(2);
+            if (sym === "🛡️") this.addShield(1);
+            if (sym === "💰") this.gainGold(2);
+            if (sym === "❤️") this.heal(2);
+            if (sym === "🍀") this.dropItem();
+            if (sym === "💥") this.enemyStrike();
+          });
+          // 3 of a kind bonus
+          const three = results.find((sym) => counts[sym] === 3);
+          if (three) {
+            if (three === "⚔️") this.dealDamage(4);
+            if (three === "💰") this.gainGold(5);
+            if (three === "❤️") this.heal(5);
+            if (three === "🛡️") this.addShield(2);
+          }
+          const text = `Spin: ${results.join(" ")}`;
+          this.dom.lastResult.textContent = text;
+          this.addLog(text);
+          this.setStatus("ready");
+          this.renderPlayer();
+          this.checkEnemyDead();
+        },
+        dealDamage(amount) {
+          if (!this.state.enemy || this.state.enemy.hp <= 0) return;
+          this.state.enemy.hp = Math.max(0, this.state.enemy.hp - amount);
+          this.addLog(`You deal ${amount} dmg.`);
+          this.renderEnemy();
+        },
+        addShield(stacks) {
+          this.state.player.shield += stacks;
+          this.addLog(`Shield +${stacks}.`);
+        },
+        gainGold(amount) {
+          this.state.player.gold += amount;
+          this.addLog(`You gain ${amount} gold.`);
+        },
+        heal(amount) {
+          const p = this.state.player;
+          const before = p.hp;
+          p.hp = Math.min(p.maxHp, p.hp + amount);
+          const healed = p.hp - before;
+          if (healed > 0) this.addLog(`You heal ${healed}.`);
+        },
+        dropItem() {
+          const items = ["🧪 potion", "🪙 token", "🧲 charm", "📜 scroll"];
+          const pick = items[Math.floor(Math.random() * items.length)];
+          this.state.player.items.push(pick);
+          // keep light
+          if (this.state.player.items.length > 8) this.state.player.items.shift();
+          this.addLog(`Item found: ${pick}`);
+        },
+        enemyStrike() {
+          if (!this.state.enemy || this.state.enemy.hp <= 0) return;
+          const dmg = 2 + Math.floor(this.state.dungeon.floor / 3);
+          if (this.state.player.shield > 0) {
+            this.state.player.shield -= 1;
+            this.addLog(`${this.state.enemy.emoji} attack blocked.`);
+            return;
+          }
+          this.state.player.hp = Math.max(0, this.state.player.hp - dmg);
+          this.addLog(`${this.state.enemy.emoji} hits you for ${dmg}.`);
+          if (this.state.player.hp <= 0) {
+            this.gameOver();
+          }
+        },
+        checkEnemyDead() {
+          if (this.state.enemy.hp > 0) return;
+          const reward = this.state.enemy.reward;
+          this.state.player.gold += reward;
+          this.addLog(`Enemy defeated. +${reward} gold.`);
+          this.state.dungeon.floor += 1;
+          this.spawnEnemy();
+        },
+        gameOver() {
+          this.addLog("You fell in the dungeon.");
+          this.setStatus("game over");
+          // lock spinning
+          this.state.slot.spinning = true;
         },
         addLog(msg) {
           const clean = msg.length > 90 ? msg.slice(0, 90) + "…" : msg;
           this.state.logs.unshift(clean);
-          if (this.state.logs.length > 10) this.state.logs.pop();
+          if (this.state.logs.length > 12) this.state.logs.pop();
           this.renderLogs();
         },
         renderLogs() {
           if (!this.dom.logList) return;
           this.dom.logList.innerHTML = this.state.logs
-            .map(
-              (l) =>
-                `<li class="log-row text-ellipsis" title="${l.replace(
-                  /"/g,
-                  "&quot;"
-                )}">${l}</li>`
-            )
+            .map((l) => `<li class="log-row text-ellipsis" title="${l.replace(/"/g, "&quot;")}">${l}</li>`)
             .join("");
+        },
+        renderEnemy() {
+          const e = this.state.enemy;
+          if (this.dom.enemyName) {
+            this.dom.enemyName.textContent = `${e.emoji} ${e.name}`;
+          }
+          if (this.dom.enemyHpFill) {
+            const pct = e.maxHp > 0 ? (e.hp / e.maxHp) * 100 : 0;
+            this.dom.enemyHpFill.style.width = pct + "%";
+          }
+          if (this.dom.floorPill) {
+            this.dom.floorPill.textContent = `F${this.state.dungeon.floor}`;
+          }
+        },
+        renderPlayer() {
+          const p = this.state.player;
+          if (this.dom.playerLine) {
+            const shield = p.shield > 0 ? ` | 🛡️ ${p.shield}` : "";
+            this.dom.playerLine.textContent = `❤️ ${p.hp}/${p.maxHp} | 💰 ${p.gold}${shield}`;
+          }
+          if (this.dom.invRow) {
+            this.dom.invRow.innerHTML = p.items
+              .map((it) => `<span class="inv-chip text-ellipsis">${it}</span>`)
+              .join("");
+          }
         },
         setStatus(text) {
           if (this.dom.status) this.dom.status.textContent = text;
         },
         renderAll() {
           this.renderLogs();
+          this.renderEnemy();
+          this.renderPlayer();
         },
       };
-
       window.addEventListener("DOMContentLoaded", () => {
         Game.init();
       });
