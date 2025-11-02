@@ -110,6 +110,7 @@
       }
       .hero-image-wrapper {
         position: relative;
+        isolation: isolate; /* keep pseudo behind without leaking */
         flex: 1;
         min-height: 46vh;
         display: flex;
@@ -136,10 +137,11 @@
       .hero-image-wrapper::after {
         content: "";
         position: absolute;
-        inset: -8px;
-        border-radius: 1.8rem;
+        inset: -10px;
+        border-radius: 1.9rem;
         pointer-events: none;
         opacity: 0;
+        z-index: -1; /* stay behind the frame */
       }
       .hero-image-wrapper.glow::after {
         background: conic-gradient(from 120deg, rgba(250, 204, 21, 0.85), rgba(192, 132, 252, 0.9), rgba(244, 114, 182, 0.9), rgba(250, 204, 21, 0.85));
@@ -148,7 +150,7 @@
         opacity: 1;
       }
       @keyframes pulse-glow {
-        0%, 100% { opacity: 0.5; filter: blur(20px); }
+        0%, 100% { opacity: 0.6; filter: blur(20px); }
         50% { opacity: 1; filter: blur(12px); }
       }
       .action-bar {
@@ -248,10 +250,6 @@
       const fireBtn = document.getElementById('fireBtn');
       const frames = ['elf1.jpg', 'elf2.jpg', 'elf3.jpg'];
       let cycling = false;
-
-      console.assert(Array.isArray(frames), 'frames should be an array');
-      console.assert(frames.length === 3, 'frames should contain 3 images');
-      console.assert(heroImage instanceof HTMLImageElement, 'heroImage should be an <img>');
 
       fireBtn.addEventListener('click', () => {
         if (cycling) return;
