@@ -113,6 +113,7 @@
         padding: 0.25rem 1rem 1.2rem;
       }
       .hero-image-wrapper {
+        position: relative;
         flex: 1;
         min-height: 46vh;
         background: #0f172a;
@@ -152,6 +153,21 @@
       }
       .round-btn:active {
         transform: translateY(1.5px) scale(0.995);
+      }
+      .hero-image-wrapper.shake {
+        animation: shake 0.3s ease-in-out infinite;
+      }
+      .hero-image-wrapper.zoom img {
+        transform: scale(1.05);
+        transition: transform 0.15s ease-out;
+      }
+      @keyframes shake {
+        0% { transform: translateX(0); }
+        20% { transform: translateX(-6px); }
+        40% { transform: translateX(6px); }
+        60% { transform: translateX(-4px); }
+        80% { transform: translateX(4px); }
+        100% { transform: translateX(0); }
       }
       @media (min-height: 800px) {
         .bottom-layer {
@@ -204,31 +220,39 @@
       </div>
     </div>
     <script>
-    const heroImage = document.getElementById('heroImage');
-    const fireBtn = document.getElementById('fireBtn');
-    const frames = ['elf1.jpg', 'elf2.jpg', 'elf3.jpg'];
-    let cycling = false;
+      const heroImage = document.getElementById('heroImage');
+      const heroWrapper = document.querySelector('.hero-image-wrapper');
+      const fireBtn = document.getElementById('fireBtn');
+      const frames = ['elf1.jpg', 'elf2.jpg', 'elf3.jpg'];
+      let cycling = false;
 
-    fireBtn.addEventListener('click', () => {
-      if (cycling) return;
-      cycling = true;
-      fireBtn.disabled = true;
-      const start = Date.now();
-      let idx = 0;
+      // simple runtime checks (non-breaking)
+      console.assert(Array.isArray(frames), 'frames should be an array');
+      console.assert(frames.length === 3, 'frames should contain 3 images');
+      console.assert(heroImage instanceof HTMLImageElement, 'heroImage should be an <img>');
 
-      const timer = setInterval(() => {
-        const elapsed = Date.now() - start;
-        if (elapsed >= 3000) {
-          clearInterval(timer);
-          heroImage.src = 'elf1.jpg';
-          cycling = false;
-          fireBtn.disabled = false;
-          return;
-        }
-        heroImage.src = frames[idx % frames.length];
-        idx++;
-      }, 100);
-    });
-  </script>
-</body>
+      fireBtn.addEventListener('click', () => {
+        if (cycling) return;
+        cycling = true;
+        fireBtn.disabled = true;
+        heroWrapper.classList.add('shake', 'zoom');
+        const start = Date.now();
+        let idx = 0;
+
+        const timer = setInterval(() => {
+          const elapsed = Date.now() - start;
+          if (elapsed >= 3000) {
+            clearInterval(timer);
+            heroImage.src = 'elf1.jpg';
+            heroWrapper.classList.remove('shake', 'zoom');
+            cycling = false;
+            fireBtn.disabled = false;
+            return;
+          }
+          heroImage.src = frames[idx % frames.length];
+          idx++;
+        }, 100);
+      });
+    </script>
+  </body>
 </html>
