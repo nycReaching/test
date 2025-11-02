@@ -1,737 +1,375 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Mobile Creature Draft Prototype</title>
-  <style>
-    :root {
-      --bg: #0f1115;
-      --bg-panel: rgba(17, 19, 24, 0.8);
-      --card: rgba(24, 27, 33, 0.9);
-      --border: rgba(255, 255, 255, 0.08);
-      --accent: #f8c04f;
-      --accent-soft: rgba(248, 192, 79, 0.12);
-      --hp: #ff6b6b;
-      --text: #ffffff;
-      --muted: rgba(255, 255, 255, 0.4);
-      --radius-lg: 20px;
-      --radius-md: 14px;
-      --radius-sm: 10px;
-    }
-    * {
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
-    body {
-      margin: 0;
-      background: radial-gradient(circle at top, #171a21 0%, #0f1115 50%, #0a0b0e 100%);
-      color: var(--text);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      display: flex;
-      justify-content: center;
-      min-height: 100vh;
-    }
-    .app-shell {
-      width: 100%;
-      max-width: 480px;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      gap: 0.55rem;
-      padding: calc(0.6rem + env(safe-area-inset-top, 0px)) 0.65rem calc(0.5rem + env(safe-area-inset-bottom, 0px));
-    }
-    header.topbar {
-      height: 52px;
-      border: 1px solid rgba(248, 192, 79, 0.25);
-      background: linear-gradient(115deg, rgba(248, 191, 79, 0.25) 0%, rgba(15, 17, 22, 0.5) 30%, rgba(15, 17, 22, 0.25) 100%);
-      backdrop-filter: blur(12px);
-      border-radius: 999px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.35rem 0.7rem 0.35rem 0.55rem;
-      gap: 0.4rem;
-    }
-    .top-left {
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-    }
-    .game-title {
-      font-size: 0.85rem;
-      font-weight: 600;
-      line-height: 1.1;
-    }
-    .phase-pill {
-      font-size: 0.65rem;
-      background: rgba(0,0,0,0.3);
-      border: 1px solid rgba(255,255,255,0.05);
-      border-radius: 999px;
-      padding: 0.1rem 0.5rem 0.2rem;
-    }
-    .resource-cluster {
-      display: flex;
-      gap: 0.25rem;
-    }
-    .chip {
-      background: rgba(13, 14, 16, 0.5);
-      padding: 0.1rem 0.45rem;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.03);
-      font-size: 0.62rem;
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-    }
-    .chip strong {
-      font-size: 0.7rem;
-      letter-spacing: -0.01em;
-    }
-    main.screen {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 0.6rem;
-      min-height: calc(100vh - 52px - 56px - env(safe-area-inset-top, 0px));
-    }
-    .panel-context {
-      background: radial-gradient(circle at top, rgba(248,191,79,0.085) 0%, rgba(9,10,12,0.4) 90%);
-      border: 1px solid rgba(248, 192, 79, 0.06);
-      border-radius: var(--radius-lg);
-      padding: 0.55rem 0.55rem 0.45rem;
-      min-height: 110px;
-      display: flex;
-      gap: 0.4rem;
-      align-items: flex-start;
-    }
-    .context-body {
-      flex: 1;
-      min-height: 96px;
-    }
-    .context-title {
-      font-size: 0.73rem;
-      font-weight: 600;
-      letter-spacing: -0.01em;
-    }
-    .context-text {
-      font-size: 0.65rem;
-      color: var(--muted);
-      margin-top: 0.3rem;
-      line-height: 1.25;
-      min-height: 1.7rem;
-    }
-    .context-action-hint {
-      margin-top: 0.45rem;
-      display: flex;
-      gap: 0.25rem;
-    }
-    .hint-pill {
-      background: rgba(248,192,79,0.18);
-      color: #ffe3aa;
-      border-radius: 999px;
-      font-size: 0.6rem;
-      padding: 0.12rem 0.4rem 0.2rem;
-      letter-spacing: -0.015em;
-    }
-    .context-illustration {
-      width: 78px;
-      height: 78px;
-      background: radial-gradient(circle, rgba(248,192,79,0.24) 0%, rgba(3,3,3,0) 65%);
-      border: 1px solid rgba(248,192,79,0.06);
-      border-radius: 18px;
-      display: grid;
-      place-items: center;
-      font-size: 2.3rem;
-    }
-    .flex-row-primary {
-      display: flex;
-      gap: 0.55rem;
-      min-height: 192px;
-    }
-    .side-companions {
-      width: 64px;
-      background: rgba(15,16,20,0.35);
-      border: 1px solid rgba(255,255,255,0.02);
-      border-radius: var(--radius-md);
-      display: flex;
-      flex-direction: column;
-      gap: 0.4rem;
-      padding: 0.35rem 0.25rem;
-    }
-    .companion-slot {
-      height: 48px;
-      border-radius: 14px;
-      background: rgba(9,10,12,0.35);
-      border: 1px dashed rgba(255,255,255,0.04);
-      display: grid;
-      place-items: center;
-      font-size: 1.6rem;
-      color: rgba(255,255,255,0.14);
-    }
-    .grid-shell {
-      flex: 1.1;
-      background: rgba(14,16,20,0.5);
-      border: 1px solid rgba(255,255,255,0.02);
-      border-radius: var(--radius-md);
-      padding: 0.4rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.3rem;
-      min-width: 0;
-    }
-    .grid-title-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.4rem;
-    }
-    .grid-title {
-      font-size: 0.62rem;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      color: rgba(255,255,255,0.6);
-    }
-    .grid-body {
-      flex: 1;
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 0.35rem;
-      align-content: start;
-    }
-    .grid-item {
-      aspect-ratio: 1/1;
-      background: radial-gradient(circle at 20% 20%, rgba(248,192,79,0.05) 0%, rgba(4,4,6,0.2) 45%, rgba(4,4,6,0.6) 100%);
-      border: 1px solid rgba(255,255,255,0.015);
-      border-radius: 14px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 0.1rem;
-      font-size: 1.75rem;
-      cursor: pointer;
-      transition: transform 0.16s;
-    }
-    .grid-item:active {
-      transform: scale(0.97);
-    }
-    .grid-item small {
-      font-size: 0.55rem;
-      color: rgba(255,255,255,0.45);
-    }
-    .character-card {
-      width: 110px;
-      background: radial-gradient(circle at top, rgba(54,169,241,0.12) 0%, rgba(11,12,15,0.4) 100%);
-      border: 1px solid rgba(255,255,255,0.03);
-      border-radius: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-      padding: 0.4rem 0.4rem 0.35rem;
-      align-items: center;
-    }
-    .character-emoji {
-      width: 68px;
-      height: 68px;
-      border-radius: 18px;
-      background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0) 65%);
-      display: grid;
-      place-items: center;
-      font-size: 2.4rem;
-    }
-    .hp-bar-wrap {
-      width: 100%;
-      height: 6px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.03);
-      overflow: hidden;
-      position: relative;
-    }
-    .hp-bar {
-      height: 100%;
-      background: linear-gradient(90deg, #ff6b6b, #ffc46b);
-      transition: width 0.24s ease-out;
-    }
-    .char-meta {
-      font-size: 0.6rem;
-      color: rgba(255,255,255,0.55);
-      text-align: center;
-    }
-    .info-panel {
-      background: rgba(15,16,20,0.45);
-      border: 1px solid rgba(255,255,255,0.015);
-      border-radius: var(--radius-md);
-      padding: 0.4rem 0.45rem 0.45rem;
-      min-height: 96px;
-      display: flex;
-      flex-direction: column;
-      gap: 0.35rem;
-    }
-    .info-heading {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.4rem;
-      font-size: 0.6rem;
-    }
-    .info-heading h3 {
-      margin: 0;
-      font-size: 0.6rem;
-    }
-    .info-body {
-      font-size: 0.6rem;
-      line-height: 1.3;
-      color: rgba(255,255,255,0.6);
-      min-height: 2.1rem;
-    }
-    .info-actions {
-      display: flex;
-      gap: 0.35rem;
-    }
-    .btn {
-      flex: 1;
-      border: none;
-      border-radius: 12px;
-      background: rgba(248,192,79,0.16);
-      color: #fff;
-      font-weight: 600;
-      font-size: 0.62rem;
-      padding: 0.38rem 0.25rem 0.45rem;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 0.2rem;
-      cursor: pointer;
-    }
-    .btn.main {
-      background: radial-gradient(circle at top, rgba(248,192,79,1) 0%, rgba(250,168,46,0.6) 60%, rgba(185,120,36,0.5) 100%);
-      box-shadow: 0 10px 20px rgba(248, 192, 79, 0.23);
-      color: #0f0f11;
-    }
-    .btn.disabled {
-      opacity: 0.6;
-      pointer-events: none;
-    }
-    footer.actionbar {
-      background: radial-gradient(circle, rgba(13,13,14,0.7) 0%, rgba(0,0,0,0) 60%);
-      border: 1px solid rgba(248,192,79,0.01);
-      border-radius: 999px;
-      height: 56px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.45rem;
-      padding: 0.35rem 0.45rem 0.3rem 0.45rem;
-    }
-    .xp-bar {
-      flex: 1;
-      background: rgba(255,255,255,0.03);
-      border-radius: 999px;
-      height: 7px;
-      overflow: hidden;
-      position: relative;
-    }
-    .xp-fill {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(90deg, #f8c04f 0%, #7dfbe4 60%, rgba(125,251,228,0) 100%);
-      width: 40%;
-    }
-    .bottom-btn {
-      width: 50px;
-      height: 50px;
-      border-radius: 999px;
-      background: radial-gradient(circle, rgba(248,192,79,0.85) 0%, rgba(248,192,79,0.35) 60%, rgba(248,192,79,0.01) 100%);
-      display: grid;
-      place-items: center;
-      font-size: 1.35rem;
-      border: 1px solid rgba(255,255,255,0.07);
-      cursor: pointer;
-    }
-    .hidden { display: none !important; }
-    @media (max-width: 430px) {
-      .flex-row-primary {
-        gap: 0.35rem;
-      }
-      .character-card {
-        width: 96px;
-      }
-      .grid-body {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-      }
-      .panel-context {
-        min-height: 100px;
-      }
-      .side-companions {
-        width: 56px;
-      }
-    }
-    @media (max-width: 375px) {
-      .flex-row-primary {
-        flex-wrap: wrap;
-      }
-      .character-card {
-        width: 100%;
-        flex-direction: row;
-        justify-content: flex-start;
-      }
-      .character-emoji {
-        width: 60px;
-        height: 60px;
-      }
-      .side-companions {
-        flex-direction: row;
-        width: 100%;
-        height: 58px;
-      }
-      .companion-slot {
-        flex: 1;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <!-- CRITICAL: This meta tag ensures proper scaling and locks the viewport for a mobile game. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+    <title>Blank Game UI</title>
+
+    <!-- Load a clean, readable font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        /*
+        ==========================================================================
+        AI WORKFLOW INSTRUCTIONS: READ THIS FIRST
+        ==========================================================================
+
+        1.  DO NOT add new <style> blocks or CSS files.
+        2.  DO NOT use inline styles (e.g., style="...").
+        3.  MODIFY CSS VARIABLES in :root to change colors, fonts, and sizes.
+        4.  ADD new, well-named CSS classes below for new components.
+        5.  USE THE "is-visible" CLASS (or opacity) to show/hide elements.
+            DO NOT add/remove elements or use `display: none`. This prevents layout shifts.
+        6.  RESPECT all `overflow: hidden` and `text-overflow: ellipsis` properties.
+            They are intentional to prevent resizing and scrollbars.
+
+        ==========================================================================
+        */
+
+        /*
+        --------------------------------------------------
+        Section 1: SINGLE SOURCE OF TRUTH (CSS Variables)
+        AI: Change these values to theme the game.
+        --------------------------------------------------
+        */
+        :root {
+            /* Colors */
+            --color-bg: #1a1a2e;        /* Dark blue background */
+            --color-surface: #162447; /* Slightly lighter surface */
+            --color-primary: #1f4068;   /* Primary button/UI color */
+            --color-accent: #e43f5a;    /* Accent color for important things */
+            --color-text-primary: #f6f6f6; /* Main text */
+            --color-text-secondary: #a0a0a0; /* Dimmer text */
+
+            /* Typography */
+            --font-family-main: 'Inter', sans-serif;
+            --font-size-small: 0.8rem;
+            --font-size-medium: 1rem;
+            --font-size-large: 1.2rem;
+
+            /* Sizing & Spacing */
+            --spacing-small: 8px;
+            --spacing-medium: 16px;
+            --spacing-large: 24px;
+
+            /* Fixed Layout Sizes */
+            --header-height: 60px;
+            --footer-height: 150px;
+            --tile-size: 60px; /* For a game board */
+        }
+
+        /*
+        --------------------------------------------------
+        Section 2: ROBUST GLOBAL GUARDRAILS
+        AI: Do not modify these unless instructed.
+        --------------------------------------------------
+        */
+        * {
+            box-sizing: border-box; /* Makes layout math predictable */
+            -webkit-font-smoothing: antialiased; /* Makes text look better */
+        }
+
+        html, body {
+            width: 100%;
+            height: 100dvh; /* Dynamic Viewport Height: Fills the mobile screen */
+            margin: 0;
+            padding: 0;
+
+            /* CRITICAL: This is the magic. It BANS all browser-level scrollbars
+               and prevents content from pushing the layout. */
+            overflow: hidden;
+
+            background-color: var(--color-bg);
+            color: var(--color-text-primary);
+            font-family: var(--font-family-main);
+        }
+
+        /*
+        --------------------------------------------------
+        Section 3: MAIN GAME LAYOUT
+        This creates the fixed Header, main Game Area, and Footer.
+        --------------------------------------------------
+        */
+        #game-container {
+            display: flex;
+            flex-direction: column; /* Stacks header, main, footer vertically */
+            width: 100%;
+            height: 100%; /* Fills the body */
+        }
+
+        #header-bar {
+            /* CRITICAL: flex-shrink: 0 prevents this from being crushed
+               if content in #main-content grows. */
+            flex-shrink: 0;
+            height: var(--header-height);
+            padding: 0 var(--spacing-medium);
+            background-color: var(--color-surface);
+            border-bottom: 2px solid var(--color-primary);
+
+            /* Use flex to align header items */
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        #main-content {
+            /* CRITICAL: flex-grow: 1 tells this element to fill ALL
+               available space between the header and footer. */
+            flex-grow: 1;
+            overflow: hidden; /* No scrollbars on the main area */
+            padding: var(--spacing-medium);
+
+            /* Center the game board/content */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #footer-bar {
+            flex-shrink: 0; /* Prevents this from being crushed */
+            height: var(--footer-height);
+            background-color: var(--color-surface);
+            border-top: 2px solid var(--color-primary);
+            padding: var(--spacing-medium);
+
+            display: flex;
+            flex-direction: column;
+        }
+
+        /*
+        --------------------------------------------------
+        Section 4: COMPONENT STYLES (The "Fixes")
+        AI: Add new classes here.
+        --------------------------------------------------
+        */
+
+        /* * FIX for: "Text forcing new lines"
+         * AI: Add this class to any single-line text element.
+         */
+        .status-text {
+            white-space: nowrap;     /* 1. Prevent wrapping */
+            overflow: hidden;        /* 2. Hide overflow */
+            text-overflow: ellipsis; /* 3. Add "..." */
+            width: 100%;             /* 4. Must have a width to work */
+            font-size: var(--font-size-small);
+            color: var(--color-text-secondary);
+        }
+
+        /* * FIX for: "Tiles/icons causing layout shifts"
+         * AI: Add/remove the "is-visible" class in JS to show/hide.
+         */
+        #game-board {
+            display: grid;
+            /* Creates a 4-column grid, each column 1fr (fraction) of the space */
+            grid-template-columns: repeat(4, var(--tile-size));
+            gap: var(--spacing-small);
+        }
+
+        .game-tile {
+            width: var(--tile-size);
+            height: var(--tile-size);
+            background-color: var(--color-primary);
+            border-radius: var(--spacing-small);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-large);
+
+            /* Smooth transition for appearing/disappearing */
+            transition: all 0.2s ease;
+        }
+
+        .game-tile .icon {
+            /* CRITICAL: This is the fix. The icon is invisible but
+               still takes up its full space, preventing all layout shift. */
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.2s ease;
+        }
+
+        .game-tile .icon.is-visible {
+            visibility: visible;
+            opacity: 1;
+        }
+
+
+        /* * FIX for: "Text window resizing"
+         * AI: Use the addLog() function to add text here.
+         */
+        #message-log {
+            flex-grow: 1; /* Fill the footer space */
+            background: var(--color-bg);
+            border-radius: var(--spacing-small);
+            padding: var(--spacing-small);
+
+            /* CRITICAL: Hide text that overflows.
+               The JS function will manage removing old messages. */
+            overflow: hidden;
+
+            display: flex;
+            flex-direction: column-reverse; /* New messages appear at bottom */
+        }
+
+        #message-log p {
+            margin: 0;
+            font-size: var(--font-size-small);
+            color: var(--color-text-secondary);
+        }
+
+        #message-log p:first-child {
+            color: var(--color-text-primary); /* Newest message is brighter */
+        }
+
+    </style>
 </head>
 <body>
-  <div class="app-shell" id="app">
-    <header class="topbar">
-      <div class="top-left">
-        <div class="game-title">Hinterland Draft</div>
-        <div class="phase-pill" id="phase-pill">Phase: Forage</div>
-      </div>
-      <div class="resource-cluster">
-        <div class="chip">💰 <strong id="gold-val">120</strong></div>
-        <div class="chip">⭐ <strong id="soul-val">0</strong></div>
-      </div>
-    </header>
 
-    <main class="screen">
-      <section class="panel-context" id="context-panel">
-        <div class="context-body">
-          <div class="context-title" id="context-title">Choose a beast to interact with.</div>
-          <div class="context-text" id="context-text">Eat exactly one for a buff. Keep exactly one as a future companion.</div>
-          <div class="context-action-hint" id="context-hints">
-            <span class="hint-pill">1/2 actions used</span>
-            <span class="hint-pill">Tap a creature</span>
-          </div>
-        </div>
-        <div class="context-illustration" id="context-emoji">🦊</div>
-      </section>
+    <!--
+    ==========================================================================
+    AI WORKFLOW INSTRUCTIONS: HTML STRUCTURE
+    ==========================================================================
 
-      <div class="flex-row-primary">
-        <aside class="side-companions" id="companion-slots">
-          <div class="companion-slot" data-slot="0" title="Companion slot 1">+</div>
-          <div class="companion-slot" data-slot="1" title="Companion slot 2">+</div>
-          <div class="companion-slot" data-slot="2" title="Companion slot 3">+</div>
-        </aside>
+    1.  This is your "blank" UI. Add new elements inside the existing
+        #header-bar, #main-content, and #footer-bar sections.
+    2.  Give all new interactive elements (buttons, tiles) a clear `id` or `class`
+        so you can select them in JavaScript.
 
-        <section class="grid-shell">
-          <div class="grid-title-row">
-            <div class="grid-title" id="grid-title">Forage beasts (6)</div>
-            <div class="grid-title" id="grid-subtitle">Eat 1 • Keep 1</div>
-          </div>
-          <div class="grid-body" id="icon-grid"></div>
-        </section>
+    ==========================================================================
+    -->
 
-        <section class="character-card">
-          <div class="character-emoji" id="hero-emoji">🧝</div>
-          <div class="hp-bar-wrap">
-            <div class="hp-bar" id="hp-bar" style="width:100%"></div>
-          </div>
-          <div class="char-meta" id="char-meta">HP 10/10<br />Weapon: none</div>
-        </section>
-      </div>
+    <div id="game-container">
 
-      <section class="info-panel" id="info-panel">
-        <div class="info-heading">
-          <h3 id="info-title">No beast selected</h3>
-          <span id="info-tag" style="color:rgba(255,255,255,0.32);font-size:0.6rem;">forage phase</span>
-        </div>
-        <div class="info-body" id="info-body">Pick a creature from the grid to see actions.</div>
-        <div class="info-actions" id="info-actions">
-          <button class="btn disabled" id="btn-eat">Eat</button>
-          <button class="btn disabled" id="btn-keep">Keep</button>
-        </div>
-      </section>
-    </main>
+        <!-- HEADER: For scores, currency, stats, etc. -->
+        <header id="header-bar">
+            <!-- AI: These are the empty status sections from the template -->
+            <div style="width: 100px;">
+                <div class="status-text" id="status-gold"></div>
+                <div class="status-text" id="status-power"></div>
+            </div>
+            <div style="width: 200px; text-align: right;">
+                <div class="status-text" id="status-location"></div>
+            </div>
+        </header>
 
-    <footer class="actionbar">
-      <div class="bottom-btn" id="btn-help" title="Hints">❔</div>
-      <div class="xp-bar" aria-label="xp progress"><div class="xp-fill" id="xp-fill"></div></div>
-      <div class="bottom-btn" id="btn-main" title="Advance">▶</div>
-    </footer>
-  </div>
+        <!-- MAIN CONTENT: For game boards, character portraits, main interactives -->
+        <main id="main-content">
 
-  <script>
-    // static data for prototype
-    const DATA = {
-      animals: [
-        { id: 'fox', name: 'Amber Fox', emoji: '🦊', desc: 'Light eater. Costs 1 HP to eat, grants fox agility.', hpCost: 1, keepAs: 'Fox scout' },
-        { id: 'bear', name: 'Moss Bear', emoji: '🐻', desc: 'Hearty meat. Costs 2 HP to eat, grants temp armor.', hpCost: 2, keepAs: 'Bear guardian' },
-        { id: 'eagle', name: 'Peak Eagle', emoji: '🦅', desc: 'Lean meat. Costs 1 HP, grants vision next node.', hpCost: 1, keepAs: 'Eagle spotter' },
-        { id: 'frog', name: 'Marsh Frog', emoji: '🐸', desc: 'Toxic. Costs 3 HP, but high spirit buff.', hpCost: 3, keepAs: 'Toad alchemist' },
-        { id: 'boar', name: 'Rust Boar', emoji: '🐗', desc: 'Dense. Costs 2 HP, grants charge bonus.', hpCost: 2, keepAs: 'Boar bruiser' },
-        { id: 'owl', name: 'Grave Owl', emoji: '🦉', desc: 'Costs 1 HP, bargain with spirits.', hpCost: 1, keepAs: 'Owl whisperer' },
-      ],
-      weapons: [
-        { id: 'sword', name: 'Sunblade', emoji: '🗡️', desc: 'Balanced starter weapon. Boosts basic attack.' },
-        { id: 'bow', name: 'Moonbow', emoji: '🏹', desc: 'Ranged opener. Synergizes with fox/eagle.' },
-        { id: 'staff', name: 'Vine Staff', emoji: '🪄', desc: 'Control tool. Synergizes with frog/owl.' },
-        { id: 'axe', name: 'Timber Axe', emoji: '🪓', desc: 'Heavy hit. Synergizes with boar/bear.' },
-        { id: 'dagger', name: 'Silent Fang', emoji: '🗡️', desc: 'Double strike. Lightweight.' },
-      ],
-    };
+            <!-- AI: This is the empty 4x4 grid container -->
+            <div id="game-board">
+                <!-- AI: Add .game-tile elements here -->
+            </div>
 
-    const state = {
-      phase: 'forage', // 'forage' -> 'arm'
-      selectedId: null,
-      eaten: false,
-      kept: false,
-      hp: { cur: 10, max: 10 },
-      gold: 120,
-      soul: 0,
-      heroEmoji: '🧝',
-      weapon: null,
-      companions: [null, null, null],
-    };
+        </main>
 
-    const els = {
-      phasePill: document.getElementById('phase-pill'),
-      contextTitle: document.getElementById('context-title'),
-      contextText: document.getElementById('context-text'),
-      contextHints: document.getElementById('context-hints'),
-      contextEmoji: document.getElementById('context-emoji'),
-      grid: document.getElementById('icon-grid'),
-      gridTitle: document.getElementById('grid-title'),
-      gridSubtitle: document.getElementById('grid-subtitle'),
-      infoPanel: document.getElementById('info-panel'),
-      infoTitle: document.getElementById('info-title'),
-      infoBody: document.getElementById('info-body'),
-      infoTag: document.getElementById('info-tag'),
-      btnEat: document.getElementById('btn-eat'),
-      btnKeep: document.getElementById('btn-keep'),
-      hpBar: document.getElementById('hp-bar'),
-      charMeta: document.getElementById('char-meta'),
-      heroEmoji: document.getElementById('hero-emoji'),
-      goldVal: document.getElementById('gold-val'),
-      soulVal: document.getElementById('soul-val'),
-      companionSlots: document.querySelectorAll('.companion-slot'),
-      btnMain: document.getElementById('btn-main'),
-      btnHelp: document.getElementById('btn-help'),
-    };
+        <!-- FOOTER: For message logs, action buttons, menus, etc. -->
+        <footer id="footer-bar">
 
-    function renderTop() {
-      els.goldVal.textContent = state.gold;
-      els.soulVal.textContent = state.soul;
-      els.heroEmoji.textContent = state.heroEmoji;
-      const hpPct = Math.max(0, Math.min(100, (state.hp.cur / state.hp.max) * 100));
-      els.hpBar.style.width = hpPct + '%';
-      els.charMeta.innerHTML = `HP ${state.hp.cur}/${state.hp.max}<br />Weapon: ${state.weapon ? state.weapon.name : 'none'}`;
-      els.phasePill.textContent = `Phase: ${state.phase === 'forage' ? 'Forage' : 'Arm'}`;
-    }
+            <!-- AI: This is the empty message log -->
+            <div id="message-log">
+                <!-- AI: Messages will be added here by the addLog() function -->
+            </div>
 
-    function renderCompanions() {
-      els.companionSlots.forEach((slot, idx) => {
-        const c = state.companions[idx];
-        if (c) {
-          slot.textContent = c.emoji;
-          slot.style.borderStyle = 'solid';
-          slot.title = c.name;
-          slot.style.color = '#fff';
-        } else {
-          slot.textContent = '+';
-          slot.style.borderStyle = 'dashed';
-          slot.title = 'Empty companion slot';
-          slot.style.color = 'rgba(255,255,255,0.15)';
-        }
-      });
-    }
+        </footer>
 
-    function getCurrentList() {
-      return state.phase === 'forage' ? DATA.animals : DATA.weapons;
-    }
+    </div>
 
-    function renderGrid() {
-      const list = getCurrentList();
-      els.grid.innerHTML = '';
-      list.forEach(item => {
-        const cell = document.createElement('div');
-        cell.className = 'grid-item';
-        cell.dataset.id = item.id;
-        cell.innerHTML = `<div>${item.emoji}</div><small>${item.name}</small>`;
-        if (state.selectedId === item.id) {
-          cell.style.outline = '2px solid rgba(248,192,79,0.8)';
-          cell.style.outlineOffset = '-2px';
-        }
-        els.grid.appendChild(cell);
-      });
-      if (state.phase === 'forage') {
-        els.gridTitle.textContent = `Forage beasts (${DATA.animals.length})`;
-        els.gridSubtitle.textContent = `Eat ${state.eaten ? '1✓' : '1'} • Keep ${state.kept ? '1✓' : '1'}`;
-      } else {
-        els.gridTitle.textContent = `Weapons (${DATA.weapons.length})`;
-        els.gridSubtitle.textContent = 'Equip 1 weapon to advance';
-      }
-    }
+    <script>
+        /*
+        ==========================================================================
+        AI WORKFLOW INSTRUCTIONS: JAVASCRIPT
+        ==========================================================================
 
-    function renderInfo() {
-      const list = getCurrentList();
-      const selected = list.find(x => x.id === state.selectedId) || null;
-      if (!selected) {
-        els.infoTitle.textContent = state.phase === 'forage' ? 'No beast selected' : 'No weapon selected';
-        els.infoBody.textContent = state.phase === 'forage'
-          ? 'Pick a creature from the grid to see actions.'
-          : 'Pick a weapon from the grid to equip it.';
-        els.infoTag.textContent = state.phase === 'forage' ? 'forage phase' : 'arm phase';
-        els.btnEat.classList.add('disabled');
-        els.btnKeep.classList.add('disabled');
-        return;
-      }
-      els.infoTitle.textContent = selected.name;
-      els.infoBody.textContent = selected.desc;
-      els.infoTag.textContent = state.phase === 'forage' ? `HP cost: ${selected.hpCost}` : 'weapon';
-      if (state.phase === 'forage') {
-        // enable/disable per action
-        els.btnEat.textContent = `Eat (${selected.hpCost} HP)`;
-        els.btnKeep.textContent = `Keep`;
-        els.btnEat.classList.toggle('disabled', state.eaten);
-        els.btnKeep.classList.toggle('disabled', state.kept);
-      } else {
-        els.btnEat.textContent = 'Preview';
-        els.btnKeep.textContent = 'Equip';
-        els.btnEat.classList.remove('disabled');
-        els.btnKeep.classList.remove('disabled');
-      }
-    }
+        1.  Write all game logic inside this <script> tag.
+        2.  DO NOT manipulate styles directly (e.g., el.style.color = "red").
+        3.  MANIPULATE state by adding/removing CSS classes (e.g., el.classList.add("is-visible")).
+        4.  Use the provided helper functions below as a starting point.
+        5.  Wrap your initialization code in the "DOMContentLoaded" listener.
 
-    function renderContext() {
-      if (state.phase === 'forage') {
-        els.contextTitle.textContent = 'Choose a beast to interact with.';
-        els.contextText.textContent = 'Eat exactly one for a buff. Keep exactly one as a future companion.';
-        els.contextEmoji.textContent = '🦊';
-        els.contextHints.innerHTML = '';
-        const used = (state.eaten ? 1 : 0) + (state.kept ? 1 : 0);
-        const span1 = document.createElement('span');
-        span1.className = 'hint-pill';
-        span1.textContent = `${used}/2 actions used`;
-        const span2 = document.createElement('span');
-        span2.className = 'hint-pill';
-        span2.textContent = 'Tap a creature';
-        els.contextHints.appendChild(span1);
-        els.contextHints.appendChild(span2);
-      } else {
-        els.contextTitle.textContent = 'Arm for the journey.';
-        els.contextText.textContent = 'Pick one weapon that matches the companions you kept.';
-        els.contextEmoji.textContent = '🗡️';
-        els.contextHints.innerHTML = '';
-        const span1 = document.createElement('span');
-        span1.className = 'hint-pill';
-        span1.textContent = 'Equip 1 to proceed';
-        els.contextHints.appendChild(span1);
-      }
-    }
+        ==========================================================================
+        */
 
-    function selectItem(id) {
-      state.selectedId = id;
-      renderGrid();
-      renderInfo();
-    }
+        // Wait for the HTML to be fully loaded before running game logic
+        document.addEventListener('DOMContentLoaded', () => {
 
-    function performEat() {
-      if (state.phase !== 'forage' || state.eaten) return;
-      const animal = DATA.animals.find(a => a.id === state.selectedId);
-      if (!animal) return;
-      const newHp = state.hp.cur - animal.hpCost;
-      state.hp.cur = Math.max(0, newHp);
-      state.eaten = true;
-      renderTop();
-      renderContext();
-      renderInfo();
-      els.infoBody.textContent = `You ate ${animal.name}. HP now ${state.hp.cur}/${state.hp.max}.`;
-    }
+            // --- Selectors ---
+            // AI: Select your elements here
+            const goldStatus = document.getElementById('status-gold');
+            const logWindow = document.getElementById('message-log');
 
-    function performKeep() {
-      if (state.phase !== 'forage' || state.kept) return;
-      const animal = DATA.animals.find(a => a.id === state.selectedId);
-      if (!animal) return;
-      const emptyIdx = state.companions.findIndex(x => x === null);
-      if (emptyIdx === -1) return;
-      state.companions[emptyIdx] = { name: animal.keepAs, emoji: animal.emoji };
-      state.kept = true;
-      renderCompanions();
-      renderContext();
-      renderInfo();
-      els.infoBody.textContent = `You kept ${animal.name} as ${animal.keepAs}.`;
-    }
+            // --- State ---
+            // AI: Define your game state variables here
+            let gold = 0;
+            const MAX_LOG_MESSAGES = 10;
 
-    function maybeAdvancePhase() {
-      if (state.phase === 'forage') {
-        if (state.eaten && state.kept) {
-          state.phase = 'arm';
-          state.selectedId = null;
-          renderContext();
-          renderGrid();
-          renderInfo();
-          renderTop();
-        }
-      } else {
-        // future: advance to map/combat
-        alert('Prototype: weapon chosen. Proceed to encounter screen.');
-      }
-    }
+            // --- Helper Functions ---
 
-    function performEquip() {
-      if (state.phase !== 'arm') return;
-      const weapon = DATA.weapons.find(w => w.id === state.selectedId);
-      if (!weapon) return;
-      state.weapon = weapon;
-      renderTop();
-      renderInfo();
-      els.infoBody.textContent = `You equipped ${weapon.name}.`;
-    }
+            /**
+             * AI: Use this function to update single-line status text.
+             * @param {string} text - The new text to display.
+             */
+            function updateStatus(element, text) {
+                if (element) {
+                    element.textContent = text;
+                }
+            }
 
-    // listeners
-    els.grid.addEventListener('click', (e) => {
-      const cell = e.target.closest('.grid-item');
-      if (!cell) return;
-      const id = cell.dataset.id;
-      selectItem(id);
-    });
+            /**
+             * AI: Use this to add messages to the log. It automatically
+             * handles overflow by removing old messages.
+             * @param {string} message - The message string to add.
+             */
+            function addLog(message) {
+                const newLog = document.createElement('p');
+                newLog.textContent = message;
 
-    els.infoPanel.addEventListener('click', (e) => {
-      const target = e.target;
-      if (target.id === 'btn-eat') {
-        if (state.phase === 'forage') {
-          performEat();
-        } else {
-          // preview weapon could show a modal later
-          alert('Preview: weapon stats not implemented in this prototype.');
-        }
-      }
-      if (target.id === 'btn-keep') {
-        if (state.phase === 'forage') {
-          performKeep();
-          maybeAdvancePhase();
-        } else {
-          performEquip();
-          maybeAdvancePhase();
-        }
-      }
-    });
+                // Add the new message to the top (which is visually the bottom)
+                logWindow.prepend(newLog);
 
-    els.btnMain.addEventListener('click', () => {
-      maybeAdvancePhase();
-    });
+                // Remove old messages if log is full
+                if (logWindow.children.length > MAX_LOG_MESSAGES) {
+                    logWindow.lastChild.remove();
+                }
+            }
 
-    els.btnHelp.addEventListener('click', () => {
-      alert('Prototype: forage phase -> pick 1 to eat, 1 to keep. Then weapon phase. UI is locked to mobile portrait.');
-    });
+            /**
+             * AI: Use this to show/hide icons on tiles to prevent layout shifts.
+             * @param {HTMLElement} tileElement - The .game-tile element.
+             * @param {string} [iconEmoji] - Optional. The emoji to set.
+             * @param {boolean} [show] - Optional. Force show/hide.
+             */
+            function toggleTileIcon(tileElement, iconEmoji, show) {
+                const iconSpan = tileElement.querySelector('.icon');
+                if (!iconSpan) return;
 
-    // initial render
-    renderTop();
-    renderCompanions();
-    renderGrid();
-    renderInfo();
-    renderContext();
-  </script>
+                // Set the icon if provided
+                if (iconEmoji) {
+                    iconSpan.textContent = iconEmoji;
+                }
+
+                // Toggle visibility
+                if (show === true) {
+                    iconSpan.classList.add('is-visible');
+                } else if (show === false) {
+                    iconSpan.classList.remove('is-visible');
+                } else {
+                    iconSpan.classList.toggle('is-visible');
+                }
+            }
+
+
+            // --- Game Logic ---
+            // AI: Add your game logic and event listeners here.
+
+            // Example:
+            // updateStatus(goldStatus, "Gold: 10");
+            // addLog("Welcome to your game!");
+
+
+        });
+
+    </script>
 </body>
 </html>
