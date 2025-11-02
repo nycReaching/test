@@ -1,522 +1,737 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>Slot Roguelike RPG</title>
-    <style>
-      :root {
-        --bg: #0f172a;
-        --surface: #111827;
-        --surface-2: #1f2937;
-        --text: #e5e7eb;
-        --accent: #f97316;
-        --gap: 0.5rem;
-        --radius: 0.75rem;
-        --maxw: 480px;
-        --bar-h: 52px;
-      }
-      *, *::before, *::after { box-sizing: border-box; }
-      html, body { height: 100%; }
-      body {
-        margin: 0;
-        background: var(--bg);
-        color: var(--text);
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        overflow: hidden;
-      }
-      #app {
-        height: 100dvh;
-        width: 100%;
-        max-width: var(--maxw);
-        margin: 0 auto;
-        display: flex;
-        flex-direction: column;
-        background: radial-gradient(circle at top, #111827, #020617 65%);
-      }
-      .top-bar {
-        flex: 0 0 var(--bar-h);
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        gap: 0.15rem;
-        padding: 0 1rem;
-        background: rgba(2, 6, 23, 0.5);
-        backdrop-filter: blur(10px);
-      }
-      .top-bar .title { font-weight: 600; font-size: 0.9rem; }
-      .top-bar .subtitle { font-size: 0.7rem; opacity: 0.7; }
-      .main {
-        flex: 1 1 auto;
-        display: flex;
-        flex-direction: column;
-        gap: var(--gap);
-        padding: var(--gap);
-        overflow: hidden;
-      }
-      /* DO NOT RESIZE THIS */
-      #game-screen {
-        flex: 0 0 230px;
-        background: var(--surface);
-        border-radius: var(--radius);
-        padding: var(--gap);
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Mobile Creature Draft Prototype</title>
+  <style>
+    :root {
+      --bg: #0f1115;
+      --bg-panel: rgba(17, 19, 24, 0.8);
+      --card: rgba(24, 27, 33, 0.9);
+      --border: rgba(255, 255, 255, 0.08);
+      --accent: #f8c04f;
+      --accent-soft: rgba(248, 192, 79, 0.12);
+      --hp: #ff6b6b;
+      --text: #ffffff;
+      --muted: rgba(255, 255, 255, 0.4);
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --radius-sm: 10px;
+    }
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top, #171a21 0%, #0f1115 50%, #0a0b0e 100%);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .app-shell {
+      width: 100%;
+      max-width: 480px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+      padding: calc(0.6rem + env(safe-area-inset-top, 0px)) 0.65rem calc(0.5rem + env(safe-area-inset-bottom, 0px));
+    }
+    header.topbar {
+      height: 52px;
+      border: 1px solid rgba(248, 192, 79, 0.25);
+      background: linear-gradient(115deg, rgba(248, 191, 79, 0.25) 0%, rgba(15, 17, 22, 0.5) 30%, rgba(15, 17, 22, 0.25) 100%);
+      backdrop-filter: blur(12px);
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.35rem 0.7rem 0.35rem 0.55rem;
+      gap: 0.4rem;
+    }
+    .top-left {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .game-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      line-height: 1.1;
+    }
+    .phase-pill {
+      font-size: 0.65rem;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 999px;
+      padding: 0.1rem 0.5rem 0.2rem;
+    }
+    .resource-cluster {
+      display: flex;
+      gap: 0.25rem;
+    }
+    .chip {
+      background: rgba(13, 14, 16, 0.5);
+      padding: 0.1rem 0.45rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.03);
+      font-size: 0.62rem;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .chip strong {
+      font-size: 0.7rem;
+      letter-spacing: -0.01em;
+    }
+    main.screen {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      min-height: calc(100vh - 52px - 56px - env(safe-area-inset-top, 0px));
+    }
+    .panel-context {
+      background: radial-gradient(circle at top, rgba(248,191,79,0.085) 0%, rgba(9,10,12,0.4) 90%);
+      border: 1px solid rgba(248, 192, 79, 0.06);
+      border-radius: var(--radius-lg);
+      padding: 0.55rem 0.55rem 0.45rem;
+      min-height: 110px;
+      display: flex;
+      gap: 0.4rem;
+      align-items: flex-start;
+    }
+    .context-body {
+      flex: 1;
+      min-height: 96px;
+    }
+    .context-title {
+      font-size: 0.73rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+    .context-text {
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-top: 0.3rem;
+      line-height: 1.25;
+      min-height: 1.7rem;
+    }
+    .context-action-hint {
+      margin-top: 0.45rem;
+      display: flex;
+      gap: 0.25rem;
+    }
+    .hint-pill {
+      background: rgba(248,192,79,0.18);
+      color: #ffe3aa;
+      border-radius: 999px;
+      font-size: 0.6rem;
+      padding: 0.12rem 0.4rem 0.2rem;
+      letter-spacing: -0.015em;
+    }
+    .context-illustration {
+      width: 78px;
+      height: 78px;
+      background: radial-gradient(circle, rgba(248,192,79,0.24) 0%, rgba(3,3,3,0) 65%);
+      border: 1px solid rgba(248,192,79,0.06);
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      font-size: 2.3rem;
+    }
+    .flex-row-primary {
+      display: flex;
+      gap: 0.55rem;
+      min-height: 192px;
+    }
+    .side-companions {
+      width: 64px;
+      background: rgba(15,16,20,0.35);
+      border: 1px solid rgba(255,255,255,0.02);
+      border-radius: var(--radius-md);
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      padding: 0.35rem 0.25rem;
+    }
+    .companion-slot {
+      height: 48px;
+      border-radius: 14px;
+      background: rgba(9,10,12,0.35);
+      border: 1px dashed rgba(255,255,255,0.04);
+      display: grid;
+      place-items: center;
+      font-size: 1.6rem;
+      color: rgba(255,255,255,0.14);
+    }
+    .grid-shell {
+      flex: 1.1;
+      background: rgba(14,16,20,0.5);
+      border: 1px solid rgba(255,255,255,0.02);
+      border-radius: var(--radius-md);
+      padding: 0.4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      min-width: 0;
+    }
+    .grid-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .grid-title {
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: rgba(255,255,255,0.6);
+    }
+    .grid-body {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.35rem;
+      align-content: start;
+    }
+    .grid-item {
+      aspect-ratio: 1/1;
+      background: radial-gradient(circle at 20% 20%, rgba(248,192,79,0.05) 0%, rgba(4,4,6,0.2) 45%, rgba(4,4,6,0.6) 100%);
+      border: 1px solid rgba(255,255,255,0.015);
+      border-radius: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.1rem;
+      font-size: 1.75rem;
+      cursor: pointer;
+      transition: transform 0.16s;
+    }
+    .grid-item:active {
+      transform: scale(0.97);
+    }
+    .grid-item small {
+      font-size: 0.55rem;
+      color: rgba(255,255,255,0.45);
+    }
+    .character-card {
+      width: 110px;
+      background: radial-gradient(circle at top, rgba(54,169,241,0.12) 0%, rgba(11,12,15,0.4) 100%);
+      border: 1px solid rgba(255,255,255,0.03);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      padding: 0.4rem 0.4rem 0.35rem;
+      align-items: center;
+    }
+    .character-emoji {
+      width: 68px;
+      height: 68px;
+      border-radius: 18px;
+      background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0) 65%);
+      display: grid;
+      place-items: center;
+      font-size: 2.4rem;
+    }
+    .hp-bar-wrap {
+      width: 100%;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.03);
+      overflow: hidden;
+      position: relative;
+    }
+    .hp-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #ff6b6b, #ffc46b);
+      transition: width 0.24s ease-out;
+    }
+    .char-meta {
+      font-size: 0.6rem;
+      color: rgba(255,255,255,0.55);
+      text-align: center;
+    }
+    .info-panel {
+      background: rgba(15,16,20,0.45);
+      border: 1px solid rgba(255,255,255,0.015);
+      border-radius: var(--radius-md);
+      padding: 0.4rem 0.45rem 0.45rem;
+      min-height: 96px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .info-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.6rem;
+    }
+    .info-heading h3 {
+      margin: 0;
+      font-size: 0.6rem;
+    }
+    .info-body {
+      font-size: 0.6rem;
+      line-height: 1.3;
+      color: rgba(255,255,255,0.6);
+      min-height: 2.1rem;
+    }
+    .info-actions {
+      display: flex;
+      gap: 0.35rem;
+    }
+    .btn {
+      flex: 1;
+      border: none;
+      border-radius: 12px;
+      background: rgba(248,192,79,0.16);
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.62rem;
+      padding: 0.38rem 0.25rem 0.45rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.2rem;
+      cursor: pointer;
+    }
+    .btn.main {
+      background: radial-gradient(circle at top, rgba(248,192,79,1) 0%, rgba(250,168,46,0.6) 60%, rgba(185,120,36,0.5) 100%);
+      box-shadow: 0 10px 20px rgba(248, 192, 79, 0.23);
+      color: #0f0f11;
+    }
+    .btn.disabled {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+    footer.actionbar {
+      background: radial-gradient(circle, rgba(13,13,14,0.7) 0%, rgba(0,0,0,0) 60%);
+      border: 1px solid rgba(248,192,79,0.01);
+      border-radius: 999px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.45rem;
+      padding: 0.35rem 0.45rem 0.3rem 0.45rem;
+    }
+    .xp-bar {
+      flex: 1;
+      background: rgba(255,255,255,0.03);
+      border-radius: 999px;
+      height: 7px;
+      overflow: hidden;
+      position: relative;
+    }
+    .xp-fill {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, #f8c04f 0%, #7dfbe4 60%, rgba(125,251,228,0) 100%);
+      width: 40%;
+    }
+    .bottom-btn {
+      width: 50px;
+      height: 50px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(248,192,79,0.85) 0%, rgba(248,192,79,0.35) 60%, rgba(248,192,79,0.01) 100%);
+      display: grid;
+      place-items: center;
+      font-size: 1.35rem;
+      border: 1px solid rgba(255,255,255,0.07);
+      cursor: pointer;
+    }
+    .hidden { display: none !important; }
+    @media (max-width: 430px) {
+      .flex-row-primary {
         gap: 0.35rem;
       }
-      #side-panel {
-        flex: 1 1 auto;
-        background: var(--surface-2);
-        border-radius: var(--radius);
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
+      .character-card {
+        width: 96px;
       }
-      .panel-scroll {
-        flex: 1 1 auto;
-        overflow-y: auto;
-        padding: var(--gap);
-        gap: 0.35rem;
-        display: flex;
-        flex-direction: column;
-        -webkit-overflow-scrolling: touch;
-      }
-      .bottom-bar {
-        flex: 0 0 var(--bar-h);
-        display: flex;
-        gap: 0.5rem;
-        align-items: center;
-        padding: 0 0.5rem 0.5rem;
-        background: rgba(2, 6, 23, 0.5);
-        backdrop-filter: blur(10px);
-      }
-      .status { flex: 1 1 auto; font-size: 0.7rem; opacity: 0.8; min-width: 0; }
-      .btn {
-        flex: 0 0 auto;
-        background: var(--accent);
-        color: #0f172a;
-        border: none;
-        border-radius: 9999px;
-        padding: 0.4rem 0.9rem;
-        font-weight: 600;
-        font-size: 0.75rem;
-      }
-      .section-title { font-size: 0.75rem; font-weight: 600; }
-      .section-note { font-size: 0.65rem; opacity: 0.75; }
-      .text-ellipsis { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-      .line-clamp-2 {
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-      }
-      .log-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.25rem; }
-      .log-row { font-size: 0.65rem; background: rgba(15, 23, 42, 0.4); border-radius: 0.35rem; padding: 0.35rem 0.5rem; }
-      .notes { list-style: disc; margin: 0; padding-left: 1.1rem; }
-      .notes li { font-size: 0.65rem; margin-bottom: 0.25rem; }
-      /* SLOT MACHINE UI */
-      .slot-shell {
-        flex: 1 1 auto;
-        display: flex;
-        flex-direction: column;
-        gap: 0.35rem;
-      }
-      .slot-topline {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 0.5rem;
-      }
-      .slot-frame {
-        position: relative;
-        border-radius: 0.75rem;
-        background: radial-gradient(circle at 10% 10%, rgba(249, 115, 22, 0.6), rgba(15, 23, 42, 0.05) 40%, rgba(15, 23, 42, 0) 70%);
-        box-shadow: inset 0 0 0 1px rgba(249, 115, 22, 0.35);
-        padding: 0.3rem;
-      }
-      .slot-row {
-        display: grid;
+      .grid-body {
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 0.35rem;
-        align-items: center;
       }
-      .slot-cell {
-        height: 82px;
-        background: radial-gradient(circle, rgba(15, 23, 42, 0.35), rgba(15, 23, 42, 0.05));
-        border-radius: 0.6rem;
-        display: grid;
-        place-items: center;
-        font-size: 2.1rem;
-        line-height: 1;
-        transform-origin: center;
+      .panel-context {
+        min-height: 100px;
       }
-      .slot-cell.spin-pop {
-        animation: slot-pop 180ms ease-out;
+      .side-companions {
+        width: 56px;
       }
-      @keyframes slot-pop {
-        0% { transform: scale(1) translateY(0); filter: drop-shadow(0 0 0 rgba(249, 115, 22, 0)); }
-        40% { transform: scale(1.1) translateY(-4px); filter: drop-shadow(0 2px 6px rgba(249, 115, 22, 0.4)); }
-        100% { transform: scale(1) translateY(0); filter: none; }
-      }
-      .hp-bar {
-        flex: 1 1 auto;
-        height: 10px;
-        background: rgba(255, 255, 255, 0.06);
-        border-radius: 999px;
-        overflow: hidden;
-      }
-      .hp-fill {
-        height: 100%;
-        background: #f97316;
-        width: 100%;
-        transition: width 120ms ease-out;
-      }
-      .meta-line { font-size: 0.6rem; opacity: 0.7; }
-      /* inventory chips */
-      .inv-row {
-        display: flex;
-        gap: 0.35rem;
+    }
+    @media (max-width: 375px) {
+      .flex-row-primary {
         flex-wrap: wrap;
       }
-      .inv-chip {
-        background: rgba(15, 23, 42, 0.3);
-        border: 1px solid rgba(249, 115, 22, 0.4);
-        border-radius: 999px;
-        padding: 0.2rem 0.5rem;
-        font-size: 0.6rem;
+      .character-card {
+        width: 100%;
+        flex-direction: row;
+        justify-content: flex-start;
       }
-      .pill { font-size: 0.65rem; padding: 0.05rem 0.4rem; background: rgba(249, 115, 22, 0.15); border-radius: 999px; }
-      .char-card {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        background: rgba(15, 23, 42, 0.35);
-        border-radius: 0.65rem;
-        padding: 0.35rem 0.55rem;
+      .character-emoji {
+        width: 60px;
+        height: 60px;
       }
-      .char-emoji { font-size: 1.5rem; }
-      .char-meta { font-size: 0.6rem; line-height: 1.15; }
-    </style>
-  </head>
-  <body>
-    <div id="app">
-      <header class="top-bar">
-        <div class="title text-ellipsis">Slot Roguelike RPG</div>
-        <div class="subtitle text-ellipsis">spin to fight, get gold, survive</div>
-      </header>
-      <main class="main">
-        <!-- GAME AREA -->
-        <section id="game-screen">
-          <!-- BEGIN: GAME-VIEW -->
-          <div class="slot-shell" id="slot-shell">
-            <div class="slot-topline">
-              <div style="display:flex;flex-direction:column;gap:0.15rem;min-width:0;">
-                <div class="text-ellipsis" id="enemy-name">Enemy: none</div>
-                <div class="hp-bar"><div class="hp-fill" id="enemy-hp-fill"></div></div>
-              </div>
-              <div class="pill" id="floor-pill">F1</div>
-            </div>
-            <div class="slot-frame">
-              <div class="slot-row" id="slot-row">
-                <div class="slot-cell" data-reel="0">❔</div>
-                <div class="slot-cell" data-reel="1">❔</div>
-                <div class="slot-cell" data-reel="2">❔</div>
-              </div>
-            </div>
-            <div class="meta-line" id="last-result">Spin to start.</div>
+      .side-companions {
+        flex-direction: row;
+        width: 100%;
+        height: 58px;
+      }
+      .companion-slot {
+        flex: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell" id="app">
+    <header class="topbar">
+      <div class="top-left">
+        <div class="game-title">Hinterland Draft</div>
+        <div class="phase-pill" id="phase-pill">Phase: Forage</div>
+      </div>
+      <div class="resource-cluster">
+        <div class="chip">💰 <strong id="gold-val">120</strong></div>
+        <div class="chip">⭐ <strong id="soul-val">0</strong></div>
+      </div>
+    </header>
+
+    <main class="screen">
+      <section class="panel-context" id="context-panel">
+        <div class="context-body">
+          <div class="context-title" id="context-title">Choose a beast to interact with.</div>
+          <div class="context-text" id="context-text">Eat exactly one for a buff. Keep exactly one as a future companion.</div>
+          <div class="context-action-hint" id="context-hints">
+            <span class="hint-pill">1/2 actions used</span>
+            <span class="hint-pill">Tap a creature</span>
           </div>
-          <!-- END: GAME-VIEW -->
-        </section>
-        <!-- PANEL / HUD / LOG -->
-        <section id="side-panel">
-          <!-- BEGIN: PANEL-CONTENT -->
-          <div class="panel-scroll" id="panel-scroll">
-            <p class="section-title">Player</p>
-            <div class="char-card" id="char-card">
-              <div class="char-emoji" id="char-emoji">🧝</div>
-              <div class="char-meta">
-                <div id="char-name">Elf Adventurer</div>
-                <div id="char-note">slot build</div>
-              </div>
-            </div>
-            <div class="meta-line" id="player-line">❤️ 10/10 | 💰 0 | 🎲 ready</div>
-            <div class="inv-row" id="inv-row"></div>
-            <p class="section-title">How this prototype works</p>
-            <ul class="notes">
-              <li>Tap <strong>Spin</strong> to roll 3 emojis.</li>
-              <li>⚔️ deals damage. 🛡️ gives shield (1 hit). 💰 gives gold. ❤️ heals. 🍀 drops item.</li>
-              <li>3 of a kind = bonus effect.</li>
-              <li>When enemy HP is 0, you auto-advance floor and generate a new enemy.</li>
-              <li>Keep the layout. Add new features inside this panel or in <code>#game-screen</code> only.</li>
-            </ul>
-            <p class="section-title">Battle log</p>
-            <ul id="log-list" class="log-list">
-              <li class="log-row text-ellipsis">Game initialized.</li>
-            </ul>
+        </div>
+        <div class="context-illustration" id="context-emoji">🦊</div>
+      </section>
+
+      <div class="flex-row-primary">
+        <aside class="side-companions" id="companion-slots">
+          <div class="companion-slot" data-slot="0" title="Companion slot 1">+</div>
+          <div class="companion-slot" data-slot="1" title="Companion slot 2">+</div>
+          <div class="companion-slot" data-slot="2" title="Companion slot 3">+</div>
+        </aside>
+
+        <section class="grid-shell">
+          <div class="grid-title-row">
+            <div class="grid-title" id="grid-title">Forage beasts (6)</div>
+            <div class="grid-title" id="grid-subtitle">Eat 1 • Keep 1</div>
           </div>
-          <!-- END: PANEL-CONTENT -->
+          <div class="grid-body" id="icon-grid"></div>
         </section>
-      </main>
-      <footer class="bottom-bar">
-        <div class="status text-ellipsis" id="status-line">ready</div>
-        <button class="btn" id="spin-btn">Spin</button>
-      </footer>
-    </div>
-    <script>
-      const Game = {
-        dom: {
-          screen: null,
-          panel: null,
-          logList: null,
-          status: null,
-          spinBtn: null,
-          reelCells: [],
-          enemyName: null,
-          enemyHpFill: null,
-          floorPill: null,
-          playerLine: null,
-          invRow: null,
-          lastResult: null,
-          charEmoji: null,
-        },
-        state: {
-          logs: ["Game initialized."],
-          player: {
-            hp: 10,
-            maxHp: 10,
-            gold: 0,
-            shield: 0,
-            items: [],
-            emoji: "🧝",
-            name: "Elf Adventurer",
-          },
-          dungeon: {
-            floor: 1,
-          },
-          enemy: {
-            name: "",
-            emoji: "",
-            hp: 0,
-            maxHp: 0,
-            reward: 0,
-          },
-          slot: {
-            spinning: false,
-            reels: [
-              ["⚔️", "🛡️", "💰", "❤️", "🍀", "💥"],
-              ["⚔️", "🛡️", "💰", "❤️", "🍀", "💥"],
-              ["⚔️", "🛡️", "💰", "❤️", "🍀", "💥"],
-            ],
-          },
-        },
-        init() {
-          this.cacheDom();
-          this.bindEvents();
-          this.spawnEnemy();
-          this.renderAll();
-          this.setStatus("ready");
-        },
-        cacheDom() {
-          this.dom.screen = document.querySelector("#game-screen");
-          this.dom.panel = document.querySelector("#side-panel");
-          this.dom.logList = document.querySelector("#log-list");
-          this.dom.status = document.querySelector("#status-line");
-          this.dom.spinBtn = document.querySelector("#spin-btn");
-          this.dom.reelCells = Array.from(document.querySelectorAll(".slot-cell"));
-          this.dom.enemyName = document.querySelector("#enemy-name");
-          this.dom.enemyHpFill = document.querySelector("#enemy-hp-fill");
-          this.dom.floorPill = document.querySelector("#floor-pill");
-          this.dom.playerLine = document.querySelector("#player-line");
-          this.dom.invRow = document.querySelector("#inv-row");
-          this.dom.lastResult = document.querySelector("#last-result");
-          this.dom.charEmoji = document.querySelector("#char-emoji");
-        },
-        bindEvents() {
-          if (this.dom.spinBtn) {
-            this.dom.spinBtn.addEventListener("click", () => {
-              this.handleSpin();
-            });
-          }
-        },
-        spawnEnemy() {
-          const floor = this.state.dungeon.floor;
-          const pool = [
-            { name: "Slime", emoji: "🟢", base: 5 },
-            { name: "Skeleton", emoji: "💀", base: 6 },
-            { name: "Goblin", emoji: "👺", base: 7 },
-            { name: "Bat", emoji: "🦇", base: 4 },
-          ];
-          const pick = pool[Math.floor(Math.random() * pool.length)];
-          const hp = pick.base + Math.floor(floor * 1.25);
-          this.state.enemy = {
-            name: pick.name,
-            emoji: pick.emoji,
-            hp: hp,
-            maxHp: hp,
-            reward: 2 + floor,
-          };
-          this.addLog(`Encounter: ${pick.emoji} ${pick.name} (F${floor})`);
-          this.renderEnemy();
-        },
-        handleSpin() {
-          if (this.state.slot.spinning) return;
-          this.state.slot.spinning = true;
-          this.setStatus("spinning");
-          const results = this.state.slot.reels.map((reel) => {
-            const idx = Math.floor(Math.random() * reel.length);
-            return reel[idx];
-          });
-          // quick fake spin: show ? and anim
-          this.dom.reelCells.forEach((cell) => {
-            cell.textContent = "❔";
-            cell.classList.remove("spin-pop");
-          });
-          setTimeout(() => {
-            this.state.slot.spinning = false;
-            this.dom.reelCells.forEach((cell, i) => {
-              cell.textContent = results[i];
-              // trigger pop
-              void cell.offsetWidth; // force reflow
-              cell.classList.add("spin-pop");
-            });
-            this.resolveSpin(results);
-          }, 180);
-        },
-        resolveSpin(results) {
-          const counts = results.reduce((acc, sym) => {
-            acc[sym] = (acc[sym] || 0) + 1;
-            return acc;
-          }, {});
-          results.forEach((sym) => {
-            if (sym === "⚔️") this.dealDamage(2);
-            if (sym === "🛡️") this.addShield(1);
-            if (sym === "💰") this.gainGold(2);
-            if (sym === "❤️") this.heal(2);
-            if (sym === "🍀") this.dropItem();
-            if (sym === "💥") this.enemyStrike();
-          });
-          const three = results.find((sym) => counts[sym] === 3);
-          if (three) {
-            if (three === "⚔️") this.dealDamage(4);
-            if (three === "💰") this.gainGold(5);
-            if (three === "❤️") this.heal(5);
-            if (three === "🛡️") this.addShield(2);
-          }
-          const text = `Spin: ${results.join(" ")}`;
-          this.dom.lastResult.textContent = text;
-          this.addLog(text);
-          this.setStatus("ready");
-          this.renderPlayer();
-          this.checkEnemyDead();
-        },
-        dealDamage(amount) {
-          if (!this.state.enemy || this.state.enemy.hp <= 0) return;
-          this.state.enemy.hp = Math.max(0, this.state.enemy.hp - amount);
-          this.addLog(`You deal ${amount} dmg.`);
-          this.renderEnemy();
-        },
-        addShield(stacks) {
-          this.state.player.shield += stacks;
-          this.addLog(`Shield +${stacks}.`);
-        },
-        gainGold(amount) {
-          this.state.player.gold += amount;
-          this.addLog(`You gain ${amount} gold.`);
-        },
-        heal(amount) {
-          const p = this.state.player;
-          const before = p.hp;
-          p.hp = Math.min(p.maxHp, p.hp + amount);
-          const healed = p.hp - before;
-          if (healed > 0) this.addLog(`You heal ${healed}.`);
-        },
-        dropItem() {
-          const items = ["🧪 potion", "🪙 token", "🧲 charm", "📜 scroll"];
-          const pick = items[Math.floor(Math.random() * items.length)];
-          this.state.player.items.push(pick);
-          if (this.state.player.items.length > 8) this.state.player.items.shift();
-          this.addLog(`Item found: ${pick}`);
-        },
-        enemyStrike() {
-          if (!this.state.enemy || this.state.enemy.hp <= 0) return;
-          const dmg = 2 + Math.floor(this.state.dungeon.floor / 3);
-          if (this.state.player.shield > 0) {
-            this.state.player.shield -= 1;
-            this.addLog(`${this.state.enemy.emoji} attack blocked.`);
-            return;
-          }
-          this.state.player.hp = Math.max(0, this.state.player.hp - dmg);
-          this.addLog(`${this.state.enemy.emoji} hits you for ${dmg}.`);
-          if (this.state.player.hp <= 0) {
-            this.gameOver();
-          }
-        },
-        checkEnemyDead() {
-          if (this.state.enemy.hp > 0) return;
-          const reward = this.state.enemy.reward;
-          this.state.player.gold += reward;
-          this.addLog(`Enemy defeated. +${reward} gold.`);
-          this.state.dungeon.floor += 1;
-          this.spawnEnemy();
-        },
-        gameOver() {
-          this.addLog("You fell in the dungeon.");
-          this.setStatus("game over");
-          this.state.slot.spinning = true;
-        },
-        addLog(msg) {
-          const clean = msg.length > 90 ? msg.slice(0, 90) + "…" : msg;
-          this.state.logs.unshift(clean);
-          if (this.state.logs.length > 5) this.state.logs.pop();
-          this.renderLogs();
-        },
-        renderLogs() {
-          if (!this.dom.logList) return;
-          this.dom.logList.innerHTML = this.state.logs
-            .map((l) => `<li class="log-row text-ellipsis" title="${l.replace(/"/g, "&quot;")}">${l}</li>`)
-            .join("");
-        },
-        renderEnemy() {
-          const e = this.state.enemy;
-          if (this.dom.enemyName) {
-            this.dom.enemyName.textContent = `${e.emoji} ${e.name}`;
-          }
-          if (this.dom.enemyHpFill) {
-            const pct = e.maxHp > 0 ? (e.hp / e.maxHp) * 100 : 0;
-            this.dom.enemyHpFill.style.width = pct + "%";
-          }
-          if (this.dom.floorPill) {
-            this.dom.floorPill.textContent = `F${this.state.dungeon.floor}`;
-          }
-        },
-        renderPlayer() {
-          const p = this.state.player;
-          if (this.dom.playerLine) {
-            const shield = p.shield > 0 ? ` | 🛡️ ${p.shield}` : "";
-            this.dom.playerLine.textContent = `❤️ ${p.hp}/${p.maxHp} | 💰 ${p.gold}${shield}`;
-          }
-          if (this.dom.invRow) {
-            this.dom.invRow.innerHTML = p.items
-              .map((it) => `<span class="inv-chip text-ellipsis">${it}</span>`)
-              .join("");
-          }
-          if (this.dom.charEmoji) {
-            this.dom.charEmoji.textContent = p.emoji;
-          }
-        },
-        setStatus(text) {
-          if (this.dom.status) this.dom.status.textContent = text;
-        },
-        renderAll() {
-          this.renderLogs();
-          this.renderEnemy();
-          this.renderPlayer();
-        },
-      };
-      window.addEventListener("DOMContentLoaded", () => {
-        Game.init();
+
+        <section class="character-card">
+          <div class="character-emoji" id="hero-emoji">🧝</div>
+          <div class="hp-bar-wrap">
+            <div class="hp-bar" id="hp-bar" style="width:100%"></div>
+          </div>
+          <div class="char-meta" id="char-meta">HP 10/10<br />Weapon: none</div>
+        </section>
+      </div>
+
+      <section class="info-panel" id="info-panel">
+        <div class="info-heading">
+          <h3 id="info-title">No beast selected</h3>
+          <span id="info-tag" style="color:rgba(255,255,255,0.32);font-size:0.6rem;">forage phase</span>
+        </div>
+        <div class="info-body" id="info-body">Pick a creature from the grid to see actions.</div>
+        <div class="info-actions" id="info-actions">
+          <button class="btn disabled" id="btn-eat">Eat</button>
+          <button class="btn disabled" id="btn-keep">Keep</button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="actionbar">
+      <div class="bottom-btn" id="btn-help" title="Hints">❔</div>
+      <div class="xp-bar" aria-label="xp progress"><div class="xp-fill" id="xp-fill"></div></div>
+      <div class="bottom-btn" id="btn-main" title="Advance">▶</div>
+    </footer>
+  </div>
+
+  <script>
+    // static data for prototype
+    const DATA = {
+      animals: [
+        { id: 'fox', name: 'Amber Fox', emoji: '🦊', desc: 'Light eater. Costs 1 HP to eat, grants fox agility.', hpCost: 1, keepAs: 'Fox scout' },
+        { id: 'bear', name: 'Moss Bear', emoji: '🐻', desc: 'Hearty meat. Costs 2 HP to eat, grants temp armor.', hpCost: 2, keepAs: 'Bear guardian' },
+        { id: 'eagle', name: 'Peak Eagle', emoji: '🦅', desc: 'Lean meat. Costs 1 HP, grants vision next node.', hpCost: 1, keepAs: 'Eagle spotter' },
+        { id: 'frog', name: 'Marsh Frog', emoji: '🐸', desc: 'Toxic. Costs 3 HP, but high spirit buff.', hpCost: 3, keepAs: 'Toad alchemist' },
+        { id: 'boar', name: 'Rust Boar', emoji: '🐗', desc: 'Dense. Costs 2 HP, grants charge bonus.', hpCost: 2, keepAs: 'Boar bruiser' },
+        { id: 'owl', name: 'Grave Owl', emoji: '🦉', desc: 'Costs 1 HP, bargain with spirits.', hpCost: 1, keepAs: 'Owl whisperer' },
+      ],
+      weapons: [
+        { id: 'sword', name: 'Sunblade', emoji: '🗡️', desc: 'Balanced starter weapon. Boosts basic attack.' },
+        { id: 'bow', name: 'Moonbow', emoji: '🏹', desc: 'Ranged opener. Synergizes with fox/eagle.' },
+        { id: 'staff', name: 'Vine Staff', emoji: '🪄', desc: 'Control tool. Synergizes with frog/owl.' },
+        { id: 'axe', name: 'Timber Axe', emoji: '🪓', desc: 'Heavy hit. Synergizes with boar/bear.' },
+        { id: 'dagger', name: 'Silent Fang', emoji: '🗡️', desc: 'Double strike. Lightweight.' },
+      ],
+    };
+
+    const state = {
+      phase: 'forage', // 'forage' -> 'arm'
+      selectedId: null,
+      eaten: false,
+      kept: false,
+      hp: { cur: 10, max: 10 },
+      gold: 120,
+      soul: 0,
+      heroEmoji: '🧝',
+      weapon: null,
+      companions: [null, null, null],
+    };
+
+    const els = {
+      phasePill: document.getElementById('phase-pill'),
+      contextTitle: document.getElementById('context-title'),
+      contextText: document.getElementById('context-text'),
+      contextHints: document.getElementById('context-hints'),
+      contextEmoji: document.getElementById('context-emoji'),
+      grid: document.getElementById('icon-grid'),
+      gridTitle: document.getElementById('grid-title'),
+      gridSubtitle: document.getElementById('grid-subtitle'),
+      infoPanel: document.getElementById('info-panel'),
+      infoTitle: document.getElementById('info-title'),
+      infoBody: document.getElementById('info-body'),
+      infoTag: document.getElementById('info-tag'),
+      btnEat: document.getElementById('btn-eat'),
+      btnKeep: document.getElementById('btn-keep'),
+      hpBar: document.getElementById('hp-bar'),
+      charMeta: document.getElementById('char-meta'),
+      heroEmoji: document.getElementById('hero-emoji'),
+      goldVal: document.getElementById('gold-val'),
+      soulVal: document.getElementById('soul-val'),
+      companionSlots: document.querySelectorAll('.companion-slot'),
+      btnMain: document.getElementById('btn-main'),
+      btnHelp: document.getElementById('btn-help'),
+    };
+
+    function renderTop() {
+      els.goldVal.textContent = state.gold;
+      els.soulVal.textContent = state.soul;
+      els.heroEmoji.textContent = state.heroEmoji;
+      const hpPct = Math.max(0, Math.min(100, (state.hp.cur / state.hp.max) * 100));
+      els.hpBar.style.width = hpPct + '%';
+      els.charMeta.innerHTML = `HP ${state.hp.cur}/${state.hp.max}<br />Weapon: ${state.weapon ? state.weapon.name : 'none'}`;
+      els.phasePill.textContent = `Phase: ${state.phase === 'forage' ? 'Forage' : 'Arm'}`;
+    }
+
+    function renderCompanions() {
+      els.companionSlots.forEach((slot, idx) => {
+        const c = state.companions[idx];
+        if (c) {
+          slot.textContent = c.emoji;
+          slot.style.borderStyle = 'solid';
+          slot.title = c.name;
+          slot.style.color = '#fff';
+        } else {
+          slot.textContent = '+';
+          slot.style.borderStyle = 'dashed';
+          slot.title = 'Empty companion slot';
+          slot.style.color = 'rgba(255,255,255,0.15)';
+        }
       });
-    </script>
-  </body>
+    }
+
+    function getCurrentList() {
+      return state.phase === 'forage' ? DATA.animals : DATA.weapons;
+    }
+
+    function renderGrid() {
+      const list = getCurrentList();
+      els.grid.innerHTML = '';
+      list.forEach(item => {
+        const cell = document.createElement('div');
+        cell.className = 'grid-item';
+        cell.dataset.id = item.id;
+        cell.innerHTML = `<div>${item.emoji}</div><small>${item.name}</small>`;
+        if (state.selectedId === item.id) {
+          cell.style.outline = '2px solid rgba(248,192,79,0.8)';
+          cell.style.outlineOffset = '-2px';
+        }
+        els.grid.appendChild(cell);
+      });
+      if (state.phase === 'forage') {
+        els.gridTitle.textContent = `Forage beasts (${DATA.animals.length})`;
+        els.gridSubtitle.textContent = `Eat ${state.eaten ? '1✓' : '1'} • Keep ${state.kept ? '1✓' : '1'}`;
+      } else {
+        els.gridTitle.textContent = `Weapons (${DATA.weapons.length})`;
+        els.gridSubtitle.textContent = 'Equip 1 weapon to advance';
+      }
+    }
+
+    function renderInfo() {
+      const list = getCurrentList();
+      const selected = list.find(x => x.id === state.selectedId) || null;
+      if (!selected) {
+        els.infoTitle.textContent = state.phase === 'forage' ? 'No beast selected' : 'No weapon selected';
+        els.infoBody.textContent = state.phase === 'forage'
+          ? 'Pick a creature from the grid to see actions.'
+          : 'Pick a weapon from the grid to equip it.';
+        els.infoTag.textContent = state.phase === 'forage' ? 'forage phase' : 'arm phase';
+        els.btnEat.classList.add('disabled');
+        els.btnKeep.classList.add('disabled');
+        return;
+      }
+      els.infoTitle.textContent = selected.name;
+      els.infoBody.textContent = selected.desc;
+      els.infoTag.textContent = state.phase === 'forage' ? `HP cost: ${selected.hpCost}` : 'weapon';
+      if (state.phase === 'forage') {
+        // enable/disable per action
+        els.btnEat.textContent = `Eat (${selected.hpCost} HP)`;
+        els.btnKeep.textContent = `Keep`;
+        els.btnEat.classList.toggle('disabled', state.eaten);
+        els.btnKeep.classList.toggle('disabled', state.kept);
+      } else {
+        els.btnEat.textContent = 'Preview';
+        els.btnKeep.textContent = 'Equip';
+        els.btnEat.classList.remove('disabled');
+        els.btnKeep.classList.remove('disabled');
+      }
+    }
+
+    function renderContext() {
+      if (state.phase === 'forage') {
+        els.contextTitle.textContent = 'Choose a beast to interact with.';
+        els.contextText.textContent = 'Eat exactly one for a buff. Keep exactly one as a future companion.';
+        els.contextEmoji.textContent = '🦊';
+        els.contextHints.innerHTML = '';
+        const used = (state.eaten ? 1 : 0) + (state.kept ? 1 : 0);
+        const span1 = document.createElement('span');
+        span1.className = 'hint-pill';
+        span1.textContent = `${used}/2 actions used`;
+        const span2 = document.createElement('span');
+        span2.className = 'hint-pill';
+        span2.textContent = 'Tap a creature';
+        els.contextHints.appendChild(span1);
+        els.contextHints.appendChild(span2);
+      } else {
+        els.contextTitle.textContent = 'Arm for the journey.';
+        els.contextText.textContent = 'Pick one weapon that matches the companions you kept.';
+        els.contextEmoji.textContent = '🗡️';
+        els.contextHints.innerHTML = '';
+        const span1 = document.createElement('span');
+        span1.className = 'hint-pill';
+        span1.textContent = 'Equip 1 to proceed';
+        els.contextHints.appendChild(span1);
+      }
+    }
+
+    function selectItem(id) {
+      state.selectedId = id;
+      renderGrid();
+      renderInfo();
+    }
+
+    function performEat() {
+      if (state.phase !== 'forage' || state.eaten) return;
+      const animal = DATA.animals.find(a => a.id === state.selectedId);
+      if (!animal) return;
+      const newHp = state.hp.cur - animal.hpCost;
+      state.hp.cur = Math.max(0, newHp);
+      state.eaten = true;
+      renderTop();
+      renderContext();
+      renderInfo();
+      els.infoBody.textContent = `You ate ${animal.name}. HP now ${state.hp.cur}/${state.hp.max}.`;
+    }
+
+    function performKeep() {
+      if (state.phase !== 'forage' || state.kept) return;
+      const animal = DATA.animals.find(a => a.id === state.selectedId);
+      if (!animal) return;
+      const emptyIdx = state.companions.findIndex(x => x === null);
+      if (emptyIdx === -1) return;
+      state.companions[emptyIdx] = { name: animal.keepAs, emoji: animal.emoji };
+      state.kept = true;
+      renderCompanions();
+      renderContext();
+      renderInfo();
+      els.infoBody.textContent = `You kept ${animal.name} as ${animal.keepAs}.`;
+    }
+
+    function maybeAdvancePhase() {
+      if (state.phase === 'forage') {
+        if (state.eaten && state.kept) {
+          state.phase = 'arm';
+          state.selectedId = null;
+          renderContext();
+          renderGrid();
+          renderInfo();
+          renderTop();
+        }
+      } else {
+        // future: advance to map/combat
+        alert('Prototype: weapon chosen. Proceed to encounter screen.');
+      }
+    }
+
+    function performEquip() {
+      if (state.phase !== 'arm') return;
+      const weapon = DATA.weapons.find(w => w.id === state.selectedId);
+      if (!weapon) return;
+      state.weapon = weapon;
+      renderTop();
+      renderInfo();
+      els.infoBody.textContent = `You equipped ${weapon.name}.`;
+    }
+
+    // listeners
+    els.grid.addEventListener('click', (e) => {
+      const cell = e.target.closest('.grid-item');
+      if (!cell) return;
+      const id = cell.dataset.id;
+      selectItem(id);
+    });
+
+    els.infoPanel.addEventListener('click', (e) => {
+      const target = e.target;
+      if (target.id === 'btn-eat') {
+        if (state.phase === 'forage') {
+          performEat();
+        } else {
+          // preview weapon could show a modal later
+          alert('Preview: weapon stats not implemented in this prototype.');
+        }
+      }
+      if (target.id === 'btn-keep') {
+        if (state.phase === 'forage') {
+          performKeep();
+          maybeAdvancePhase();
+        } else {
+          performEquip();
+          maybeAdvancePhase();
+        }
+      }
+    });
+
+    els.btnMain.addEventListener('click', () => {
+      maybeAdvancePhase();
+    });
+
+    els.btnHelp.addEventListener('click', () => {
+      alert('Prototype: forage phase -> pick 1 to eat, 1 to keep. Then weapon phase. UI is locked to mobile portrait.');
+    });
+
+    // initial render
+    renderTop();
+    renderCompanions();
+    renderGrid();
+    renderInfo();
+    renderContext();
+  </script>
+</body>
 </html>
