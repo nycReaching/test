@@ -1,278 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Mobile Game UI</title>
+<head>
+    <meta charset="UTF-8">
+    <!-- 
+      This viewport tag is essential for mobile.
+      - 'width=device-width' sets the width to the device's screen.
+      - 'initial-scale=1.0' sets the default zoom level.
+      - 'user-scalable=no' prevents the user from zooming in or out,
+        which is common for web-based games.
+    -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Simple Game UI</title>
+    
+    <!-- Load Tailwind CSS for utility-first styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Load the Inter font for a clean, modern look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    
     <style>
-      :root {
-        --bg: #0f172a;
-        --accent: #38bdf8;
-      }
-      * {
-        box-sizing: border-box;
-      }
-      body {
-        margin: 0;
-        background: radial-gradient(circle at top, #1e293b, #0f172a);
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-      .game-shell {
-        width: 100%;
-        height: 100vh;
-        max-width: 480px;
-        background: linear-gradient(180deg, rgba(15, 23, 42, 0.9) 0%, rgba(15, 23, 42, 1) 100%);
-        display: flex;
-        flex-direction: column;
-      }
-      .top-layer {
-        flex: 1 1 50%;
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-        padding: 1rem 1rem 0.5rem;
-      }
-      .status-bar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: rgba(15, 23, 42, 0.35);
-        border: 1px solid rgba(148, 163, 184, 0.15);
-        border-radius: 9999px;
-        padding: 0.5rem 1rem;
-        color: #e2e8f0;
-        font-size: 0.7rem;
-      }
-      .status-left,
-      .status-right {
-        display: flex;
-        align-items: center;
-        gap: 0.4rem;
-      }
-      .pill {
-        background: rgba(15, 23, 42, 0.25);
-        border: 1px solid rgba(148, 163, 184, 0.1);
-        border-radius: 9999px;
-        padding: 0.25rem 0.6rem;
-        font-size: 0.6rem;
-      }
-      .title-block {
-        background: rgba(15, 23, 42, 0.45);
-        border: 1px solid rgba(148, 163, 184, 0.15);
-        border-radius: 1.25rem;
-        padding: 0.85rem 1rem 0.5rem;
-        color: #e2e8f0;
-      }
-      .title-block h1 {
-        margin: 0;
-        font-size: 1rem;
-        letter-spacing: 0.03em;
-      }
-      .title-block p {
-        margin: 0.3rem 0 0;
-        font-size: 0.7rem;
-        color: rgba(226, 232, 240, 0.65);
-      }
-      .resource-row {
-        display: flex;
-        gap: 0.4rem;
-        margin-top: 0.55rem;
-      }
-      .resource-card {
-        flex: 1;
-        background: rgba(15, 23, 42, 0.25);
-        border: 1px solid rgba(148, 163, 184, 0.1);
-        border-radius: 0.85rem;
-        padding: 0.4rem 0.5rem;
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-        font-size: 0.63rem;
-      }
-      .resource-label {
-        color: rgba(226, 232, 240, 0.65);
-      }
-      .resource-value {
-        font-size: 0.9rem;
-        font-weight: 600;
-      }
-      .bottom-layer {
-        flex: 1 1 50%;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end;
-        gap: 0.6rem;
-        padding: 0.25rem 1rem 1.2rem;
-      }
-      .hero-image-wrapper {
-        position: relative;
-        isolation: isolate; /* keep pseudo behind without leaking */
-        flex: 1;
-        min-height: 46vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-      .hero-frame {
-        width: 100%;
-        height: 100%;
-        border-radius: 1.5rem;
-        overflow: hidden;
-        background: #0f172a;
-        border: 1px solid rgba(148, 163, 184, 0.08);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        transition: transform 0.15s ease-out;
-      }
-      .hero-frame img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-      .hero-image-wrapper::after {
-        content: "";
-        position: absolute;
-        inset: -10px;
-        border-radius: 1.9rem;
-        pointer-events: none;
-        opacity: 0;
-        z-index: -1; /* stay behind the frame */
-      }
-      .hero-image-wrapper.glow::after {
-        background: conic-gradient(from 120deg, rgba(250, 204, 21, 0.85), rgba(192, 132, 252, 0.9), rgba(244, 114, 182, 0.9), rgba(250, 204, 21, 0.85));
-        filter: blur(20px);
-        animation: pulse-glow 0.9s ease-in-out infinite;
-        opacity: 1;
-      }
-      @keyframes pulse-glow {
-        0%, 100% { opacity: 0.6; filter: blur(20px); }
-        50% { opacity: 1; filter: blur(12px); }
-      }
-      .action-bar {
-        display: flex;
-        justify-content: center;
-      }
-      .round-btn {
-        width: 68px;
-        height: 68px;
-        border-radius: 9999px;
-        background: radial-gradient(circle, #38bdf8 0%, #0ea5e9 45%, #0f172a 120%);
-        border: 3px solid rgba(148, 163, 184, 0.3);
-        outline: 3px solid rgba(56, 189, 248, 0.25);
-        box-shadow: 0 12px 25px rgba(15, 23, 42, 0.4);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        color: #0f172a;
-        font-weight: 700;
-        font-size: 0.75rem;
-        letter-spacing: 0.02em;
-        cursor: pointer;
-        touch-action: manipulation;
-      }
-      .round-btn:active {
-        transform: translateY(1.5px) scale(0.995);
-      }
-      .hero-image-wrapper.shake {
-        animation: shake 0.3s ease-in-out infinite;
-      }
-      .hero-image-wrapper.zoom .hero-frame {
-        transform: scale(1.05);
-      }
-      @keyframes shake {
-        0% { transform: translateX(0); }
-        20% { transform: translateX(-6px); }
-        40% { transform: translateX(6px); }
-        60% { transform: translateX(-4px); }
-        80% { transform: translateX(4px); }
-        100% { transform: translateX(0); }
-      }
-      @media (min-height: 800px) {
-        .bottom-layer {
-          gap: 1rem;
+        /* Global styles to enforce the black background, default font,
+          and prevent any scrolling or "bouncing" on mobile devices.
+        */
+        html, body {
+            overflow: hidden; /* Prevents all scrolling */
+            background-color: #000;
+            font-family: 'Inter', sans-serif;
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
         }
-        .hero-image-wrapper {
-          min-height: 50vh;
+        
+        /* Ensure the body fills the *entire* available viewport.
+          '100vh' is a fallback, but '100dvh' (dynamic viewport height)
+          is better for modern mobile browsers as it accounts for 
+          dynamic UI like the address bar appearing or hiding.
+        */
+        body {
+            height: 100vh; 
+            height: 100dvh; 
         }
-      }
     </style>
-  </head>
-  <body>
-    <div class="game-shell">
-      <div class="top-layer">
-        <div class="status-bar">
-          <div class="status-left">
-            <div class="pill">LVL 12</div>
-            <div class="pill">Ranger</div>
-          </div>
-          <div class="status-right">
-            <div class="pill">⚔️ Active</div>
-          </div>
+</head>
+<body class="bg-black">
+    
+    <!-- 
+      Main container. 
+      - Fills the entire dynamic viewport (h-full maps to 100dvh from the body style).
+      - 'relative' allows us to position the lines and outline inside it.
+      - 'p-2' adds padding so the outline has space from the edge.
+      - 'box-border' ensures padding is included in the total size.
+    -->
+    <div class="h-full w-full relative p-2 box-border">
+
+        <!-- 
+          The "soft blue outline".
+          - 'absolute inset-2' makes it fill the parent, respecting the 'p-2' padding.
+          - 'box-shadow' is used instead of a hard border for the "soft" effect.
+          - 'rgba(96, 165, 250, 0.7)' is Tailwind's 'blue-400' with 70% opacity.
+        -->
+        <div class="absolute inset-2" 
+             style="box-shadow: 0 0 8px 2px rgba(96, 165, 250, 0.7); border-radius: 0.5rem;">
         </div>
-        <div class="title-block">
-          <h1>Forest Sentinel</h1>
-          <p>Defend the grove. 3 waves remaining.</p>
-          <div class="resource-row">
-            <div class="resource-card">
-              <span class="resource-label">HP</span>
-              <span class="resource-value">124 / 180</span>
-            </div>
-            <div class="resource-card">
-              <span class="resource-label">Energy</span>
-              <span class="resource-value">62%</span>
-            </div>
-            <div class="resource-card">
-              <span class="resource-label">Shards</span>
-              <span class="resource-value">14</span>
-            </div>
-          </div>
+
+        <!-- 
+          The horizontal line just *above* center.
+          - 'absolute' positions it relative to the main container.
+          - 'left-4 right-4' insets it from the sides to fit within the outline.
+          - 'top: calc(50% - 2rem)' places it 2rem above the vertical center.
+          - 'height: 2px' gives it thickness.
+          - 'background-color' and 'box-shadow' create the soft blue line.
+        -->
+        <div class="absolute left-4 right-4" 
+             style="top: calc(50% - 2rem); 
+                    height: 2px; 
+                    background-color: rgba(96, 165, 250, 0.7);
+                    box-shadow: 0 0 6px 1px rgba(96, 165, 250, 0.7);
+                    border-radius: 1px;">
         </div>
-      </div>
-      <div class="bottom-layer">
-        <div class="hero-image-wrapper">
-          <div class="hero-frame">
-            <img id="heroImage" src="elf1.jpg" alt="Elf character" />
-          </div>
+
+        <!-- 
+          The horizontal line just *below* center.
+          - Same as the line above, but 'top: calc(50% + 2rem)'
+            places it 2rem *below* the vertical center.
+        -->
+        <div class="absolute left-4 right-4" 
+             style="top: calc(50% + 2rem); 
+                    height: 2px; 
+                    background-color: rgba(96, 165, 250, 0.7);
+                    box-shadow: 0 0 6px 1px rgba(96, 165, 250, 0.7);
+                    border-radius: 1px;">
         </div>
-        <div class="action-bar">
-          <button id="fireBtn" class="round-btn" aria-label="Primary action">FIRE</button>
-        </div>
-      </div>
+
     </div>
-    <script>
-      const heroImage = document.getElementById('heroImage');
-      const heroWrapper = document.querySelector('.hero-image-wrapper');
-      const fireBtn = document.getElementById('fireBtn');
-      const frames = ['elf1.jpg', 'elf2.jpg', 'elf3.jpg'];
-      let cycling = false;
 
-      fireBtn.addEventListener('click', () => {
-        if (cycling) return;
-        cycling = true;
-        fireBtn.disabled = true;
-        heroWrapper.classList.add('shake', 'zoom', 'glow');
-        const start = Date.now();
-        let idx = 0;
-
-        const timer = setInterval(() => {
-          const elapsed = Date.now() - start;
-          if (elapsed >= 3000) {
-            clearInterval(timer);
-            heroImage.src = 'elf1.jpg';
-            heroWrapper.classList.remove('shake', 'zoom', 'glow');
-            cycling = false;
-            fireBtn.disabled = false;
-            return;
-          }
-          heroImage.src = frames[idx % frames.length];
-          idx++;
-        }, 100);
-      });
-    </script>
-  </body>
+</body>
 </html>
