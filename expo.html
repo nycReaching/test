@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- 
+    <!--
       This viewport tag is essential for mobile.
       - 'width=device-width' sets the width to the device's screen.
       - 'initial-scale=1.0' sets the default zoom level.
@@ -11,15 +11,15 @@
     -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Simple Game UI</title>
-    
+
     <!-- Load Tailwind CSS for utility-first styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- Load the Inter font for a clean, modern look -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-    
+
     <style>
         /* Global styles to enforce the black background, default font,
           and prevent any scrolling or "bouncing" on mobile devices.
@@ -33,62 +33,77 @@
             margin: 0;
             padding: 0;
         }
-        
+
         /* Ensure the body fills the *entire* available viewport.
           '100vh' is a fallback, but '100dvh' (dynamic viewport height)
-          is better for modern mobile browsers as it accounts for 
+          is better for modern mobile browsers as it accounts for
           dynamic UI like the address bar appearing or hiding.
         */
         body {
-            height: 100vh; 
-            height: 100dvh; 
+            height: 100vh;
+            height: 100dvh;
         }
 
-        /* MODIFIED: Added a default transition for the button.
-          This makes the button smoothly transition *back* to its
-          original blue state when released, but doesn't delay
-          the 'active' state.
-        */
+        /* MODIFIED: This class is now only for press/release mechanics */
         .tappable-button {
-            /* MODIFIED: Moved all the blue button styles from
-              the inline 'style' attribute to this class.
-            */
-            background-image: radial-gradient(circle, rgba(96, 165, 250, 0.8) 0%, rgba(96, 165, 250, 0.5) 70%);
-            box-shadow: 0 0 10px 3px rgba(96, 165, 250, 0.7);
-            border: 2px solid rgba(96, 165, 250, 0.8);
-
             /* This transition now correctly applies to the release,
               as the :active state will override it.
             */
-            transition: transform 0.1s ease-out, 
-                        background-image 0.1s ease-out, 
-                        box-shadow 0.1s ease-out, 
-                        border 0.1s ease-out; /* Changed to 'border' */
+            transition: transform 0.1s ease-out,
+                        background-image 0.1s ease-out,
+                        box-shadow 0.1s ease-out,
+                        border 0.1s ease-out;
         }
 
-        /* Custom style for the button's active (tapped) state.
-          This creates a satisfying press effect.
-        */
+        /* MODIFIED: This class is now only for press/release mechanics */
         .tappable-button:active {
             transform: scale(0.95);
-            /* MODIFIED: Changed all styling to a yellow theme on press */
-            background-image: radial-gradient(circle, rgba(253, 224, 71, 0.8) 0%, rgba(253, 224, 71, 0.5) 70%);
-            box-shadow: 0 0 15px 4px rgba(253, 224, 71, 0.7); /* Bright yellow glow */
-            
-            /* MODIFIED: Must set the full 'border' property to override the base class */
-            border: 2px solid rgba(253, 224, 71, 0.8);
-            
-            /* This is the key fix. It makes the pressed state
+            /* This is the key. It makes the pressed state
               appear *instantly* with no delay.
             */
             transition: none;
         }
+
+        /* --- NEW: Top Button (Red) --- */
+        .button-top {
+            /* Dark Red: (#991b1b) */
+            background-image: radial-gradient(circle, rgba(153, 27, 27, 0.8) 0%, rgba(153, 27, 27, 0.5) 70%);
+            /* LESS GLOW: reduced shadow size and opacity */
+            box-shadow: 0 0 5px 1px rgba(153, 27, 27, 0.7);
+            border: 2px solid rgba(153, 27, 27, 0.8);
+        }
+
+        .button-top:active {
+            /* Pink Flash: (#f472b6) */
+            background-image: radial-gradient(circle, rgba(244, 114, 182, 0.8) 0%, rgba(244, 114, 182, 0.5) 70%);
+            /* LESS GLOW: reduced shadow size and opacity */
+            box-shadow: 0 0 8px 2px rgba(244, 114, 182, 0.7);
+            border: 2px solid rgba(244, 114, 182, 0.8);
+        }
+
+        /* --- NEW: Bottom Button (Green) --- */
+        .button-bottom {
+            /* Dark Green: (#14532d) */
+            background-image: radial-gradient(circle, rgba(20, 83, 45, 0.8) 0%, rgba(20, 83, 45, 0.5) 70%);
+            /* LESS GLOW: reduced shadow size and opacity */
+            box-shadow: 0 0 5px 1px rgba(20, 83, 45, 0.7);
+            border: 2px solid rgba(20, 83, 45, 0.8);
+        }
+
+        .button-bottom:active {
+            /* Yellow Flash: (#eab308) */
+            background-image: radial-gradient(circle, rgba(234, 179, 8, 0.8) 0%, rgba(234, 179, 8, 0.5) 70%);
+            /* LESS GLOW: reduced shadow size and opacity */
+            box-shadow: 0 0 8px 2px rgba(234, 179, 8, 0.7);
+            border: 2px solid rgba(234, 179, 8, 0.8);
+        }
+
     </style>
 </head>
 <body class="bg-black">
-    
-    <!-- 
-      Main container. 
+
+    <!--
+      Main container.
       - Fills the entire dynamic viewport (h-full maps to 100dvh from the body style).
       - 'relative' allows us to position the lines and outline inside it.
       - 'p-2' adds padding so the outline has space from the edge.
@@ -96,32 +111,52 @@
     -->
     <div class="h-full w-full relative p-2 box-border">
 
-        <!-- 
+        <!--
           The "soft blue outline".
           - 'absolute inset-2' makes it fill the parent, respecting the 'p-2' padding.
           - 'box-shadow' is used instead of a hard border for the "soft" effect.
           - 'rgba(96, 165, 250, 0.7)' is Tailwind's 'blue-400' with 70% opacity.
         -->
-        <div class="absolute inset-2" 
+        <div class="absolute inset-2"
              style="box-shadow: 0 0 8px 2px rgba(96, 165, 250, 0.7); border-radius: 0.5rem;">
         </div>
 
-        <!-- 
+
+        <!--
+          NEW: Center Emoji Display
+          - Positioned in the 4rem high central band.
+          - 'flex' layout to center the emojis horizontally and vertically.
+          - 'text-3xl' for emoji size.
+          - 'space-x-4' for spacing between emojis.
+        -->
+        <div class="absolute left-4 right-4 flex justify-center items-center space-x-4"
+             style="top: calc(50% - 2rem);
+                    height: 4rem;">
+            <!-- Emojis are bare, no containers/borders -->
+            <span class="text-3xl">🍒</span>
+            <span class="text-3xl">🍓</span>
+            <span class="text-3xl">🍊</span>
+            <span class="text-3xl">🍋</span>
+            <span class="text-3xl">🍉</span>
+        </div>
+
+
+        <!--
           NEW: The slim top panel horizontal line.
           - 'absolute' positions it.
           - 'left-4 right-4' insets it from the sides, matching the outline.
           - 'top: 3rem' places it 2rem below the top edge of the outline.
           - Styling matches the other lines.
         -->
-        <div class="absolute left-4 right-4" 
-             style="top: 3rem; 
-                    height: 2px; 
+        <div class="absolute left-4 right-4"
+             style="top: 3rem;
+                    height: 2px;
                     background-color: rgba(96, 165, 250, 0.7);
                     box-shadow: 0 0 6px 1px rgba(96, 165, 250, 0.7);
                     border-radius: 1px;">
         </div>
 
-        <!-- 
+        <!--
           The horizontal line just *above* center.
           - 'absolute' positions it relative to the main container.
           - 'left-4 right-4' insets it from the sides to fit within the outline.
@@ -129,28 +164,28 @@
           - 'height: 2px' gives it thickness.
           - 'background-color' and 'box-shadow' create the soft blue line.
         -->
-        <div class="absolute left-4 right-4" 
-             style="top: calc(50% - 2rem); 
-                    height: 2px; 
+        <div class="absolute left-4 right-4"
+             style="top: calc(50% - 2rem);
+                    height: 2px;
                     background-color: rgba(96, 165, 250, 0.7);
                     box-shadow: 0 0 6px 1px rgba(96, 165, 250, 0.7);
                     border-radius: 1px;">
         </div>
 
-        <!-- 
+        <!--
           The horizontal line just *below* center.
           - Same as the line above, but 'top: calc(50% + 2rem)'
             places it 2rem *below* the vertical center.
         -->
-        <div class="absolute left-4 right-4" 
-             style="top: calc(50% + 2rem); 
-                    height: 2px; 
+        <div class="absolute left-4 right-4"
+             style="top: calc(50% + 2rem);
+                    height: 2px;
                     background-color: rgba(96, 165, 250, 0.7);
                     box-shadow: 0 0 6px 1px rgba(96, 165, 250, 0.7);
                     border-radius: 1px;">
         </div>
 
-        <!-- 
+        <!--
           NEW: The vertical line splitting the bottom section.
           - 'absolute' positions it.
           - 'left: 50%' centers it horizontally.
@@ -181,31 +216,28 @@
                     bottom: 1rem; /* Matches bottom-4 */
                     /* MODIFIED: Removed horizontal padding to improve centering */
                     ">
-            
-            <!-- 
-              NEW: Tappable Button 1
-              MODIFIED: Removed all inline 'style' attributes.
-              All styling is now handled by the 'tappable-button' class.
+
+            <!--
+              MODIFIED: Added 'button-top' class
             -->
             <button
                 type="button"
                 aria-label="Button 1"
-                class="tappable-button w-16 h-16 rounded-full cursor-pointer select-none">
+                class="tappable-button button-top w-16 h-16 rounded-full cursor-pointer select-none">
             </button>
 
-            <!-- 
-              NEW: Tappable Button 2
-              MODIFIED: Removed all inline 'style' attributes.
+            <!--
+              MODIFIED: Added 'button-bottom' class
             -->
             <button
                 type="button"
                 aria-label="Button 2"
-                class="tappable-button w-16 h-16 rounded-full cursor-pointer select-none">
+                class="tappable-button button-bottom w-16 h-16 rounded-full cursor-pointer select-none">
             </button>
 
         </div>
 
-        <!-- 
+        <!--
           NEW: The small horizontal line in the bottom-left.
           - 'absolute' positions it.
           - 'left-4' (1rem) insets it from the left outline.
@@ -213,11 +245,11 @@
           - 'bottom: 3rem' places it 2rem above the bottom outline (mirroring the top panel).
           - Styling matches the other lines.
         -->
-        <div class="absolute" 
+        <div class="absolute"
              style="left: 1rem; /* Matches left-4 */
-                    right: calc(50% + 0.5rem); 
-                    bottom: 3rem; 
-                    height: 2px; 
+                    right: calc(50% + 0.5rem);
+                    bottom: 3rem;
+                    height: 2px;
                     background-color: rgba(96, 165, 250, 0.7);
                     box-shadow: 0 0 6px 1px rgba(96, 165, 250, 0.7);
                     border-radius: 1px;">
@@ -227,6 +259,3 @@
 
 </body>
 </html>
-
-
-
