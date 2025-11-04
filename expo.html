@@ -44,12 +44,33 @@
             height: 100dvh; 
         }
 
+        /* MODIFIED: Added a default transition for the button.
+          This makes the button smoothly transition *back* to its
+          original blue state when released, but doesn't delay
+          the 'active' state.
+        */
+        .tappable-button {
+            transition: transform 0.1s ease-out, 
+                        background-image 0.1s ease-out, 
+                        box-shadow 0.1s ease-out, 
+                        border-color 0.1s ease-out;
+        }
+
         /* Custom style for the button's active (tapped) state.
           This creates a satisfying press effect.
         */
         .tappable-button:active {
             transform: scale(0.95);
-            box-shadow: 0 0 15px 4px rgba(96, 165, 250, 1); /* Brighter glow on tap */
+            /* MODIFIED: Changed all styling to a yellow theme on press */
+            background-image: radial-gradient(circle, rgba(253, 224, 71, 0.8) 0%, rgba(253, 224, 71, 0.5) 70%);
+            box-shadow: 0 0 15px 4px rgba(253, 224, 71, 0.7); /* Bright yellow glow */
+            border-color: rgba(253, 224, 71, 0.8); /* Solid yellow border */
+            
+            /* MODIFIED: Added 'transition: none'
+              This is the key fix. It makes the pressed state
+              appear *instantly* with no delay.
+            */
+            transition: none;
         }
     </style>
 </head>
@@ -154,28 +175,45 @@
             <button
                 type="button"
                 aria-label="Button 1"
-                class="tappable-button w-16 h-16 rounded-full cursor-pointer transition-all duration-150 select-none"
+                class="tappable-button w-16 h-16 rounded-full cursor-pointer select-none"
                 style="background-image: radial-gradient(circle, rgba(96, 165, 250, 0.8) 0%, rgba(96, 165, 250, 0.5) 70%);
                        box-shadow: 0 0 10px 3px rgba(96, 165, 250, 0.7);
-                       border: 2px solid rgba(96, 165, 250, 0.8); /* MODIFIED: Added border */">
+                       border: 2px solid rgba(96, 165, 250, 0.8);">
             </button>
 
             <!-- NEW: Tappable Button 2 -->
             <button
                 type="button"
                 aria-label="Button 2"
-                class="tappable-button w-16 h-16 rounded-full cursor-pointer transition-all duration-150 select-none"
+                class="tappable-button w-16 h-16 rounded-full cursor-pointer select-none"
                 style="background-image: radial-gradient(circle, rgba(96, 165, 250, 0.8) 0%, rgba(96, 165, 250, 0.5) 70%);
                        box-shadow: 0 0 10px 3px rgba(96, 165, 250, 0.7);
-                       border: 2px solid rgba(96, 165, 250, 0.8); /* MODIFIED: Added border */">
+                       border: 2px solid rgba(96, 165, 250, 0.8);">
             </button>
 
+        </div>
+
+        <!-- 
+          NEW: The small horizontal line in the bottom-left.
+          - 'absolute' positions it.
+          - 'left-4' (1rem) insets it from the left outline.
+          - 'right: calc(50% + 0.5rem)' stops it 0.5rem before the center vertical line.
+          - 'bottom: 3rem' places it 2rem above the bottom outline (mirroring the top panel).
+          - Styling matches the other lines.
+        -->
+        <div class="absolute" 
+             style="left: 1rem; /* Matches left-4 */
+                    right: calc(50% + 0.5rem); 
+                    bottom: 3rem; 
+                    height: 2px; 
+                    background-color: rgba(96, 165, 250, 0.7);
+                    box-shadow: 0 0 6px 1px rgba(96, 165, 250, 0.7);
+                    border-radius: 1px;">
         </div>
 
     </div>
 
 </body>
 </html>
-
 
 
