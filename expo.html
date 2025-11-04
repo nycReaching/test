@@ -2,27 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!--
-      This viewport tag is essential for mobile.
-      - 'width=device-width' sets the width to the device's screen.
-      - 'initial-scale=1.0' sets the default zoom level.
-      - 'user-scalable=no' prevents the user from zooming in or out,
-        which is common for web-based games.
-    -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Simple Game UI</title>
 
-    <!-- Load Tailwind CSS for utility-first styling -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Load the Inter font for a clean, modern look -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-
-    <!-- NEW: Load Share Tech Mono for the digital counter -->
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
-
 
     <style>
         /* Global styles to enforce the black background, default font,
@@ -124,52 +111,37 @@
             /* Make visible */
             opacity: 1;
         }
-
-        /* NEW: Digital font class */
-        .digital-font {
-            font-family: 'Share Tech Mono', monospace;
-            font-weight: 400; /* Use normal weight for this font */
+        
+        /* --- NEW: Glow effect for saved symbol --- */
+        .slot-glow {
+            /* Use a white glow to make any emoji color "pop" */
+            text-shadow: 0 0 8px #fff, 0 0 12px #fff, 0 0 16px #fff;
+            /* Make the transition sharp */
+            transition: opacity 0.3s ease-in-out, text-shadow 0.1s ease-in-out;
         }
+
+        /* MODIFIED: Removed .digital-font class */
 
     </style>
 </head>
 <body class="bg-black">
 
-    <!--
-      Main container.
-      - Fills the entire dynamic viewport (h-full maps to 100dvh from the body style).
-      - 'relative' allows us to position the lines and outline inside it.
-      - 'p-2' adds padding so the outline has space from the edge.
-      - 'box-border' ensures padding is included in the total size.
-    -->
     <div class="h-full w-full relative p-2 box-border">
 
-        <!--
-          The "soft blue outline".
-        -->
         <div class="absolute inset-2"
              style="box-shadow: 0 0 8px 2px rgba(96, 165, 250, 0.7); border-radius: 0.5rem;">
         </div>
 
 
-        <!--
-          MODIFIED: Player Stats Display
-          - Changed font, removed font-bold
-        -->
-        <div class="absolute left-4 text-green-400 text-lg digital-font"
+        <div class="absolute left-4 text-green-400 text-lg font-medium"
              style="top: calc(50% - 2rem - 1.75rem); /* Positioned above the upper center line */ text-shadow: 0 0 5px rgba(52, 211, 153, 0.7);">
             <div id="player-money-display">$100</div>
         </div>
 
 
-        <!--
-          MODIFIED: Center Emoji Display
-          - Now contains 5 empty <span> elements with IDs
-        -->
         <div class="absolute left-4 right-4 flex justify-center items-center space-x-4"
              style="top: calc(50% - 2rem);
                     height: 4rem;">
-            <!-- Emojis will be inserted here by JS -->
             <span id="slot-1" class="text-3xl slot-emoji"></span>
             <span id="slot-2" class="text-3xl slot-emoji"></span>
             <span id="slot-3" class="text-3xl slot-emoji"></span>
@@ -178,9 +150,6 @@
         </div>
 
 
-        <!--
-          NEW: The slim top panel horizontal line.
-        -->
         <div class="absolute left-4 right-4"
              style="top: 3rem;
                     height: 2px;
@@ -189,9 +158,6 @@
                     border-radius: 1px;">
         </div>
 
-        <!--
-          The horizontal line just *above* center.
-        -->
         <div class="absolute left-4 right-4"
              style="top: calc(50% - 2rem);
                     height: 2px;
@@ -200,9 +166,6 @@
                     border-radius: 1px;">
         </div>
 
-        <!--
-          The horizontal line just *below* center.
-        -->
         <div class="absolute left-4 right-4"
              style="top: calc(50% + 2rem);
                     height: 2px;
@@ -211,9 +174,6 @@
                     border-radius: 1px;">
         </div>
 
-        <!--
-          NEW: The vertical line splitting the bottom section.
-        -->
         <div class="absolute"
              style="left: 50%;
                     top: calc(50% + 2.5rem); /* MODIFIED: Added 0.5rem gap from top line */
@@ -224,17 +184,11 @@
                     border-radius: 1px;">
         </div>
 
-        <!--
-          NEW: Button container for the bottom-right quadrant.
-        -->
         <div class="absolute left-1/2 right-4 flex flex-col justify-evenly items-center"
              style="top: calc(50% + 2.5rem); /* MODIFIED: Matched gap from top line */
                     bottom: 1rem; /* Matches bottom-4 */
                     ">
 
-            <!--
-              MODIFIED: Added 'button-top' class and 'action-button' ID
-            -->
             <button
                 type="button"
                 aria-label="Save Symbol"
@@ -242,9 +196,6 @@
                 class="tappable-button button-top w-16 h-16 rounded-full cursor-pointer select-none">
             </button>
 
-            <!--
-              MODIFIED: Added 'button-bottom' class and 'spin-button' ID
-            -->
             <button
                 type="button"
                 aria-label="Spin"
@@ -256,16 +207,28 @@
         </div>
 
 
-        <!--
-          MODIFICATION: Restoring the original layout with 3 shelves
-          and adding emoji slots above them.
-        -->
+        <div class="absolute text-white text-xs"
+             style="left: 1rem;
+                    top: calc(50% + 3.5rem); /* Align with top of first shelf */
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.25rem; /* small gap between lines */
+                    ">
+            <p>Test.</p>
+            <p>Test.</p>
+            <p>Test.</p>
+            <p>Test.</p>
+            <p>Test.</p>
+            <p>Test.</p>
+            <p>Test.</p>
+            <p>Test.</p>
+        </div>
 
-        <!-- Bay 1 (Top) -->
+
         <div class="absolute"
              style="left: 25%;
                     right: calc(50% + 0.5rem);
-                    bottom: 9.5rem; /* Position emoji span just above the 9rem shelf */
+                    top: calc(50% + 3rem); /* MODIFIED: Position from top */
                     display: flex;
                     justify-content: center;
                     align-items: center;">
@@ -274,18 +237,17 @@
         <div class="absolute"
              style="left: 25%;
                     right: calc(50% + 0.5rem);
-                    bottom: 9rem;
+                    top: calc(50% + 3.5rem); /* MODIFIED: Position from top */
                     height: 2px;
                     background-color: rgba(96, 165, 250, 0.7);
                     box-shadow: 0 0 6px 1px rgba(96, 165, 250, 0.7);
                     border-radius: 1px;">
         </div>
 
-        <!-- Bay 2 (Middle) -->
         <div class="absolute"
              style="left: 25%;
                     right: calc(50% + 0.5rem);
-                    bottom: 6.5rem; /* Position emoji span just above the 6rem shelf */
+                    top: calc(50% + 6rem); /* MODIFIED: Position from top */
                     display: flex;
                     justify-content: center;
                     align-items: center;">
@@ -294,40 +256,33 @@
         <div class="absolute"
              style="left: 25%;
                     right: calc(50% + 0.5rem);
-                    bottom: 6rem;
+                    top: calc(50% + 6.5rem); /* MODIFIED: Position from top */
                     height: 2px;
                     background-color: rgba(96, 165, 250, 0.7);
                     box-shadow: 0 0 6px 1px rgba(96, 165, 250, 0.7);
                     border-radius: 1px;">
         </div>
 
-        <!-- Bay 3 (Bottom) -->
         <div class="absolute"
              style="left: 25%;
                     right: calc(50% + 0.5rem);
-                    bottom: 3.5rem; /* Position emoji span just above the 3rem shelf */
+                    top: calc(50% + 9rem); /* MODIFIED: Position from top */
                     display: flex;
                     justify-content: center;
                     align-items: center;">
             <span id="saved-slot-3" class="text-3xl slot-emoji"></span>
         </div>
         <div class="absolute"
-             style="left: 1rem; /* Matches left-4 */
+             style="left: 25%; /* MODIFIED: Matched other shelves */
                     right: calc(50% + 0.5rem);
-                    bottom: 3rem; /* This is the bottom-most line for the "slim area" */
+                    top: calc(50% + 9.5rem); /* MODIFIED: Position from top */
                     height: 2px;
                     background-color: rgba(96, 165, 250, 0.7);
                     box-shadow: 0 0 6px 1px rgba(96, 165, 250, 0.7);
                     border-radius: 1px;">
         </div>
-        <!--
-          END OF MODIFICATION
-        -->
+        </div>
 
-
-    </div>
-
-    <!-- --- NEW: Game Logic Script --- -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // --- Game State ---
@@ -420,13 +375,13 @@
 
                 // 3. Wait for fade-out (if needed)
                 setTimeout(() => {
-                    
+
                     // 4. Set ALL new fruits *first*, while they are invisible.
                     const newFruits = slots.map(() => getRandomFruit());
                     slots.forEach((slot, index) => {
                         slot.textContent = newFruits[index];
                     });
-                    
+
                     // 5. NOW, animate each slot fading in, one by one
                     let delay = 0;
                     const delayIncrement = 100;
@@ -445,7 +400,7 @@
                         }, delay);
                         delay += delayIncrement;
                     });
-                    
+
                 }, waitTime);
             }
 
@@ -483,14 +438,14 @@
 
                 // Get all slot *elements* to remove (all except the kept one)
                 const slotsToRemove = slots.filter((_, index) => index !== keptSymbolIndex);
-                
+
                 // Shuffle them for random removal animation
                 shuffleArray(slotsToRemove);
 
                 // Animate removal one by one
                 let removalDelay = 0;
                 const removalIncrement = 200; // 200ms between each removal
-                
+
                 slotsToRemove.forEach(slot => {
                     setTimeout(() => {
                         slot.classList.remove('visible');
@@ -498,22 +453,36 @@
                     removalDelay += removalIncrement;
                 });
 
-                // After all 4 are removed, fade out the last (kept) one
+                // --- MODIFIED: Added glow effect logic ---
+                // After all 4 are removed, make the kept one glow, *then* fade out
                 setTimeout(() => {
-                    slots[keptSymbolIndex].classList.remove('visible');
+                    const keptSlot = slots[keptSymbolIndex];
+                    
+                    // 1. Add glow class
+                    keptSlot.classList.add('slot-glow');
 
-                    // Wait for the kept one to fade out (300ms)
+                    // 2. Wait for glow to be visible (e.g., 200ms)
                     setTimeout(() => {
-                        // Update the game state
-                        savedSymbols[emptySlotIndex] = keptSymbol;
-                        
-                        // Update the UI for the saved slot
-                        savedSlots[emptySlotIndex].textContent = keptSymbol;
-                        savedSlots[emptySlotIndex].classList.add('visible');
+                        // 3. Start fade-out
+                        keptSlot.classList.remove('visible');
 
-                        // We are done saving
-                        isSaving = false;
-                    }, 300); // Wait for fade-out
+                        // 4. Wait for fade-out to complete (300ms)
+                        setTimeout(() => {
+                            // Update the game state
+                            savedSymbols[emptySlotIndex] = keptSymbol;
+
+                            // Update the UI for the saved slot
+                            savedSlots[emptySlotIndex].textContent = keptSymbol;
+                            savedSlots[emptySlotIndex].classList.add('visible');
+                            
+                            // 5. Clean up glow class
+                            keptSlot.classList.remove('slot-glow');
+
+                            // We are done saving
+                            isSaving = false;
+                        }, 300); // Wait for fade-out
+
+                    }, 200); // Duration of the glow
 
                 }, removalDelay); // This triggers after the last removal animation starts
             }
@@ -539,6 +508,3 @@
 
 </body>
 </html>
-
-
-
