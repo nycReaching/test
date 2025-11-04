@@ -113,7 +113,7 @@
         -->
         <div class="absolute"
              style="left: 50%;
-                    top: calc(50% + 2rem);
+                    top: calc(50% + 2.5rem); /* MODIFIED: Added 0.5rem gap from top line */
                     bottom: 1rem; /* Matches bottom-4 */
                     width: 2px;
                     background-color: rgba(96, 165, 250, 0.7);
@@ -129,8 +129,8 @@
           - 'flex' layout centers and stacks the buttons vertically ('flex-col', 'justify-center', 'items-center').
           - 'space-y-4' adds padding between the buttons.
         -->
-        <div class="absolute left-1/2 right-4 flex flex-col justify-center items-center space-y-4"
-             style="top: calc(50% + 2rem);
+        <div class="absolute left-1/2 right-4 flex flex-col justify-evenly items-center"
+             style="top: calc(50% + 2.5rem); /* MODIFIED: Matched gap from top line */
                     bottom: 1rem; /* Matches bottom-4 */
                     padding-left: 0.5rem; /* Add some padding from the center line */
                     padding-right: 0.5rem; /* Add some padding from the outer glow */
@@ -141,7 +141,7 @@
                 type="button"
                 aria-label="Button 1"
                 class="tappable-button w-16 h-16 rounded-full cursor-pointer transition-all duration-150 select-none"
-                style="background-color: rgba(0,0,0,0.3); 
+                style="background-image: radial-gradient(circle, rgba(96, 165, 250, 0.8) 0%, rgba(96, 165, 250, 0.5) 70%);
                        box-shadow: 0 0 10px 3px rgba(96, 165, 250, 0.7);">
             </button>
 
@@ -150,7 +150,7 @@
                 type="button"
                 aria-label="Button 2"
                 class="tappable-button w-16 h-16 rounded-full cursor-pointer transition-all duration-150 select-none"
-                style="background-color: rgba(0,0,0,0.3); 
+                style="background-image: radial-gradient(circle, rgba(96, 165, 250, 0.8) 0%, rgba(96, 165, 250, 0.5) 70%);
                        box-shadow: 0 0 10px 3px rgba(96, 165, 250, 0.7);">
             </button>
 
@@ -160,4 +160,5 @@
 
 </body>
 </html>
+
 
