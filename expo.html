@@ -2,14 +2,25 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <!--
+      This viewport tag is essential for mobile.
+      - 'width=device-width' sets the width to the device's screen.
+      - 'initial-scale=1.0' sets the default zoom level.
+      - 'user-scalable=no' prevents the user from zooming in or out,
+        which is common for web-based games.
+    -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Simple Game UI</title>
 
+    <!-- Load Tailwind CSS for utility-first styling -->
     <script src="https://cdn.tailwindcss.com"></script>
 
+    <!-- Load the Inter font for a clean, modern look -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- MODIFIED: Added font-weight 300 for the thin font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
+
 
     <style>
         /* Global styles to enforce the black background, default font,
@@ -120,28 +131,45 @@
             transition: opacity 0.3s ease-in-out, text-shadow 0.1s ease-in-out;
         }
 
-        /* MODIFIED: Removed .digital-font class */
-
     </style>
 </head>
 <body class="bg-black">
 
+    <!--
+      Main container.
+      - Fills the entire dynamic viewport (h-full maps to 100dvh from the body style).
+      - 'relative' allows us to position the lines and outline inside it.
+      - 'p-2' adds padding so the outline has space from the edge.
+      - 'box-border' ensures padding is included in the total size.
+    -->
     <div class="h-full w-full relative p-2 box-border">
 
+        <!--
+          The "soft blue outline".
+        -->
         <div class="absolute inset-2"
              style="box-shadow: 0 0 8px 2px rgba(96, 165, 250, 0.7); border-radius: 0.5rem;">
         </div>
 
 
-        <div class="absolute left-4 text-green-400 text-lg font-medium"
+        <!--
+          MODIFIED: Player Stats Display
+          - Changed 'font-medium' to 'font-light' for a thinner look.
+        -->
+        <div class="absolute left-4 text-green-400 text-lg font-light"
              style="top: calc(50% - 2rem - 1.75rem); /* Positioned above the upper center line */ text-shadow: 0 0 5px rgba(52, 211, 153, 0.7);">
             <div id="player-money-display">$100</div>
         </div>
 
 
+        <!--
+          MODIFIED: Center Emoji Display
+          - Now contains 5 empty <span> elements with IDs
+        -->
         <div class="absolute left-4 right-4 flex justify-center items-center space-x-4"
              style="top: calc(50% - 2rem);
                     height: 4rem;">
+            <!-- Emojis will be inserted here by JS -->
             <span id="slot-1" class="text-3xl slot-emoji"></span>
             <span id="slot-2" class="text-3xl slot-emoji"></span>
             <span id="slot-3" class="text-3xl slot-emoji"></span>
@@ -150,6 +178,9 @@
         </div>
 
 
+        <!--
+          NEW: The slim top panel horizontal line.
+        -->
         <div class="absolute left-4 right-4"
              style="top: 3rem;
                     height: 2px;
@@ -158,6 +189,9 @@
                     border-radius: 1px;">
         </div>
 
+        <!--
+          The horizontal line just *above* center.
+        -->
         <div class="absolute left-4 right-4"
              style="top: calc(50% - 2rem);
                     height: 2px;
@@ -166,6 +200,9 @@
                     border-radius: 1px;">
         </div>
 
+        <!--
+          The horizontal line just *below* center.
+        -->
         <div class="absolute left-4 right-4"
              style="top: calc(50% + 2rem);
                     height: 2px;
@@ -174,6 +211,9 @@
                     border-radius: 1px;">
         </div>
 
+        <!--
+          NEW: The vertical line splitting the bottom section.
+        -->
         <div class="absolute"
              style="left: 50%;
                     top: calc(50% + 2.5rem); /* MODIFIED: Added 0.5rem gap from top line */
@@ -184,11 +224,17 @@
                     border-radius: 1px;">
         </div>
 
+        <!--
+          NEW: Button container for the bottom-right quadrant.
+        -->
         <div class="absolute left-1/2 right-4 flex flex-col justify-evenly items-center"
              style="top: calc(50% + 2.5rem); /* MODIFIED: Matched gap from top line */
                     bottom: 1rem; /* Matches bottom-4 */
                     ">
 
+            <!--
+              MODIFIED: Added 'button-top' class and 'action-button' ID
+            -->
             <button
                 type="button"
                 aria-label="Save Symbol"
@@ -196,6 +242,9 @@
                 class="tappable-button button-top w-16 h-16 rounded-full cursor-pointer select-none">
             </button>
 
+            <!--
+              MODIFIED: Added 'button-bottom' class and 'spin-button' ID
+            -->
             <button
                 type="button"
                 aria-label="Spin"
@@ -207,6 +256,9 @@
         </div>
 
 
+        <!--
+          NEW: Text rows in bottom-left
+        -->
         <div class="absolute text-white text-xs"
              style="left: 1rem;
                     top: calc(50% + 3.5rem); /* Align with top of first shelf */
@@ -225,64 +277,27 @@
         </div>
 
 
-        <div class="absolute"
+        <!--
+          MODIFICATION: Replaced shelves with a single container
+          for the saved symbols.
+        -->
+        <div class="absolute flex flex-col items-center space-y-2 bg-white/5 rounded-md p-2 box-border"
              style="left: 25%;
                     right: calc(50% + 0.5rem);
-                    top: calc(50% + 3rem); /* MODIFIED: Position from top */
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;">
+                    top: calc(50% + 2.5rem); /* Position container slightly above first symbol's old spot */
+                    ">
             <span id="saved-slot-1" class="text-3xl slot-emoji"></span>
-        </div>
-        <div class="absolute"
-             style="left: 25%;
-                    right: calc(50% + 0.5rem);
-                    top: calc(50% + 3.5rem); /* MODIFIED: Position from top */
-                    height: 2px;
-                    background-color: rgba(96, 165, 250, 0.7);
-                    box-shadow: 0 0 6px 1px rgba(96, 165, 250, 0.7);
-                    border-radius: 1px;">
-        </div>
-
-        <div class="absolute"
-             style="left: 25%;
-                    right: calc(50% + 0.5rem);
-                    top: calc(50% + 6rem); /* MODIFIED: Position from top */
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;">
             <span id="saved-slot-2" class="text-3xl slot-emoji"></span>
-        </div>
-        <div class="absolute"
-             style="left: 25%;
-                    right: calc(50% + 0.5rem);
-                    top: calc(50% + 6.5rem); /* MODIFIED: Position from top */
-                    height: 2px;
-                    background-color: rgba(96, 165, 250, 0.7);
-                    box-shadow: 0 0 6px 1px rgba(96, 165, 250, 0.7);
-                    border-radius: 1px;">
-        </div>
-
-        <div class="absolute"
-             style="left: 25%;
-                    right: calc(50% + 0.5rem);
-                    top: calc(50% + 9rem); /* MODIFIED: Position from top */
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;">
             <span id="saved-slot-3" class="text-3xl slot-emoji"></span>
         </div>
-        <div class="absolute"
-             style="left: 25%; /* MODIFIED: Matched other shelves */
-                    right: calc(50% + 0.5rem);
-                    top: calc(50% + 9.5rem); /* MODIFIED: Position from top */
-                    height: 2px;
-                    background-color: rgba(96, 165, 250, 0.7);
-                    box-shadow: 0 0 6px 1px rgba(96, 165, 250, 0.7);
-                    border-radius: 1px;">
-        </div>
-        </div>
+        <!--
+          END OF MODIFICATION
+        -->
 
+
+    </div>
+
+    <!-- --- NEW: Game Logic Script --- -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // --- Game State ---
