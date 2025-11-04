@@ -50,10 +50,20 @@
           the 'active' state.
         */
         .tappable-button {
+            /* MODIFIED: Moved all the blue button styles from
+              the inline 'style' attribute to this class.
+            */
+            background-image: radial-gradient(circle, rgba(96, 165, 250, 0.8) 0%, rgba(96, 165, 250, 0.5) 70%);
+            box-shadow: 0 0 10px 3px rgba(96, 165, 250, 0.7);
+            border: 2px solid rgba(96, 165, 250, 0.8);
+
+            /* This transition now correctly applies to the release,
+              as the :active state will override it.
+            */
             transition: transform 0.1s ease-out, 
                         background-image 0.1s ease-out, 
                         box-shadow 0.1s ease-out, 
-                        border-color 0.1s ease-out;
+                        border 0.1s ease-out; /* Changed to 'border' */
         }
 
         /* Custom style for the button's active (tapped) state.
@@ -64,10 +74,11 @@
             /* MODIFIED: Changed all styling to a yellow theme on press */
             background-image: radial-gradient(circle, rgba(253, 224, 71, 0.8) 0%, rgba(253, 224, 71, 0.5) 70%);
             box-shadow: 0 0 15px 4px rgba(253, 224, 71, 0.7); /* Bright yellow glow */
-            border-color: rgba(253, 224, 71, 0.8); /* Solid yellow border */
             
-            /* MODIFIED: Added 'transition: none'
-              This is the key fix. It makes the pressed state
+            /* MODIFIED: Must set the full 'border' property to override the base class */
+            border: 2px solid rgba(253, 224, 71, 0.8);
+            
+            /* This is the key fix. It makes the pressed state
               appear *instantly* with no delay.
             */
             transition: none;
@@ -171,24 +182,25 @@
                     /* MODIFIED: Removed horizontal padding to improve centering */
                     ">
             
-            <!-- NEW: Tappable Button 1 -->
+            <!-- 
+              NEW: Tappable Button 1
+              MODIFIED: Removed all inline 'style' attributes.
+              All styling is now handled by the 'tappable-button' class.
+            -->
             <button
                 type="button"
                 aria-label="Button 1"
-                class="tappable-button w-16 h-16 rounded-full cursor-pointer select-none"
-                style="background-image: radial-gradient(circle, rgba(96, 165, 250, 0.8) 0%, rgba(96, 165, 250, 0.5) 70%);
-                       box-shadow: 0 0 10px 3px rgba(96, 165, 250, 0.7);
-                       border: 2px solid rgba(96, 165, 250, 0.8);">
+                class="tappable-button w-16 h-16 rounded-full cursor-pointer select-none">
             </button>
 
-            <!-- NEW: Tappable Button 2 -->
+            <!-- 
+              NEW: Tappable Button 2
+              MODIFIED: Removed all inline 'style' attributes.
+            -->
             <button
                 type="button"
                 aria-label="Button 2"
-                class="tappable-button w-16 h-16 rounded-full cursor-pointer select-none"
-                style="background-image: radial-gradient(circle, rgba(96, 165, 250, 0.8) 0%, rgba(96, 165, 250, 0.5) 70%);
-                       box-shadow: 0 0 10px 3px rgba(96, 165, 250, 0.7);
-                       border: 2px solid rgba(96, 165, 250, 0.8);">
+                class="tappable-button w-16 h-16 rounded-full cursor-pointer select-none">
             </button>
 
         </div>
@@ -215,5 +227,6 @@
 
 </body>
 </html>
+
 
 
