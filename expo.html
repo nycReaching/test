@@ -19,7 +19,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-    
+
     <!-- NEW: Load Share Tech Mono for the digital counter -->
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
@@ -94,12 +94,12 @@
             border: 2px solid rgba(20, 83, 45, 0.8);
         }
 
+        /* --- MODIFICATION: Changed to Neon Green flash --- */
         .button-bottom:active {
-            /* Yellow Flash: (#eab308) */
-            background-image: radial-gradient(circle, rgba(234, 179, 8, 0.8) 0%, rgba(234, 179, 8, 0.5) 70%);
-            /* LESS GLOW: reduced shadow size and opacity */
-            box-shadow: 0 0 8px 2px rgba(234, 179, 8, 0.7);
-            border: 2px solid rgba(234, 179, 8, 0.8);
+            /* Neon Green Flash: (#4ade80) -> rgba(74, 222, 128) */
+            background-image: radial-gradient(circle, rgba(74, 222, 128, 0.8) 0%, rgba(74, 222, 128, 0.5) 70%);
+            box-shadow: 0 0 8px 2px rgba(74, 222, 128, 0.7);
+            border: 2px solid rgba(74, 222, 128, 0.8);
         }
 
         /* --- NEW: Slot Emoji Styling --- */
@@ -119,7 +119,7 @@
             height: 2.5rem; /* Set a fixed size (approx 3xl) */
             line-height: 2.5rem; /* Ensure vertical centering */
         }
-        
+
         .slot-emoji.visible {
             /* Make visible */
             opacity: 1;
@@ -151,7 +151,7 @@
              style="box-shadow: 0 0 8px 2px rgba(96, 165, 250, 0.7); border-radius: 0.5rem;">
         </div>
 
-        
+
         <!--
           MODIFIED: Player Stats Display
           - Changed font, removed font-bold
@@ -237,7 +237,7 @@
             -->
             <button
                 type="button"
-                aria-label="Button 1"
+                aria-label="Save Symbol"
                 id="action-button"
                 class="tappable-button button-top w-16 h-16 rounded-full cursor-pointer select-none">
             </button>
@@ -247,7 +247,7 @@
             -->
             <button
                 type="button"
-                aria-label="Button 2"
+                aria-label="Spin"
                 id="spin-button"
                 class="tappable-button button-bottom w-16 h-16 rounded-full cursor-pointer select-CORS
                 select-none">
@@ -257,30 +257,20 @@
 
 
         <!--
-          The small horizontal line in the bottom-left.
+          MODIFICATION: Restoring the original layout with 3 shelves
+          and adding emoji slots above them.
         -->
-        <div class="absolute"
-             style="left: 1rem; /* Matches left-4 */
-                    right: calc(50% + 0.5rem);
-                    bottom: 3rem;
-                    height: 2px;
-                    background-color: rgba(96, 165, 250, 0.7);
-                    box-shadow: 0 0 6px 1px rgba(96, 165, 250, 0.7);
-                    border-radius: 1px;">
-        </div>
-        
-        <!-- NEW: Bottom-left shelf 1 -->
+
+        <!-- Bay 1 (Top) -->
         <div class="absolute"
              style="left: 25%;
                     right: calc(50% + 0.5rem);
-                    bottom: 6rem;
-                    height: 2px;
-                    background-color: rgba(96, 165, 250, 0.7);
-                    box-shadow: 0 0 6px 1px rgba(96, 165, 250, 0.7);
-                    border-radius: 1px;">
+                    bottom: 9.5rem; /* Position emoji span just above the 9rem shelf */
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;">
+            <span id="saved-slot-1" class="text-3xl slot-emoji"></span>
         </div>
-
-        <!-- NEW: Bottom-left shelf 2 -->
         <div class="absolute"
              style="left: 25%;
                     right: calc(50% + 0.5rem);
@@ -291,402 +281,49 @@
                     border-radius: 1px;">
         </div>
 
-
-    </div>
-
-    <!-- --- NEW: Game Logic Script --- -->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // --- Game State ---
-            let playerMoney = 100;
-            const spinCost = 1;
-            let isSpinning = false;
-            let isFirstSpin = true; // NEW: Flag for first spin
-            const fruits = ['🍒', '🍓', '🍊', '🍋', '🍉', '🍇', '🍍', '🥝'];
-
-            // --- DOM Elements ---
-            const spinButton = document.getElementById('spin-button');
-            const playerMoneyDisplay = document.getElementById('player-money-display');
-            
-            // Get all slot elements
-            const slots = [
-                document.getElementById('slot-1'),
-                document.getElementById('slot-2'),
-                document.getElementById('slot-3'),
-                document.getElementById('slot-4'),
-                document.getElementById('slot-5')
-            ];
-
-            // --- Helper Functions ---
-            
-            /**
-             * Updates the UI text for money and cost.
-             */
-            function updateUI() {
-                playerMoneyDisplay.textContent = `$${playerMoney}`;
-            }
-
-            /**
-             * Gets a random fruit from the fruits array.
-             */
-            function getRandomFruit() {
-                return fruits[Math.floor(Math.random() * fruits.length)];
-            }
-
-            // --- Main Game Function ---
-            
-            /**
-             * Handles the spin logic.
-             */
-            function spin() {
-                // Prevent multiple spins at once
-                if (isSpinning) return;
-
-                // Check if player can afford the spin
-                if (playerMoney < spinCost) {
-                    // Optional: Add a "not enough money" visual cue here
-                    console.log("Not enough money!");
-                    return;
-                }
-
-                // Start spinning
-                isSpinning = true;
-                playerMoney -= spinCost;
-                updateUI();
-
-                // 1. Reset all slots to be invisible
-                // This will trigger the 300ms fade-out animation
-                slots.forEach(slot => {
-                    slot.classList.remove('visible');
-                });
-
-                // 2. Determine wait time.
-                // If it's the first spin, start immediately (0ms).
-                // Otherwise, wait for the 300ms fade-out (from step 1) to complete.
-                const waitTime = isFirstSpin ? 0 : 300;
-                isFirstSpin = false; // It's no longer the first spin
-
-                // 3. Wait for fade-out (if needed), then fade-in
-                setTimeout(() => {
-                    // 4. Animate each slot fading in, one by one
-                    let delay = 0;
-                    // MODIFIED: Faster animation
-                    const delayIncrement = 100; // 100ms between each slot appearing
-
-                    slots.forEach((slot, index) => {
-                        
-                        setTimeout(() => {
-                            // Set a new random fruit
-                            slot.textContent = getRandomFruit();
-                            // Add 'visible' class to trigger the fade-in
-                            slot.classList.add('visible');
-
-                            // If this is the last slot, allow spinning again
-                            if (index === slots.length - 1) {
-                                setTimeout(() => {
-                                    isSpinning = false;
-                                }, 200); // Small buffer after last animation
-                            }
-                        }, delay);
-                        
-                        delay += delayIncrement;
-                    });
-                }, waitTime); // Use the dynamic waitTime
-            }
-
-            // --- Initialization ---
-            spinButton.addEventListener('click', spin);
-            // Also listen for touchstart for faster mobile response
-            spinButton.addEventListener('touchstart', (e) => {
-                e.preventDefault(); // Prevent 'click' event from firing too
-                spin();
-            }, { passive: false });
-
-            // Set initial UI text
-            updateUI();
-        });
-    </script>
-
-</body>
-</html>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <!--
-      This viewport tag is essential for mobile.
-      - 'width=device-width' sets the width to the device's screen.
-      - 'initial-scale=1.0' sets the default zoom level.
-      - 'user-scalable=no' prevents the user from zooming in or out,
-        which is common for web-based games.
-    -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Simple Game UI</title>
-
-    <!-- Load Tailwind CSS for utility-first styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Load the Inter font for a clean, modern look -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-
-    <style>
-        /* Global styles to enforce the black background, default font,
-          and prevent any scrolling or "bouncing" on mobile devices.
-        */
-        html, body {
-            overflow: hidden; /* Prevents all scrolling */
-            background-color: #000;
-            font-family: 'Inter', sans-serif;
-            height: 100%;
-            width: 100%;
-            margin: 0;
-            padding: 0;
-        }
-
-        /* Ensure the body fills the *entire* available viewport.
-          '100vh' is a fallback, but '100dvh' (dynamic viewport height)
-          is better for modern mobile browsers as it accounts for
-          dynamic UI like the address bar appearing or hiding.
-        */
-        body {
-            height: 100vh;
-            height: 100dvh;
-        }
-
-        /* MODIFIED: This class is now only for press/release mechanics */
-        .tappable-button {
-            /* This transition now correctly applies to the release,
-              as the :active state will override it.
-            */
-            transition: transform 0.1s ease-out,
-                        background-image 0.1s ease-out,
-                        box-shadow 0.1s ease-out,
-                        border 0.1s ease-out;
-        }
-
-        /* MODIFIED: This class is now only for press/release mechanics */
-        .tappable-button:active {
-            transform: scale(0.95);
-            /* This is the key. It makes the pressed state
-              appear *instantly* with no delay.
-            */
-            transition: none;
-        }
-
-        /* --- NEW: Top Button (Red) --- */
-        .button-top {
-            /* Dark Red: (#991b1b) */
-            background-image: radial-gradient(circle, rgba(153, 27, 27, 0.8) 0%, rgba(153, 27, 27, 0.5) 70%);
-            /* LESS GLOW: reduced shadow size and opacity */
-            box-shadow: 0 0 5px 1px rgba(153, 27, 27, 0.7);
-            border: 2px solid rgba(153, 27, 27, 0.8);
-        }
-
-        .button-top:active {
-            /* Pink Flash: (#f472b6) */
-            background-image: radial-gradient(circle, rgba(244, 114, 182, 0.8) 0%, rgba(244, 114, 182, 0.5) 70%);
-            /* LESS GLOW: reduced shadow size and opacity */
-            box-shadow: 0 0 8px 2px rgba(244, 114, 182, 0.7);
-            border: 2px solid rgba(244, 114, 182, 0.8);
-        }
-
-        /* --- NEW: Bottom Button (Green) --- */
-        .button-bottom {
-            /* Dark Green: (#14532d) */
-            background-image: radial-gradient(circle, rgba(20, 83, 45, 0.8) 0%, rgba(20, 83, 45, 0.5) 70%);
-            /* LESS GLOW: reduced shadow size and opacity */
-            box-shadow: 0 0 5px 1px rgba(20, 83, 45, 0.7);
-            border: 2px solid rgba(20, 83, 45, 0.8);
-        }
-
-        .button-bottom:active {
-            /* Yellow Flash: (#eab308) */
-            background-image: radial-gradient(circle, rgba(234, 179, 8, 0.8) 0%, rgba(234, 179, 8, 0.5) 70%);
-            /* LESS GLOW: reduced shadow size and opacity */
-            box-shadow: 0 0 8px 2px rgba(234, 179, 8, 0.7);
-            border: 2px solid rgba(234, 179, 8, 0.8);
-        }
-
-        /* --- NEW: Slot Emoji Styling --- */
-        .slot-emoji {
-            /* Start invisible */
-            opacity: 0;
-            /* Add a fade-in transition */
-            transition: opacity 0.3s ease-in-out;
-            /* Prevent text selection */
-            user-select: none;
-
-            /* NEW: Fix for first spin animation pop-in */
-            display: inline-flex; /* Use flex to center emoji */
-            justify-content: center;
-            align-items: center;
-            width: 2.5rem;  /* Set a fixed size (approx 3xl) */
-            height: 2.5rem; /* Set a fixed size (approx 3xl) */
-            line-height: 2.5rem; /* Ensure vertical centering */
-        }
-        
-        .slot-emoji.visible {
-            /* Make visible */
-            opacity: 1;
-        }
-
-    </style>
-</head>
-<body class="bg-black">
-
-    <!--
-      Main container.
-      - Fills the entire dynamic viewport (h-full maps to 100dvh from the body style).
-      - 'relative' allows us to position the lines and outline inside it.
-      - 'p-2' adds padding so the outline has space from the edge.
-      - 'box-border' ensures padding is included in the total size.
-    -->
-    <div class="h-full w-full relative p-2 box-border">
-
-        <!--
-          The "soft blue outline".
-        -->
-        <div class="absolute inset-2"
-             style="box-shadow: 0 0 8px 2px rgba(96, 165, 250, 0.7); border-radius: 0.5rem;">
-        </div>
-
-        
-        <!--
-          MODIFIED: Player Stats Display
-          - Changed to neon green, single value
-        -->
-        <div class="absolute left-4 text-green-400 text-lg font-bold"
-             style="top: calc(50% - 2rem - 1.75rem); /* Positioned above the upper center line */ text-shadow: 0 0 5px rgba(52, 211, 153, 0.7);">
-            <div id="player-money-display">$100</div>
-        </div>
-
-
-        <!--
-          MODIFIED: Center Emoji Display
-          - Now contains 5 empty <span> elements with IDs
-        -->
-        <div class="absolute left-4 right-4 flex justify-center items-center space-x-4"
-             style="top: calc(50% - 2rem);
-                    height: 4rem;">
-            <!-- Emojis will be inserted here by JS -->
-            <span id="slot-1" class="text-3xl slot-emoji"></span>
-            <span id="slot-2" class="text-3xl slot-emoji"></span>
-            <span id="slot-3" class="text-3xl slot-emoji"></span>
-            <span id="slot-4" class="text-3xl slot-emoji"></span>
-            <span id="slot-5" class="text-3xl slot-emoji"></span>
-        </div>
-
-
-        <!--
-          REMOVED: Duplicate emoji block that was here
-        -->
-
-
-        <!--
-          NEW: The slim top panel horizontal line.
-          - 'absolute' positions it.
-          - 'left-4 right-4' insets it from the sides, matching the outline.
-          - 'top: 3rem' places it 2rem below the top edge of the outline.
-          - Styling matches the other lines.
-        -->
-        <div class="absolute left-4 right-4"
-             style="top: 3rem;
-                    height: 2px;
-                    background-color: rgba(96, 165, 250, 0.7);
-                    box-shadow: 0 0 6px 1px rgba(96, 165, 250, 0.7);
-                    border-radius: 1px;">
-        </div>
-
-        <!--
-          The horizontal line just *above* center.
-        -->
-        <div class="absolute left-4 right-4"
-             style="top: calc(50% - 2rem);
-                    height: 2px;
-                    background-color: rgba(96, 165, 250, 0.7);
-                    box-shadow: 0 0 6px 1px rgba(96, 165, 250, 0.7);
-                    border-radius: 1px;">
-        </div>
-
-        <!--
-          The horizontal line just *below* center.
-        -->
-        <div class="absolute left-4 right-4"
-             style="top: calc(50% + 2rem);
-                    height: 2px;
-                    background-color: rgba(96, 165, 250, 0.7);
-                    box-shadow: 0 0 6px 1px rgba(96, 165, 250, 0.7);
-                    border-radius: 1px;">
-        </div>
-
-        <!--
-          NEW: The vertical line splitting the bottom section.
-        -->
+        <!-- Bay 2 (Middle) -->
         <div class="absolute"
-             style="left: 50%;
-                    top: calc(50% + 2.5rem); /* MODIFIED: Added 0.5rem gap from top line */
-                    bottom: 1rem; /* Matches bottom-4 */
-                    width: 2px;
+             style="left: 25%;
+                    right: calc(50% + 0.5rem);
+                    bottom: 6.5rem; /* Position emoji span just above the 6rem shelf */
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;">
+            <span id="saved-slot-2" class="text-3xl slot-emoji"></span>
+        </div>
+        <div class="absolute"
+             style="left: 25%;
+                    right: calc(50% + 0.5rem);
+                    bottom: 6rem;
+                    height: 2px;
                     background-color: rgba(96, 165, 250, 0.7);
                     box-shadow: 0 0 6px 1px rgba(96, 165, 250, 0.7);
                     border-radius: 1px;">
         </div>
 
-        <!--
-          NEW: Button container for the bottom-right quadrant.
-        -->
-        <div class="absolute left-1/2 right-4 flex flex-col justify-evenly items-center"
-             style="top: calc(50% + 2.5rem); /* MODIFIED: Matched gap from top line */
-                    bottom: 1rem; /* Matches bottom-4 */
-                    ">
-
-            <!--
-              MODIFIED: Added 'button-top' class and 'action-button' ID
-            -->
-            <button
-                type="button"
-                aria-label="Button 1"
-                id="action-button"
-                class="tappable-button button-top w-16 h-16 rounded-full cursor-pointer select-none">
-            </button>
-
-            <!--
-              MODIFIED: Added 'button-bottom' class and 'spin-button' ID
-            -->
-            <button
-                type="button"
-                aria-label="Button 2"
-                id="spin-button"
-                class="tappable-button button-bottom w-16 h-16 rounded-full cursor-pointer select-CORS
-                select-none">
-            </button>
-
+        <!-- Bay 3 (Bottom) -->
+        <div class="absolute"
+             style="left: 25%;
+                    right: calc(50% + 0.5rem);
+                    bottom: 3.5rem; /* Position emoji span just above the 3rem shelf */
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;">
+            <span id="saved-slot-3" class="text-3xl slot-emoji"></span>
         </div>
-
-        <!--
-          REMOVED: Stray buttons and div that were here
-        -->
-
-        <!--
-          NEW: The small horizontal line in the bottom-left.
-          - 'absolute' positions it.
-          - 'left-4' (1rem) insets it from the left outline.
-          - 'right: calc(50% + 0.5rem)' stops it 0.5rem before the center vertical line.
-          - 'bottom: 3rem' places it 2rem above the bottom outline (mirroring the top panel).
-          - Styling matches the other lines.
-        -->
         <div class="absolute"
              style="left: 1rem; /* Matches left-4 */
                     right: calc(50% + 0.5rem);
-                    bottom: 3rem;
+                    bottom: 3rem; /* This is the bottom-most line for the "slim area" */
                     height: 2px;
                     background-color: rgba(96, 165, 250, 0.7);
                     box-shadow: 0 0 6px 1px rgba(96, 165, 250, 0.7);
                     border-radius: 1px;">
         </div>
+        <!--
+          END OF MODIFICATION
+        -->
+
 
     </div>
 
@@ -696,14 +333,19 @@
             // --- Game State ---
             let playerMoney = 100;
             const spinCost = 1;
+            const saveCost = 5; // NEW: Cost for saving a symbol
             let isSpinning = false;
-            let isFirstSpin = true; // NEW: Flag for first spin
+            let isSaving = false; // NEW: State for save animation
+            let isFirstSpin = true;
+            let spinCompleted = false; // NEW: Flag to check if spin is done
             const fruits = ['🍒', '🍓', '🍊', '🍋', '🍉', '🍇', '🍍', '🥝'];
+            let savedSymbols = [null, null, null]; // NEW: Array to track saved symbols
 
             // --- DOM Elements ---
             const spinButton = document.getElementById('spin-button');
+            const actionButton = document.getElementById('action-button'); // NEW
             const playerMoneyDisplay = document.getElementById('player-money-display');
-            
+
             // Get all slot elements
             const slots = [
                 document.getElementById('slot-1'),
@@ -713,10 +355,17 @@
                 document.getElementById('slot-5')
             ];
 
+            // NEW: Get saved slot elements
+            const savedSlots = [
+                document.getElementById('saved-slot-1'),
+                document.getElementById('saved-slot-2'),
+                document.getElementById('saved-slot-3')
+            ];
+
             // --- Helper Functions ---
-            
+
             /**
-             * Updates the UI text for money and cost.
+             * Updates the UI text for money.
              */
             function updateUI() {
                 playerMoneyDisplay.textContent = `$${playerMoney}`;
@@ -729,74 +378,158 @@
                 return fruits[Math.floor(Math.random() * fruits.length)];
             }
 
-            // --- Main Game Function ---
-            
+            /**
+             * NEW: Fisher-Yates Shuffle for randomizing array
+             */
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+            }
+
+            // --- Main Game Functions ---
+
             /**
              * Handles the spin logic.
              */
             function spin() {
-                // Prevent multiple spins at once
-                if (isSpinning) return;
+                // MODIFIED: Prevent spin if saving
+                if (isSpinning || isSaving) return;
 
                 // Check if player can afford the spin
                 if (playerMoney < spinCost) {
-                    // Optional: Add a "not enough money" visual cue here
-                    console.log("Not enough money!");
+                    console.log("Not enough money to spin!");
                     return;
                 }
 
                 // Start spinning
                 isSpinning = true;
+                spinCompleted = false; // NEW
                 playerMoney -= spinCost;
                 updateUI();
 
                 // 1. Reset all slots to be invisible
-                // This will trigger the 300ms fade-out animation
                 slots.forEach(slot => {
                     slot.classList.remove('visible');
                 });
 
                 // 2. Determine wait time.
-                // If it's the first spin, start immediately (0ms).
-                // Otherwise, wait for the 300ms fade-out (from step 1) to complete.
                 const waitTime = isFirstSpin ? 0 : 300;
-                isFirstSpin = false; // It's no longer the first spin
+                isFirstSpin = false;
 
-                // 3. Wait for fade-out (if needed), then fade-in
+                // 3. Wait for fade-out (if needed)
                 setTimeout(() => {
-                    // 4. Animate each slot fading in, one by one
-                    let delay = 0;
-                    const delayIncrement = 150; // 150ms between each slot appearing
-
-                    // --- FIX WAS HERE ---
-                    // This forEach loop now has the correct logic inside it.
+                    
+                    // 4. Set ALL new fruits *first*, while they are invisible.
+                    const newFruits = slots.map(() => getRandomFruit());
                     slots.forEach((slot, index) => {
-                        
+                        slot.textContent = newFruits[index];
+                    });
+                    
+                    // 5. NOW, animate each slot fading in, one by one
+                    let delay = 0;
+                    const delayIncrement = 100;
+
+                    slots.forEach((slot, index) => {
                         setTimeout(() => {
-                            // Set a new random fruit
-                            slot.textContent = getRandomFruit();
-                            // Add 'visible' class to trigger the fade-in
                             slot.classList.add('visible');
 
                             // If this is the last slot, allow spinning again
                             if (index === slots.length - 1) {
                                 setTimeout(() => {
                                     isSpinning = false;
-                                }, 200); // Small buffer after last animation
+                                    spinCompleted = true; // NEW: Mark spin as complete
+                                }, 200);
                             }
                         }, delay);
-                        
                         delay += delayIncrement;
                     });
-                }, waitTime); // Use the dynamic waitTime
+                    
+                }, waitTime);
+            }
+
+            /**
+             * NEW: Handles the save symbol logic.
+             */
+            function saveSymbol() {
+                // Prevent saving if busy, or if spin isn't complete
+                if (isSpinning || isSaving || !spinCompleted) return;
+
+                // Check if player can afford to save
+                if (playerMoney < saveCost) {
+                    console.log("Not enough money to save!");
+                    return;
+                }
+
+                // Find the next empty saved slot
+                const emptySlotIndex = savedSymbols.findIndex(s => s === null);
+
+                // Check if shelves are full
+                if (emptySlotIndex === -1) {
+                    console.log("Shelves are full!");
+                    return;
+                }
+
+                // Start saving process
+                isSaving = true;
+                spinCompleted = false; // Mark spin results as "used"
+                playerMoney -= saveCost;
+                updateUI();
+
+                // Get current symbols and pick one to keep
+                const keptSymbolIndex = Math.floor(Math.random() * slots.length);
+                const keptSymbol = slots[keptSymbolIndex].textContent;
+
+                // Get all slot *elements* to remove (all except the kept one)
+                const slotsToRemove = slots.filter((_, index) => index !== keptSymbolIndex);
+                
+                // Shuffle them for random removal animation
+                shuffleArray(slotsToRemove);
+
+                // Animate removal one by one
+                let removalDelay = 0;
+                const removalIncrement = 200; // 200ms between each removal
+                
+                slotsToRemove.forEach(slot => {
+                    setTimeout(() => {
+                        slot.classList.remove('visible');
+                    }, removalDelay);
+                    removalDelay += removalIncrement;
+                });
+
+                // After all 4 are removed, fade out the last (kept) one
+                setTimeout(() => {
+                    slots[keptSymbolIndex].classList.remove('visible');
+
+                    // Wait for the kept one to fade out (300ms)
+                    setTimeout(() => {
+                        // Update the game state
+                        savedSymbols[emptySlotIndex] = keptSymbol;
+                        
+                        // Update the UI for the saved slot
+                        savedSlots[emptySlotIndex].textContent = keptSymbol;
+                        savedSlots[emptySlotIndex].classList.add('visible');
+
+                        // We are done saving
+                        isSaving = false;
+                    }, 300); // Wait for fade-out
+
+                }, removalDelay); // This triggers after the last removal animation starts
             }
 
             // --- Initialization ---
             spinButton.addEventListener('click', spin);
-            // Also listen for touchstart for faster mobile response
             spinButton.addEventListener('touchstart', (e) => {
-                e.preventDefault(); // Prevent 'click' event from firing too
+                e.preventDefault();
                 spin();
+            }, { passive: false });
+
+            // NEW: Add listeners for the action button
+            actionButton.addEventListener('click', saveSymbol);
+            actionButton.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                saveSymbol();
             }, { passive: false });
 
             // Set initial UI text
@@ -806,4 +539,6 @@
 
 </body>
 </html>
+
+
 
