@@ -43,6 +43,14 @@
             height: 100vh; 
             height: 100dvh; 
         }
+
+        /* Custom style for the button's active (tapped) state.
+          This creates a satisfying press effect.
+        */
+        .tappable-button:active {
+            transform: scale(0.95);
+            box-shadow: 0 0 15px 4px rgba(96, 165, 250, 1); /* Brighter glow on tap */
+        }
     </style>
 </head>
 <body class="bg-black">
@@ -95,7 +103,61 @@
                     border-radius: 1px;">
         </div>
 
+        <!-- 
+          NEW: The vertical line splitting the bottom section.
+          - 'absolute' positions it.
+          - 'left: 50%' centers it horizontally.
+          - 'top: calc(50% + 2rem)' starts it from the bottom horizontal line.
+          - 'bottom-4' (1rem) makes it stop at the same inset as the outline.
+          - 'width: 2px' and styling match the other lines.
+        -->
+        <div class="absolute"
+             style="left: 50%;
+                    top: calc(50% + 2rem);
+                    bottom: 1rem; /* Matches bottom-4 */
+                    width: 2px;
+                    background-color: rgba(96, 165, 250, 0.7);
+                    box-shadow: 0 0 6px 1px rgba(96, 165, 250, 0.7);
+                    border-radius: 1px;">
+        </div>
+
+        <!--
+          NEW: Button container for the bottom-right quadrant.
+          - 'absolute' positions it.
+          - Spans from the vertical line ('left: 50%') to the right inset ('right-4').
+          - Spans from the horizontal line ('top: calc(50% + 2rem)') to the bottom inset ('bottom-4').
+          - 'flex' layout centers and stacks the buttons vertically ('flex-col', 'justify-center', 'items-center').
+          - 'space-y-4' adds padding between the buttons.
+        -->
+        <div class="absolute left-1/2 right-4 flex flex-col justify-center items-center space-y-4"
+             style="top: calc(50% + 2rem);
+                    bottom: 1rem; /* Matches bottom-4 */
+                    padding-left: 0.5rem; /* Add some padding from the center line */
+                    padding-right: 0.5rem; /* Add some padding from the outer glow */
+                    ">
+            
+            <!-- NEW: Tappable Button 1 -->
+            <button
+                type="button"
+                aria-label="Button 1"
+                class="tappable-button w-16 h-16 rounded-full cursor-pointer transition-all duration-150 select-none"
+                style="background-color: rgba(0,0,0,0.3); 
+                       box-shadow: 0 0 10px 3px rgba(96, 165, 250, 0.7);">
+            </button>
+
+            <!-- NEW: Tappable Button 2 -->
+            <button
+                type="button"
+                aria-label="Button 2"
+                class="tappable-button w-16 h-16 rounded-full cursor-pointer transition-all duration-150 select-none"
+                style="background-color: rgba(0,0,0,0.3); 
+                       box-shadow: 0 0 10px 3px rgba(96, 165, 250, 0.7);">
+            </button>
+
+        </div>
+
     </div>
 
 </body>
 </html>
+
