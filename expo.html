@@ -1,139 +1,279 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Mobile Game UI Starter</title>
-  <style>
-    :root {
-      --bg: #000;        /* page background */
-      --fg: #fff;        /* frame border */
-      --border: #2a2a2a; /* internal dividers */
-      --bar-h: 56px;     /* top/bottom bar height */
-      --lane-w: 64%;     /* slim middle width */
-      --r: 16px;         /* frame radius */
-      --vh: 100svh;      /* JS-updated to exact innerHeight */
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Lock, Unlock, Coins, RotateCcw } from "lucide-react";
+
+// Minimal, portrait-first emoji slot machine
+// - Fast-paced spin cadence
+// - Coins system with bet control
+// - Perks: tap-to-lock reels, optional sticky keep for matches
+// - Clean UI, large reels, little chrome
+
+const EMOJIS = [
+  { s: "🍒", w: 30, p: 4 },
+  { s: "🍋", w: 25, p: 5 },
+  { s: "🔔", w: 15, p: 10 },
+  { s: "🍀", w: 12, p: 16 },
+  { s: "💎", w: 8,  p: 25 },
+  { s: "⭐", w: 6,  p: 40 },
+  { s: "👑", w: 4,  p: 60 },
+];
+
+const TOTAL_W = EMOJIS.reduce((a, b) => a + b.w, 0);
+const pickEmoji = () => {
+  const r = Math.random() * TOTAL_W;
+  let acc = 0;
+  for (const e of EMOJIS) {
+    acc += e.w;
+    if (r <= acc) return e.s;
+  }
+  return EMOJIS[0].s;
+};
+
+const reelStopDelays = [220, 340, 460];
+
+export default function EmojiSlots() {
+  const [coins, setCoins] = useState(100);
+  const [bet, setBet] = useState(1);
+  const [reels, setReels] = useState(["🍒", "🍒", "🍒"]);
+  const [spinning, setSpinning] = useState(false);
+  const [locks, setLocks] = useState([false, false, false]);
+  const [keepMode, setKeepMode] = useState(true);
+  const [keptAuto, setKeptAuto] = useState([false, false, false]);
+  const [boom, setBoom] = useState(0); // trigger confetti pulse
+  const [shake, setShake] = useState(0);
+  const intervalsRef = useRef([] as number[]);
+
+  useEffect(() => () => intervalsRef.current.forEach((id) => clearInterval(id)), []);
+
+  const canSpin = useMemo(() => !spinning && coins >= bet, [spinning, coins, bet]);
+
+  const vibrate = (pattern: number | number[]) => {
+    if ("vibrate" in navigator) {
+      try { (navigator as any).vibrate(pattern); } catch {}
     }
-    * { box-sizing: border-box; }
-    html, body { height: 100%; }
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--fg);
-      -webkit-tap-highlight-color: transparent;
-      touch-action: manipulation;
-      overscroll-behavior-y: none;
+  };
+
+  const evalWin = (vals: string[]) => {
+    // 3 of a kind wins
+    if (vals[0] === vals[1] && vals[1] === vals[2]) {
+      const emo = vals[0];
+      const pay = (EMOJIS.find((e) => e.s === emo)?.p ?? 0) * bet;
+      setCoins((c) => c + pay);
+      setBoom((n) => n + 1);
+      vibrate([40, 30, 60]);
+      // Clear auto-keeps after a full win
+      setKeptAuto([false, false, false]);
+      return { win: true, pay };
+    }
+    // Optionally auto-keep any matching pair for next spin
+    if (keepMode) {
+      const nextKept = [false, false, false];
+      if (vals[0] === vals[1]) { nextKept[0] = nextKept[1] = true; }
+      else if (vals[1] === vals[2]) { nextKept[1] = nextKept[2] = true; }
+      else if (vals[0] === vals[2]) { nextKept[0] = nextKept[2] = true; }
+      setKeptAuto(nextKept);
+    } else {
+      setKeptAuto([false, false, false]);
+    }
+    return { win: false, pay: 0 };
+  };
+
+  const spin = async () => {
+    if (!canSpin) {
+      setShake((n) => n + 1);
+      vibrate(60);
+      return;
+    }
+    setSpinning(true);
+    setCoins((c) => c - bet);
+
+    // start cycling reels that are not locked
+    const newIntervals: number[] = [];
+    const startVals = [...reels];
+    const targetVals = [...reels];
+
+    for (let i = 0; i < 3; i++) {
+      if (locks[i] || keptAuto[i]) continue;
+      const id = window.setInterval(() => {
+        startVals[i] = pickEmoji();
+        setReels([...startVals]);
+      }, 45); // fast-paced
+      newIntervals.push(id);
     }
 
-    /* Fill any mobile screen size precisely */
-    .app {
-      width: 100%;
-      height: var(--vh);
-      display: grid;
-      place-items: center;
-    }
+    intervalsRef.current = newIntervals;
 
-    /* Full-viewport framed area with safe-area handling */
-    .frame {
-      width: 100%;
-      height: 100%;
-      border: 1px solid var(--fg);
-      border-radius: var(--r);
-      overflow: hidden;
-      background: transparent;
-      display: flex;
-      flex-direction: column;
-      padding-left: env(safe-area-inset-left);
-      padding-right: env(safe-area-inset-right);
-    }
+    // stop in cadence and assign final symbols
+    await Promise.all(
+      [0, 1, 2].map(
+        (i) =>
+          new Promise<void>((res) => {
+            const delay = reelStopDelays[i];
+            setTimeout(() => {
+              if (!(locks[i] || keptAuto[i])) {
+                const final = pickEmoji();
+                targetVals[i] = final;
+                startVals[i] = final;
+              }
+              setReels([...startVals]);
+              res();
+            }, delay);
+          })
+      )
+    );
 
-    /* Top and bottom bars; avoid double-counting safe-area in height */
-    .topbar, .bottombar { flex: 0 0 auto; background: transparent; }
-    .topbar {
-      min-block-size: var(--bar-h);
-      padding-top: env(safe-area-inset-top);
-      border-bottom: 1px solid var(--border);
-    }
-    .bottombar {
-      min-block-size: var(--bar-h);
-      padding-bottom: env(safe-area-inset-bottom);
-      border-top: 1px solid var(--border);
-    }
+    // stop and clear all intervals
+    intervalsRef.current.forEach((id) => clearInterval(id));
+    intervalsRef.current = [];
 
-    /* Slim middle section scales to remaining space */
-    .middle {
-      flex: 1 1 auto;
-      display: flex;
-      align-items: stretch;
-      justify-content: center;
-      position: relative;
-      min-block-size: 0; /* prevent flex overflow on some browsers */
-    }
-    .lane {
-      position: relative;
-      inline-size: var(--lane-w);
-      block-size: 100%;
-      margin: 0 auto;
-      border-left: 1px solid var(--border);
-      border-right: 1px solid var(--border);
-    }
+    // Evaluate win and manage keeps
+    const result = evalWin(startVals);
 
-    /* Rendering surface fills the lane */
-    .game {
-      position: absolute;
-      inset: 0;
-      inline-size: 100%;
-      block-size: 100%;
-      display: block;
-      background: transparent;
-    }
+    // Auto-unlock any manual locks after one spin
+    setLocks((prev) => prev.map(() => false));
 
-    /* Remove overscroll background flash on iOS */
-    @supports (-webkit-touch-callout: none) {
-      html, body { background: #000; }
-    }
-  </style>
-</head>
-<body>
-  <div class="app">
-    <div class="frame">
-      <div class="topbar"></div>
-      <div class="middle">
-        <div class="lane">
-          <canvas class="game" id="game"></canvas>
+    setSpinning(false);
+  };
+
+  const toggleLock = (i: number) => {
+    if (spinning) return;
+    // Limit to max 2 manual locks for balance
+    const count = locks.filter(Boolean).length;
+    setLocks((prev) => {
+      const next = [...prev];
+      next[i] = !prev[i];
+      if (next[i] && count >= 2) {
+        // If exceeding, turn off the earliest other lock
+        const j = prev.findIndex((v) => v);
+        if (j >= 0 && j !== i) next[j] = false;
+      }
+      return next;
+    });
+  };
+
+  const reset = () => {
+    setCoins(100);
+    setBet(1);
+    setLocks([false, false, false]);
+    setKeptAuto([false, false, false]);
+    setReels(["🍒", "🍒", "🍒"]);
+  };
+
+  const payoutOf = (s: string) => EMOJIS.find((e) => e.s === s)?.p ?? 0;
+
+  return (
+    <div className="w-full h-full min-h-screen bg-black text-white flex flex-col items-center justify-between p-4 select-none">
+      {/* Top bar */}
+      <div className="w-full max-w-sm flex items-center justify-between">
+        <div className="flex items-center gap-2 text-xl">
+          <Coins className="w-5 h-5" />
+          <span className="font-medium">{coins}</span>
+        </div>
+        <div className="flex items-center gap-2 text-xl">
+          <button
+            className="px-2 py-1 rounded-lg bg-neutral-900 border border-neutral-800 active:scale-95"
+            onClick={() => setBet((b) => Math.max(1, b - 1))}
+            aria-label="Decrease bet"
+          >
+            −
+          </button>
+          <span className="min-w-[2ch] text-center">{bet}</span>
+          <button
+            className="px-2 py-1 rounded-lg bg-neutral-900 border border-neutral-800 active:scale-95"
+            onClick={() => setBet((b) => Math.min(10, b + 1))}
+            aria-label="Increase bet"
+          >
+            +
+          </button>
+        </div>
+        <button
+          onClick={reset}
+          className="p-2 rounded-xl bg-neutral-900 border border-neutral-800 active:scale-95"
+          aria-label="Reset"
+        >
+          <RotateCcw className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* Reels */}
+      <motion.div
+        key={shake}
+        initial={{ x: 0 }}
+        animate={{ x: [0, 6, -6, 4, -4, 0] }}
+        transition={{ duration: 0.28 }}
+        className="relative w-full max-w-sm aspect-[9/12] grid grid-cols-3 gap-2 place-items-center"
+      >
+        {[0, 1, 2].map((i) => (
+          <motion.button
+            key={i}
+            onClick={() => toggleLock(i)}
+            className={`relative w-full h-full rounded-3xl bg-neutral-950 border border-neutral-800 flex items-center justify-center overflow-hidden ${locks[i] ? "ring-2 ring-yellow-400" : keptAuto[i] ? "ring-2 ring-cyan-400" : ""}`}
+          >
+            <AnimatePresence mode="popLayout">
+              <motion.div
+                key={reels[i]}
+                initial={{ y: -30, scale: 0.9, opacity: 0 }}
+                animate={{ y: 0, scale: 1, opacity: 1 }}
+                exit={{ y: 30, scale: 0.9, opacity: 0 }}
+                transition={{ type: "spring", stiffness: 400, damping: 24 }}
+                className="text-[18vw] sm:text-[12vw] leading-none"
+              >
+                {reels[i]}
+              </motion.div>
+            </AnimatePresence>
+            <div className="absolute top-2 right-2 opacity-80">
+              {locks[i] ? <Lock className="w-5 h-5" /> : keptAuto[i] ? <Lock className="w-5 h-5" /> : null}
+            </div>
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-xs text-neutral-400">
+              x{payoutOf(reels[i])}
+            </div>
+          </motion.button>
+        ))}
+
+        {/* Win pulse */}
+        <AnimatePresence>
+          <motion.div
+            key={boom}
+            className="pointer-events-none absolute inset-0 rounded-3xl"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0, 0.25, 0] }}
+            transition={{ duration: 0.5 }}
+            style={{ background: "radial-gradient(ellipse at center, rgba(255,255,255,0.25), transparent 60%)" }}
+          />
+        </AnimatePresence>
+      </motion.div>
+
+      {/* Bottom controls */}
+      <div className="w-full max-w-sm flex items-center justify-between gap-3">
+        <button
+          onClick={() => setKeepMode((k) => !k)}
+          className={`px-3 py-2 rounded-2xl border text-sm ${keepMode ? "bg-neutral-900 border-neutral-700" : "bg-neutral-950 border-neutral-800"}`}
+          aria-pressed={keepMode}
+        >
+          keep
+        </button>
+        <motion.button
+          onClick={spin}
+          disabled={!canSpin}
+          whileTap={{ scale: 0.98 }}
+          className={`flex-1 py-3 rounded-2xl text-lg font-semibold tracking-wide ${canSpin ? "bg-white text-black" : "bg-neutral-800 text-neutral-500"}`}
+        >
+          {spinning ? "spinning" : "spin"}
+        </motion.button>
+        <div className="text-xs text-neutral-500 w-[72px] text-right">
+          3× match pays
         </div>
       </div>
-      <div class="bottombar"></div>
-    </div>
-  </div>
-  <script>
-    // Exact viewport height to avoid cut-off under mobile browser UI
-    (function setVH() {
-      const set = () => {
-        const h = window.innerHeight; // visual viewport
-        document.documentElement.style.setProperty('--vh', h + 'px');
-      };
-      set();
-      window.addEventListener('resize', set, { passive: true });
-      window.addEventListener('orientationchange', set, { passive: true });
-    })();
 
-    // Resize canvas to physical pixels for crisp rendering
-    (function() {
-      const c = document.getElementById('game');
-      const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
-      function fit() {
-        const rect = c.getBoundingClientRect();
-        const w = Math.floor(rect.width * dpr);
-        const h = Math.floor(rect.height * dpr);
-        if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
-      }
-      const ro = new ResizeObserver(fit);
-      ro.observe(c);
-      window.addEventListener('orientationchange', fit);
-      window.addEventListener('resize', fit);
-      fit();
-    })();
-  </script>
-</body>
-</html>
+      <FooterHint />
+    </div>
+  );
+}
+
+function FooterHint() {
+  return (
+    <div className="fixed bottom-2 inset-x-0 flex items-center justify-center pointer-events-none">
+      <div className="text-[10px] text-neutral-500">tap reels to lock • pairs keep if enabled</div>
+    </div>
+  );
+}
