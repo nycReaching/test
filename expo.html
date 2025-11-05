@@ -1,12 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, Unlock, Coins, RotateCcw } from "lucide-react";
+import { Lock, Coins, RotateCcw } from "lucide-react";
 
 // Minimal, portrait-first emoji slot machine
-// - Fast-paced spin cadence
-// - Coins system with bet control
-// - Perks: tap-to-lock reels, optional sticky keep for matches
-// - Clean UI, large reels, little chrome
+// Mobile fixes:
+// - True full-height on iOS/Android with --vh unit
+// - Viewport meta injection, no double-tap zoom
+// - Overscroll disabled to avoid bounce/PTR
+// - Landscape overlay prompting rotate
 
 const EMOJIS = [
   { s: "🍒", w: 30, p: 4 },
@@ -32,6 +33,43 @@ const pickEmoji = () => {
 const reelStopDelays = [220, 340, 460];
 
 export default function EmojiSlots() {
+  // --- mobile viewport + overscroll fixes ---
+  useEffect(() => {
+    const setVh = () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty("--vh", `${vh}px`);
+    };
+    setVh();
+    window.addEventListener("resize", setVh);
+    window.addEventListener("orientationchange", setVh);
+
+    // viewport meta
+    let meta = document.querySelector('meta[name="viewport"]');
+    if (!meta) {
+      meta = document.createElement("meta");
+      meta.setAttribute("name", "viewport");
+      document.head.appendChild(meta);
+    }
+    meta.setAttribute(
+      "content",
+      "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    );
+
+    // prevent bounce / pull-to-refresh
+    const prevHtml = document.documentElement.style.overscrollBehavior;
+    const prevBody = document.body.style.overscrollBehavior;
+    document.documentElement.style.overscrollBehavior = "none";
+    document.body.style.overscrollBehavior = "none";
+
+    // clean up
+    return () => {
+      window.removeEventListener("resize", setVh);
+      window.removeEventListener("orientationchange", setVh);
+      document.documentElement.style.overscrollBehavior = prevHtml;
+      document.body.style.overscrollBehavior = prevBody;
+    };
+  }, []);
+
   const [coins, setCoins] = useState(100);
   const [bet, setBet] = useState(1);
   const [reels, setReels] = useState(["🍒", "🍒", "🍒"]);
@@ -39,7 +77,7 @@ export default function EmojiSlots() {
   const [locks, setLocks] = useState([false, false, false]);
   const [keepMode, setKeepMode] = useState(true);
   const [keptAuto, setKeptAuto] = useState([false, false, false]);
-  const [boom, setBoom] = useState(0); // trigger confetti pulse
+  const [boom, setBoom] = useState(0);
   const [shake, setShake] = useState(0);
   const intervalsRef = useRef([] as number[]);
 
@@ -54,18 +92,15 @@ export default function EmojiSlots() {
   };
 
   const evalWin = (vals: string[]) => {
-    // 3 of a kind wins
     if (vals[0] === vals[1] && vals[1] === vals[2]) {
       const emo = vals[0];
       const pay = (EMOJIS.find((e) => e.s === emo)?.p ?? 0) * bet;
       setCoins((c) => c + pay);
       setBoom((n) => n + 1);
       vibrate([40, 30, 60]);
-      // Clear auto-keeps after a full win
       setKeptAuto([false, false, false]);
       return { win: true, pay };
     }
-    // Optionally auto-keep any matching pair for next spin
     if (keepMode) {
       const nextKept = [false, false, false];
       if (vals[0] === vals[1]) { nextKept[0] = nextKept[1] = true; }
@@ -87,23 +122,20 @@ export default function EmojiSlots() {
     setSpinning(true);
     setCoins((c) => c - bet);
 
-    // start cycling reels that are not locked
     const newIntervals: number[] = [];
     const startVals = [...reels];
-    const targetVals = [...reels];
 
     for (let i = 0; i < 3; i++) {
       if (locks[i] || keptAuto[i]) continue;
       const id = window.setInterval(() => {
         startVals[i] = pickEmoji();
         setReels([...startVals]);
-      }, 45); // fast-paced
+      }, 45);
       newIntervals.push(id);
     }
 
     intervalsRef.current = newIntervals;
 
-    // stop in cadence and assign final symbols
     await Promise.all(
       [0, 1, 2].map(
         (i) =>
@@ -112,7 +144,6 @@ export default function EmojiSlots() {
             setTimeout(() => {
               if (!(locks[i] || keptAuto[i])) {
                 const final = pickEmoji();
-                targetVals[i] = final;
                 startVals[i] = final;
               }
               setReels([...startVals]);
@@ -122,14 +153,10 @@ export default function EmojiSlots() {
       )
     );
 
-    // stop and clear all intervals
     intervalsRef.current.forEach((id) => clearInterval(id));
     intervalsRef.current = [];
 
-    // Evaluate win and manage keeps
-    const result = evalWin(startVals);
-
-    // Auto-unlock any manual locks after one spin
+    evalWin(startVals);
     setLocks((prev) => prev.map(() => false));
 
     setSpinning(false);
@@ -137,13 +164,11 @@ export default function EmojiSlots() {
 
   const toggleLock = (i: number) => {
     if (spinning) return;
-    // Limit to max 2 manual locks for balance
     const count = locks.filter(Boolean).length;
     setLocks((prev) => {
       const next = [...prev];
       next[i] = !prev[i];
       if (next[i] && count >= 2) {
-        // If exceeding, turn off the earliest other lock
         const j = prev.findIndex((v) => v);
         if (j >= 0 && j !== i) next[j] = false;
       }
@@ -161,8 +186,27 @@ export default function EmojiSlots() {
 
   const payoutOf = (s: string) => EMOJIS.find((e) => e.s === s)?.p ?? 0;
 
+  const isPortrait = typeof window !== 'undefined' ? window.matchMedia('(orientation: portrait)').matches : true;
+
   return (
-    <div className="w-full h-full min-h-screen bg-black text-white flex flex-col items-center justify-between p-4 select-none">
+    <div
+      className="w-full bg-black text-white flex flex-col items-center justify-between p-4 select-none touch-manipulation"
+      style={{ height: "calc(var(--vh, 1vh) * 100)" }}
+    >
+      {/* Landscape overlay */}
+      <AnimatePresence>
+        {!isPortrait && (
+          <motion.div
+            className="absolute inset-0 z-50 bg-black/90 flex items-center justify-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <div className="text-center text-sm text-neutral-300">rotate to portrait</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Top bar */}
       <div className="w-full max-w-sm flex items-center justify-between">
         <div className="flex items-center gap-2 text-xl">
