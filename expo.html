@@ -122,7 +122,7 @@
             /* Make visible */
             opacity: 1;
         }
-        
+
         /* --- NEW: Glow effect for saved symbol --- */
         .slot-glow {
             /* Use a white glow to make any emoji color "pop" */
@@ -258,35 +258,19 @@
 
 
         <!--
-          NEW: Text rows in bottom-left
-          MODIFIED: Removed 8th "Test." row
+          MODIFIED: Removed the "Test." text rows.
         -->
-        <div class="absolute text-white text-xs"
-             style="left: 1rem;
-                    top: calc(50% + 3.5rem); /* Align with top of first shelf */
-                    display: flex;
-                    flex-direction: column;
-                    gap: 0.25rem; /* small gap between lines */
-                    ">
-            <p>Test.</p>
-            <p>Test.</p>
-            <p>Test.</p>
-            <p>Test.</p>
-            <p>Test.</p>
-            <p>Test.</p>
-            <p>Test.</p>
-            <!-- <p>Test.</p>  REMOVED -->
-        </div>
 
 
         <!--
           MODIFICATION: Replaced shelves with a single container
           for the saved symbols.
         -->
-        <div class="absolute flex flex-col items-center space-y-2 bg-white/5 rounded-md p-2 box-border"
-             style="left: 25%;
+        <div class="absolute flex flex-col items-end space-y-2 bg-white/5 rounded-md p-2 box-border"
+             style="left: 1rem; /* MODIFIED: Expanded left */
                     right: calc(50% + 0.5rem);
                     top: calc(50% + 2.5rem); /* Position container slightly above first symbol's old spot */
+                    padding-right: 12.5%; /* MODIFIED: Pushes symbols from right edge to keep old centered position */
                     ">
             <span id="saved-slot-1" class="text-3xl slot-emoji"></span>
             <span id="saved-slot-2" class="text-3xl slot-emoji"></span>
@@ -485,7 +469,7 @@
                 // After all 4 are removed, make the kept one glow, *then* fade out
                 setTimeout(() => {
                     const keptSlot = slots[keptSymbolIndex];
-                    
+
                     // 1. Add glow class
                     keptSlot.classList.add('slot-glow');
 
@@ -502,7 +486,7 @@
                             // Update the UI for the saved slot
                             savedSlots[emptySlotIndex].textContent = keptSymbol;
                             savedSlots[emptySlotIndex].classList.add('visible');
-                            
+
                             // 5. Clean up glow class
                             keptSlot.classList.remove('slot-glow');
 
@@ -534,7 +518,7 @@
                 spinButton.classList.add('active'); // Add visual state
                 spin(); // Call logic
             }, { passive: false });
-            
+
             // Add listeners to remove active state
             spinButton.addEventListener('touchend', removeActiveState);
             spinButton.addEventListener('touchcancel', removeActiveState); // If touch is interrupted
@@ -556,4 +540,3 @@
 
 </body>
 </html>
-
