@@ -75,7 +75,7 @@
             border: 2px solid rgba(153, 27, 27, 0.8);
         }
 
-        .button-top:active {
+        .button-top:active, .button-top.active {
             /* Pink Flash: (#f472b6) */
             background-image: radial-gradient(circle, rgba(244, 114, 182, 0.8) 0%, rgba(244, 114, 182, 0.5) 70%);
             /* LESS GLOW: reduced shadow size and opacity */
@@ -93,7 +93,7 @@
         }
 
         /* --- MODIFICATION: Changed to Neon Green flash --- */
-        .button-bottom:active {
+        .button-bottom:active, .button-bottom.active {
             /* Neon Green Flash: (#4ade80) -> rgba(74, 222, 128) */
             background-image: radial-gradient(circle, rgba(74, 222, 128, 0.8) 0%, rgba(74, 222, 128, 0.5) 70%);
             box-shadow: 0 0 8px 2px rgba(74, 222, 128, 0.7);
@@ -154,9 +154,10 @@
 
         <!--
           MODIFIED: Player Stats Display
-          - Changed 'font-medium' to 'font-light' for a thinner look.
+          - Changed 'font-light' for a thinner look.
+          - MODIFIED: Changed 'text-lg' to 'text-base' for smaller font.
         -->
-        <div class="absolute left-4 text-green-400 text-lg font-light"
+        <div class="absolute left-4 text-green-400 text-base font-light"
              style="top: calc(50% - 2rem - 1.75rem); /* Positioned above the upper center line */ text-shadow: 0 0 5px rgba(52, 211, 153, 0.7);">
             <div id="player-money-display">$100</div>
         </div>
@@ -258,6 +259,7 @@
 
         <!--
           NEW: Text rows in bottom-left
+          MODIFIED: Removed 8th "Test." row
         -->
         <div class="absolute text-white text-xs"
              style="left: 1rem;
@@ -273,7 +275,7 @@
             <p>Test.</p>
             <p>Test.</p>
             <p>Test.</p>
-            <p>Test.</p>
+            <!-- <p>Test.</p>  REMOVED -->
         </div>
 
 
@@ -293,6 +295,17 @@
         <!--
           END OF MODIFICATION
         -->
+
+        <!-- NEW: Bottom line for left panel -->
+        <div class="absolute"
+             style="left: 1rem; /* Matches left-4 padding */
+                    right: calc(50% + 0.25rem); /* Stops before vertical divider */
+                    top: calc(50% + 12.5rem); /* Positioned below text and symbols */
+                    height: 2px;
+                    background-color: rgba(96, 165, 250, 0.7);
+                    box-shadow: 0 0 6px 1px rgba(96, 165, 250, 0.7);
+                    border-radius: 1px;">
+        </div>
 
 
     </div>
@@ -504,17 +517,37 @@
 
             // --- Initialization ---
             spinButton.addEventListener('click', spin);
+            actionButton.addEventListener('click', saveSymbol);
+
+            // --- MODIFIED: Added touch handlers for visual active state ---
+
+            // Helper function to remove active state
+            const removeActiveState = (e) => {
+                // Check if the target is one of the buttons
+                if (e.currentTarget.id === 'spin-button' || e.currentTarget.id === 'action-button') {
+                    e.currentTarget.classList.remove('active');
+                }
+            };
+
             spinButton.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                spin();
+                e.preventDefault(); // Prevent ghost click and scrolling
+                spinButton.classList.add('active'); // Add visual state
+                spin(); // Call logic
+            }, { passive: false });
+            
+            // Add listeners to remove active state
+            spinButton.addEventListener('touchend', removeActiveState);
+            spinButton.addEventListener('touchcancel', removeActiveState); // If touch is interrupted
+
+            actionButton.addEventListener('touchstart', (e) => {
+                e.preventDefault(); // Prevent ghost click and scrolling
+                actionButton.classList.add('active'); // Add visual state
+                saveSymbol(); // Call logic
             }, { passive: false });
 
-            // NEW: Add listeners for the action button
-            actionButton.addEventListener('click', saveSymbol);
-            actionButton.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                saveSymbol();
-            }, { passive: false });
+            // Add listeners to remove active state
+            actionButton.addEventListener('touchend', removeActiveState);
+            actionButton.addEventListener('touchcancel', removeActiveState);
 
             // Set initial UI text
             updateUI();
@@ -523,3 +556,4 @@
 
 </body>
 </html>
+
