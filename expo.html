@@ -12,6 +12,7 @@
       --bar-h: 56px;     /* top/bottom bar height */
       --lane-w: 64%;     /* slim middle width */
       --r: 16px;         /* frame radius */
+      --vh: 100svh;      /* JS-updated to exact innerHeight */
     }
     * { box-sizing: border-box; }
     html, body { height: 100%; }
@@ -21,44 +22,41 @@
       color: var(--fg);
       -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
+      overscroll-behavior-y: none;
     }
 
-    /* Fill any mobile screen size */
+    /* Fill any mobile screen size precisely */
     .app {
-      inline-size: 100vw;
-      block-size: 100svh; /* stable viewport units on mobile */
+      width: 100%;
+      height: var(--vh);
       display: grid;
       place-items: center;
     }
 
     /* Full-viewport framed area with safe-area handling */
     .frame {
-      inline-size: 100%;
-      block-size: 100%;
+      width: 100%;
+      height: 100%;
       border: 1px solid var(--fg);
       border-radius: var(--r);
       overflow: hidden;
       background: transparent;
       display: flex;
       flex-direction: column;
-      /* keep content out of notches while border hugs the edge */
       padding-left: env(safe-area-inset-left);
       padding-right: env(safe-area-inset-right);
     }
 
-    /* Top and bottom bars occupy safe areas as padding */
-    .topbar, .bottombar {
-      flex: 0 0 auto;
-      background: transparent;
-    }
+    /* Top and bottom bars; avoid double-counting safe-area in height */
+    .topbar, .bottombar { flex: 0 0 auto; background: transparent; }
     .topbar {
-      padding-top: calc(env(safe-area-inset-top));
-      block-size: calc(var(--bar-h) + env(safe-area-inset-top));
+      min-block-size: var(--bar-h);
+      padding-top: env(safe-area-inset-top);
       border-bottom: 1px solid var(--border);
     }
     .bottombar {
+      min-block-size: var(--bar-h);
       padding-bottom: env(safe-area-inset-bottom);
-      block-size: calc(var(--bar-h) + env(safe-area-inset-bottom));
       border-top: 1px solid var(--border);
     }
 
@@ -69,6 +67,7 @@
       align-items: stretch;
       justify-content: center;
       position: relative;
+      min-block-size: 0; /* prevent flex overflow on some browsers */
     }
     .lane {
       position: relative;
@@ -108,6 +107,17 @@
     </div>
   </div>
   <script>
+    // Exact viewport height to avoid cut-off under mobile browser UI
+    (function setVH() {
+      const set = () => {
+        const h = window.innerHeight; // visual viewport
+        document.documentElement.style.setProperty('--vh', h + 'px');
+      };
+      set();
+      window.addEventListener('resize', set, { passive: true });
+      window.addEventListener('orientationchange', set, { passive: true });
+    })();
+
     // Resize canvas to physical pixels for crisp rendering
     (function() {
       const c = document.getElementById('game');
@@ -116,9 +126,7 @@
         const rect = c.getBoundingClientRect();
         const w = Math.floor(rect.width * dpr);
         const h = Math.floor(rect.height * dpr);
-        if (c.width !== w || c.height !== h) {
-          c.width = w; c.height = h;
-        }
+        if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
       }
       const ro = new ResizeObserver(fit);
       ro.observe(c);
