@@ -13,16 +13,12 @@
         --border: 3px;
         /* Slim bar height scales by viewport height but stays usable */
         --bar-h: clamp(4px, 2.5vh, 12px);
+        /* Round button size */
+        --btn: clamp(44px, 9vh, 72px);
       }
 
-      * {
-        box-sizing: border-box;
-      }
-
-      html,
-      body {
-        height: 100%;
-      }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
 
       body {
         margin: 0;
@@ -41,6 +37,7 @@
         padding-right: env(safe-area-inset-right);
         padding-bottom: env(safe-area-inset-bottom);
         padding-left: env(safe-area-inset-left);
+        overflow: hidden;
       }
 
       /* Blue border frame */
@@ -49,6 +46,7 @@
         inset: 0;
         border: var(--border) solid var(--blue);
         pointer-events: none;
+        z-index: 3;
       }
 
       /* Slim horizontal middle section */
@@ -61,19 +59,66 @@
         transform: translateY(-50%);
         background: var(--blue);
         pointer-events: none;
+        z-index: 1;
+      }
+
+      /* Image regions */
+      .slot {
+        position: absolute;
+        left: var(--border);
+        right: var(--border);
+        overflow: hidden;
+      }
+      .slot.top { top: var(--border); bottom: calc(50% + var(--bar-h) / 2); }
+      .slot.bottom { bottom: var(--border); top: calc(50% + var(--bar-h) / 2); }
+
+      .slot img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain; /* keep aspect and fully visible */
+        user-select: none;
+        -webkit-user-drag: none;
+      }
+
+      /* Round tappable button on the mid bar, center-left */
+      .btn {
+        position: absolute;
+        width: var(--btn);
+        height: var(--btn);
+        border-radius: 50%;
+        border: var(--border) solid var(--blue);
+        background: transparent;
+        left: 30%; /* center-left placement */
+        top: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 2; /* above bar, below frame */
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+        outline: none;
       }
 
       /* Ensure layout remains clean if shown in landscape */
       @media (orientation: landscape) {
-        .mid {
-          --bar-h: clamp(3px, 1.5vh, 10px);
-        }
+        .mid { --bar-h: clamp(3px, 1.5vh, 10px); }
+        .btn { left: 25%; }
       }
     </style>
   </head>
   <body>
     <div class="wrap">
+      <div class="slot top">
+        <img src="enemy1.jpg" alt="" draggable="false" />
+      </div>
+
+      <div class="slot bottom">
+        <img src="elf1.jpg" alt="" draggable="false" />
+      </div>
+
+      <div class="mid"></div>
+      <button class="btn" type="button"></button>
       <div class="frame"></div>
+    </div>
       <div class="mid"></div>
     </div>
 
