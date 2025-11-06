@@ -46,7 +46,7 @@
         inset: 0;
         border: var(--border) solid var(--blue);
         pointer-events: none;
-        z-index: 3;
+        z-index: 3; /* topmost so the border stays visible */
       }
 
       /* Slim horizontal middle section */
@@ -88,15 +88,27 @@
         height: var(--btn);
         border-radius: 50%;
         border: var(--border) solid var(--blue);
-        background: transparent;
+        background: var(--blue); /* solid */
         left: 30%; /* center-left placement */
         top: 50%;
         transform: translate(-50%, -50%);
-        z-index: 2; /* above bar, below frame */
+        z-index: 4; /* above the mid bar so it overlaps */
         touch-action: manipulation;
         -webkit-tap-highlight-color: transparent;
         outline: none;
+        cursor: pointer;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.35);
+        transition: transform 120ms ease-out, box-shadow 120ms ease-out;
       }
+      .btn:active { transform: translate(-50%, -50%) scale(0.94); }
+
+      /* Tap animation class toggled on click */
+      @keyframes pulse {
+        0% { transform: translate(-50%, -50%) scale(1); }
+        50% { transform: translate(-50%, -50%) scale(0.92); }
+        100% { transform: translate(-50%, -50%) scale(1); }
+      }
+      .btn.pulse { animation: pulse 180ms ease-out; }
 
       /* Ensure layout remains clean if shown in landscape */
       @media (orientation: landscape) {
@@ -116,10 +128,8 @@
       </div>
 
       <div class="mid"></div>
-      <button class="btn" type="button"></button>
+      <button class="btn" type="button" aria-label="action"></button>
       <div class="frame"></div>
-    </div>
-      <div class="mid"></div>
     </div>
 
     <script>
@@ -132,6 +142,57 @@
         setVH();
         window.addEventListener('resize', setVH, { passive: true });
         window.addEventListener('orientationchange', setVH, { passive: true });
+      })();
+
+      // Button tap animation + image cycling sequence
+      (function(){
+        const btn = document.querySelector('.btn');
+        const charImg = document.querySelector('.slot.bottom img');
+        const enemyImg = document.querySelector('.slot.top img');
+
+        const charFrames = ['elf1.jpg','elf2.jpg','elf3.jpg'];
+        const enemyFrames = ['enemy1.jpg','enemy2.jpg','enemy3.jpg'];
+
+        // Preload to minimize flicker
+        [...charFrames, ...enemyFrames].forEach(src => { const i = new Image(); i.src = src; });
+
+        let busy = false;
+
+        function cycleImage(el, frames, ms, intervalMs) {
+          return new Promise(resolve => {
+            let idx = 0;
+            const t0 = performance.now();
+            const timer = setInterval(() => {
+              el.src = frames[idx = (idx + 1) % frames.length];
+            }, intervalMs);
+            const stop = () => { clearInterval(timer); resolve(); };
+            const rafCheck = (t) => {
+              if (t - t0 >= ms) { stop(); }
+              else { requestAnimationFrame(rafCheck); }
+            };
+            requestAnimationFrame(rafCheck);
+          });
+        }
+
+        async function runSequence(){
+          if (busy) return;
+          busy = true;
+
+          // Button pulse animation retrigger
+          btn.classList.remove('pulse');
+          void btn.offsetWidth; // reflow
+          btn.classList.add('pulse');
+
+          // Character cycles for 2s, then enemy cycles for 2s
+          await cycleImage(charImg, charFrames, 2000, 80);
+          await cycleImage(enemyImg, enemyFrames, 2000, 80);
+
+          busy = false;
+        }
+
+        if (btn) {
+          btn.addEventListener('click', runSequence, { passive: true });
+        }
       })();
     </script>
   </body>
