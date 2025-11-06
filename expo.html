@@ -130,26 +130,30 @@
       }
 
       /* Enemy HP bar */
+      /* Enemy HP container + label */
+      .hp { position:absolute; top:6px; left:16px; right:16px; z-index:3; display:flex; align-items:center; gap:10px; }
+      .hp__label { color:#ffd400; font:800 clamp(12px,2.4vw,18px)/1.1 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif; text-shadow:0 0 10px rgba(255,212,0,.6); min-width:52px; }
       .hp__track {
-        position: absolute;
-        top: 10px;
-        left: 16px;
-        right: 16px;
-        height: 12px;
+        position: relative;
+        flex: 1 1 auto;
+        height: 18px;
         border-radius: 999px;
-        background: #1a1a1a;
-        border: 2px solid #ffd400;
+        background: #0d0d0d;
+        border: 3px solid #ffd400;
         overflow: hidden;
-        z-index: 3;
+        box-shadow: inset 0 0 8px rgba(255,212,0,.25);
       }
       .hp__fill {
         height: 100%;
         width: 100%;
-        background: #ffd400;
+        background: linear-gradient(180deg,#ffe766,#ffd400);
         transition: width 3500ms linear;
       }
-      .hp__track.flash { animation: hpflash 800ms ease-in-out 3; }
-      @keyframes hpflash { 0%,100%{ box-shadow: 0 0 0 rgba(255,0,0,0); } 50%{ box-shadow: 0 0 14px rgba(255,0,0,0.95), inset 0 0 6px rgba(255,0,0,0.85); } }
+      .hp__track.flash { animation: hpflash 500ms ease-in-out 6; }
+      @keyframes hpflash {
+        0%,100% { box-shadow: 0 0 0 rgba(255,0,0,0); border-color:#ffd400; }
+        50%     { box-shadow: 0 0 22px rgba(255,0,0,.95), inset 0 0 12px rgba(255,0,0,.95); border-color:#ff3b3b; }
+      } 50%{ box-shadow: 0 0 14px rgba(255,0,0,0.95), inset 0 0 6px rgba(255,0,0,0.85); } }
 
       /* Rapid red damage numbers */
       .dmg {
@@ -186,7 +190,10 @@
   <body>
     <div class="wrap">
       <div class="slot top">
-        <div class="hp__track" aria-label="Enemy HP"><div class="hp__fill"></div></div>
+        <div class="hp" aria-label="Enemy HP">
+          <span class="hp__label">HP 100</span>
+          <div class="hp__track"><div class="hp__fill"></div></div>
+        </div>
         <img src="enemy1.jpg" alt="" draggable="false" />
       </div>
 
@@ -228,8 +235,9 @@
             n.className = 'dmg';
             n.textContent = String(randInt(5, 25));
             // Random placement within the slot area using percentages
-            const x = 5 + Math.random() * 90; // avoid edges
-            const y = 5 + Math.random() * 90;
+            // Bias toward center: 30%..70%
+            const x = 30 + Math.random() * 40;
+            const y = 30 + Math.random() * 40;
             n.style.left = x + '%';
             n.style.top  = y + '%';
             slotEl.appendChild(n);
@@ -253,6 +261,7 @@
         const enemyImg = document.querySelector('.slot.top img');
         const hpTrack = document.querySelector('.hp__track');
         const hpFill  = document.querySelector('.hp__fill');
+        const hpLabel = document.querySelector('.hp__label');
 
         const charFrames = ['elf1.jpg','elf2.jpg','elf3.jpg'];
         const enemyFrames = ['enemy1.jpg','enemy2.jpg','enemy3.jpg'];
@@ -323,6 +332,16 @@
             // start depletion
             hpFill.style.transition = `width ${enemyDuration}ms linear`;
             requestAnimationFrame(()=>{ hpFill.style.width = '0%'; });
+            // numeric HP countdown
+            if (hpLabel) {
+              const tStart = performance.now();
+              (function step(t){
+                const pct = Math.max(0, 1 - (t - tStart)/enemyDuration);
+                const val = Math.round(pct * 100);
+                hpLabel.textContent = `HP ${val}`;
+                if (pct > 0) requestAnimationFrame(step);
+              })(performance.now());
+            }
             // stop flash at end
             setTimeout(()=> hpTrack.classList.remove('flash'), enemyDuration);
           } // larger numbers already styled; slower spawn
