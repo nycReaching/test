@@ -7,9 +7,11 @@
     <style>
       :root {
         --blue: #1e90ff;
-        --line-blue: #0b3a6f; /* darker center line */
-        --border: 0px;        /* no outer border spacing */
+        --pink: #ff2ea6;
+        --border: 3px;
+        /* Slim bar height scales by viewport height but stays usable */
         --bar-h: clamp(4px, 2.5vh, 12px);
+        /* Round button size */
         --btn: clamp(44px, 9vh, 72px);
       }
 
@@ -37,17 +39,23 @@
       }
 
       /* Blue border frame */
-      .frame { display: none; }
+      .frame {
+        position: absolute;
+        inset: 0;
+        border: var(--border) solid var(--blue);
+        pointer-events: none;
+        z-index: 10; /* topmost so the border stays visible */
+      }
 
       /* Slim horizontal middle section */
       .mid {
         position: absolute;
-        left: 0;
-        right: 0;
+        left: var(--border);
+        right: var(--border);
         top: 50%;
         height: 0; /* line only */
         transform: translateY(-50%);
-        border-top: 3px solid var(--line-blue); /* darker blue line */
+        border-top: var(--border) solid var(--blue);
         background: transparent;
         pointer-events: none;
         z-index: 1;
@@ -56,12 +64,12 @@
       /* Image regions */
       .slot {
         position: absolute;
-        left: 0;
-        right: 0;
+        left: var(--border);
+        right: var(--border);
         overflow: hidden;
       }
-      .slot.top { top: 0; bottom: calc(50% + var(--bar-h) / 2); }
-      .slot.bottom { bottom: 0; top: calc(50% + var(--bar-h) / 2); }
+      .slot.top { top: var(--border); bottom: calc(50% + var(--bar-h) / 2); }
+      .slot.bottom { bottom: var(--border); top: calc(50% + var(--bar-h) / 2); }
 
       .slot img {
         position: absolute;
@@ -116,7 +124,7 @@
         80%  { transform: translate(0.9%, 1.0%) scale(1.06); }
         100% { transform: translate(0, 0) scale(1.00); }
       }
-      .fx {
+      .slot.fx {
         animation: rumbleZoom 120ms linear infinite;
         will-change: transform;
       }
@@ -124,7 +132,7 @@
       /* Enemy HP bar */
       /* Enemy HP container + label */
       .hp { position:absolute; top:6px; left:16px; right:16px; z-index:3; display:flex; align-items:center; gap:10px; }
-      .hp__label { color:#ffd400; font:800 clamp(18px,3.6vw,28px)/1.1 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif; text-shadow:0 0 10px rgba(255,212,0,.6); min-width:62px; }
+      .hp__label { color:#ffd400; font:800 clamp(12px,2.4vw,18px)/1.1 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif; text-shadow:0 0 10px rgba(255,212,0,.6); min-width:52px; }
       .hp__track {
         position: relative;
         flex: 1 1 auto;
@@ -187,15 +195,11 @@
           <span class="hp__label">HP 100</span>
           <div class="hp__track"><div class="hp__fill"></div></div>
         </div>
-        <div class="sprite enemy-sprite">
         <img src="enemy1.jpg" alt="" draggable="false" />
-        </div>
       </div>
 
       <div class="slot bottom">
-        <div class="sprite char-sprite">
         <img src="elf1.jpg" alt="" draggable="false" />
-        </div>
       </div>
 
       <div class="mid"></div>
@@ -271,8 +275,8 @@
         function cycleImage(el, frames, ms, intervalMs) {
           return new Promise(function(resolve){
             var idx = 0;
-            var animTarget = el.closest('.sprite') || el.closest('.slot');
-            if (animTarget) animTarget.classList.add('fx');
+            var slot = el.closest('.slot');
+            if (slot) slot.classList.add('fx');
 
             var t0 = performance.now();
             // Set start frame to avoid off-by-one visual pop
@@ -284,7 +288,7 @@
 
             function stop(){
               clearInterval(timer);
-              if (animTarget) animTarget.classList.remove('fx');
+              if (slot) slot.classList.remove('fx');
               resolve();
             }
             function rafCheck(t){
@@ -295,7 +299,7 @@
           });
         }
 
-        async function runSequence(){
+                async function runSequence(){
           if (busy) return;
           busy = true;
 
@@ -306,30 +310,30 @@
 
           const enemySlot = enemyImg ? enemyImg.closest('.slot') : null;
 
-          // 1) Attacker animates for 2s, then stops
-          const elfDuration = 2000;           // 2 seconds
-          const slowInterval = 180;           // slower image cycling for both
-          await cycleImage(charImg, charFrames, elfDuration, slowInterval);
+          // Start elf first, total 3.5s
+          const elfP = cycleImage(charImg, charFrames, 2500, 80);
 
-          // 2) After attacker stops, enemy receives damage and animates
-          const enemyDuration = 3000;         // damage window
-
-          // Reset HP bar instantly to 100% before damage sequence
+          // Stagger enemy start by 0.5s. Enemy runs 3.0s so both end at 3.5s
+          await new Promise(r => setTimeout(r, 500));
+          // Reset HP bar to full instantly before starting
           if (hpFill) {
             hpFill.style.transition = 'none';
             hpFill.style.width = '100%';
             void hpFill.offsetWidth;
           }
 
-          // Start enemy visual reactions
-          const enemyP = cycleImage(enemyImg, enemyFrames, enemyDuration, slowInterval);
-          const dmgP   = spawnDamageNumbers(enemySlot, enemyDuration, 140);
+          // Enemy starts; runs 3.5s so it ends 0.5s after elf
+          const enemyDuration = 3500;
+          const enemyP = cycleImage(enemyImg, enemyFrames, enemyDuration, 80);
+          const dmgP = spawnDamageNumbers(enemySlot, enemyDuration, 120);
 
-          // HP flash + depletion tied to enemy damage window
+          // Start HP bar flash + depletion tied to enemy animation
           if (hpTrack && hpFill) {
             hpTrack.classList.add('flash');
+            // start depletion
             hpFill.style.transition = `width ${enemyDuration}ms linear`;
             requestAnimationFrame(()=>{ hpFill.style.width = '0%'; });
+            // numeric HP countdown
             if (hpLabel) {
               const tStart = performance.now();
               (function step(t){
@@ -339,10 +343,11 @@
                 if (pct > 0) requestAnimationFrame(step);
               })(performance.now());
             }
+            // stop flash at end
             setTimeout(()=> hpTrack.classList.remove('flash'), enemyDuration);
-          }
+          } // larger numbers already styled; slower spawn
 
-          await Promise.all([enemyP, dmgP]);
+          await Promise.all([elfP, enemyP, dmgP]);
 
           busy = false;
         }
@@ -362,11 +367,11 @@
           dummy.src = px1;
 
           var start = performance.now();
-          var p = cycleImage(dummy, [px1, px2, px3], 200, 80);
+          var p = cycleImage(dummy, [px1, px2, px3], 120, 40);
           console.assert(typeof p === 'object' && typeof p.then === 'function', 'cycleImage returns a Promise');
           p.then(function(){
             var elapsed = performance.now() - start;
-            console.assert(elapsed >= 180, 'cycleImage duration should be at least ~180ms');
+            console.assert(elapsed >= 100, 'cycleImage duration should be at least ~100ms');
             console.assert([px1, px2, px3].indexOf(dummy.src) !== -1, 'dummy src should be set to one of the frames');
           }).catch(function(e){
             console.error('Test error:', e);
