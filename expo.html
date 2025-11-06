@@ -153,7 +153,7 @@
       @keyframes hpflash {
         0%,100% { box-shadow: 0 0 0 rgba(255,0,0,0); border-color:#ffd400; }
         50%     { box-shadow: 0 0 22px rgba(255,0,0,.95), inset 0 0 12px rgba(255,0,0,.95); border-color:#ff3b3b; }
-      } 50%{ box-shadow: 0 0 14px rgba(255,0,0,0.95), inset 0 0 6px rgba(255,0,0,0.85); } }
+      } 
 
       /* Rapid red damage numbers */
       .dmg {
@@ -167,6 +167,7 @@
         pointer-events: none;
         mix-blend-mode: screen;
         animation: dmgPop 320ms ease-out forwards;
+        z-index: 6;
       }
       @keyframes dmgPop {
         0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
