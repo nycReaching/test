@@ -128,7 +128,7 @@
         top: 50%;
         transform: translate(-50%, -50%);
         color: #ff3030;
-        font: 700 clamp(14px, 3.2vw, 28px)/1 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
+        font: 800 clamp(28px, 6vw, 64px)/1 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
         text-shadow: 0 0 6px rgba(255,0,0,0.85), 0 0 12px rgba(255,0,0,0.55);
         pointer-events: none;
         mix-blend-mode: screen;
@@ -256,15 +256,7 @@
           });
         }
 
-        function cycleBoth(ms, intervalMs){
-          const enemySlot = enemyImg ? enemyImg.closest('.slot') : null;
-          const p1 = cycleImage(charImg, charFrames, ms, intervalMs);
-          const p2 = cycleImage(enemyImg, enemyFrames, ms, intervalMs);
-          const p3 = spawnDamageNumbers(enemySlot, ms, 60); // ~16 numbers/sec
-          return Promise.all([p1, p2, p3]);
-        }
-
-        async function runSequence(){
+                async function runSequence(){
           if (busy) return;
           busy = true;
 
@@ -273,8 +265,17 @@
           void btn.offsetWidth; // reflow
           btn.classList.add('pulse');
 
-          // Elf and enemy flicker simultaneously for 2s with rapid enemy damage numbers
-          await cycleBoth(2000, 80);
+          const enemySlot = enemyImg ? enemyImg.closest('.slot') : null;
+
+          // Start elf first, total 3.5s
+          const elfP = cycleImage(charImg, charFrames, 3500, 80);
+
+          // Stagger enemy start by 0.5s. Enemy runs 3.0s so both end at 3.5s
+          await new Promise(r => setTimeout(r, 500));
+          const enemyP = cycleImage(enemyImg, enemyFrames, 3000, 80);
+          const dmgP = spawnDamageNumbers(enemySlot, 3000, 120); // larger numbers already styled; slower spawn
+
+          await Promise.all([elfP, enemyP, dmgP]);
 
           busy = false;
         }
