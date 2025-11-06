@@ -7,11 +7,9 @@
     <style>
       :root {
         --blue: #1e90ff;
-        --pink: #ff2ea6;
-        --border: 3px;
-        /* Slim bar height scales by viewport height but stays usable */
+        --line-blue: #0b3a6f; /* darker center line */
+        --border: 0px;        /* no outer border spacing */
         --bar-h: clamp(4px, 2.5vh, 12px);
-        /* Round button size */
         --btn: clamp(44px, 9vh, 72px);
       }
 
@@ -39,23 +37,17 @@
       }
 
       /* Blue border frame */
-      .frame {
-        position: absolute;
-        inset: 0;
-        border: var(--border) solid var(--blue);
-        pointer-events: none;
-        z-index: 10; /* topmost so the border stays visible */
-      }
+      .frame { display: none; }
 
       /* Slim horizontal middle section */
       .mid {
         position: absolute;
-        left: var(--border);
-        right: var(--border);
+        left: 0;
+        right: 0;
         top: 50%;
         height: 0; /* line only */
         transform: translateY(-50%);
-        border-top: var(--border) solid var(--blue);
+        border-top: 3px solid var(--line-blue); /* darker blue line */
         background: transparent;
         pointer-events: none;
         z-index: 1;
@@ -64,12 +56,12 @@
       /* Image regions */
       .slot {
         position: absolute;
-        left: var(--border);
-        right: var(--border);
+        left: 0;
+        right: 0;
         overflow: hidden;
       }
-      .slot.top { top: var(--border); bottom: calc(50% + var(--bar-h) / 2); }
-      .slot.bottom { bottom: var(--border); top: calc(50% + var(--bar-h) / 2); }
+      .slot.top { top: 0; bottom: calc(50% + var(--bar-h) / 2); }
+      .slot.bottom { bottom: 0; top: calc(50% + var(--bar-h) / 2); }
 
       .slot img {
         position: absolute;
@@ -124,7 +116,7 @@
         80%  { transform: translate(0.9%, 1.0%) scale(1.06); }
         100% { transform: translate(0, 0) scale(1.00); }
       }
-      .slot.fx {
+      .fx {
         animation: rumbleZoom 120ms linear infinite;
         will-change: transform;
       }
@@ -132,7 +124,7 @@
       /* Enemy HP bar */
       /* Enemy HP container + label */
       .hp { position:absolute; top:6px; left:16px; right:16px; z-index:3; display:flex; align-items:center; gap:10px; }
-      .hp__label { color:#ffd400; font:800 clamp(12px,2.4vw,18px)/1.1 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif; text-shadow:0 0 10px rgba(255,212,0,.6); min-width:52px; }
+      .hp__label { color:#ffd400; font:800 clamp(18px,3.6vw,28px)/1.1 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif; text-shadow:0 0 10px rgba(255,212,0,.6); min-width:62px; }
       .hp__track {
         position: relative;
         flex: 1 1 auto;
@@ -195,11 +187,15 @@
           <span class="hp__label">HP 100</span>
           <div class="hp__track"><div class="hp__fill"></div></div>
         </div>
+        <div class="sprite enemy-sprite">
         <img src="enemy1.jpg" alt="" draggable="false" />
+        </div>
       </div>
 
       <div class="slot bottom">
+        <div class="sprite char-sprite">
         <img src="elf1.jpg" alt="" draggable="false" />
+        </div>
       </div>
 
       <div class="mid"></div>
@@ -275,8 +271,8 @@
         function cycleImage(el, frames, ms, intervalMs) {
           return new Promise(function(resolve){
             var idx = 0;
-            var slot = el.closest('.slot');
-            if (slot) slot.classList.add('fx');
+            var animTarget = el.closest('.sprite') || el.closest('.slot');
+            if (animTarget) animTarget.classList.add('fx');
 
             var t0 = performance.now();
             // Set start frame to avoid off-by-one visual pop
@@ -288,7 +284,7 @@
 
             function stop(){
               clearInterval(timer);
-              if (slot) slot.classList.remove('fx');
+              if (animTarget) animTarget.classList.remove('fx');
               resolve();
             }
             function rafCheck(t){
