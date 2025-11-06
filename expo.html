@@ -1,335 +1,93 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-  <title>Emoji Slots — Pop</title>
-  <!-- Tailwind CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <!-- Friendly, cartoony rounded font -->
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    html, body { height: 100%; background:#0b1020; }
-    :root { --vh: 1vh; }
-    /* disable bounce */
-    html, body { overscroll-behavior: none; }
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>Minimal Game UI</title>
+    <style>
+      :root {
+        --blue: #1e90ff;
+        --border: 3px;
+        /* Slim bar height scales by viewport height but stays usable */
+        --bar-h: clamp(4px, 2.5vh, 12px);
+      }
 
-    /* fun confetti keyframes as a simple fallback */
-    @keyframes winPulse { 0%{opacity:0} 50%{opacity:.3} 100%{opacity:0} }
-    .animate-winPulse { animation: winPulse .6s ease-out; }
+      * {
+        box-sizing: border-box;
+      }
 
-    /* font */
-    body { font-family: 'Fredoka', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
+      html,
+      body {
+        height: 100%;
+      }
 
-    /* subtle glass card */
-    .glass {
-      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
-      backdrop-filter: blur(10px);
-    }
-  </style>
-  <!-- React + ReactDOM UMD -->
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <!-- Babel to compile JSX in-browser for a simple, buildless deploy -->
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <!-- Framer Motion UMD: pin version and use known global `FramerMotion` -->
-  <script src="https://cdn.jsdelivr.net/npm/framer-motion@11.11.17/dist/framer-motion.umd.min.js"></script>
-</head>
-<body class="h-full">
-  <div id="root" class="h-full"></div>
+      body {
+        margin: 0;
+        background: #000; /* black background */
+        /* Robust full-viewport sizing on mobile */
+        min-height: 100dvh;
+        min-height: 100svh;
+        min-height: calc(var(--vh, 1vh) * 100);
+      }
 
-  <script type="text/babel">
-    // ------- runtime sanity tests -------
-    console.assert(!!window.React, 'React failed to load');
-    console.assert(!!window.ReactDOM, 'ReactDOM failed to load');
+      /* Safe-area wrapper for notches */
+      .wrap {
+        position: fixed;
+        inset: 0;
+        padding-top: env(safe-area-inset-top);
+        padding-right: env(safe-area-inset-right);
+        padding-bottom: env(safe-area-inset-bottom);
+        padding-left: env(safe-area-inset-left);
+      }
 
-    const FM = window.FramerMotion;
-    const MotionShim = {
-      div: ({ initial, animate, exit, transition, whileTap, ...rest }) => <div {...rest} />,
-      button: ({ initial, animate, exit, transition, whileTap, ...rest }) => <button {...rest} />,
-    };
-    const motion = FM?.motion || MotionShim;
-    const AnimatePresence = FM?.AnimatePresence || (({ children }) => <>{children}</>);
+      /* Blue border frame */
+      .frame {
+        position: absolute;
+        inset: 0;
+        border: var(--border) solid var(--blue);
+        pointer-events: none;
+      }
 
-    const { useState, useEffect, useMemo, useRef } = React;
+      /* Slim horizontal middle section */
+      .mid {
+        position: absolute;
+        left: var(--border);
+        right: var(--border);
+        top: 50%;
+        height: var(--bar-h);
+        transform: translateY(-50%);
+        background: var(--blue);
+        pointer-events: none;
+      }
 
-    const EMOJIS = [
-      { s: "🍒", w: 30, p: 4 },
-      { s: "🍋", w: 25, p: 5 },
-      { s: "🔔", w: 15, p: 10 },
-      { s: "🍀", w: 12, p: 16 },
-      { s: "💎", w: 8,  p: 25 },
-      { s: "⭐", w: 6,  p: 40 },
-      { s: "👑", w: 4,  p: 60 },
-    ];
-
-    const TOTAL_W = EMOJIS.reduce((a, b) => a + b.w, 0);
-    const pickEmoji = () => {
-      const r = Math.random() * TOTAL_W;
-      let acc = 0;
-      for (const e of EMOJIS) { acc += e.w; if (r <= acc) return e.s; }
-      return EMOJIS[0].s;
-    };
-    const payoutOf = (s) => EMOJIS.find((e) => e.s === s)?.p ?? 0;
-
-    // lightweight tests
-    (function testHelpers(){
-      for (let i=0;i<20;i++){ const v = pickEmoji(); console.assert(EMOJIS.some(e=>e.s===v), 'pickEmoji unknown', v); }
-      for (const e of EMOJIS){ console.assert(typeof payoutOf(e.s) === 'number', 'payoutOf not number for', e.s); }
-    })();
-
-    const reelStopDelays = [220, 340, 460];
-
-    function App() {
-      // vh fix
-      useEffect(() => {
-        const setVh = () => {
-          const vh = window.innerHeight * 0.01;
-          document.documentElement.style.setProperty('--vh', `${vh}px`);
-        };
-        setVh();
-        window.addEventListener('resize', setVh);
-        window.addEventListener('orientationchange', setVh);
-        return () => { window.removeEventListener('resize', setVh); window.removeEventListener('orientationchange', setVh); };
-      }, []);
-
-      const [coins, setCoins] = useState(100);
-      const [bet, setBet] = useState(1);
-      const [reels, setReels] = useState(["🍒", "🍒", "🍒"]);
-      const [spinning, setSpinning] = useState(false);
-      const [locks, setLocks] = useState([false, false, false]);
-      const [keepMode, setKeepMode] = useState(true);
-      const [keptAuto, setKeptAuto] = useState([false, false, false]);
-      const [boom, setBoom] = useState(0);
-      const [shake, setShake] = useState(0);
-      const intervalsRef = useRef([]);
-
-      useEffect(() => () => intervalsRef.current.forEach((id) => clearInterval(id)), []);
-
-      const canSpin = useMemo(() => !spinning && coins >= bet, [spinning, coins, bet]);
-
-      const vibrate = (pattern) => { if ('vibrate' in navigator) { try { navigator.vibrate(pattern); } catch {} } };
-
-      const evalWin = (vals) => {
-        if (vals[0] === vals[1] && vals[1] === vals[2]) {
-          const emo = vals[0];
-          const pay = (EMOJIS.find((e) => e.s === emo)?.p ?? 0) * bet;
-          setCoins((c) => c + pay);
-          setBoom((n) => n + 1);
-          vibrate([40, 30, 60]);
-          setKeptAuto([false, false, false]);
-          return { win: true, pay };
+      /* Ensure layout remains clean if shown in landscape */
+      @media (orientation: landscape) {
+        .mid {
+          --bar-h: clamp(3px, 1.5vh, 10px);
         }
-        if (keepMode) {
-          const nextKept = [false, false, false];
-          if (vals[0] === vals[1]) { nextKept[0] = nextKept[1] = true; }
-          else if (vals[1] === vals[2]) { nextKept[1] = nextKept[2] = true; }
-          else if (vals[0] === vals[2]) { nextKept[0] = nextKept[2] = true; }
-          setKeptAuto(nextKept);
-        } else {
-          setKeptAuto([false, false, false]);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="frame"></div>
+      <div class="mid"></div>
+    </div>
+
+    <script>
+      // Mobile Safari viewport height fix
+      (function () {
+        const root = document.documentElement;
+        function setVH() {
+          root.style.setProperty('--vh', window.innerHeight * 0.01 + 'px');
         }
-        return { win: false, pay: 0 };
-      };
-
-      const spin = async () => {
-        if (!canSpin) { setShake((n) => n + 1); vibrate(60); return; }
-        setSpinning(true);
-        setCoins((c) => c - bet);
-
-        const newIntervals = [];
-        const startVals = [...reels];
-
-        for (let i = 0; i < 3; i++) {
-          if (locks[i] || keptAuto[i]) continue;
-          const id = window.setInterval(() => {
-            startVals[i] = pickEmoji();
-            setReels([...startVals]);
-          }, 45);
-          newIntervals.push(id);
-        }
-
-        intervalsRef.current = newIntervals;
-
-        await Promise.all([0,1,2].map(i => new Promise((res) => {
-          const delay = reelStopDelays[i];
-          setTimeout(() => {
-            if (!(locks[i] || keptAuto[i])) { startVals[i] = pickEmoji(); }
-            setReels([...startVals]);
-            res();
-          }, delay);
-        })));
-
-        intervalsRef.current.forEach((id) => clearInterval(id));
-        intervalsRef.current = [];
-
-        evalWin(startVals);
-        setLocks((prev) => prev.map(() => false));
-        setSpinning(false);
-      };
-
-      const toggleLock = (i) => {
-        if (spinning) return;
-        const count = locks.filter(Boolean).length;
-        setLocks((prev) => {
-          const next = [...prev];
-          next[i] = !prev[i];
-          if (next[i] && count >= 2) {
-            const j = prev.findIndex((v) => v);
-            if (j >= 0 && j !== i) next[j] = false;
-          }
-          return next;
-        });
-      };
-
-      return (
-        <div
-          className="w-full text-white flex flex-col items-center justify-between p-4 select-none touch-manipulation"
-          style={{ height: 'calc(var(--vh, 1vh) * 100)',
-                   background: 'radial-gradient(1200px 600px at 50% -10%, #3043ff22, transparent 60%), linear-gradient(180deg, #121836, #0c0f24 60%, #090b18)' }}
-        >
-          {/* Top bar */}
-          <div className="w-full max-w-sm flex items-center justify-between">
-            <div className="glass rounded-2xl px-3 py-2 flex items-center gap-2 text-xl shadow-lg shadow-blue-900/20 border border-white/10">
-              <span className="text-yellow-300">🪙</span>
-              <span className="font-semibold tracking-wide">{coins}</span>
-            </div>
-
-            <div className="flex items-center gap-2 text-xl">
-              <button
-                className="px-3 py-2 rounded-2xl bg-rose-600 hover:bg-rose-500 active:scale-95 text-white shadow-lg shadow-rose-900/30"
-                onClick={() => setBet((b) => Math.max(1, b - 1))}
-                aria-label="Decrease bet"
-              >
-                −
-              </button>
-              <span className="min-w-[2.5ch] text-center text-2xl font-semibold">{bet}</span>
-              <button
-                className="px-3 py-2 rounded-2xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white shadow-lg shadow-emerald-900/30"
-                onClick={() => setBet((b) => Math.min(10, b + 1))}
-                aria-label="Increase bet"
-              >
-                +
-              </button>
-            </div>
-
-            <button
-              onClick={() => { window.location.reload(); }}
-              className="p-2 rounded-2xl bg-sky-700 hover:bg-sky-600 active:scale-95 text-white shadow-lg shadow-sky-900/30"
-              aria-label="Reset"
-              title="Reset"
-            >
-              ↻
-            </button>
-          </div>
-
-          {/* Reels */}
-          <motion.div
-            key={shake}
-            initial={{ x: 0 }}
-            animate={{ x: [0, 8, -8, 5, -5, 0] }}
-            transition={{ duration: 0.28 }}
-            className="relative w-full max-w-sm aspect-[9/12] grid grid-cols-3 gap-3 place-items-center"
-          >
-            {[0, 1, 2].map((i) => (
-              <motion.button
-                key={i}
-                onClick={() => toggleLock(i)}
-                className={`relative w-full h-full rounded-3xl glass border border-white/10 flex items-center justify-center overflow-hidden shadow-xl shadow-black/40 ${locks[i] ? 'ring-4 ring-yellow-300' : keptAuto[i] ? 'ring-4 ring-cyan-300' : ''}`}
-              >
-                {/* colorful header strip for clearer distinction */}
-                <div className={`absolute top-0 left-0 right-0 h-2 ${locks[i] ? 'bg-yellow-300' : keptAuto[i] ? 'bg-cyan-300' : 'bg-white/10'}`}></div>
-                <AnimatePresence mode="popLayout">
-                  <motion.div
-                    key={reels[i]}
-                    initial={{ y: -36, scale: 0.9, opacity: 0 }}
-                    animate={{ y: 0, scale: 1, opacity: 1 }}
-                    exit={{ y: 36, scale: 0.9, opacity: 0 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 24 }}
-                    className="text-[22vw] sm:text-[14vw] leading-none drop-shadow-[0_6px_0_rgba(0,0,0,0.25)]"
-                  >
-                    {reels[i]}
-                  </motion.div>
-                </AnimatePresence>
-                <div className="absolute top-2 right-2 opacity-90 text-xl">
-                  {locks[i] ? '🔒' : keptAuto[i] ? '✨' : ''}
-                </div>
-                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-xs font-medium px-2 py-0.5 rounded-full bg-black/40 border border-white/10">
-                  x{payoutOf(reels[i])}
-                </div>
-              </motion.button>
-            ))}
-
-            {/* Win pulse + confetti */}
-            <AnimatePresence>
-              <motion.div
-                key={boom}
-                className={`pointer-events-none absolute inset-0 rounded-3xl ${FM ? '' : 'animate-winPulse'}`}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: [0, 0.3, 0] }}
-                transition={{ duration: 0.6 }}
-                style={{ background: 'radial-gradient(ellipse at center, rgba(255,255,255,0.25), transparent 60%)' }}
-              />
-            </AnimatePresence>
-            <AnimatePresence>
-              {[...Array(6)].map((_, idx) => (
-                <motion.div
-                  key={`${boom}-${idx}`}
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: [0,1,0], y: [0, 40 + idx*6, 60 + idx*10], rotate: [0, 40, 80] }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.9, ease: 'easeOut' }}
-                  className="pointer-events-none absolute left-1/2 top-1/2"
-                  style={{ translateX: (-40 + idx*14) + 'px' }}
-                >
-                  🎉
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </motion.div>
-
-          {/* Bottom controls */}
-          <div className="w-full max-w-sm flex items-center justify-between gap-3">
-            <button
-              onClick={() => setKeepMode((k) => !k)}
-              className={`px-3 py-2 rounded-2xl border text-sm font-medium shadow-md ${keepMode ? 'bg-fuchsia-600 border-fuchsia-500 text-white' : 'bg-white/5 border-white/10 text-white'}`}
-              aria-pressed={keepMode}
-            >
-              {keepMode ? 'keep: pairs auto-locked' : 'keep: off'}
-            </button>
-
-            <motion.button
-              onClick={spin}
-              disabled={!canSpin}
-              whileTap={{ scale: 0.98 }}
-              className={`flex-1 py-4 rounded-3xl text-2xl font-extrabold tracking-wide shadow-2xl border ${canSpin ? 'bg-gradient-to-b from-amber-300 to-amber-500 text-black border-amber-400' : 'bg-neutral-800 text-neutral-500 border-neutral-700'} `}
-            >
-              {spinning ? 'spinning…' : 'SPIN'}
-            </motion.button>
-
-            <div className="text-[11px] text-white/80 w-[96px] text-right">
-              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-black/40 border border-white/10">3× pays</span>
-            </div>
-          </div>
-
-          <div className="fixed bottom-2 inset-x-0 flex items-center justify-center pointer-events-none">
-            <div className="text-[11px] text-white/60">tap reels to lock • yellow = locked • cyan = auto-keep</div>
-          </div>
-        </div>
-      );
-    }
-
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
-  </script>
-  <script>
-    // apply vh fix immediately for iOS address bar
-    function setVh() { const vh = window.innerHeight * 0.01; document.documentElement.style.setProperty('--vh', vh + 'px'); }
-    setVh();
-    window.addEventListener('resize', setVh);
-    window.addEventListener('orientationchange', setVh);
-  </script>
-</body>
+        setVH();
+        window.addEventListener('resize', setVH, { passive: true });
+        window.addEventListener('orientationchange', setVH, { passive: true });
+      })();
+    </script>
+  </body>
 </html>
