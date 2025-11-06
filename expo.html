@@ -2,10 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Minimal Game UI</title>
     <style>
       :root {
@@ -46,7 +43,7 @@
         inset: 0;
         border: var(--border) solid var(--blue);
         pointer-events: none;
-        z-index: 3; /* topmost so the border stays visible */
+        z-index: 10; /* topmost so the border stays visible */
       }
 
       /* Slim horizontal middle section */
@@ -110,6 +107,25 @@
       }
       .btn.pulse { animation: pulse 180ms ease-out; }
 
+      /* Shake + zoom effect for active cycling */
+      @keyframes rumbleZoom {
+        0%   { transform: translate(0, 0) scale(1.00); }
+        20%  { transform: translate(-1.2%, 0.8%) scale(1.03); }
+        40%  { transform: translate(1.1%, -0.9%) scale(1.05); }
+        60%  { transform: translate(-0.8%, -0.6%) scale(1.04); }
+        80%  { transform: translate(0.9%, 1.0%) scale(1.06); }
+        100% { transform: translate(0, 0) scale(1.00); }
+      }
+      .slot.fx {
+        animation: rumbleZoom 120ms linear infinite;
+        will-change: transform;
+      }
+
+      /* Respect reduced motion */
+      @media (prefers-reduced-motion: reduce) {
+        .slot.fx { animation: none; }
+      }
+
       /* Ensure layout remains clean if shown in landscape */
       @media (orientation: landscape) {
         .mid { --bar-h: clamp(3px, 1.5vh, 10px); }
@@ -133,6 +149,8 @@
     </div>
 
     <script>
+      'use strict';
+
       // Mobile Safari viewport height fix
       (function () {
         const root = document.documentElement;
@@ -154,22 +172,31 @@
         const enemyFrames = ['enemy1.jpg','enemy2.jpg','enemy3.jpg'];
 
         // Preload to minimize flicker
-        [...charFrames, ...enemyFrames].forEach(src => { const i = new Image(); i.src = src; });
+        [...charFrames, ...enemyFrames].forEach(function(src){ const i = new Image(); i.src = src; });
 
         let busy = false;
 
         function cycleImage(el, frames, ms, intervalMs) {
-          return new Promise(resolve => {
-            let idx = 0;
-            const t0 = performance.now();
-            const timer = setInterval(() => {
-              el.src = frames[idx = (idx + 1) % frames.length];
+          return new Promise(function(resolve){
+            var idx = 0;
+            var slot = el.closest('.slot');
+            if (slot) slot.classList.add('fx');
+
+            var t0 = performance.now();
+            var timer = setInterval(function(){
+              idx = (idx + 1) % frames.length;
+              el.src = frames[idx];
             }, intervalMs);
-            const stop = () => { clearInterval(timer); resolve(); };
-            const rafCheck = (t) => {
-              if (t - t0 >= ms) { stop(); }
-              else { requestAnimationFrame(rafCheck); }
-            };
+
+            function stop(){
+              clearInterval(timer);
+              if (slot) slot.classList.remove('fx');
+              resolve();
+            }
+            function rafCheck(t){
+              if (t - t0 >= ms) stop();
+              else requestAnimationFrame(rafCheck);
+            }
             requestAnimationFrame(rafCheck);
           });
         }
@@ -193,6 +220,29 @@
         if (btn) {
           btn.addEventListener('click', runSequence, { passive: true });
         }
+
+        // --- Basic non-visual tests (console only) ---
+        (function runTests(){
+          // Use tiny data-URL images so tests do not depend on project assets
+          var px1 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9p6J2x0AAAAASUVORK5CYII=';
+          var px2 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/w8AApEB1wP2y+0AAAAASUVORK5CYII=';
+          var px3 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8//8AAoMB4pKxY0QAAAAASUVORK5CYII=';
+
+          var dummy = new Image();
+          dummy.src = px1;
+
+          var start = performance.now();
+          var p = cycleImage(dummy, [px1, px2, px3], 120, 40);
+          console.assert(typeof p === 'object' && typeof p.then === 'function', 'cycleImage returns a Promise');
+          p.then(function(){
+            var elapsed = performance.now() - start;
+            console.assert(elapsed >= 100, 'cycleImage duration should be at least ~100ms');
+            console.assert([px1, px2, px3].indexOf(dummy.src) !== -1, 'dummy src should be set to one of the frames');
+          }).catch(function(e){
+            console.error('Test error:', e);
+          });
+        })();
+        // --- End tests ---
       })();
     </script>
   </body>
