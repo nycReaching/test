@@ -7,6 +7,7 @@
     <style>
       :root {
         --blue: #1e90ff;
+        --pink: #ff2ea6;
         --border: 3px;
         /* Slim bar height scales by viewport height but stays usable */
         --bar-h: clamp(4px, 2.5vh, 12px);
@@ -52,9 +53,10 @@
         left: var(--border);
         right: var(--border);
         top: 50%;
-        height: var(--bar-h);
+        height: 0; /* line only */
         transform: translateY(-50%);
-        background: var(--blue);
+        border-top: var(--border) solid var(--blue);
+        background: transparent;
         pointer-events: none;
         z-index: 1;
       }
@@ -84,17 +86,17 @@
         width: var(--btn);
         height: var(--btn);
         border-radius: 50%;
-        border: var(--border) solid var(--blue);
-        background: var(--blue); /* solid */
-        left: 30%; /* center-left placement */
+        border: var(--border) solid var(--pink);
+        background: var(--pink);
+        left: 50%; /* centered */
         top: 50%;
         transform: translate(-50%, -50%);
-        z-index: 4; /* above the mid bar so it overlaps */
+        z-index: 4;
         touch-action: manipulation;
         -webkit-tap-highlight-color: transparent;
         outline: none;
         cursor: pointer;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.35);
+        box-shadow: 0 10px 24px rgba(0,0,0,0.35), 0 6px 18px rgba(255,46,166,0.35);
         transition: transform 120ms ease-out, box-shadow 120ms ease-out;
       }
       .btn:active { transform: translate(-50%, -50%) scale(0.94); }
@@ -149,7 +151,7 @@
       /* Ensure layout remains clean if shown in landscape */
       @media (orientation: landscape) {
         .mid { --bar-h: clamp(3px, 1.5vh, 10px); }
-        .btn { left: 25%; }
+        .btn { left: 50%; }
       }
     </style>
   </head>
