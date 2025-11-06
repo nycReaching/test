@@ -153,7 +153,7 @@
       @keyframes hpflash {
         0%,100% { box-shadow: 0 0 0 rgba(255,0,0,0); border-color:#ffd400; }
         50%     { box-shadow: 0 0 22px rgba(255,0,0,.95), inset 0 0 12px rgba(255,0,0,.95); border-color:#ff3b3b; }
-      } 
+      }
 
       /* Rapid red damage numbers */
       .dmg {
@@ -299,7 +299,7 @@
           });
         }
 
-                async function runSequence(){
+        async function runSequence(){
           if (busy) return;
           busy = true;
 
@@ -310,30 +310,30 @@
 
           const enemySlot = enemyImg ? enemyImg.closest('.slot') : null;
 
-          // Start elf first, total 3.5s
-          const elfP = cycleImage(charImg, charFrames, 2500, 80);
+          // 1) Attacker animates for 2s, then stops
+          const elfDuration = 2000;           // 2 seconds
+          const slowInterval = 180;           // slower image cycling for both
+          await cycleImage(charImg, charFrames, elfDuration, slowInterval);
 
-          // Stagger enemy start by 0.5s. Enemy runs 3.0s so both end at 3.5s
-          await new Promise(r => setTimeout(r, 500));
-          // Reset HP bar to full instantly before starting
+          // 2) After attacker stops, enemy receives damage and animates
+          const enemyDuration = 3000;         // damage window
+
+          // Reset HP bar instantly to 100% before damage sequence
           if (hpFill) {
             hpFill.style.transition = 'none';
             hpFill.style.width = '100%';
             void hpFill.offsetWidth;
           }
 
-          // Enemy starts; runs 3.5s so it ends 0.5s after elf
-          const enemyDuration = 3500;
-          const enemyP = cycleImage(enemyImg, enemyFrames, enemyDuration, 80);
-          const dmgP = spawnDamageNumbers(enemySlot, enemyDuration, 120);
+          // Start enemy visual reactions
+          const enemyP = cycleImage(enemyImg, enemyFrames, enemyDuration, slowInterval);
+          const dmgP   = spawnDamageNumbers(enemySlot, enemyDuration, 140);
 
-          // Start HP bar flash + depletion tied to enemy animation
+          // HP flash + depletion tied to enemy damage window
           if (hpTrack && hpFill) {
             hpTrack.classList.add('flash');
-            // start depletion
             hpFill.style.transition = `width ${enemyDuration}ms linear`;
             requestAnimationFrame(()=>{ hpFill.style.width = '0%'; });
-            // numeric HP countdown
             if (hpLabel) {
               const tStart = performance.now();
               (function step(t){
@@ -343,11 +343,10 @@
                 if (pct > 0) requestAnimationFrame(step);
               })(performance.now());
             }
-            // stop flash at end
             setTimeout(()=> hpTrack.classList.remove('flash'), enemyDuration);
-          } // larger numbers already styled; slower spawn
+          }
 
-          await Promise.all([elfP, enemyP, dmgP]);
+          await Promise.all([enemyP, dmgP]);
 
           busy = false;
         }
@@ -367,11 +366,11 @@
           dummy.src = px1;
 
           var start = performance.now();
-          var p = cycleImage(dummy, [px1, px2, px3], 120, 40);
+          var p = cycleImage(dummy, [px1, px2, px3], 200, 80);
           console.assert(typeof p === 'object' && typeof p.then === 'function', 'cycleImage returns a Promise');
           p.then(function(){
             var elapsed = performance.now() - start;
-            console.assert(elapsed >= 100, 'cycleImage duration should be at least ~100ms');
+            console.assert(elapsed >= 180, 'cycleImage duration should be at least ~180ms');
             console.assert([px1, px2, px3].indexOf(dummy.src) !== -1, 'dummy src should be set to one of the frames');
           }).catch(function(e){
             console.error('Test error:', e);
