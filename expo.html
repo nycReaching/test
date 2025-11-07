@@ -33,10 +33,12 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%) rotateX(60deg) rotateZ(45deg);
-            width: 300px;
-            height: 300px;
+            transform: translate(-50%, -50%) rotateX(60deg) rotateZ(45deg) scale(1);
+            width: 500px; /* Larger grid area */
+            height: 500px;
             perspective: 1000px;
+            transition: transform 0.3s ease;
+            will-change: transform;
         }
 
         .grid-cell {
@@ -50,6 +52,7 @@
                 inset 0 -2px 4px rgba(0, 0, 0, 0.3),
                 2px 2px 4px rgba(0, 0, 0, 0.5);
             transform-style: preserve-3d;
+            border-radius: 2px;
         }
 
         .grid-cell::before {
@@ -76,25 +79,7 @@
             filter: blur(1px);
         }
 
-        /* Position grid cells in isometric layout */
-        .grid-cell:nth-child(1) { top: 0; left: 100px; z-index: 50; }
-        .grid-cell:nth-child(2) { top: 20px; left: 120px; z-index: 49; }
-        .grid-cell:nth-child(3) { top: 40px; left: 140px; z-index: 48; }
-        .grid-cell:nth-child(4) { top: 60px; left: 160px; z-index: 47; }
-        .grid-cell:nth-child(5) { top: 80px; left: 180px; z-index: 46; }
-        /* Row 2 */
-        .grid-cell:nth-child(6) { top: 0; left: 140px; z-index: 45; }
-        .grid-cell:nth-child(7) { top: 20px; left: 160px; z-index: 44; }
-        .grid-cell:nth-child(8) { top: 40px; left: 180px; z-index: 43; }
-        .grid-cell:nth-child(9) { top: 60px; left: 200px; z-index: 42; }
-        .grid-cell:nth-child(10) { top: 80px; left: 220px; z-index: 41; }
-        /* Row 3 */
-        .grid-cell:nth-child(11) { top: 0; left: 180px; z-index: 40; }
-        .grid-cell:nth-child(12) { top: 20px; left: 200px; z-index: 39; }
-        .grid-cell:nth-child(13) { top: 40px; left: 220px; z-index: 38; }
-        .grid-cell:nth-child(14) { top: 60px; left: 240px; z-index: 37; }
-        .grid-cell:nth-child(15) { top: 80px; left: 260px; z-index: 36; }
-        /* Simplified 3x5 grid for minimalism; expand as needed */
+        /* Dynamically positioned via JS for larger grid */
 
         #player-block {
             position: absolute;
@@ -110,6 +95,7 @@
             transform-style: preserve-3d;
             z-index: 100;
             transition: all 0.3s ease;
+            border-radius: 4px;
         }
 
         #player-block::before {
@@ -136,51 +122,75 @@
             filter: blur(2px);
         }
 
-        /* Controls for mobile */
+        /* Controls for mobile - improved layout to prevent cutoff */
         #controls {
             position: absolute;
-            bottom: 20px;
+            bottom: 10vh; /* Use viewport height for better spacing */
             left: 50%;
             transform: translateX(-50%);
             display: flex;
-            gap: 10px;
+            gap: 15px;
+            padding: 10px;
+            z-index: 200;
+            pointer-events: auto; /* Ensure touchable */
         }
 
         .control-btn {
-            width: 60px;
-            height: 60px;
+            width: 70px; /* Larger for better touch targets */
+            height: 70px;
             border-radius: 50%;
             background: rgba(52, 73, 94, 0.8);
             border: 2px solid #34495e;
             color: white;
-            font-size: 24px;
+            font-size: 28px; /* Larger font */
             cursor: pointer;
             user-select: none;
             touch-action: manipulation;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background 0.2s;
+            transition: all 0.2s ease;
+            flex-shrink: 0; /* Prevent shrinking */
         }
 
         .control-btn:active {
             background: rgba(52, 73, 94, 1);
+            transform: scale(0.95);
         }
 
-        /* Initial player position */
-        #player-block {
-            top: 40px; /* Adjust to grid cell */
-            left: 140px;
+        .control-vertical {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
         }
 
-        /* HUD */
+        /* HUD - refined */
         #hud {
             position: absolute;
-            top: 20px;
-            left: 20px;
+            top: 5vh;
+            left: 5vw;
+            color: #ecf0f1;
+            font-size: 16px;
+            z-index: 200;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            backdrop-filter: blur(5px);
+        }
+
+        /* Zoom indicator */
+        #zoom-indicator {
+            position: absolute;
+            top: 5vh;
+            right: 5vw;
             color: #ecf0f1;
             font-size: 14px;
             z-index: 200;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px 10px;
+            border-radius: 5px;
+            backdrop-filter: blur(5px);
         }
     </style>
 </head>
@@ -190,119 +200,183 @@
             <div>Position: <span id="pos">1,1</span></div>
             <div>Score: <span id="score">0</span></div>
         </div>
+        <div id="zoom-indicator">Zoom: 100%</div>
         <div id="isometric-map">
-            <!-- Grid cells (minimal 3x5 isometric grid) -->
-            <div class="grid-cell"></div>
-            <div class="grid-cell"></div>
-            <div class="grid-cell"></div>
-            <div class="grid-cell"></div>
-            <div class="grid-cell"></div>
-            <div class="grid-cell"></div>
-            <div class="grid-cell"></div>
-            <div class="grid-cell"></div>
-            <div class="grid-cell"></div>
-            <div class="grid-cell"></div>
-            <div class="grid-cell"></div>
-            <div class="grid-cell"></div>
-            <div class="grid-cell"></div>
-            <div class="grid-cell"></div>
-            <div class="grid-cell"></div>
+            <!-- Grid cells will be generated by JS -->
             <!-- Player block -->
             <div id="player-block"></div>
         </div>
-        <!-- Mobile controls -->
+        <!-- Mobile controls - refined layout -->
         <div id="controls">
-            <div class="control-btn" data-dir="up">↑</div>
-            <div style="display: flex; flex-direction: column; gap: 10px;">
-                <div class="control-btn" data-dir="left">←</div>
-                <div></div> <!-- Spacer -->
-                <div class="control-btn" data-dir="right">→</div>
+            <div class="control-vertical">
+                <div class="control-btn" data-dir="up">↑</div>
+                <div class="control-vertical">
+                    <div class="control-btn" data-dir="left">←</div>
+                    <div style="width: 70px; height: 70px;"></div> <!-- Spacer for centering -->
+                    <div class="control-btn" data-dir="right">→</div>
+                </div>
+                <div class="control-btn" data-dir="down">↓</div>
             </div>
-            <div class="control-btn" data-dir="down">↓</div>
         </div>
     </div>
 
     <script>
+        const gameContainer = document.getElementById('game-container');
+        const isometricMap = document.getElementById('isometric-map');
         const player = document.getElementById('player-block');
         const posEl = document.getElementById('pos');
         const scoreEl = document.getElementById('score');
-        let playerPos = { x: 1, y: 1 }; // Grid coordinates (0-indexed)
+        const zoomEl = document.getElementById('zoom-indicator');
+        
+        let playerPos = { x: 2, y: 2 }; // Center start for larger grid
         let score = 0;
-
-        const gridWidth = 5;
-        const gridHeight = 3;
-        const cellOffsetX = 40; // Isometric offset per step
-        const cellOffsetY = 20;
-
+        
+        const gridWidth = 7; // Larger grid
+        const gridHeight = 5;
+        const cellSizeX = 40;
+        const cellSizeY = 20;
+        
+        let camera = { x: 0, y: 0, scale: 1 }; // Camera controls
+        let mapOffsetX = 0;
+        let mapOffsetY = 0;
+        
+        // Generate grid cells
+        function generateGrid() {
+            const map = document.getElementById('isometric-map');
+            for (let y = 0; y < gridHeight; y++) {
+                for (let x = 0; x < gridWidth; x++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+                    // Isometric positioning
+                    const isoX = (x - y) * (cellSizeX / 2) + (gridWidth * cellSizeX / 4);
+                    const isoY = (x + y) * (cellSizeY / 2) + (gridHeight * cellSizeY / 4);
+                    cell.style.left = isoX + 'px';
+                    cell.style.top = isoY + 'px';
+                    cell.style.zIndex = gridHeight * gridWidth - (x + y * gridWidth);
+                    map.appendChild(cell);
+                }
+            }
+        }
+        
         function updatePlayerPosition(dir) {
             let newX = playerPos.x;
             let newY = playerPos.y;
-
+            
             switch (dir) {
-                case 'up':
-                    newY = Math.max(0, playerPos.y - 1);
-                    break;
-                case 'down':
-                    newY = Math.min(gridHeight - 1, playerPos.y + 1);
-                    break;
-                case 'left':
-                    newX = Math.max(0, playerPos.x - 1);
-                    break;
-                case 'right':
-                    newX = Math.min(gridWidth - 1, playerPos.x + 1);
-                    break;
+                case 'up': newY = Math.max(0, playerPos.y - 1); break;
+                case 'down': newY = Math.min(gridHeight - 1, playerPos.y + 1); break;
+                case 'left': newX = Math.max(0, playerPos.x - 1); break;
+                case 'right': newX = Math.min(gridWidth - 1, playerPos.x + 1); break;
             }
-
+            
             if (newX !== playerPos.x || newY !== playerPos.y) {
                 playerPos = { x: newX, y: newY };
-                // Calculate isometric position (simplified; adjust base on your grid layout)
-                const isoX = 100 + (newX * cellOffsetX) + (newY * cellOffsetX / 2);
-                const isoY = (newY * cellOffsetY);
-                player.style.left = isoX + 'px';
-                player.style.top = isoY + 'px';
-
-                // Simulate score increase
+                updatePlayerVisual();
                 score += 10;
                 scoreEl.textContent = score;
-
                 posEl.textContent = `${newX + 1},${newY + 1}`;
             }
         }
-
+        
+        function updatePlayerVisual() {
+            const isoX = (playerPos.x - playerPos.y) * (cellSizeX / 2) + (gridWidth * cellSizeX / 4);
+            const isoY = (playerPos.x + playerPos.y) * (cellSizeY / 2) + (gridHeight * cellSizeY / 4);
+            player.style.left = (isoX * camera.scale) + 'px';
+            player.style.top = (isoY * camera.scale) + 'px';
+            player.style.transform = `scale(${camera.scale})`;
+            player.style.zIndex = 100 + (playerPos.x + playerPos.y);
+        }
+        
+        function updateCamera() {
+            isometricMap.style.transform = 
+                `translate(-50%, -50%) translate(${mapOffsetX}px, ${mapOffsetY}px) rotateX(60deg) rotateZ(45deg) scale(${camera.scale})`;
+            zoomEl.textContent = `Zoom: ${Math.round(camera.scale * 100)}%`;
+        }
+        
         // Button event listeners
         document.querySelectorAll('.control-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 updatePlayerPosition(btn.dataset.dir);
             });
+            // Prevent scrolling on touch
+            btn.addEventListener('touchstart', (e) => e.stopPropagation());
         });
-
-        // Touch swipe detection for mobile
-        let touchStartX = 0;
-        let touchStartY = 0;
-
-        document.getElementById('game-container').addEventListener('touchstart', (e) => {
-            touchStartX = e.touches[0].clientX;
-            touchStartY = e.touches[0].clientY;
+        
+        // Touch controls for camera (pan and pinch)
+        let touchStart = [];
+        let initialPinchDistance = 0;
+        let initialScale = 1;
+        let isPanning = false;
+        
+        gameContainer.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            touchStart = Array.from(e.touches);
+            if (touchStart.length === 1) {
+                isPanning = true;
+            } else if (touchStart.length === 2) {
+                initialPinchDistance = Math.hypot(
+                    touchStart[0].pageX - touchStart[1].pageX,
+                    touchStart[0].pageY - touchStart[1].pageY
+                );
+                initialScale = camera.scale;
+                isPanning = false;
+            }
+        }, { passive: false });
+        
+        gameContainer.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const touches = Array.from(e.touches);
+            
+            if (touches.length === 1 && isPanning) {
+                // Pan
+                const deltaX = touches[0].pageX - touchStart[0].pageX;
+                const deltaY = touches[0].pageY - touchStart[0].pageY;
+                mapOffsetX += deltaX / camera.scale * 0.5; // Scaled sensitivity
+                mapOffsetY += deltaY / camera.scale * 0.5;
+                updateCamera();
+                touchStart[0] = touches[0]; // Update start for continuous pan
+            } else if (touches.length === 2 && !isPanning) {
+                // Pinch zoom
+                const currentDistance = Math.hypot(
+                    touches[0].pageX - touches[1].pageX,
+                    touches[0].pageY - touches[1].pageY
+                );
+                const scaleRatio = currentDistance / initialPinchDistance;
+                camera.scale = Math.max(0.5, Math.min(2, initialScale * scaleRatio));
+                updatePlayerVisual();
+                updateCamera();
+            }
+        }, { passive: false });
+        
+        gameContainer.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            touchStart = [];
+            isPanning = false;
+        }, { passive: false });
+        
+        // Swipe for movement (fallback if not panning over controls)
+        let swipeStartX = 0;
+        let swipeStartY = 0;
+        gameContainer.addEventListener('touchstart', (e) => {
+            if (e.target.closest('#controls')) return; // Ignore if on controls
+            swipeStartX = e.touches[0].clientX;
+            swipeStartY = e.touches[0].clientY;
         });
-
-        document.getElementById('game-container').addEventListener('touchend', (e) => {
-            const touchEndX = e.changedTouches[0].clientX;
-            const touchEndY = e.changedTouches[0].clientY;
-            const deltaX = touchEndX - touchStartX;
-            const deltaY = touchEndY - touchStartY;
-
-            if (Math.abs(deltaX) > Math.abs(deltaY)) {
-                // Horizontal swipe
-                if (deltaX > 50) updatePlayerPosition('right');
-                else if (deltaX < -50) updatePlayerPosition('left');
-            } else {
-                // Vertical swipe
-                if (deltaY > 50) updatePlayerPosition('down');
-                else if (deltaY < -50) updatePlayerPosition('up');
+        
+        gameContainer.addEventListener('touchend', (e) => {
+            if (e.target.closest('#controls') || touchStart.length > 1) return;
+            const deltaX = e.changedTouches[0].clientX - swipeStartX;
+            const deltaY = e.changedTouches[0].clientY - swipeStartY;
+            
+            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+                updatePlayerPosition(deltaX > 0 ? 'right' : 'left');
+            } else if (Math.abs(deltaY) > 50) {
+                updatePlayerPosition(deltaY > 0 ? 'down' : 'up');
             }
         });
-
+        
         // Keyboard support for testing
         document.addEventListener('keydown', (e) => {
             switch (e.key) {
@@ -310,8 +384,15 @@
                 case 'ArrowDown': updatePlayerPosition('down'); break;
                 case 'ArrowLeft': updatePlayerPosition('left'); break;
                 case 'ArrowRight': updatePlayerPosition('right'); break;
+                case '+': case '=': camera.scale = Math.min(2, camera.scale + 0.1); updatePlayerVisual(); updateCamera(); break;
+                case '-': camera.scale = Math.max(0.5, camera.scale - 0.1); updatePlayerVisual(); updateCamera(); break;
             }
         });
+        
+        // Initialize
+        generateGrid();
+        updatePlayerVisual();
+        updateCamera();
     </script>
 </body>
 </html>
