@@ -1,384 +1,247 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>Minimal Game UI</title>
-    <style>
-      :root {
-        --blue: #1e90ff;
-        --pink: #ff2ea6;
-        --border: 3px;
-        /* Slim bar height scales by viewport height but stays usable */
-        --bar-h: clamp(4px, 2.5vh, 12px);
-        /* Round button size */
-        --btn: clamp(44px, 9vh, 72px);
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <title>Minimal Isometric RPG Starter (HTML/CSS/JS only)</title>
+  <style>
+    html, body { margin:0; height:100%; background:#0f1115; overscroll-behavior:none; }
+    canvas { display:block; width:100vw; height:100vh; touch-action:none; }
+    /* On-screen D-pad */
+    .dpad { position:fixed; left:16px; bottom:16px; display:grid; grid-template-columns:repeat(3,56px); grid-gap:8px; }
+    .dpad button {
+      width:56px; height:56px; border:none; border-radius:14px;
+      background:#1e2633; color:#cbd5e1; font:600 18px/1 system-ui; outline:none;
+      box-shadow:0 4px 14px rgba(0,0,0,.35);
+    }
+    .dpad button:active { transform:translateY(1px); }
+    .legend { position:fixed; right:12px; bottom:12px; color:#9fb3c8; font:12px/1.2 system-ui; text-align:right; opacity:.85 }
+    .legend kbd{background:#243041;border-radius:4px;padding:2px 5px;font:600 11px/1 system-ui;color:#cfe3ff}
+  </style>
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <!-- Simple D-pad for touch -->
+  <div class="dpad" aria-hidden="false">
+    <span></span><button data-dir="up">▲</button><span></span>
+    <button data-dir="left">◀</button><button data-dir="down">▼</button><button data-dir="right">▶</button>
+  </div>
+  <div class="legend">
+    Move: <kbd>W</kbd>/<kbd>A</kbd>/<kbd>S</kbd>/<kbd>D</kbd> or tap<br/>
+    One HTML file. No libraries.
+  </div>
+
+<script>
+(() => {
+  // --- Canvas setup with devicePixelRatio for crisp rendering (mobile + HiDPI).
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+
+  function resize() {
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    const { innerWidth:wCSS, innerHeight:hCSS } = window;
+    canvas.width  = Math.floor(wCSS * dpr);
+    canvas.height = Math.floor(hCSS * dpr);
+    canvas.style.width  = wCSS + 'px';
+    canvas.style.height = hCSS + 'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0); // Use CSS pixels in drawing code
+  }
+  window.addEventListener('resize', resize, { passive:true });
+  resize();
+
+  // --- Isometric tile settings.
+  const TILE_W = 64;          // width of diamond
+  const TILE_H = 32;          // height of diamond
+  const STEP_Z = 16;          // vertical step visual size
+  const MAP_W = 12, MAP_H = 12;
+
+  // Tiny heightmap. 0..3 with a few raised platforms.
+  const map = Array.from({length:MAP_H}, (_,y)=>Array.from({length:MAP_W}, (_,x)=>{
+    const r = (Math.sin(x*0.7)+Math.cos(y*0.6))*0.6 + (x>7 && y>3 && y<9 ? 1.2:0);
+    return Math.max(0, Math.min(3, (r|0)));
+  }));
+
+  // Center camera in screen space
+  function screenCenter() {
+    return { cx: canvas.clientWidth * 0.5, cy: canvas.clientHeight * 0.42 };
+  }
+
+  // Map -> screen projection
+  function mapToScreen(x, y, z=0) {
+    const { cx, cy } = screenCenter();
+    const sx = (x - y) * (TILE_W / 2);
+    const sy = (x + y) * (TILE_H / 2) - z * STEP_Z;
+    return { x: cx + sx, y: cy + sy };
+  }
+
+  // Draw a single extruded tile at (x,y) with height h
+  function drawTile(x, y, h) {
+    const base = mapToScreen(x, y, 0);
+    const top  = mapToScreen(x, y, h);
+
+    // Top diamond
+    ctx.beginPath();
+    ctx.moveTo(top.x,                 top.y - TILE_H/2);
+    ctx.lineTo(top.x + TILE_W/2,      top.y);
+    ctx.lineTo(top.x,                 top.y + TILE_H/2);
+    ctx.lineTo(top.x - TILE_W/2,      top.y);
+    ctx.closePath();
+    ctx.fillStyle = colorTop(h);
+    ctx.fill();
+
+    // Right face
+    ctx.beginPath();
+    ctx.moveTo(top.x + TILE_W/2, top.y);
+    ctx.lineTo(base.x + TILE_W/2, base.y);
+    ctx.lineTo(base.x,            base.y + TILE_H/2);
+    ctx.lineTo(top.x,             top.y + TILE_H/2);
+    ctx.closePath();
+    ctx.fillStyle = colorRight(h);
+    ctx.fill();
+
+    // Left face
+    ctx.beginPath();
+    ctx.moveTo(top.x - TILE_W/2, top.y);
+    ctx.lineTo(base.x - TILE_W/2, base.y);
+    ctx.lineTo(base.x,            base.y + TILE_H/2);
+    ctx.lineTo(top.x,             top.y + TILE_H/2);
+    ctx.closePath();
+    ctx.fillStyle = colorLeft(h);
+    ctx.fill();
+  }
+
+  // Simple palette by height
+  function colorTop(h){  return ['#3a5f7a','#3f6d8d','#447aa0','#4c86b1'][h] || '#3a5f7a'; }
+  function colorLeft(h){ return ['#2a4760','#2f5270','#335c7f','#39658d'][h] || '#2a4760'; }
+  function colorRight(h){return ['#203a50','#24435d','#284c69','#2d5474'][h] || '#203a50'; }
+
+  // Player
+  const player = { x: 3, y: 3, z: () => map[player.y][player.x], ox:0, oy:0, anim:0, moving:false, target:null };
+
+  function tryMove(dx, dy) {
+    if (player.moving) return;
+    const nx = player.x + dx, ny = player.y + dy;
+    if (nx < 0 || ny < 0 || nx >= MAP_W || ny >= MAP_H) return;
+    // Permit step up/down by 1
+    const dz = map[ny][nx] - map[player.y][player.x];
+    if (Math.abs(dz) > 1) return;
+    player.moving = true;
+    player.target = { x:nx, y:ny };
+    player.anim = 0;
+  }
+
+  // Input: keyboard
+  const keyMap = { ArrowUp:[0,-1], KeyW:[0,-1], ArrowDown:[0,1], KeyS:[0,1], ArrowLeft:[-1,0], KeyA:[-1,0], ArrowRight:[1,0], KeyD:[1,0] };
+  window.addEventListener('keydown', (e) => {
+    const v = keyMap[e.code];
+    if (!v) return;
+    e.preventDefault();
+    tryMove(v[0], v[1]);
+  });
+
+  // Input: touch d-pad
+  document.querySelectorAll('.dpad button').forEach(btn=>{
+    btn.addEventListener('pointerdown', (e)=>{
+      const d = e.currentTarget.dataset.dir;
+      if (d==='up') tryMove(0,-1);
+      if (d==='down') tryMove(0,1);
+      if (d==='left') tryMove(-1,0);
+      if (d==='right') tryMove(1,0);
+    });
+  });
+
+  // Draw player as a tiny cube
+  function drawPlayer(t) {
+    // Interpolate during movement
+    let px = player.x, py = player.y;
+    if (player.moving && player.target) {
+      const dur = 140; // ms
+      const f = Math.min(1, player.anim / dur);
+      const ease = f<.5 ? 2*f*f : -1+(4-2*f)*f; // easeInOutQuad
+      px = lerp(player.x, player.target.x, ease);
+      py = lerp(player.y, player.target.y, ease);
+      if (f >= 1) {
+        player.x = player.target.x;
+        player.y = player.target.y;
+        player.moving = false;
+        player.target = null;
       }
+    }
 
-      * { box-sizing: border-box; }
-      html, body { height: 100%; }
+    const baseH = sampleHeightBilinear(px, py);
+    const p = mapToScreen(px, py, baseH + 0.6 + 0.05*Math.sin(t*0.004)); // slight bob
+    const w = 28, h = 16, z = 14;
 
-      body {
-        margin: 0;
-        background: #000; /* black background */
-        /* Robust full-viewport sizing on mobile */
-        min-height: 100dvh;
-        min-height: 100svh;
-        min-height: calc(var(--vh, 1vh) * 100);
+    // top
+    ctx.beginPath();
+    ctx.moveTo(p.x,         p.y - h/2);
+    ctx.lineTo(p.x + w/2,   p.y);
+    ctx.lineTo(p.x,         p.y + h/2);
+    ctx.lineTo(p.x - w/2,   p.y);
+    ctx.closePath();
+    ctx.fillStyle = '#ffd166';
+    ctx.fill();
+
+    // right
+    ctx.beginPath();
+    ctx.moveTo(p.x + w/2, p.y);
+    ctx.lineTo(p.x + w/2, p.y + z);
+    ctx.lineTo(p.x,       p.y + z + h/2);
+    ctx.lineTo(p.x,       p.y + h/2);
+    ctx.closePath();
+    ctx.fillStyle = '#e6b653';
+
+    ctx.fill();
+
+    // left
+    ctx.beginPath();
+    ctx.moveTo(p.x - w/2, p.y);
+    ctx.lineTo(p.x - w/2, p.y + z);
+    ctx.lineTo(p.x,       p.y + z + h/2);
+    ctx.lineTo(p.x,       p.y + h/2);
+    ctx.closePath();
+    ctx.fillStyle = '#c49c47';
+    ctx.fill();
+  }
+
+  function lerp(a,b,t){ return a + (b-a)*t; }
+
+  // Sample height smoothly for animation between tiles
+  function sampleHeightBilinear(x, y){
+    const x0 = Math.floor(x), y0 = Math.floor(y);
+    const x1 = Math.min(MAP_W-1, x0+1), y1 = Math.min(MAP_H-1, y0+1);
+    const hx0y0 = map[y0][x0];
+    const hx1y0 = map[y0][x1];
+    const hx0y1 = map[y1][x0];
+    const hx1y1 = map[y1][x1];
+    const tx = x - x0, ty = y - y0;
+    const a = lerp(hx0y0, hx1y0, tx);
+    const b = lerp(hx0y1, hx1y1, tx);
+    return lerp(a,b,ty);
+  }
+
+  // Main loop
+  let prevT = performance.now();
+  function frame(t){
+    const dt = t - prevT; prevT = t;
+    if (player.moving) player.anim += dt;
+
+    // Clear
+    ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);
+
+    // Draw map in correct painter's order
+    for (let y=0; y<MAP_H; y++){
+      for (let x=0; x<MAP_W; x++){
+        drawTile(x,y, map[y][x]);
       }
+    }
+    drawPlayer(t);
 
-      /* Safe-area wrapper for notches */
-      .wrap {
-        position: fixed;
-        inset: 0;
-        padding-top: env(safe-area-inset-top);
-        padding-right: env(safe-area-inset-right);
-        padding-bottom: env(safe-area-inset-bottom);
-        padding-left: env(safe-area-inset-left);
-        overflow: hidden;
-      }
-
-      /* Blue border frame */
-      .frame {
-        position: absolute;
-        inset: 0;
-        border: var(--border) solid var(--blue);
-        pointer-events: none;
-        z-index: 10; /* topmost so the border stays visible */
-      }
-
-      /* Slim horizontal middle section */
-      .mid {
-        position: absolute;
-        left: var(--border);
-        right: var(--border);
-        top: 50%;
-        height: 0; /* line only */
-        transform: translateY(-50%);
-        border-top: var(--border) solid var(--blue);
-        background: transparent;
-        pointer-events: none;
-        z-index: 1;
-      }
-
-      /* Image regions */
-      .slot {
-        position: absolute;
-        left: var(--border);
-        right: var(--border);
-        overflow: hidden;
-      }
-      .slot.top { top: var(--border); bottom: calc(50% + var(--bar-h) / 2); }
-      .slot.bottom { bottom: var(--border); top: calc(50% + var(--bar-h) / 2); }
-
-      .slot img {
-        position: absolute;
-        max-width: 80%;
-        max-height: 80%;
-        width: auto;
-        height: auto;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        object-fit: contain;
-        user-select: none;
-        -webkit-user-drag: none;
-      }
-
-
-      /* Round tappable button on the mid bar, center-left */
-      .btn {
-        position: absolute;
-        width: var(--btn);
-        height: var(--btn);
-        border-radius: 50%;
-        border: var(--border) solid var(--pink);
-        background: var(--pink);
-        left: 50%; /* centered */
-        top: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 4;
-        touch-action: manipulation;
-        -webkit-tap-highlight-color: transparent;
-        outline: none;
-        cursor: pointer;
-        box-shadow: 0 10px 24px rgba(0,0,0,0.35), 0 6px 18px rgba(255,46,166,0.35);
-        transition: transform 120ms ease-out, box-shadow 120ms ease-out;
-      }
-      .btn:active { transform: translate(-50%, -50%) scale(0.94); }
-
-      /* Tap animation class toggled on click */
-      @keyframes pulse {
-        0% { transform: translate(-50%, -50%) scale(1); }
-        50% { transform: translate(-50%, -50%) scale(0.92); }
-        100% { transform: translate(-50%, -50%) scale(1); }
-      }
-      .btn.pulse { animation: pulse 180ms ease-out; }
-
-      /* Shake + zoom effect for active cycling */
-      @keyframes rumbleZoom {
-        0%   { transform: translate(0, 0) scale(1.00); }
-        20%  { transform: translate(-1.2%, 0.8%) scale(1.03); }
-        40%  { transform: translate(1.1%, -0.9%) scale(1.05); }
-        60%  { transform: translate(-0.8%, -0.6%) scale(1.04); }
-        80%  { transform: translate(0.9%, 1.0%) scale(1.06); }
-        100% { transform: translate(0, 0) scale(1.00); }
-      }
-      .slot.fx {
-        animation: rumbleZoom 120ms linear infinite;
-        will-change: transform;
-      }
-
-      /* Enemy HP bar */
-      /* Enemy HP container + label */
-      .hp { position:absolute; top:6px; left:16px; right:16px; z-index:3; display:flex; align-items:center; gap:10px; }
-      .hp__label { color:#ffd400; font:800 clamp(12px,2.4vw,18px)/1.1 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif; text-shadow:0 0 10px rgba(255,212,0,.6); min-width:52px; }
-      .hp__track {
-        position: relative;
-        flex: 1 1 auto;
-        height: 18px;
-        border-radius: 999px;
-        background: #0d0d0d;
-        border: 3px solid #ffd400;
-        overflow: hidden;
-        box-shadow: inset 0 0 8px rgba(255,212,0,.25);
-      }
-      .hp__fill {
-        height: 100%;
-        width: 100%;
-        background: linear-gradient(180deg,#ffe766,#ffd400);
-        transition: width 3500ms linear;
-      }
-      .hp__track.flash { animation: hpflash 500ms ease-in-out 6; }
-      @keyframes hpflash {
-        0%,100% { box-shadow: 0 0 0 rgba(255,0,0,0); border-color:#ffd400; }
-        50%     { box-shadow: 0 0 22px rgba(255,0,0,.95), inset 0 0 12px rgba(255,0,0,.95); border-color:#ff3b3b; }
-      }
-
-      /* Rapid red damage numbers */
-      .dmg {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        color: #ff3030;
-        font: 800 clamp(28px, 6vw, 64px)/1 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
-        text-shadow: 0 0 6px rgba(255,0,0,0.85), 0 0 12px rgba(255,0,0,0.55);
-        pointer-events: none;
-        mix-blend-mode: screen;
-        animation: dmgPop 320ms ease-out forwards;
-        z-index: 6;
-      }
-      @keyframes dmgPop {
-        0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
-        40%  { opacity: 1; transform: translate(-50%, -65%) scale(1.15); }
-        100% { opacity: 0; transform: translate(-50%, -82%) scale(0.95); }
-      }
-
-      /* Respect reduced motion */
-      @media (prefers-reduced-motion: reduce) {
-        .slot.fx { animation: none; }
-        .dmg { animation: none; opacity: 1; }
-      }
-
-      /* Ensure layout remains clean if shown in landscape */
-      @media (orientation: landscape) {
-        .mid { --bar-h: clamp(3px, 1.5vh, 10px); }
-        .btn { left: 50%; }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="wrap">
-      <div class="slot top">
-        <div class="hp" aria-label="Enemy HP">
-          <span class="hp__label">HP 100</span>
-          <div class="hp__track"><div class="hp__fill"></div></div>
-        </div>
-        <img src="enemy1.jpg" alt="" draggable="false" />
-      </div>
-
-      <div class="slot bottom">
-        <img src="elf1.jpg" alt="" draggable="false" />
-      </div>
-
-      <div class="mid"></div>
-      <button class="btn" type="button" aria-label="action"></button>
-      <div class="frame"></div>
-    </div>
-
-    <script>
-      'use strict';
-
-      // Mobile Safari viewport height fix
-      (function () {
-        const root = document.documentElement;
-        function setVH() {
-          root.style.setProperty('--vh', window.innerHeight * 0.01 + 'px');
-        }
-        setVH();
-        window.addEventListener('resize', setVH, { passive: true });
-        window.addEventListener('orientationchange', setVH, { passive: true });
-      })();
-
-      // Utilities
-      function randInt(min, max) {
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-      }
-
-      // Spawn rapid damage numbers over a slot for a duration
-      function spawnDamageNumbers(slotEl, durationMs, everyMs) {
-        if (!slotEl) return Promise.resolve();
-        const start = performance.now();
-        return new Promise(function(resolve){
-          const timer = setInterval(function(){
-            const n = document.createElement('span');
-            n.className = 'dmg';
-            n.textContent = String(randInt(5, 25));
-            // Random placement within the slot area using percentages
-            // Bias toward center: 30%..70%
-            const x = 30 + Math.random() * 40;
-            const y = 30 + Math.random() * 40;
-            n.style.left = x + '%';
-            n.style.top  = y + '%';
-            slotEl.appendChild(n);
-            // Auto-remove after animation (~320ms)
-            setTimeout(function(){ n.remove(); }, 360);
-          }, everyMs);
-
-          function stop(){ clearInterval(timer); resolve(); }
-          function rafCheck(t){
-            if (t - start >= durationMs) stop();
-            else requestAnimationFrame(rafCheck);
-          }
-          requestAnimationFrame(rafCheck);
-        });
-      }
-
-      // Button tap animation + image cycling sequence
-      (function(){
-        const btn = document.querySelector('.btn');
-        const charImg = document.querySelector('.slot.bottom img');
-        const enemyImg = document.querySelector('.slot.top img');
-        const hpTrack = document.querySelector('.hp__track');
-        const hpFill  = document.querySelector('.hp__fill');
-        const hpLabel = document.querySelector('.hp__label');
-
-        const charFrames = ['elf1.jpg','elf2.jpg','elf3.jpg'];
-        const enemyFrames = ['enemy1.jpg','enemy2.jpg','enemy3.jpg'];
-
-        // Preload to minimize flicker
-        [...charFrames, ...enemyFrames].forEach(function(src){ const i = new Image(); i.src = src; });
-
-        let busy = false;
-
-        function cycleImage(el, frames, ms, intervalMs) {
-          return new Promise(function(resolve){
-            var idx = 0;
-            var slot = el.closest('.slot');
-            if (slot) slot.classList.add('fx');
-
-            var t0 = performance.now();
-            // Set start frame to avoid off-by-one visual pop
-            el.src = frames[idx];
-            var timer = setInterval(function(){
-              idx = (idx + 1) % frames.length;
-              el.src = frames[idx];
-            }, intervalMs);
-
-            function stop(){
-              clearInterval(timer);
-              if (slot) slot.classList.remove('fx');
-              resolve();
-            }
-            function rafCheck(t){
-              if (t - t0 >= ms) stop();
-              else requestAnimationFrame(rafCheck);
-            }
-            requestAnimationFrame(rafCheck);
-          });
-        }
-
-                async function runSequence(){
-          if (busy) return;
-          busy = true;
-
-          // Button pulse animation retrigger
-          btn.classList.remove('pulse');
-          void btn.offsetWidth; // reflow
-          btn.classList.add('pulse');
-
-          const enemySlot = enemyImg ? enemyImg.closest('.slot') : null;
-
-          // Start elf first, total 3.5s
-          const elfP = cycleImage(charImg, charFrames, 2500, 80);
-
-          // Stagger enemy start by 0.5s. Enemy runs 3.0s so both end at 3.5s
-          await new Promise(r => setTimeout(r, 500));
-          // Reset HP bar to full instantly before starting
-          if (hpFill) {
-            hpFill.style.transition = 'none';
-            hpFill.style.width = '100%';
-            void hpFill.offsetWidth;
-          }
-
-          // Enemy starts; runs 3.5s so it ends 0.5s after elf
-          const enemyDuration = 3500;
-          const enemyP = cycleImage(enemyImg, enemyFrames, enemyDuration, 80);
-          const dmgP = spawnDamageNumbers(enemySlot, enemyDuration, 120);
-
-          // Start HP bar flash + depletion tied to enemy animation
-          if (hpTrack && hpFill) {
-            hpTrack.classList.add('flash');
-            // start depletion
-            hpFill.style.transition = `width ${enemyDuration}ms linear`;
-            requestAnimationFrame(()=>{ hpFill.style.width = '0%'; });
-            // numeric HP countdown
-            if (hpLabel) {
-              const tStart = performance.now();
-              (function step(t){
-                const pct = Math.max(0, 1 - (t - tStart)/enemyDuration);
-                const val = Math.round(pct * 100);
-                hpLabel.textContent = `HP ${val}`;
-                if (pct > 0) requestAnimationFrame(step);
-              })(performance.now());
-            }
-            // stop flash at end
-            setTimeout(()=> hpTrack.classList.remove('flash'), enemyDuration);
-          } // larger numbers already styled; slower spawn
-
-          await Promise.all([elfP, enemyP, dmgP]);
-
-          busy = false;
-        }
-
-        if (btn) {
-          btn.addEventListener('click', runSequence, { passive: true });
-        }
-
-        // --- Basic non-visual tests (console only) ---
-        (function runTests(){
-          // Use tiny data-URL images so tests do not depend on project assets
-          var px1 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9p6J2x0AAAAASUVORK5CYII=';
-          var px2 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/w8AApEB1wP2y+0AAAAASUVORK5CYII=';
-          var px3 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8//8AAoMB4pKxY0QAAAAASUVORK5CYII=';
-
-          var dummy = new Image();
-          dummy.src = px1;
-
-          var start = performance.now();
-          var p = cycleImage(dummy, [px1, px2, px3], 120, 40);
-          console.assert(typeof p === 'object' && typeof p.then === 'function', 'cycleImage returns a Promise');
-          p.then(function(){
-            var elapsed = performance.now() - start;
-            console.assert(elapsed >= 100, 'cycleImage duration should be at least ~100ms');
-            console.assert([px1, px2, px3].indexOf(dummy.src) !== -1, 'dummy src should be set to one of the frames');
-          }).catch(function(e){
-            console.error('Test error:', e);
-          });
-        })();
-        // --- End tests ---
-      })();
-    </script>
-  </body>
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
 </html>
