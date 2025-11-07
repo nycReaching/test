@@ -1,433 +1,443 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Isometric Voxel UI</title>
-    <!-- Load Tailwind CSS for styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Use the Inter font */
-        body {
-            font-family: 'Inter', sans-serif;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <title>Isometric Voxel UI — Mobile First</title>
+  <style>
+    /*
+      Simple, mobile‑first, portrait isometric voxel UI.
+      Pure HTML/CSS/JS. No libraries. Single file.
+    */:root {
+  /* Base size. Tweak for different looks. */
+  --tile: 28px;              /* half-height diamond */
+  --tileW: calc(var(--tile) * 2);
+  --tileH: var(--tile);
+  --halfW: calc(var(--tile));
+  --halfH: calc(var(--tile) * 0.5);
+  --elev:  calc(var(--tile) * 0.5);  /* side wall thickness */
 
-        /* This container provides the 3D perspective */
-        #game-world-wrapper {
-            perspective: 1000px;
-            /* Added for touch controls */
-            touch-action: none; 
-        }
+  /* Colors */
+  --hud-bg: #0f1220cc;
+  --hud-stroke: #2a2f4a;
+  --hud-text: #e7eaf7;
+  --btn-bg: #1d2340;
+  --btn-stroke: #3a4170;
+  --btn-active: #2a3360;
 
-        /* This container is rotated to create the isometric view */
-        #iso-world {
-            transform-style: preserve-3d;
-            transform: rotateX(60deg) rotateZ(45deg);
-            /* Add transition for smooth zooming */
-            transition: transform 0.1s ease-out;
-        }
+  --safe-top: env(safe-area-inset-top);
+  --safe-bottom: env(safe-area-inset-bottom);
+  --safe-left: env(safe-area-inset-left);
+  --safe-right: env(safe-area-inset-right);
+}
 
-        /* The "ground" plane container */
-        #game-area {
-            /* New grid size: 20 tiles * 20px/tile = 400px */
-            width: 400px;
-            height: 400px;
-            /* Removed background, it's now a container */
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            /* Center the plane */
-            transform: translate(-50%, -50%);
-            transform-style: preserve-3d; /* So tile Z-transforms work */
-        }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: radial-gradient(120% 120% at 50% 0%, #0a0d1e, #060812 70%);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, sans-serif;
+  color: var(--hud-text);
+  overflow: hidden;
+  touch-action: manipulation;
+  -webkit-user-select: none; user-select: none;
+}
 
-        /* New Voxel Tile styling */
-        .voxel-tile {
-            width: 20px;
-            height: 20px;
-            position: absolute;
-            box-sizing: border-box;
-            /* Base emerald-400 */
-            background: #34d399; 
-            /* Simple 3D effect using borders, scales with height */
-            /* We will set this in JS */
-        }
+/* Layout */
+#app {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  height: 100dvh; /* mobile viewport units */
+  padding: calc(var(--safe-top) + 8px) calc(var(--safe-right) + 8px) calc(var(--safe-bottom) + 8px) calc(var(--safe-left) + 8px);
+  gap: 6px;
+}
 
-        /* The player icon, styled to look like a simple voxel */
-        #player {
-            width: 20px;
-            height: 20px;
-            background: #ef4444; /* red-500 */
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            /* Start at 0,0 (center of the area) */
-            /* We use calc() to combine centering with JS-driven translation */
-            /* translateZ will be updated by JS */
-            transform: translate(calc(-50% + 0px), calc(-50% + 0px)) translateZ(0px);
-            /* Make transition slightly slower to see Z changes */
-            transition: transform 0.05s linear;
-            
-            /* Simple 3D effect using borders */
-            border-bottom: 4px solid #b91c1c; /* red-800 */
-            border-right: 2px solid #dc2626; /* red-600 */
-            box-sizing: border-box; /* Include border in width/height */
-            z-index: 10; /* Ensure player is "on top" */
-        }
+.hud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--hud-bg);
+  border: 1px solid var(--hud-stroke);
+  border-radius: 14px;
+  padding: 10px 12px;
+  box-shadow: 0 6px 18px #0007;
+}
 
-        /* Base styling for control buttons */
-        .control-btn {
-            background-color: #4b5563; /* gray-600 */
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background-color 0.1s;
-            /* Disable user selection and tap highlights for a native feel */
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-        }
-        /* Active state for a responsive feel */
-        .control-btn:active {
-            background-color: #6b7280; /* gray-500 */
-        }
+.hud .left, .hud .right { display: flex; align-items: center; gap: 10px; }
+.hearts { display: flex; gap: 6px; align-items: center; }
+.heart {
+  width: 16px; height: 14px; position: relative;
+  background: #ff4573;
+  transform: rotate(-45deg);
+  border-radius: 3px 0 6px 0;
+  box-shadow: 0 2px 0 #a41f3f inset;
+}
+.heart:before, .heart:after { content: ""; position: absolute; background: #ff4573; border-radius: 50%; }
+.heart:before { width: 16px; height: 16px; left: -8px; top: -2px; box-shadow: 0 2px 0 #a41f3f inset; }
+.heart:after  { width: 16px; height: 16px; left: 0; top: -10px; box-shadow: 0 2px 0 #a41f3f inset; }
 
-        /* New center button */
-        #btn-action {
-            background-color: #3b82f6; /* blue-500 */
-        }
-        #btn-action:active {
-            background-color: #60a5fa; /* blue-400 */
-        }
-    </style>
+.inventory { display: flex; gap: 8px; }
+.slot { width: 28px; height: 28px; border-radius: 7px; background: #12162c; border: 1px solid #31365d; box-shadow: inset 0 2px 0 #0b0f25, 0 4px 8px #0006; position: relative; }
+.slot.selected { outline: 2px solid #69e0ff; outline-offset: 2px; }
+
+/* Viewport */
+#viewport {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid var(--hud-stroke);
+  background: linear-gradient(#0b0f24, #0a0d21);
+  box-shadow: inset 0 0 80px #000a;
+}
+
+/* World anchor centered in the viewport */
+#world {
+  --zoom: 1.0;
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%) translate(var(--ox, 0px), var(--oy, 0px)) scale(var(--zoom));
+  transform-origin: center center;
+  will-change: transform;
+}
+
+/* Voxel: composed of top, left, right faces */
+.voxel {
+  position: absolute;
+  transform: translate(
+    calc((var(--x) - var(--y)) * var(--halfW)),
+    calc((var(--x) + var(--y)) * var(--halfH) - var(--z) * var(--elev))
+  );
+  transform-origin: top left;
+  filter: drop-shadow(0 8px 10px #0007);
+}
+
+.voxel .top {
+  width: var(--tileW); height: var(--tileH);
+  background: hsl(var(--hue, 145) 45% 55%);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  box-shadow: inset 0 1px 0 #ffffff30, inset 0 -2px 0 #00000020;
+}
+
+.voxel .left, .voxel .right {
+  position: absolute; top: calc(var(--tileH) * 0.5);
+  height: var(--elev);
+  box-shadow: inset 0 2px 0 #00000020;
+}
+.voxel .left  { left: 0; width: var(--halfW);  background: hsl(var(--hue, 145) 45% 34%); clip-path: polygon(0 0, 100% 0, 100% 100%, 0 78%); }
+.voxel .right { left: var(--halfW); width: var(--halfW); background: hsl(var(--hue, 145) 45% 40%); clip-path: polygon(0 0, 100% 0, 100% 78%, 0 100%); }
+
+/* Player avatar as a smaller, bright voxel */
+.player { --scale: 0.8; }
+.player .top   { background: hsl(15 85% 60%); }
+.player .left  { background: hsl(15 85% 38%); }
+.player .right { background: hsl(15 85% 46%); }
+.player { transform: translate(
+    calc((var(--x) - var(--y)) * var(--halfW)),
+    calc((var(--x) + var(--y)) * var(--halfH) - var(--z) * var(--elev))
+  ) scale(var(--scale)); transform-origin: center bottom; }
+
+/* Controls */
+.controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  align-items: center;
+}
+
+.panel { background: var(--hud-bg); border: 1px solid var(--hud-stroke); border-radius: 14px; padding: 10px; box-shadow: 0 6px 18px #0007; }
+
+.dpad { display: grid; grid-template-columns: 56px 56px 56px; grid-template-rows: 56px 56px 56px; gap: 6px; justify-content: center; align-content: center; }
+.btn { border: 1px solid var(--btn-stroke); background: var(--btn-bg); border-radius: 12px; position: relative; }
+.btn:active { background: var(--btn-active); }
+
+.arrow::before { content: ""; width: 0; height: 0; border-style: solid; position: absolute; inset: 0; margin: auto; }
+.up.arrow::before    { border-width: 0 13px 18px 13px; border-color: transparent transparent #97b6ff transparent; }
+.down.arrow::before  { border-width: 18px 13px 0 13px; border-color: #97b6ff transparent transparent transparent; }
+.left.arrow::before  { border-width: 13px 18px 13px 0; border-color: transparent #97b6ff transparent transparent; }
+.right.arrow::before { border-width: 13px 0 13px 18px; border-color: transparent transparent transparent #97b6ff; }
+
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.actionBtn { padding: 10px; border-radius: 12px; border: 1px solid var(--btn-stroke); background: linear-gradient(#1b2142, #171c38); color: #dfe6ff; font-weight: 600; }
+.actionBtn:active { background: #222850; }
+
+.zoomRow { display: flex; gap: 6px; margin-top: 6px; }
+.smallBtn { width: 44px; height: 44px; border-radius: 10px; border: 1px solid var(--btn-stroke); background: var(--btn-bg); font-size: 20px; font-weight: 700; color: #cfe2ff; }
+
+/* Orientation guard */
+@media (orientation: landscape) {
+  #rotateHint { display: flex; }
+}
+#rotateHint {
+  display: none; position: fixed; inset: 0; align-items: center; justify-content: center; background: #05070cb3; z-index: 99; backdrop-filter: blur(4px);
+  font-weight: 600; letter-spacing: 0.2px;
+}
+#rotateHint .box { background: #0b1026; border: 1px solid #283058; border-radius: 16px; padding: 16px 18px; text-align: center; box-shadow: 0 10px 24px #0008; }
+
+/* Accessibility */
+button { -webkit-tap-highlight-color: transparent; }
+
+  </style>
 </head>
-<body class="bg-gray-800 text-white overflow-hidden">
+<body>
+  <div id="app">
+    <!-- HUD -->
+    <div class="hud">
+      <div class="left">
+        <div class="hearts" id="hearts"></div>
+        <div id="coords" aria-live="polite" style="opacity:.8;font-size:.9rem"></div>
+      </div>
+      <div class="right">
+        <div class="inventory">
+          <div class="slot selected" title="Block"></div>
+          <div class="slot" title="Coming soon"></div>
+          <div class="slot" title="Coming soon"></div>
+        </div>
+      </div>
+    </div><!-- Viewport / World -->
+<div id="viewport">
+  <div id="world" aria-label="isometric world"></div>
+</div>
 
-    <!-- Main game container, laid out for portrait mobile -->
-    <div id="game-container" class="flex flex-col h-screen w-screen">
-
-        <!-- Header -->
-        <header class="w-full text-center p-4 bg-gray-900 shadow-lg z-10">
-            <h1 class="text-xl font-bold">Iso-Voxel World</h1>
-        </header>
-
-        <!-- Game World Wrapper: This centers the iso-world and applies perspective -->
-        <main id="game-world-wrapper" class="flex-grow w-full flex items-center justify-center overflow-hidden">
-            
-            <!-- Isometric World: This container is rotated -->
-            <div id="iso-world" class="relative">
-                
-                <!-- Game Area: The ground plane -->
-                <div id="game-area"></div>
-                
-                <!-- Player Icon -->
-                <div id="player"></div>
-
-            </div>
-        </main>
-
-        <!-- UI Controls -->
-        <footer id="controls" class="w-full p-6 bg-gray-900 shadow-inner z-10">
-            <div class="flex justify-center">
-                <!-- D-Pad layout using a simple grid -->
-                <div class="grid grid-cols-3 gap-1 w-36 text-2xl font-bold"> <!-- Reduced size and text -->
-                    <!-- Row 1 -->
-                    <div></div> <!-- Top-left empty -->
-                    <button id="btn-up" class="control-btn w-full h-12 rounded-t-lg">&uarr;</button> <!-- Reduced size -->
-                    <div></div> <!-- Top-right empty -->
-
-                    <!-- Row 2 -->
-                    <button id="btn-left" class="control-btn h-12 rounded-l-lg">&larr;</button> <!-- Reduced size -->
-                    
-                    <!-- New Center Button -->
-                    <button id="btn-action" class="control-btn h-12 rounded-full">A</button> 
-                    
-                    <button id="btn-right" class="control-btn h-12 rounded-r-lg">&rarr;</button> <!-- Reduced size -->
-
-                    <!-- Row 3 -->
-                    <div></div> <!-- Bottom-left empty -->
-                    <button id="btn-down" class="control-btn w-full h-12 rounded-b-lg">&darr;</button> <!-- Reduced size -->
-                    <div></div> <!-- Bottom-right empty -->
-                </div>
-            </div>
-        </footer>
-
+<!-- Controls -->
+<div class="controls">
+  <div class="panel">
+    <div class="dpad">
+      <div></div>
+      <button class="btn arrow up"    id="btnUp"    aria-label="Move up"></button>
+      <div></div>
+      <button class="btn arrow left"  id="btnLeft"  aria-label="Move left"></button>
+      <div></div>
+      <button class="btn arrow right" id="btnRight" aria-label="Move right"></button>
+      <div></div>
+      <button class="btn arrow down"  id="btnDown"  aria-label="Move down"></button>
+      <div></div>
     </div>
+    <div class="zoomRow">
+      <button class="smallBtn" id="zoomOut" aria-label="Zoom out">−</button>
+      <button class="smallBtn" id="zoomIn"  aria-label="Zoom in">+</button>
+    </div>
+  </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const player = document.getElementById('player');
-            const gameArea = document.getElementById('game-area');
-            const isoWorld = document.getElementById('iso-world');
-            const gameWorldWrapper = document.getElementById('game-world-wrapper');
-            const btnUp = document.getElementById('btn-up');
-            const btnDown = document.getElementById('btn-down');
-            const btnLeft = document.getElementById('btn-left');
-            const btnRight = document.getElementById('btn-right');
-            const btnAction = document.getElementById('btn-action');
+  <div class="panel">
+    <div class="actions">
+      <button class="actionBtn" id="place">Place</button>
+      <button class="actionBtn" id="remove">Remove</button>
+    </div>
+  </div>
+</div>
 
-            // --- Game World Constants ---
-            const GRID_SIZE = 20; // 20x20 grid
-            const TILE_SIZE = 20; // 20px per tile
-            const HEIGHT_UNIT = 8; // Each height level is 8px
-            
-            const AREA_WIDTH = GRID_SIZE * TILE_SIZE;
-            const AREA_HEIGHT = GRID_SIZE * TILE_SIZE;
-            
-            let heightMap = [];
+  </div>  <div id="rotateHint"><div class="box">Rotate to portrait for best play.</div></div>  <script>
+    // --- Parameters ---
+    const COLS = 11;
+    const ROWS = 11;
+    const MAX_H = 4;
 
-            // --- Player Constants ---
-            const MOVE_SPEED = 5; // Pixels to move per step
-            const PLAYER_WIDTH = 20;
-            const PLAYER_HEIGHT = 20;
+    // --- State ---
+    const state = {
+      grid: [],
+      player: { x: Math.floor(COLS/2), y: Math.floor(ROWS/2) },
+      zoom: 1.0,
+      hearts: 3
+    };
 
-            // Calculate movement boundaries
-            const minX = -AREA_WIDTH / 2 + PLAYER_WIDTH / 2;
-            const maxX = AREA_WIDTH / 2 - PLAYER_WIDTH / 2;
-            const minY = -AREA_HEIGHT / 2 + PLAYER_HEIGHT / 2;
-            const maxY = AREA_HEIGHT / 2 - PLAYER_HEIGHT / 2;
+    // --- Utilities ---
+    const byId = (id) => document.getElementById(id);
 
-            // Player's state (position is relative to the center of the game area)
-            const playerState = {
-                x: 0,
-                y: 0,
-                z: 0,
-                // Track which buttons are held down
-                holding: { up: false, down: false, left: false, right: false }
-            };
+    function cssNumber(varName) {
+      return parseFloat(getComputedStyle(document.documentElement).getPropertyValue(varName));
+    }
 
-            // --- Zoom State ---
-            let currentScale = 1.0;
-            let initialPinchDistance = 0;
-            const maxScale = 2.5;
-            const minScale = 0.5;
+    function setupHearts(n) {
+      const wrap = byId('hearts');
+      wrap.innerHTML = '';
+      for (let i = 0; i < n; i++) {
+        const h = document.createElement('div');
+        h.className = 'heart';
+        wrap.appendChild(h);
+      }
+    }
 
-            // --- World Generation ---
-            function createWorld() {
-                // Simple noise function for terrain
-                const a = Math.random() * 10;
-                const b = Math.random() * 10;
-                
-                for (let y = 0; y < GRID_SIZE; y++) {
-                    heightMap[y] = [];
-                    for (let x = 0; x < GRID_SIZE; x++) {
-                        // Generate some simple hilly terrain
-                        const noiseVal = Math.sin(y / 5 + a) + Math.cos(x / 5 + b); // Simple wave noise
-                        let height = 0;
-                        if (noiseVal > 0.8) {
-                            height = 2; // Hilltop
-                        } else if (noiseVal > 0) {
-                            height = 1; // Slope
-                        } else if (noiseVal < -1.2) {
-                            height = -1; // Valley
-                        } else {
-                            height = 0; // Ground
-                        }
-                        heightMap[y][x] = height;
+    // Build a gentle hill with noise
+    function generateGrid() {
+      const cx = (COLS - 1) / 2, cy = (ROWS - 1) / 2;
+      const grid = Array.from({ length: ROWS }, (_, y) => Array.from({ length: COLS }, (_, x) => {
+        const dx = x - cx, dy = y - cy;
+        const dist = Math.hypot(dx, dy);
+        const base = Math.max(0, 3 - dist * 0.9);
+        // small pseudo noise
+        const seed = Math.sin((x + 13) * 12.9898 + (y + 71) * 78.233) * 43758.5453;
+        const noise = (seed - Math.floor(seed)) * 0.9 - 0.45;
+        const h = Math.round(base + noise);
+        return Math.max(0, Math.min(MAX_H, h));
+      }));
+      return grid;
+    }
 
-                        const tile = document.createElement('div');
-                        tile.className = 'voxel-tile';
-                        
-                        const z = height * HEIGHT_UNIT;
-                        const posX = x * TILE_SIZE;
-                        const posY = y * TILE_SIZE;
+    // DOM creation for one voxel
+    function createVoxel(x, y, z, hue) {
+      const v = document.createElement('div');
+      v.className = 'voxel';
+      v.style.setProperty('--x', x);
+      v.style.setProperty('--y', y);
+      v.style.setProperty('--z', z);
+      v.style.setProperty('--hue', hue);
 
-                        // Style the tile based on height
-                        const sideThickness = Math.max(1, Math.abs(z / 2) + 4);
-                        
-                        let bgColor, bdrColor, sideColor;
+      const top = document.createElement('div');
+      top.className = 'top';
+      const left = document.createElement('div');
+      left.className = 'left';
+      const right = document.createElement('div');
+      right.className = 'right';
 
-                        if (height === -1) { // Valley (water)
-                            bgColor = '#3b82f6'; // blue-500
-                            bdrColor = '#1d4ed8'; // blue-700
-                            sideColor = '#2563eb'; // blue-600
-                        } else if (height === 0) { // Ground
-                            bgColor = '#10b981'; // emerald-600
-                            bdrColor = '#047857'; // emerald-700
-                            sideColor = '#059669'; // emerald-600
-                        } else if (height === 1) { // Slope
-                            bgColor = '#34d399'; // emerald-400
-                            bdrColor = '#065f46'; // emerald-800
-                            sideColor = '#047857'; // emerald-700
-                        } else { // Hilltop (snow)
-                            bgColor = '#f9fafb'; // gray-50
-                            bdrColor = '#9ca3af'; // gray-400
-                            sideColor = '#d1d5db'; // gray-300
-                        }
+      v.append(top, left, right);
+      return v;
+    }
 
-                        tile.style.left = `${posX}px`;
-                        tile.style.top = `${posY}px`;
-                        tile.style.transform = `translateZ(${z}px)`;
-                        tile.style.background = bgColor;
-                        tile.style.borderBottom = `${sideThickness}px solid ${bdrColor}`;
-                        tile.style.borderRight = `${sideThickness / 2}px solid ${sideColor}`;
+    function tileHue(x, y) {
+      // Alternate hues for visual depth
+      const base = 140; // greenish grass
+      const offset = ((x + y) % 2) ? 6 : 0;
+      return base + offset;
+    }
 
-                        gameArea.appendChild(tile);
-                    }
-                }
-            }
+    // Build the entire scene
+    function buildWorld() {
+      const world = byId('world');
+      world.innerHTML = '';
 
-            // Updates the player's CSS transform based on its state
-            function updatePlayerPosition() {
-                // Map player's centered (x,y) to game-area's (0, 400)
-                const areaX = playerState.x + AREA_WIDTH / 2;
-                const areaY = playerState.y + AREA_HEIGHT / 2;
+      // Compute offset to center the grid visually
+      const tile = cssNumber('--tile');
+      const tileW = tile * 2;
+      const tileH = tile;
+      const ox = -((COLS - ROWS) * (tileW / 4)); // center X
+      const oy = -(((COLS + ROWS - 2) * (tileH / 4)) - 12); // center Y, slight lift
+      world.style.setProperty('--ox', ox + 'px');
+      world.style.setProperty('--oy', oy + 'px');
 
-                // Map game-area (x,y) to grid (0, 19)
-                const gridX = Math.floor(areaX / TILE_SIZE);
-                const gridY = Math.floor(areaY / TILE_SIZE);
-                
-                // Clamp to grid boundaries to prevent errors
-                const safeGridX = Math.max(0, Math.min(GRID_SIZE - 1, gridX));
-                const safeGridY = Math.max(0, Math.min(GRID_SIZE - 1, gridY));
+      // Draw ground by columns as stacked voxels
+      for (let y = 0; y < ROWS; y++) {
+        for (let x = 0; x < COLS; x++) {
+          const h = state.grid[y][x];
+          const hue = tileHue(x, y);
+          for (let z = 0; z < h; z++) {
+            world.appendChild(createVoxel(x, y, z, hue));
+          }
+        }
+      }
 
-                // Get the height of the tile the player is on
-                playerState.z = heightMap[safeGridY][safeGridX] * HEIGHT_UNIT;
+      // Add player
+      const player = document.createElement('div');
+      player.id = 'player';
+      player.className = 'voxel player';
+      world.appendChild(player);
 
-                // By moving the player with translate(x, y) *inside* the
-                // rotated #iso-world, the movement appears to be
-                // along the isometric axes.
-                player.style.transform = `translate(calc(-50% + ${playerState.x}px), calc(-50% + ${playerState.y}px)) translateZ(${playerState.z}px)`;
-            }
+      updatePlayer();
+      updateHUD();
+    }
 
-            // Updates the world's scale/rotation
-            function updateWorldTransform() {
-                isoWorld.style.transform = `rotateX(60deg) rotateZ(45deg) scale(${currentScale})`;
-            }
+    function updatePlayer() {
+      const player = byId('player');
+      const { x, y } = state.player;
+      const z = (state.grid[y]?.[x] ?? 0) + 1; // stand on top
+      player.style.setProperty('--x', x);
+      player.style.setProperty('--y', y);
+      player.style.setProperty('--z', z);
+      // rebuild faces if missing (first build)
+      if (!player.firstChild) {
+        player.appendChild(document.createElement('div')).className = 'top';
+        player.appendChild(document.createElement('div')).className = 'left';
+        player.appendChild(document.createElement('div')).className = 'right';
+      }
+      byId('coords').textContent = `x:${x} y:${y} z:${z}`;
+    }
 
-            // Game loop to handle continuous movement
-            function gameLoop() {
-                let dx = 0;
-                let dy = 0;
+    function updateHUD() {
+      setupHearts(state.hearts);
+      byId('world').style.setProperty('--zoom', state.zoom.toFixed(2));
+    }
 
-                if (playerState.holding.up) dy -= MOVE_SPEED;
-                if (playerState.holding.down) dy += MOVE_SPEED;
-                if (playerState.holding.left) dx -= MOVE_SPEED;
-                if (playerState.holding.right) dx += MOVE_SPEED;
+    function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
 
-                if (dx !== 0 || dy !== 0) {
-                    // Calculate new position
-                    const newX = playerState.x + dx;
-                    const newY = playerState.y + dy;
+    function move(dx, dy) {
+      const nx = clamp(state.player.x + dx, 0, COLS - 1);
+      const ny = clamp(state.player.y + dy, 0, ROWS - 1);
+      state.player.x = nx; state.player.y = ny;
+      updatePlayer();
+    }
 
-                    // Clamp position within boundaries
-                    playerState.x = Math.max(minX, Math.min(maxX, newX));
-                    playerState.y = Math.max(minY, Math.min(maxY, newY));
+    function modifyHeight(delta) {
+      const { x, y } = state.player;
+      const cur = state.grid[y][x];
+      const next = clamp(cur + delta, 0, MAX_H);
+      if (next === cur) return;
 
-                    updatePlayerPosition();
-                }
+      state.grid[y][x] = next;
+      const world = byId('world');
 
-                // Continue the loop
-                requestAnimationFrame(gameLoop);
-            }
+      const hue = tileHue(x, y);
+      if (delta > 0) {
+        // add a voxel on top
+        const v = createVoxel(x, y, next - 1, hue);
+        world.insertBefore(v, byId('player')); // keep player above
+      } else {
+        // remove the top voxel for this column
+        const voxels = Array.from(world.querySelectorAll('.voxel'))
+          .filter(el => !el.classList.contains('player'))
+          .filter(el => +el.style.getPropertyValue('--x') === x && +el.style.getPropertyValue('--y') === y)
+          .sort((a, b) => +b.style.getPropertyValue('--z') - +a.style.getPropertyValue('--z'));
+        if (voxels[0]) voxels[0].remove();
+      }
+      updatePlayer();
+    }
 
-            // --- Event Listeners ---
+    function setZoom(mult) {
+      state.zoom = clamp(state.zoom * mult, 0.7, 1.8);
+      updateHUD();
+    }
 
-            // We use mousedown/mouseup and touchstart/touchend to allow
-            // for "holding" the button down, which is better for games.
+    function bindHold(el, fn) {
+      let timer = null;
+      const start = (e) => { e.preventDefault(); fn(); timer = setInterval(fn, 160); };
+      const end = () => { if (timer) clearInterval(timer); timer = null; };
+      el.addEventListener('touchstart', start, { passive: false });
+      el.addEventListener('mousedown', start);
+      window.addEventListener('touchend', end);
+      window.addEventListener('mouseup', end);
+      window.addEventListener('mouseleave', end);
+    }
 
-            function createButtonListeners(button, direction) {
-                // Set 'holding' state to true
-                function onPress(e) {
-                    e.preventDefault(); // Prevent scrolling/zooming
-                    playerState.holding[direction] = true;
-                }
+    function initControls() {
+      bindHold(byId('btnUp'),    () => move(0, -1));
+      bindHold(byId('btnDown'),  () => move(0,  1));
+      bindHold(byId('btnLeft'),  () => move(-1, 0));
+      bindHold(byId('btnRight'), () => move( 1, 0));
 
-                // Set 'holding' state to false
-                function onRelease(e) {
-                    e.preventDefault();
-                    playerState.holding[direction] = false;
-                }
+      bindHold(byId('place'),  () => modifyHeight(+1));
+      bindHold(byId('remove'), () => modifyHeight(-1));
 
-                // Mouse events
-                button.addEventListener('mousedown', onPress);
-                button.addEventListener('mouseup', onRelease);
-                button.addEventListener('mouseleave', onRelease); // Stop if mouse leaves button
+      byId('zoomIn').addEventListener('click',  () => setZoom(1.12));
+      byId('zoomOut').addEventListener('click', () => setZoom(1/1.12));
 
-                // Touch events
-                button.addEventListener('touchstart', onPress, { passive: false });
-                button.addEventListener('touchend', onRelease, { passive: false });
-                button.addEventListener('touchcancel', onRelease, { passive: false });
-            }
+      // Optional: keyboard for desktop testing
+      window.addEventListener('keydown', (e) => {
+        const k = e.key;
+        if (k === 'ArrowUp' || k === 'w') move(0,-1);
+        else if (k === 'ArrowDown' || k === 's') move(0,1);
+        else if (k === 'ArrowLeft' || k === 'a') move(-1,0);
+        else if (k === 'ArrowRight' || k === 'd') move(1,0);
+        else if (k === '+') setZoom(1.12);
+        else if (k === '-') setZoom(1/1.12);
+        else if (k === 'q') modifyHeight(+1);
+        else if (k === 'e') modifyHeight(-1);
+      });
+    }
 
-            createButtonListeners(btnUp, 'up');
-            createButtonListeners(btnDown, 'down');
-            createButtonListeners(btnLeft, 'left');
-            createButtonListeners(btnRight, 'right');
-
-            // --- New listener for the action button ---
-            // This just logs to the console for now to show it's "tappable"
-            function onActionPress(e) {
-                e.preventDefault();
-                console.log('Action Button Pressed!');
-                // You could add a 'jump' or 'action' state here
-            }
-            
-            btnAction.addEventListener('mousedown', onActionPress);
-            btnAction.addEventListener('touchstart', onActionPress, { passive: false });
-
-            // --- Pinch-to-Zoom Listeners ---
-            
-            // Helper to get distance between two touches
-            function getPinchDistance(touches) {
-                const touch1 = touches[0];
-                const touch2 = touches[1];
-                return Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY);
-            }
-
-            function handleTouchStart(e) {
-                if (e.touches.length === 2) {
-                    e.preventDefault(); // Prevent page zoom
-                    initialPinchDistance = getPinchDistance(e.touches);
-                }
-            }
-
-            function handleTouchMove(e) {
-                if (e.touches.length === 2) {
-                    e.preventDefault(); // Prevent page scroll/zoom
-                    
-                    const newDistance = getPinchDistance(e.touches);
-                    // Get the difference in distance
-                    const deltaDistance = newDistance - initialPinchDistance;
-
-                    // Update scale, scaling by a small factor
-                    currentScale += deltaDistance * 0.005; 
-                    
-                    // Clamp the scale
-                    currentScale = Math.max(minScale, Math.min(maxScale, currentScale));
-
-                    // Update the world transform
-                    updateWorldTransform();
-
-                    // Reset initial distance for next frame
-                    initialPinchDistance = newDistance;
-                }
-            }
-
-            function handleTouchEnd(e) {
-                // Reset pinch distance when fingers are lifted
-                if (e.touches.length < 2) {
-                    initialPinchDistance = 0;
-                }
-            }
-
-            gameWorldWrapper.addEventListener('touchstart', handleTouchStart, { passive: false });
-            gameWorldWrapper.addEventListener('touchmove', handleTouchMove, { passive: false });
-            gameWorldWrapper.addEventListener('touchend', handleTouchEnd, { passive: false });
-            gameWorldWrapper.addEventListener('touchcancel', handleTouchEnd, { passive: false });
-
-
-            // Prevent context menu on long-press (common on mobile)
-            window.addEventListener('contextmenu', (e) => e.preventDefault());
-
-            // --- Start the game ---
-            createWorld();
-            updatePlayerPosition(); // Set initial position
-            requestAnimationFrame(gameLoop);
-        });
-    </script>
-</body>
+    // --- Bootstrap ---
+    (function main() {
+      state.grid = generateGrid();
+      setupHearts(state.hearts);
+      buildWorld();
+      initControls();
+    })();
+  </script></body>
 </html>
