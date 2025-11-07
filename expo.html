@@ -80,6 +80,14 @@
         .control-btn:active {
             background-color: #6b7280; /* gray-500 */
         }
+
+        /* New center button */
+        #btn-action {
+            background-color: #3b82f6; /* blue-500 */
+        }
+        #btn-action:active {
+            background-color: #60a5fa; /* blue-400 */
+        }
     </style>
 </head>
 <body class="bg-gray-800 text-white overflow-hidden">
@@ -111,21 +119,24 @@
         <footer id="controls" class="w-full p-6 bg-gray-900 shadow-inner z-10">
             <div class="flex justify-center">
                 <!-- D-Pad layout using a simple grid -->
-                <div class="grid grid-cols-3 gap-1 w-48 text-3xl font-bold">
+                <div class="grid grid-cols-3 gap-1 w-36 text-2xl font-bold"> <!-- Reduced size and text -->
                     <!-- Row 1 -->
-                    <div class="col-start-2">
-                        <button id="btn-up" class="control-btn w-full h-16 rounded-t-lg">&uarr;</button>
-                    </div>
+                    <div></div> <!-- Top-left empty -->
+                    <button id="btn-up" class="control-btn w-full h-12 rounded-t-lg">&uarr;</button> <!-- Reduced size -->
+                    <div></div> <!-- Top-right empty -->
 
                     <!-- Row 2 -->
-                    <button id="btn-left" class="control-btn h-16 rounded-l-lg">&larr;</button>
-                    <div class="h-16 bg-gray-800"></div> <!-- Center spacer -->
-                    <button id="btn-right" class="control-btn h-16 rounded-r-lg">&rarr;</button>
+                    <button id="btn-left" class="control-btn h-12 rounded-l-lg">&larr;</button> <!-- Reduced size -->
+                    
+                    <!-- New Center Button -->
+                    <button id="btn-action" class="control-btn h-12 rounded-full">A</button> 
+                    
+                    <button id="btn-right" class="control-btn h-12 rounded-r-lg">&rarr;</button> <!-- Reduced size -->
 
                     <!-- Row 3 -->
-                    <div class="col-start-2">
-                        <button id="btn-down" class="control-btn w-full h-16 rounded-b-lg">&darr;</button>
-                    </div>
+                    <div></div> <!-- Bottom-left empty -->
+                    <button id="btn-down" class="control-btn w-full h-12 rounded-b-lg">&darr;</button> <!-- Reduced size -->
+                    <div></div> <!-- Bottom-right empty -->
                 </div>
             </div>
         </footer>
@@ -139,6 +150,7 @@
             const btnDown = document.getElementById('btn-down');
             const btnLeft = document.getElementById('btn-left');
             const btnRight = document.getElementById('btn-right');
+            const btnAction = document.getElementById('btn-action'); // Get the new button
 
             // Game constants
             const MOVE_SPEED = 5; // Pixels to move per step
@@ -230,6 +242,18 @@
             createButtonListeners(btnDown, 'down');
             createButtonListeners(btnLeft, 'left');
             createButtonListeners(btnRight, 'right');
+
+            // --- New listener for the action button ---
+            // This just logs to the console for now to show it's "tappable"
+            function onActionPress(e) {
+                e.preventDefault();
+                console.log('Action Button Pressed!');
+                // You could add a 'jump' or 'action' state here
+            }
+            
+            btnAction.addEventListener('mousedown', onActionPress);
+            btnAction.addEventListener('touchstart', onActionPress, { passive: false });
+
 
             // Prevent context menu on long-press (common on mobile)
             window.addEventListener('contextmenu', (e) => e.preventDefault());
