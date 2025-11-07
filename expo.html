@@ -3,38 +3,74 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-  <title>Minimal Isometric RPG Starter (HTML/CSS/JS only)</title>
+  <title>Isometric RPG Starter — background + camera controls</title>
   <style>
-    html, body { margin:0; height:100%; background:#0f1115; overscroll-behavior:none; }
-    canvas { display:block; width:100vw; height:100vh; touch-action:none; }
+    :root{
+      --ui-bg: #0e1420cc; /* translucent */
+      --ui-fg: #cfe3ff;
+      --ui-muted:#9fb3c8;
+      --ui-acc:#2f86ff;
+    }
+    html, body { margin:0; height:100%; overscroll-behavior:none; }
+    /* Background image behind the canvas. Put holosphere.png next to this HTML file. */
+    body{ 
+      background: #0b0e14 url('holosphere.png') center / cover fixed no-repeat;
+    }
+
+    canvas { display:block; width:100vw; height:100vh; touch-action:none; background: transparent; }
+
     /* On-screen D-pad */
-    .dpad { position:fixed; left:16px; bottom:16px; display:grid; grid-template-columns:repeat(3,56px); grid-gap:8px; }
+    .dpad { position:fixed; left:16px; bottom:16px; display:grid; grid-template-columns:repeat(3,56px); grid-gap:8px; z-index:10 }
     .dpad button {
       width:56px; height:56px; border:none; border-radius:14px;
       background:#1e2633; color:#cbd5e1; font:600 18px/1 system-ui; outline:none;
       box-shadow:0 4px 14px rgba(0,0,0,.35);
     }
     .dpad button:active { transform:translateY(1px); }
-    .legend { position:fixed; right:12px; bottom:12px; color:#9fb3c8; font:12px/1.2 system-ui; text-align:right; opacity:.85 }
+
+    /* Camera controls */
+    .panel{ position:fixed; right:12px; top:12px; z-index:10; padding:12px 14px; border-radius:12px;
+            background: var(--ui-bg); color:var(--ui-fg); font:12px/1.3 system-ui; backdrop-filter: blur(6px); }
+    .panel h3{ margin:0 0 8px 0; font:600 12px/1 system-ui; letter-spacing:.02em; color:var(--ui-fg) }
+    .row{ display:flex; align-items:center; gap:8px; margin:6px 0 }
+    .row label{ color:var(--ui-muted) }
+    .panel input[type="range"]{ width:160px }
+    .panel button{ border:none; padding:6px 10px; border-radius:8px; color:#e6f0ff; background:#223046; font:600 12px/1 system-ui }
+    .panel button:active{ transform:translateY(1px) }
+    .legend { position:fixed; right:12px; bottom:12px; color:#d5e7ff; font:12px/1.2 system-ui; text-align:right; opacity:.9; z-index:10 }
     .legend kbd{background:#243041;border-radius:4px;padding:2px 5px;font:600 11px/1 system-ui;color:#cfe3ff}
   </style>
 </head>
 <body>
   <canvas id="game"></canvas>
 
-  <!-- Simple D-pad for touch -->
+  <!-- Simple D-pad for touch movement -->
   <div class="dpad" aria-hidden="false">
     <span></span><button data-dir="up">▲</button><span></span>
     <button data-dir="left">◀</button><button data-dir="down">▼</button><button data-dir="right">▶</button>
   </div>
+
+  <!-- Camera UI -->
+  <div class="panel" id="camPanel">
+    <h3>Camera</h3>
+    <div class="row"><label>Zoom</label><input id="zoom" type="range" min="0.6" max="2.0" step="0.01" value="1"/></div>
+    <div class="row"><label><input id="follow" type="checkbox" checked/> Follow player</label></div>
+    <div class="row" style="gap:6px">
+      <button id="centerBtn">Center</button>
+      <button id="zoomIn">＋</button>
+      <button id="zoomOut">－</button>
+    </div>
+    <div class="row" style="color:var(--ui-muted)">Drag canvas to pan. Wheel = zoom.</div>
+  </div>
+
   <div class="legend">
     Move: <kbd>W</kbd>/<kbd>A</kbd>/<kbd>S</kbd>/<kbd>D</kbd> or tap<br/>
-    One HTML file. No libraries.
+    Pan: drag · Zoom: wheel or slider
   </div>
 
 <script>
 (() => {
-  // --- Canvas setup with devicePixelRatio for crisp rendering (mobile + HiDPI).
+  // --- Canvas setup with devicePixelRatio for crisp rendering.
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d');
 
@@ -62,23 +98,108 @@
     return Math.max(0, Math.min(3, (r|0)));
   }));
 
-  // Center camera in screen space
-  function screenCenter() {
-    return { cx: canvas.clientWidth * 0.5, cy: canvas.clientHeight * 0.42 };
-  }
+  // Camera state
+  const camera = {
+    offsetX: 0,
+    offsetY: 0,
+    targetX: 0,
+    targetY: 0,
+    zoom: 1,
+    follow: true,
+  };
 
-  // Map -> screen projection
-  function mapToScreen(x, y, z=0) {
-    const { cx, cy } = screenCenter();
+  // Map -> screen projection in world space (no center, no camera here)
+  function isoProject(x, y, z=0) {
     const sx = (x - y) * (TILE_W / 2);
     const sy = (x + y) * (TILE_H / 2) - z * STEP_Z;
-    return { x: cx + sx, y: cy + sy };
+    return { x: sx, y: sy };
   }
 
-  // Draw a single extruded tile at (x,y) with height h
+  // Player
+  const player = { x: 3, y: 3, z: () => map[player.y][player.x], anim:0, moving:false, target:null };
+
+  function tryMove(dx, dy) {
+    if (player.moving) return;
+    const nx = player.x + dx, ny = player.y + dy;
+    if (nx < 0 || ny < 0 || nx >= MAP_W || ny >= MAP_H) return;
+    const dz = map[ny][nx] - map[player.y][player.x];
+    if (Math.abs(dz) > 1) return;
+    player.moving = true;
+    player.target = { x:nx, y:ny };
+    player.anim = 0;
+    // When the player moves, optionally re-enable follow if it was on
+  }
+
+  // Keyboard input
+  const keyMap = { ArrowUp:[0,-1], KeyW:[0,-1], ArrowDown:[0,1], KeyS:[0,1], ArrowLeft:[-1,0], KeyA:[-1,0], ArrowRight:[1,0], KeyD:[1,0] };
+  window.addEventListener('keydown', (e) => {
+    const v = keyMap[e.code];
+    if (!v) return;
+    e.preventDefault();
+    tryMove(v[0], v[1]);
+  });
+
+  // Touch D-pad
+  document.querySelectorAll('.dpad button').forEach(btn=>{
+    btn.addEventListener('pointerdown', (e)=>{
+      const d = e.currentTarget.dataset.dir;
+      if (d==='up') tryMove(0,-1);
+      if (d==='down') tryMove(0,1);
+      if (d==='left') tryMove(-1,0);
+      if (d==='right') tryMove(1,0);
+    });
+  });
+
+  // Camera UI
+  const zoomSlider = document.getElementById('zoom');
+  const followChk  = document.getElementById('follow');
+  const centerBtn  = document.getElementById('centerBtn');
+  document.getElementById('zoomIn').onclick = ()=> setZoom(camera.zoom*1.1);
+  document.getElementById('zoomOut').onclick = ()=> setZoom(camera.zoom/1.1);
+  centerBtn.onclick = ()=> { camera.follow = true; followChk.checked = true; centerOnPlayer(true); };
+
+  zoomSlider.addEventListener('input', ()=> setZoom(parseFloat(zoomSlider.value)));
+  followChk.addEventListener('change', ()=> camera.follow = followChk.checked);
+
+  function setZoom(z){ camera.zoom = Math.min(2.0, Math.max(0.6, z)); zoomSlider.value = camera.zoom.toFixed(2); }
+
+  function centerOnPlayer(instant=false){
+    const p = isoProject(player.x, player.y, sampleHeightBilinear(player.x, player.y) + 0.6);
+    camera.targetX = -p.x; camera.targetY = -p.y;
+    if (instant){ camera.offsetX = camera.targetX; camera.offsetY = camera.targetY; }
+  }
+
+  // Mouse/touch drag to pan
+  let drag = null;
+  canvas.addEventListener('pointerdown', (e)=>{
+    // Ignore if starting on the panel or dpad areas
+    const el = e.target;
+    drag = { id:e.pointerId, x:e.clientX, y:e.clientY, ox:camera.offsetX, oy:camera.offsetY };
+    canvas.setPointerCapture(e.pointerId);
+  });
+  canvas.addEventListener('pointermove', (e)=>{
+    if (!drag || drag.id!==e.pointerId) return;
+    camera.follow = false; followChk.checked = false;
+    const dx = (e.clientX - drag.x) / camera.zoom;
+    const dy = (e.clientY - drag.y) / camera.zoom;
+    camera.offsetX = drag.ox + dx;
+    camera.offsetY = drag.oy + dy;
+  });
+  canvas.addEventListener('pointerup', ()=>{
+ drag=null; });
+  canvas.addEventListener('pointercancel', ()=>{ drag=null; });
+
+  // Wheel zoom around center
+  canvas.addEventListener('wheel', (e)=>{
+    e.preventDefault();
+    const delta = Math.sign(e.deltaY);
+    setZoom(camera.zoom * (delta>0 ? 0.92 : 1.08));
+  }, { passive:false });
+
+  // Draw helpers
   function drawTile(x, y, h) {
-    const base = mapToScreen(x, y, 0);
-    const top  = mapToScreen(x, y, h);
+    const base = isoProject(x, y, 0);
+    const top  = isoProject(x, y, h);
 
     // Top diamond
     ctx.beginPath();
@@ -111,47 +232,11 @@
     ctx.fill();
   }
 
-  // Simple palette by height
   function colorTop(h){  return ['#3a5f7a','#3f6d8d','#447aa0','#4c86b1'][h] || '#3a5f7a'; }
   function colorLeft(h){ return ['#2a4760','#2f5270','#335c7f','#39658d'][h] || '#2a4760'; }
   function colorRight(h){return ['#203a50','#24435d','#284c69','#2d5474'][h] || '#203a50'; }
 
-  // Player
-  const player = { x: 3, y: 3, z: () => map[player.y][player.x], ox:0, oy:0, anim:0, moving:false, target:null };
-
-  function tryMove(dx, dy) {
-    if (player.moving) return;
-    const nx = player.x + dx, ny = player.y + dy;
-    if (nx < 0 || ny < 0 || nx >= MAP_W || ny >= MAP_H) return;
-    // Permit step up/down by 1
-    const dz = map[ny][nx] - map[player.y][player.x];
-    if (Math.abs(dz) > 1) return;
-    player.moving = true;
-    player.target = { x:nx, y:ny };
-    player.anim = 0;
-  }
-
-  // Input: keyboard
-  const keyMap = { ArrowUp:[0,-1], KeyW:[0,-1], ArrowDown:[0,1], KeyS:[0,1], ArrowLeft:[-1,0], KeyA:[-1,0], ArrowRight:[1,0], KeyD:[1,0] };
-  window.addEventListener('keydown', (e) => {
-    const v = keyMap[e.code];
-    if (!v) return;
-    e.preventDefault();
-    tryMove(v[0], v[1]);
-  });
-
-  // Input: touch d-pad
-  document.querySelectorAll('.dpad button').forEach(btn=>{
-    btn.addEventListener('pointerdown', (e)=>{
-      const d = e.currentTarget.dataset.dir;
-      if (d==='up') tryMove(0,-1);
-      if (d==='down') tryMove(0,1);
-      if (d==='left') tryMove(-1,0);
-      if (d==='right') tryMove(1,0);
-    });
-  });
-
-  // Draw player as a tiny cube
+  // Player cube
   function drawPlayer(t) {
     // Interpolate during movement
     let px = player.x, py = player.y;
@@ -170,7 +255,7 @@
     }
 
     const baseH = sampleHeightBilinear(px, py);
-    const p = mapToScreen(px, py, baseH + 0.6 + 0.05*Math.sin(t*0.004)); // slight bob
+    const p = isoProject(px, py, baseH + 0.6 + 0.05*Math.sin(t*0.004)); // slight bob
     const w = 28, h = 16, z = 14;
 
     // top
@@ -191,7 +276,6 @@
     ctx.lineTo(p.x,       p.y + h/2);
     ctx.closePath();
     ctx.fillStyle = '#e6b653';
-
     ctx.fill();
 
     // left
@@ -207,7 +291,7 @@
 
   function lerp(a,b,t){ return a + (b-a)*t; }
 
-  // Sample height smoothly for animation between tiles
+  // Smooth height sample for movement
   function sampleHeightBilinear(x, y){
     const x0 = Math.floor(x), y0 = Math.floor(y);
     const x1 = Math.min(MAP_W-1, x0+1), y1 = Math.min(MAP_H-1, y0+1);
@@ -227,10 +311,27 @@
     const dt = t - prevT; prevT = t;
     if (player.moving) player.anim += dt;
 
+    // Follow logic: ease camera towards keeping player at origin
+    if (camera.follow){
+      const p = isoProject(player.x, player.y, sampleHeightBilinear(player.x, player.y) + 0.6);
+      camera.targetX = -p.x; camera.targetY = -p.y;
+    }
+    // Ease towards target
+    camera.offsetX += (camera.targetX - camera.offsetX) * 0.15;
+    camera.offsetY += (camera.targetY - camera.offsetY) * 0.15;
+
     // Clear
     ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);
 
-    // Draw map in correct painter's order
+    // Establish camera transform: translate to screen center, then apply camera and zoom
+    ctx.save();
+    const centerX = canvas.clientWidth * 0.5;
+    const centerY = canvas.clientHeight * 0.42; // slight horizon bias
+    ctx.translate(centerX, centerY);
+    ctx.scale(camera.zoom, camera.zoom);
+    ctx.translate(camera.offsetX, camera.offsetY);
+
+    // Draw map painter's order
     for (let y=0; y<MAP_H; y++){
       for (let x=0; x<MAP_W; x++){
         drawTile(x,y, map[y][x]);
@@ -238,9 +339,14 @@
     }
     drawPlayer(t);
 
+    ctx.restore();
+
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
+
+  // Initial center on player
+  centerOnPlayer(true);
 })();
 </script>
 </body>
