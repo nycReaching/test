@@ -3,71 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-  <title>Isometric RPG Starter — background + camera controls</title>
+  <title>Isometric RPG Starter — mobile gestures</title>
   <style>
-    :root{
-      --ui-bg: #0e1420cc; /* translucent */
-      --ui-fg: #cfe3ff;
-      --ui-muted:#9fb3c8;
-      --ui-acc:#2f86ff;
-    }
-    html, body { margin:0; height:100%; overscroll-behavior:none; }
-    /* Background image behind the canvas. Put holosphere.png next to this HTML file. */
-    body{ 
-      background: #0b0e14 url('holosphere.png') center / cover fixed no-repeat;
-    }
-
+    html, body { margin:0; height:100%; background:#0f1115; overscroll-behavior:none; }
     canvas { display:block; width:100vw; height:100vh; touch-action:none; background: transparent; }
-
-    /* On-screen D-pad */
-    .dpad { position:fixed; left:16px; bottom:16px; display:grid; grid-template-columns:repeat(3,56px); grid-gap:8px; z-index:10 }
-    .dpad button {
-      width:56px; height:56px; border:none; border-radius:14px;
-      background:#1e2633; color:#cbd5e1; font:600 18px/1 system-ui; outline:none;
-      box-shadow:0 4px 14px rgba(0,0,0,.35);
-    }
-    .dpad button:active { transform:translateY(1px); }
-
-    /* Camera controls */
-    .panel{ position:fixed; right:12px; top:12px; z-index:10; padding:12px 14px; border-radius:12px;
-            background: var(--ui-bg); color:var(--ui-fg); font:12px/1.3 system-ui; backdrop-filter: blur(6px); }
-    .panel h3{ margin:0 0 8px 0; font:600 12px/1 system-ui; letter-spacing:.02em; color:var(--ui-fg) }
-    .row{ display:flex; align-items:center; gap:8px; margin:6px 0 }
-    .row label{ color:var(--ui-muted) }
-    .panel input[type="range"]{ width:160px }
-    .panel button{ border:none; padding:6px 10px; border-radius:8px; color:#e6f0ff; background:#223046; font:600 12px/1 system-ui }
-    .panel button:active{ transform:translateY(1px) }
-    .legend { position:fixed; right:12px; bottom:12px; color:#d5e7ff; font:12px/1.2 system-ui; text-align:right; opacity:.9; z-index:10 }
-    .legend kbd{background:#243041;border-radius:4px;padding:2px 5px;font:600 11px/1 system-ui;color:#cfe3ff}
   </style>
 </head>
 <body>
   <canvas id="game"></canvas>
-
-  <!-- Simple D-pad for touch movement -->
-  <div class="dpad" aria-hidden="false">
-    <span></span><button data-dir="up">▲</button><span></span>
-    <button data-dir="left">◀</button><button data-dir="down">▼</button><button data-dir="right">▶</button>
-  </div>
-
-  <!-- Camera UI -->
-  <div class="panel" id="camPanel">
-    <h3>Camera</h3>
-    <div class="row"><label>Zoom</label><input id="zoom" type="range" min="0.6" max="2.0" step="0.01" value="1"/></div>
-    <div class="row"><label><input id="follow" type="checkbox" checked/> Follow player</label></div>
-    <div class="row" style="gap:6px">
-      <button id="centerBtn">Center</button>
-      <button id="zoomIn">＋</button>
-      <button id="zoomOut">－</button>
-    </div>
-    <div class="row" style="color:var(--ui-muted)">Drag canvas to pan. Wheel = zoom.</div>
-  </div>
-
-  <div class="legend">
-    Move: <kbd>W</kbd>/<kbd>A</kbd>/<kbd>S</kbd>/<kbd>D</kbd> or tap<br/>
-    Pan: drag · Zoom: wheel or slider
-  </div>
-
 <script>
 (() => {
   // --- Canvas setup with devicePixelRatio for crisp rendering.
@@ -115,86 +58,150 @@
     return { x: sx, y: sy };
   }
 
+  // Inverse: screen -> approximate map tile (ignoring height)
+  function screenToTile(clientX, clientY){
+    const centerX = canvas.clientWidth * 0.5;
+    const centerY = canvas.clientHeight * 0.42;
+    const sx = (clientX - centerX) / camera.zoom - camera.offsetX;
+    const sy = (clientY - centerY) / camera.zoom - camera.offsetY;
+    const tw2 = TILE_W/2, th2 = TILE_H/2;
+    const gx = (sy / th2 + sx / tw2) * 0.5;
+    const gy = (sy / th2 - sx / tw2) * 0.5;
+    return { x: Math.round(gx), y: Math.round(gy) };
+  }
+
   // Player
   const player = { x: 3, y: 3, z: () => map[player.y][player.x], anim:0, moving:false, target:null };
 
-  function tryMove(dx, dy) {
-    if (player.moving) return;
-    const nx = player.x + dx, ny = player.y + dy;
-    if (nx < 0 || ny < 0 || nx >= MAP_W || ny >= MAP_H) return;
+  // Movement queue via simple BFS to tapped tile
+  let pathQueue = [];
+  function neighbors(x,y){ return [[1,0],[-1,0],[0,1],[0,-1]].map(([dx,dy])=>[x+dx,y+dy]); }
+  function valid(x,y,fromX,fromY){
+    if (x<0||y<0||x>=MAP_W||y>=MAP_H) return false;
+    const dz = map[y][x] - map[fromY][fromX];
+    return Math.abs(dz) <= 1;
+  }
+  function bfsPath(sx,sy,tx,ty){
+    const key=(x,y)=>x+","+y; const q=[[sx,sy]]; const came=new Map(); came.set(key(sx,sy), null);
+    while(q.length){
+      const [x,y]=q.shift();
+      if(x===tx&&y===ty) break;
+      for(const [nx,ny] of neighbors(x,y)){
+        if(!valid(nx,ny,x,y)) continue;
+        const k=key(nx,ny); if(came.has(k)) continue; came.set(k,[x,y]); q.push([nx,ny]);
+      }
+    }
+    const out=[]; let cur=[tx,ty];
+    while(cur){ const k=key(cur[0],cur[1]); const prev=came.get(k); if(!prev) break; out.push(cur); cur=prev; }
+    out.reverse();
+    return out;
+  }
+
+  function tryStepTo(nx, ny) {
+    if (player.moving) return false;
+    if (nx < 0 || ny < 0 || nx >= MAP_W || ny >= MAP_H) return false;
     const dz = map[ny][nx] - map[player.y][player.x];
-    if (Math.abs(dz) > 1) return;
+    if (Math.abs(dz) > 1) return false;
     player.moving = true;
     player.target = { x:nx, y:ny };
     player.anim = 0;
-    // When the player moves, optionally re-enable follow if it was on
+    return true;
   }
 
-  // Keyboard input
+  // Gesture handling: one-finger pan, two-finger pinch-zoom, tap to move
+  let pointers = new Map();
+  let dragInfo = null; // for panning
+  let tapCandidate = null;
+  let pinchInfo = null;
+
+  function onPointerDown(e){
+    canvas.setPointerCapture(e.pointerId);
+    pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
+    if(pointers.size===1){
+      // possible tap or pan
+      tapCandidate = {x:e.clientX, y:e.clientY, t:performance.now()};
+      dragInfo = {id:e.pointerId, x:e.clientX, y:e.clientY, ox:camera.offsetX, oy:camera.offsetY};
+    } else if(pointers.size===2){
+      // start pinch
+      const pts=[...pointers.values()];
+      const dx=pts[1].x-pts[0].x, dy=pts[1].y-pts[0].y;
+      const midX=(pts[0].x+pts[1].x)/2, midY=(pts[0].y+pts[1].y)/2;
+      pinchInfo={startDist:Math.hypot(dx,dy), startZoom:camera.zoom, midX, midY};
+      camera.follow=false;
+    }
+  }
+  function onPointerMove(e){
+    const p = pointers.get(e.pointerId); if(!p) return;
+    p.x=e.clientX; p.y=e.clientY;
+
+    if(pointers.size===2 && pinchInfo){
+      const pts=[...pointers.values()];
+      const dx=pts[1].x-pts[0].x, dy=pts[1].y-pts[0].y;
+      const dist=Math.hypot(dx,dy);
+      const z = clamp(pinchInfo.startZoom * (dist / pinchInfo.startDist), 0.6, 2.0);
+      zoomAroundScreenPoint(z, pinchInfo.midX, pinchInfo.midY);
+      return;
+    }
+
+    if(pointers.size===1 && dragInfo){
+      const dx = (e.clientX - dragInfo.x) / camera.zoom;
+      const dy = (e.clientY - dragInfo.y) / camera.zoom;
+      camera.offsetX = dragInfo.ox + dx;
+      camera.offsetY = dragInfo.oy + dy;
+      camera.follow=false;
+      // if user drags far, cancel tap
+      if(tapCandidate && (Math.abs(e.clientX - tapCandidate.x) > 8 || Math.abs(e.clientY - tapCandidate.y) > 8)) tapCandidate=null;
+    }
+  }
+  function onPointerUp(e){
+    pointers.delete(e.pointerId);
+    if(pointers.size<2) pinchInfo=null;
+    if(pointers.size===0){ dragInfo=null; }
+
+    // Tap detection
+    if(tapCandidate){
+      const dt = performance.now() - tapCandidate.t;
+      if(dt < 250){
+        const tile = screenToTile(tapCandidate.x, tapCandidate.y);
+        const tx = clamp(Math.round(tile.x),0,MAP_W-1); const ty = clamp(Math.round(tile.y),0,MAP_H-1);
+        const path = bfsPath(player.x, player.y, tx, ty).slice(0, 64);
+        pathQueue = path; // overwrite previous path
+      }
+      tapCandidate=null;
+    }
+  }
+
+  function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+
+  function zoomAroundScreenPoint(newZoom, screenX, screenY){
+    const centerX = canvas.clientWidth * 0.5;
+    const centerY = canvas.clientHeight * 0.42;
+    const z0 = camera.zoom, z1 = newZoom;
+    const wx = ((screenX - centerX) / z0) - camera.offsetX;
+    const wy = ((screenY - centerY) / z0) - camera.offsetY;
+    camera.offsetX = (z0/z1) * (camera.offsetX + wx) - wx;
+    camera.offsetY = (z0/z1) * (camera.offsetY + wy) - wy;
+    camera.zoom = z1;
+  }
+
+  canvas.addEventListener('pointerdown', onPointerDown);
+  canvas.addEventListener('pointermove', onPointerMove);
+  canvas.addEventListener('pointerup', onPointerUp);
+  canvas.addEventListener('pointercancel', onPointerUp);
+
+  // Keyboard arrows still work on desktop
   const keyMap = { ArrowUp:[0,-1], KeyW:[0,-1], ArrowDown:[0,1], KeyS:[0,1], ArrowLeft:[-1,0], KeyA:[-1,0], ArrowRight:[1,0], KeyD:[1,0] };
   window.addEventListener('keydown', (e) => {
     const v = keyMap[e.code];
     if (!v) return;
     e.preventDefault();
-    tryMove(v[0], v[1]);
+    enqueueStep(player.x + v[0], player.y + v[1]);
   });
 
-  // Touch D-pad
-  document.querySelectorAll('.dpad button').forEach(btn=>{
-    btn.addEventListener('pointerdown', (e)=>{
-      const d = e.currentTarget.dataset.dir;
-      if (d==='up') tryMove(0,-1);
-      if (d==='down') tryMove(0,1);
-      if (d==='left') tryMove(-1,0);
-      if (d==='right') tryMove(1,0);
-    });
-  });
-
-  // Camera UI
-  const zoomSlider = document.getElementById('zoom');
-  const followChk  = document.getElementById('follow');
-  const centerBtn  = document.getElementById('centerBtn');
-  document.getElementById('zoomIn').onclick = ()=> setZoom(camera.zoom*1.1);
-  document.getElementById('zoomOut').onclick = ()=> setZoom(camera.zoom/1.1);
-  centerBtn.onclick = ()=> { camera.follow = true; followChk.checked = true; centerOnPlayer(true); };
-
-  zoomSlider.addEventListener('input', ()=> setZoom(parseFloat(zoomSlider.value)));
-  followChk.addEventListener('change', ()=> camera.follow = followChk.checked);
-
-  function setZoom(z){ camera.zoom = Math.min(2.0, Math.max(0.6, z)); zoomSlider.value = camera.zoom.toFixed(2); }
-
-  function centerOnPlayer(instant=false){
-    const p = isoProject(player.x, player.y, sampleHeightBilinear(player.x, player.y) + 0.6);
-    camera.targetX = -p.x; camera.targetY = -p.y;
-    if (instant){ camera.offsetX = camera.targetX; camera.offsetY = camera.targetY; }
+  function enqueueStep(nx,ny){
+    const p=bfsPath(player.x, player.y, nx, ny);
+    if(p.length) pathQueue = p;
   }
-
-  // Mouse/touch drag to pan
-  let drag = null;
-  canvas.addEventListener('pointerdown', (e)=>{
-    // Ignore if starting on the panel or dpad areas
-    const el = e.target;
-    drag = { id:e.pointerId, x:e.clientX, y:e.clientY, ox:camera.offsetX, oy:camera.offsetY };
-    canvas.setPointerCapture(e.pointerId);
-  });
-  canvas.addEventListener('pointermove', (e)=>{
-    if (!drag || drag.id!==e.pointerId) return;
-    camera.follow = false; followChk.checked = false;
-    const dx = (e.clientX - drag.x) / camera.zoom;
-    const dy = (e.clientY - drag.y) / camera.zoom;
-    camera.offsetX = drag.ox + dx;
-    camera.offsetY = drag.oy + dy;
-  });
-  canvas.addEventListener('pointerup', ()=>{
- drag=null; });
-  canvas.addEventListener('pointercancel', ()=>{ drag=null; });
-
-  // Wheel zoom around center
-  canvas.addEventListener('wheel', (e)=>{
-    e.preventDefault();
-    const delta = Math.sign(e.deltaY);
-    setZoom(camera.zoom * (delta>0 ? 0.92 : 1.08));
-  }, { passive:false });
 
   // Draw helpers
   function drawTile(x, y, h) {
@@ -238,6 +245,12 @@
 
   // Player cube
   function drawPlayer(t) {
+    // If we have a queued path and we're idle, take the next step
+    if(!player.moving && pathQueue.length){
+      const [nx,ny] = pathQueue.shift();
+      tryStepTo(nx,ny);
+    }
+
     // Interpolate during movement
     let px = player.x, py = player.y;
     if (player.moving && player.target) {
@@ -347,6 +360,12 @@
 
   // Initial center on player
   centerOnPlayer(true);
+
+  function centerOnPlayer(instant=false){
+    const p = isoProject(player.x, player.y, sampleHeightBilinear(player.x, player.y) + 0.6);
+    camera.targetX = -p.x; camera.targetY = -p.y;
+    if (instant){ camera.offsetX = camera.targetX; camera.offsetY = camera.targetY; }
+  }
 })();
 </script>
 </body>
