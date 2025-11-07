@@ -85,7 +85,7 @@
   const playerSprite = new Image();
   let playerSpriteReady = false;
   playerSprite.onload = ()=>{ playerSpriteReady = true; };
-  playerSprite.src = PLAYER_IMG_SRC;
+  playerSprite.src = player.png;
 
   // Movement queue via simple BFS to tapped tile
   let pathQueue = [];
