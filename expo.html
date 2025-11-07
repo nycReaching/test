@@ -1,440 +1,243 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-  <title>Isometric RPG Starter — mobile gestures</title>
-  <style>
-    html, body { margin:0; height:100%; background:#0f1115; overscroll-behavior:none; }
-    canvas { display:block; width:100vw; height:100vh; touch-action:none; background: transparent; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Isometric Voxel UI</title>
+    <!-- Load Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Use the Inter font */
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* This container provides the 3D perspective */
+        #game-world-wrapper {
+            perspective: 1000px;
+        }
+
+        /* This container is rotated to create the isometric view */
+        #iso-world {
+            transform-style: preserve-3d;
+            transform: rotateX(60deg) rotateZ(45deg);
+        }
+
+        /* The "ground" plane */
+        #game-area {
+            width: 300px;
+            height: 300px;
+            background: #34d399; /* emerald-400 */
+            /* Add a grid pattern for a "tile" feel */
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            /* Give the ground some "thickness" */
+            box-shadow: 0px 0px 0px 8px #10b981; /* emerald-600 */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            /* Center the plane */
+            transform: translate(-50%, -50%);
+        }
+
+        /* The player icon, styled to look like a simple voxel */
+        #player {
+            width: 20px;
+            height: 20px;
+            background: #ef4444; /* red-500 */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            /* Start at 0,0 (center of the area) */
+            /* We use calc() to combine centering with JS-driven translation */
+            transform: translate(calc(-50% + 0px), calc(-50% + 0px));
+            transition: transform 0.05s linear;
+            
+            /* Simple 3D effect using borders */
+            border-bottom: 4px solid #b91c1c; /* red-800 */
+            border-right: 2px solid #dc2626; /* red-600 */
+            box-sizing: border-box; /* Include border in width/height */
+        }
+
+        /* Base styling for control buttons */
+        .control-btn {
+            background-color: #4b5563; /* gray-600 */
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.1s;
+            /* Disable user selection and tap highlights for a native feel */
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        /* Active state for a responsive feel */
+        .control-btn:active {
+            background-color: #6b7280; /* gray-500 */
+        }
+    </style>
 </head>
-<body>
-  <canvas id="game"></canvas>
-<script>
-(() => {
-  // --- Canvas setup with devicePixelRatio for crisp rendering.
-  const canvas = document.getElementById('game');
-  const ctx = canvas.getContext('2d');
+<body class="bg-gray-800 text-white overflow-hidden">
 
-  function resize() {
-    const dpr = Math.max(1, window.devicePixelRatio || 1);
-    const { innerWidth:wCSS, innerHeight:hCSS } = window;
-    canvas.width  = Math.floor(wCSS * dpr);
-    canvas.height = Math.floor(hCSS * dpr);
-    canvas.style.width  = wCSS + 'px';
-    canvas.style.height = hCSS + 'px';
-    ctx.setTransform(dpr,0,0,dpr,0,0); // Use CSS pixels in drawing code
-  }
-  window.addEventListener('resize', resize, { passive:true });
-  resize();
+    <!-- Main game container, laid out for portrait mobile -->
+    <div id="game-container" class="flex flex-col h-screen w-screen">
 
-  // --- Isometric tile settings.
-  const TILE_W = 64;          // width of diamond
-  const TILE_H = 32;          // height of diamond
-  const STEP_Z = 16;          // vertical step visual size
-  const MAP_W = 12, MAP_H = 12;
+        <!-- Header -->
+        <header class="w-full text-center p-4 bg-gray-900 shadow-lg z-10">
+            <h1 class="text-xl font-bold">Iso-Voxel World</h1>
+        </header>
 
-  // Tiny heightmap. 0..3 with a few raised platforms.
-  const map = Array.from({length:MAP_H}, (_,y)=>Array.from({length:MAP_W}, (_,x)=>{
-    const r = (Math.sin(x*0.7)+Math.cos(y*0.6))*0.6 + (x>7 && y>3 && y<9 ? 1.2:0);
-    return Math.max(0, Math.min(3, (r|0)));
-  }));
+        <!-- Game World Wrapper: This centers the iso-world and applies perspective -->
+        <main id="game-world-wrapper" class="flex-grow w-full flex items-center justify-center overflow-hidden">
+            
+            <!-- Isometric World: This container is rotated -->
+            <div id="iso-world" class="relative">
+                
+                <!-- Game Area: The ground plane -->
+                <div id="game-area"></div>
+                
+                <!-- Player Icon -->
+                <div id="player"></div>
 
-  // Camera state
-  const camera = {
-    offsetX: 0,
-    offsetY: 0,
-    targetX: 0,
-    targetY: 0,
-    zoom: 1,
-    follow: true,
-  };
+            </div>
+        </main>
 
-  // Map -> screen projection in world space (no center, no camera here)
-  function isoProject(x, y, z=0) {
-    const sx = (x - y) * (TILE_W / 2);
-    const sy = (x + y) * (TILE_H / 2) - z * STEP_Z;
-    return { x: sx, y: sy };
-  }
+        <!-- UI Controls -->
+        <footer id="controls" class="w-full p-6 bg-gray-900 shadow-inner z-10">
+            <div class="flex justify-center">
+                <!-- D-Pad layout using a simple grid -->
+                <div class="grid grid-cols-3 gap-1 w-48 text-3xl font-bold">
+                    <!-- Row 1 -->
+                    <div class="col-start-2">
+                        <button id="btn-up" class="control-btn w-full h-16 rounded-t-lg">&uarr;</button>
+                    </div>
 
-  // Inverse: screen -> approximate map tile (ignoring height)
-  function screenToTile(clientX, clientY){
-    const centerX = canvas.clientWidth * 0.5;
-    const centerY = canvas.clientHeight * 0.42;
-    const sx = (clientX - centerX) / camera.zoom - camera.offsetX;
-    const sy = (clientY - centerY) / camera.zoom - camera.offsetY;
-    const tw2 = TILE_W/2, th2 = TILE_H/2;
-    const gx = (sy / th2 + sx / tw2) * 0.5;
-    const gy = (sy / th2 - sx / tw2) * 0.5;
-    return { x: Math.round(gx), y: Math.round(gy) };
-  }
+                    <!-- Row 2 -->
+                    <button id="btn-left" class="control-btn h-16 rounded-l-lg">&larr;</button>
+                    <div class="h-16 bg-gray-800"></div> <!-- Center spacer -->
+                    <button id="btn-right" class="control-btn h-16 rounded-r-lg">&rarr;</button>
 
-  // Player (fixed $1 placeholder bug)
-  const player = {
-    x: 3,
-    y: 3,
-    z: () => map[player.y][player.x],
-    anim: 0,
-    moving: false,
-    target: null
-  };
+                    <!-- Row 3 -->
+                    <div class="col-start-2">
+                        <button id="btn-down" class="control-btn w-full h-16 rounded-b-lg">&darr;</button>
+                    </div>
+                </div>
+            </div>
+        </footer>
 
-  // Player sprite image (PNG or SVG). Put the file next to this HTML.
-  const PLAYER_IMG_SRC = 'player.png'; // change to 'player.svg' if you prefer
-  const playerSprite = new Image();
-  let playerSpriteReady = false;
-  playerSprite.onload = ()=>{ playerSpriteReady = true; };
-  playerSprite.src = player.png;
+    </div>
 
-  // Movement queue via simple BFS to tapped tile
-  let pathQueue = [];
-  function neighbors(x,y){ return [[1,0],[-1,0],[0,1],[0,-1]].map(([dx,dy])=>[x+dx,y+dy]); }
-  function valid(x,y,fromX,fromY){
-    if (x<0||y<0||x>=MAP_W||y>=MAP_H) return false;
-    const dz = map[y][x] - map[fromY][fromX];
-    return Math.abs(dz) <= 1;
-  }
-  function bfsPath(sx,sy,tx,ty){
-    const key=(x,y)=>x+","+y; const q=[[sx,sy]]; const came=new Map(); came.set(key(sx,sy), null);
-    while(q.length){
-      const [x,y]=q.shift();
-      if(x===tx&&y===ty) break;
-      for(const [nx,ny] of neighbors(x,y)){
-        if(!valid(nx,ny,x,y)) continue;
-        const k=key(nx,ny); if(came.has(k)) continue; came.set(k,[x,y]); q.push([nx,ny]);
-      }
-    }
-    const out=[]; let cur=[tx,ty];
-    while(cur){ const k=key(cur[0],cur[1]); const prev=came.get(k); if(!prev) break; out.push(cur); cur=prev; }
-    out.reverse();
-    return out;
-  }
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const player = document.getElementById('player');
+            const btnUp = document.getElementById('btn-up');
+            const btnDown = document.getElementById('btn-down');
+            const btnLeft = document.getElementById('btn-left');
+            const btnRight = document.getElementById('btn-right');
 
-  function tryStepTo(nx, ny) {
-    if (player.moving) return false;
-    if (nx < 0 || ny < 0 || nx >= MAP_W || ny >= MAP_H) return false;
-    const dz = map[ny][nx] - map[player.y][player.x];
-    if (Math.abs(dz) > 1) return false;
-    player.moving = true;
-    player.target = { x:nx, y:ny };
-    player.anim = 0;
-    return true;
-  }
+            // Game constants
+            const MOVE_SPEED = 5; // Pixels to move per step
+            const AREA_WIDTH = 300;
+            const AREA_HEIGHT = 300;
+            const PLAYER_WIDTH = 20;
+            const PLAYER_HEIGHT = 20;
 
-  // Gesture handling: one-finger pan, two-finger pinch-zoom, tap to move
-  let pointers = new Map();
-  let dragInfo = null; // for panning
-  let tapCandidate = null;
-  let pinchInfo = null;
+            // Calculate movement boundaries
+            // The player's (x,y) state is its center, so we stop
+            // when its edge reaches the edge of the area.
+            const minX = -AREA_WIDTH / 2 + PLAYER_WIDTH / 2;
+            const maxX = AREA_WIDTH / 2 - PLAYER_WIDTH / 2;
+            const minY = -AREA_HEIGHT / 2 + PLAYER_HEIGHT / 2;
+            const maxY = AREA_HEIGHT / 2 - PLAYER_HEIGHT / 2;
 
-  function onPointerDown(e){
-    canvas.setPointerCapture(e.pointerId);
-    pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
-    if(pointers.size===1){
-      // possible tap or pan
-      tapCandidate = {x:e.clientX, y:e.clientY, t:performance.now()};
-      dragInfo = {id:e.pointerId, x:e.clientX, y:e.clientY, ox:camera.offsetX, oy:camera.offsetY};
-    } else if(pointers.size===2){
-      // start pinch
-      const pts=[...pointers.values()];
-      const dx=pts[1].x-pts[0].x, dy=pts[1].y-pts[0].y;
-      const midX=(pts[0].x+pts[1].x)/2, midY=(pts[0].y+pts[1].y)/2;
-      pinchInfo={startDist:Math.hypot(dx,dy), startZoom:camera.zoom, midX, midY};
-      camera.follow=false;
-    }
-  }
-  function onPointerMove(e){
-    const p = pointers.get(e.pointerId); if(!p) return;
-    p.x=e.clientX; p.y=e.clientY;
+            // Player's state (position is relative to the center of the game area)
+            const playerState = {
+                x: 0,
+                y: 0,
+                // Track which buttons are held down
+                holding: { up: false, down: false, left: false, right: false }
+            };
 
-    if(pointers.size===2 && pinchInfo){
-      const pts=[...pointers.values()];
-      const dx=pts[1].x-pts[0].x, dy=pts[1].y-pts[0].y;
-      const dist=Math.hypot(dx,dy);
-      const z = clamp(pinchInfo.startZoom * (dist / pinchInfo.startDist), 0.6, 2.0);
-      zoomAroundScreenPoint(z, pinchInfo.midX, pinchInfo.midY);
-      return;
-    }
+            // Updates the player's CSS transform based on its state
+            function updatePlayerPosition() {
+                // By moving the player with translate(x, y) *inside* the
+                // rotated #iso-world, the movement appears to be
+                // along the isometric axes.
+                player.style.transform = `translate(calc(-50% + ${playerState.x}px), calc(-50% + ${playerState.y}px))`;
+            }
 
-    if(pointers.size===1 && dragInfo){
-      const dx = (e.clientX - dragInfo.x) / camera.zoom;
-      const dy = (e.clientY - dragInfo.y) / camera.zoom;
-      camera.offsetX = dragInfo.ox + dx;
-      camera.offsetY = dragInfo.oy + dy;
-      camera.follow=false;
-      // if user drags far, cancel tap
-      if(tapCandidate && (Math.abs(e.clientX - tapCandidate.x) > 8 || Math.abs(e.clientY - tapCandidate.y) > 8)) tapCandidate=null;
-    }
-  }
-  function onPointerUp(e){
-    pointers.delete(e.pointerId);
-    if(pointers.size<2) pinchInfo=null;
-    if(pointers.size===0){ dragInfo=null; }
+            // Game loop to handle continuous movement
+            function gameLoop() {
+                let dx = 0;
+                let dy = 0;
 
-    // Tap detection
-    if(tapCandidate){
-      const dt = performance.now() - tapCandidate.t;
-      if(dt < 250){
-        const tile = screenToTile(tapCandidate.x, tapCandidate.y);
-        const tx = clamp(Math.round(tile.x),0,MAP_W-1); const ty = clamp(Math.round(tile.y),0,MAP_H-1);
-        const path = bfsPath(player.x, player.y, tx, ty).slice(0, 64);
-        pathQueue = path; // overwrite previous path
-      }
-      tapCandidate=null;
-    }
-  }
+                if (playerState.holding.up) dy -= MOVE_SPEED;
+                if (playerState.holding.down) dy += MOVE_SPEED;
+                if (playerState.holding.left) dx -= MOVE_SPEED;
+                if (playerState.holding.right) dx += MOVE_SPEED;
 
-  function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+                if (dx !== 0 || dy !== 0) {
+                    // Calculate new position
+                    const newX = playerState.x + dx;
+                    const newY = playerState.y + dy;
 
-  function zoomAroundScreenPoint(newZoom, screenX, screenY){
-    const centerX = canvas.clientWidth * 0.5;
-    const centerY = canvas.clientHeight * 0.42;
-    const z0 = camera.zoom, z1 = newZoom;
-    const wx = ((screenX - centerX) / z0) - camera.offsetX;
-    const wy = ((screenY - centerY) / z0) - camera.offsetY;
-    camera.offsetX = (z0/z1) * (camera.offsetX + wx) - wx;
-    camera.offsetY = (z0/z1) * (camera.offsetY + wy) - wy;
-    camera.zoom = z1;
-  }
+                    // Clamp position within boundaries
+                    playerState.x = Math.max(minX, Math.min(maxX, newX));
+                    playerState.y = Math.max(minY, Math.min(maxY, newY));
 
-  canvas.addEventListener('pointerdown', onPointerDown);
-  canvas.addEventListener('pointermove', onPointerMove);
-  canvas.addEventListener('pointerup', onPointerUp);
-  canvas.addEventListener('pointercancel', onPointerUp);
+                    updatePlayerPosition();
+                }
 
-  // Keyboard arrows still work on desktop
-  const keyMap = { ArrowUp:[0,-1], KeyW:[0,-1], ArrowDown:[0,1], KeyS:[0,1], ArrowLeft:[-1,0], KeyA:[-1,0], ArrowRight:[1,0], KeyD:[1,0] };
-  window.addEventListener('keydown', (e) => {
-    const v = keyMap[e.code];
-    if (!v) return;
-    e.preventDefault();
-    enqueueStep(player.x + v[0], player.y + v[1]);
-  });
+                // Continue the loop
+                requestAnimationFrame(gameLoop);
+            }
 
-  function enqueueStep(nx,ny){
-    const p=bfsPath(player.x, player.y, nx, ny);
-    if(p.length) pathQueue = p;
-  }
+            // --- Event Listeners ---
 
-  // Draw helpers
-  function drawTile(x, y, h) {
-    const base = isoProject(x, y, 0);
-    const top  = isoProject(x, y, h);
+            // We use mousedown/mouseup and touchstart/touchend to allow
+            // for "holding" the button down, which is better for games.
 
-    // Top diamond
-    ctx.beginPath();
-    ctx.moveTo(top.x,                 top.y - TILE_H/2);
-    ctx.lineTo(top.x + TILE_W/2,      top.y);
-    ctx.lineTo(top.x,                 top.y + TILE_H/2);
-    ctx.lineTo(top.x - TILE_W/2,      top.y);
-    ctx.closePath();
-    ctx.fillStyle = colorTop(h);
-    ctx.fill();
+            function createButtonListeners(button, direction) {
+                // Set 'holding' state to true
+                function onPress(e) {
+                    e.preventDefault(); // Prevent scrolling/zooming
+                    playerState.holding[direction] = true;
+                }
 
-    // Right face
-    ctx.beginPath();
-    ctx.moveTo(top.x + TILE_W/2, top.y);
-    ctx.lineTo(base.x + TILE_W/2, base.y);
-    ctx.lineTo(base.x,            base.y + TILE_H/2);
-    ctx.lineTo(top.x,             top.y + TILE_H/2);
-    ctx.closePath();
-    ctx.fillStyle = colorRight(h);
-    ctx.fill();
+                // Set 'holding' state to false
+                function onRelease(e) {
+                    e.preventDefault();
+                    playerState.holding[direction] = false;
+                }
 
-    // Left face
-    ctx.beginPath();
-    ctx.moveTo(top.x - TILE_W/2, top.y);
-    ctx.lineTo(base.x - TILE_W/2, base.y);
-    ctx.lineTo(base.x,            base.y + TILE_H/2);
-    ctx.lineTo(top.x,             top.y + TILE_H/2);
-    ctx.closePath();
-    ctx.fillStyle = colorLeft(h);
-    ctx.fill();
-  }
+                // Mouse events
+                button.addEventListener('mousedown', onPress);
+                button.addEventListener('mouseup', onRelease);
+                button.addEventListener('mouseleave', onRelease); // Stop if mouse leaves button
 
-  function colorTop(h){  return ['#3a5f7a','#3f6d8d','#447aa0','#4c86b1'][h] || '#3a5f7a'; }
-  function colorLeft(h){ return ['#2a4760','#2f5270','#335c7f','#39658d'][h] || '#2a4760'; }
-  function colorRight(h){return ['#203a50','#24435d','#284c69','#2d5474'][h] || '#203a50'; }
+                // Touch events
+                button.addEventListener('touchstart', onPress, { passive: false });
+                button.addEventListener('touchend', onRelease, { passive: false });
+                button.addEventListener('touchcancel', onRelease, { passive: false });
+            }
 
-  // Player sprite or fallback cube
-  function drawPlayer(t) {
-    // If we have a queued path and we're idle, take the next step
-    if(!player.moving && pathQueue.length){
-      const [nx,ny] = pathQueue.shift();
-      tryStepTo(nx,ny);
-    }
+            createButtonListeners(btnUp, 'up');
+            createButtonListeners(btnDown, 'down');
+            createButtonListeners(btnLeft, 'left');
+            createButtonListeners(btnRight, 'right');
 
-    // Interpolate during movement
-    let px = player.x, py = player.y;
-    if (player.moving && player.target) {
-      const dur = 140; // ms
-      const f = Math.min(1, player.anim / dur);
-      const ease = f<.5 ? 2*f*f : -1+(4-2*f)*f; // easeInOutQuad
-      px = lerp(player.x, player.target.x, ease);
-      py = lerp(player.y, player.target.y, ease);
-      if (f >= 1) {
-        player.x = player.target.x;
-        player.y = player.target.y;
-        player.moving = false;
-        player.target = null;
-      }
-    }
+            // Prevent context menu on long-press (common on mobile)
+            window.addEventListener('contextmenu', (e) => e.preventDefault());
 
-    const baseH = sampleHeightBilinear(px, py);
-    const p = isoProject(px, py, baseH + 0.6 + 0.05*Math.sin(t*0.004)); // slight bob
-
-    if (playerSpriteReady) {
-      // Draw sprite anchored at its bottom center on the tile contact point
-      const spriteW = 48, spriteH = 64; // tune as needed
-      const footX = p.x;
-      const footY = p.y + 8; // small drop to sit nicely on tile
-      ctx.imageSmoothingEnabled = false; // keep pixel art crisp
-      ctx.drawImage(playerSprite, Math.round(footX - spriteW/2), Math.round(footY - spriteH), spriteW, spriteH);
-      return;
-    }
-
-    // Fallback: draw the original yellow cube if image not loaded yet
-    const w = 28, h = 16, z = 14;
-    // top
-    ctx.beginPath();
-    ctx.moveTo(p.x,         p.y - h/2);
-    ctx.lineTo(p.x + w/2,   p.y);
-    ctx.lineTo(p.x,         p.y + h/2);
-    ctx.lineTo(p.x - w/2,   p.y);
-    ctx.closePath();
-    ctx.fillStyle = '#ffd166';
-    ctx.fill();
-    // right
-    ctx.beginPath();
-    ctx.moveTo(p.x + w/2, p.y);
-    ctx.lineTo(p.x + w/2, p.y + z);
-    ctx.lineTo(p.x,       p.y + z + h/2);
-    ctx.lineTo(p.x,       p.y + h/2);
-    ctx.closePath();
-    ctx.fillStyle = '#e6b653';
-    ctx.fill();
-    // left
-    ctx.beginPath();
-    ctx.moveTo(p.x - w/2, p.y);
-    ctx.lineTo(p.x - w/2, p.y + z);
-    ctx.lineTo(p.x,       p.y + z + h/2);
-    ctx.lineTo(p.x,       p.y + h/2);
-    ctx.closePath();
-    ctx.fillStyle = '#c49c47';
-    ctx.fill();
-  }
-
-  function lerp(a,b,t){ return a + (b-a)*t; }
-
-  // Smooth height sample for movement
-  function sampleHeightBilinear(x, y){
-    const x0 = Math.floor(x), y0 = Math.floor(y);
-    const x1 = Math.min(MAP_W-1, x0+1), y1 = Math.min(MAP_H-1, y0+1);
-    const hx0y0 = map[y0][x0];
-    const hx1y0 = map[y0][x1];
-    const hx0y1 = map[y1][x0];
-    const hx1y1 = map[y1][x1];
-    const tx = x - x0, ty = y - y0;
-    const a = lerp(hx0y0, hx1y0, tx);
-    const b = lerp(hx0y1, hx1y1, tx);
-    return lerp(a,b,ty);
-  }
-
-  // Main loop
-  let prevT = performance.now();
-  function frame(t){
-    const dt = t - prevT; prevT = t;
-    if (player.moving) player.anim += dt;
-
-    // Follow logic: ease camera towards keeping player at origin
-    if (camera.follow){
-      const p = isoProject(player.x, player.y, sampleHeightBilinear(player.x, player.y) + 0.6);
-      camera.targetX = -p.x; camera.targetY = -p.y;
-    }
-    // Ease towards target
-    camera.offsetX += (camera.targetX - camera.offsetX) * 0.15;
-    camera.offsetY += (camera.targetY - camera.offsetY) * 0.15;
-
-    // Clear
-    ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);
-
-    // Establish camera transform: translate to screen center, then apply camera and zoom
-    ctx.save();
-    const centerX = canvas.clientWidth * 0.5;
-    const centerY = canvas.clientHeight * 0.42; // slight horizon bias
-    ctx.translate(centerX, centerY);
-    ctx.scale(camera.zoom, camera.zoom);
-    ctx.translate(camera.offsetX, camera.offsetY);
-
-    // Draw map painter's order
-    for (let y=0; y<MAP_H; y++){
-      for (let x=0; x<MAP_W; x++){
-        drawTile(x,y, map[y][x]);
-      }
-    }
-    drawPlayer(t);
-
-    ctx.restore();
-
-    requestAnimationFrame(frame);
-  }
-  requestAnimationFrame(frame);
-
-  // Initial center on player
-  centerOnPlayer(true);
-
-  function centerOnPlayer(instant=false){
-    const p = isoProject(player.x, player.y, sampleHeightBilinear(player.x, player.y) + 0.6);
-    camera.targetX = -p.x; camera.targetY = -p.y;
-    if (instant){ camera.offsetX = camera.targetX; camera.offsetY = camera.targetY; }
-  }
-
-  // --- Minimal console tests ---
-  function runTests(){
-    const results = [];
-    const centerX = canvas.clientWidth * 0.5;
-    const centerY = canvas.clientHeight * 0.42;
-    const worldToScreen = (gx,gy)=>{
-      const p = isoProject(gx,gy,0);
-      return {
-        x: centerX + (p.x + camera.offsetX) * camera.zoom,
-        y: centerY + (p.y + camera.offsetY) * camera.zoom
-      };
-    };
-    const assert = (name, cond)=> results.push({ test:name, pass:!!cond });
-
-    // Test 1: projection round-trip on several tiles
-    [[player.x,player.y],[0,0],[MAP_W-1,MAP_H-1],[4,7]].forEach(([gx,gy],i)=>{
-      const s = worldToScreen(gx,gy);
-      const t = screenToTile(s.x, s.y);
-      const ok = Math.abs(t.x-gx)<=1 && Math.abs(t.y-gy)<=1; // tolerate rounding
-      assert(`roundtrip_${i} (${gx},${gy})`, ok);
-    });
-
-    // Test 2: bfsPath respects height and adjacency when a path exists
-    const path = bfsPath(player.x, player.y, 0, 0);
-    let ok2 = true;
-    for(let i=1;i<path.length;i++){
-      const [ax,ay]=path[i-1], [bx,by]=path[i];
-      const adj = Math.abs(ax-bx)+Math.abs(ay-by)===1;
-      const hOK = Math.abs(map[by][bx]-map[ay][ax])<=1;
-      ok2 = ok2 && adj && hOK;
-    }
-    // Allow empty path due to terrain; if empty, mark as pass but note length
-    assert(`bfs_height_adjacency_len=${path.length}`, ok2);
-
-    // Test 3: clamp
-    assert('clamp_low', clamp(-5,0,2)===0);
-    assert('clamp_mid', clamp(1,0,2)===1);
-    assert('clamp_high', clamp(5,0,2)===2);
-
-    console.table(results);
-  }
-
-  // Run tests after initial centering so transforms are valid
-  runTests();
-})();
-</script>
+            // Start the game loop
+            updatePlayerPosition(); // Set initial position
+            requestAnimationFrame(gameLoop);
+        });
+    </script>
 </body>
 </html>
