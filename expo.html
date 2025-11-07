@@ -1,269 +1,317 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-  <title>Isometric Voxel Grid — Mobile RPG UI</title>
-  <style>
-    /*
-      Simple isometric, voxel-like grid with a 3D player.
-      Mobile-first, portrait. Pure HTML/CSS/JS. No libraries.
-    */
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voxel Isometric Game UI</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #2c3e50;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            touch-action: none; /* Prevent default touch behaviors */
+        }
 
-    :root{
-      /* Tile geometry */
-      --tile: 24px;              /* half-height of diamond */
-      --tileW: calc(var(--tile) * 2);
-      --tileH: var(--tile);
-      --halfW: var(--tile);
-      --halfH: calc(var(--tile) * 0.5);
-      --elev:  calc(var(--tile) * 0.55); /* visible wall height */
+        #game-container {
+            width: 100vw;
+            height: 100vh;
+            max-width: 400px; /* Portrait mobile constraint */
+            max-height: 800px;
+            position: relative;
+            background: linear-gradient(180deg, #34495e 0%, #1a252f 100%);
+            overflow: hidden;
+        }
 
-      /* Grid size */
-      --cols: 9;
-      --rows: 11;
+        #isometric-map {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotateX(60deg) rotateZ(45deg);
+            width: 300px;
+            height: 300px;
+            perspective: 1000px;
+        }
 
-      /* Colors */
-      --bg1: #090c18;
-      --bg2: #070a14;
-      --hud: #0f142b;          
-      --hud-stroke:#263057;
-      --hud-text:#e6ecff;
-      --grass: 145 45% 52%;
-      --grass-l: 145 45% 40%;
-      --grass-r: 145 45% 45%;
+        .grid-cell {
+            position: absolute;
+            width: 40px;
+            height: 20px;
+            background: linear-gradient(45deg, #8b4513 0%, #a0522d 50%, #8b4513 100%);
+            border: 2px solid #654321;
+            box-shadow: 
+                inset 0 2px 4px rgba(139, 69, 19, 0.5),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.3),
+                2px 2px 4px rgba(0, 0, 0, 0.5);
+            transform-style: preserve-3d;
+        }
 
-      --player-top: 15 85% 60%;
-      --player-left: 15 85% 40%;
-      --player-right: 15 85% 48%;
+        .grid-cell::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(0,0,0,0.2) 100%);
+            border-radius: 2px;
+        }
 
-      --player-top2: 210 80% 62%;
-      --player-left2: 210 80% 40%;
-      --player-right2: 210 80% 48%;
+        .grid-cell::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 50%;
+            filter: blur(1px);
+        }
 
-      --safe-top: env(safe-area-inset-top);
-      --safe-bottom: env(safe-area-inset-bottom);
-      --safe-left: env(safe-area-inset-left);
-      --safe-right: env(safe-area-inset-right);
-    }
+        /* Position grid cells in isometric layout */
+        .grid-cell:nth-child(1) { top: 0; left: 100px; z-index: 50; }
+        .grid-cell:nth-child(2) { top: 20px; left: 120px; z-index: 49; }
+        .grid-cell:nth-child(3) { top: 40px; left: 140px; z-index: 48; }
+        .grid-cell:nth-child(4) { top: 60px; left: 160px; z-index: 47; }
+        .grid-cell:nth-child(5) { top: 80px; left: 180px; z-index: 46; }
+        /* Row 2 */
+        .grid-cell:nth-child(6) { top: 0; left: 140px; z-index: 45; }
+        .grid-cell:nth-child(7) { top: 20px; left: 160px; z-index: 44; }
+        .grid-cell:nth-child(8) { top: 40px; left: 180px; z-index: 43; }
+        .grid-cell:nth-child(9) { top: 60px; left: 200px; z-index: 42; }
+        .grid-cell:nth-child(10) { top: 80px; left: 220px; z-index: 41; }
+        /* Row 3 */
+        .grid-cell:nth-child(11) { top: 0; left: 180px; z-index: 40; }
+        .grid-cell:nth-child(12) { top: 20px; left: 200px; z-index: 39; }
+        .grid-cell:nth-child(13) { top: 40px; left: 220px; z-index: 38; }
+        .grid-cell:nth-child(14) { top: 60px; left: 240px; z-index: 37; }
+        .grid-cell:nth-child(15) { top: 80px; left: 260px; z-index: 36; }
+        /* Simplified 3x5 grid for minimalism; expand as needed */
 
-    html,body{height:100%}
-    body{
-      margin:0;
-      background: radial-gradient(120% 100% at 50% 0%, var(--bg1), var(--bg2));
-      color: var(--hud-text);
-      font-family: system-ui, -apple-system, Segoe UI, Inter, Roboto, Arial, sans-serif;
-      overflow:hidden;
-      -webkit-user-select:none; user-select:none;
-      touch-action: manipulation;
-    }
+        #player-block {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(45deg, #ff6b6b 0%, #ee5a52 100%);
+            border: 2px solid #c0392b;
+            box-shadow: 
+                inset 0 4px 8px rgba(255, 107, 107, 0.3),
+                inset 0 -4px 8px rgba(0, 0, 0, 0.2),
+                4px 4px 8px rgba(0, 0, 0, 0.4),
+                0 0 10px rgba(255, 107, 107, 0.5);
+            transform-style: preserve-3d;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
 
-    #app{
-      position:fixed; inset:0;
-      padding: calc(var(--safe-top) + 8px) calc(var(--safe-right) + 8px) calc(var(--safe-bottom) + 8px) calc(var(--safe-left) + 8px);
-      display:grid; grid-template-rows:auto 1fr auto; gap:8px; height:100dvh;
-    }
+        #player-block::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(0,0,0,0.3) 100%);
+            border-radius: 4px;
+        }
 
-    .hud{display:flex; align-items:center; justify-content:space-between; background:var(--hud); border:1px solid var(--hud-stroke); border-radius:14px; padding:10px 12px; box-shadow:0 6px 18px #0007}
-    .hud .left,.hud .right{display:flex; gap:10px; align-items:center}
-    .badge{background:#0c1230; border:1px solid var(--hud-stroke); border-radius:999px; padding:6px 10px; font-weight:700}
+        #player-block::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 35px;
+            height: 15px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 50%;
+            filter: blur(2px);
+        }
 
-    #viewport{position:relative; border:1px solid var(--hud-stroke); border-radius:16px; overflow:hidden; background:#0a0f24; box-shadow:inset 0 0 80px #000a}
+        /* Controls for mobile */
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
 
-    /* World anchor */
-    #world{ position:absolute; left:50%; top:50%; transform: translate(-50%, -50%) translate(var(--ox,0px), var(--oy,0px)); transform-origin:center; }
+        .control-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(52, 73, 94, 0.8);
+            border: 2px solid #34495e;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            user-select: none;
+            touch-action: manipulation;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
 
-    /* Voxel block */
-    .voxel{ position:absolute; transform: translate(calc((var(--x) - var(--y)) * var(--halfW)), calc((var(--x) + var(--y)) * var(--halfH) - var(--z) * var(--elev))); filter: drop-shadow(0 8px 10px #0007); }
-    .top{ width:var(--tileW); height:var(--tileH); clip-path:polygon(50% 0, 100% 50%, 50% 100%, 0 50%); background: hsl(var(--hTop)); box-shadow: inset 0 1px 0 #ffffff30, inset 0 -2px 0 #00000025; }
-    .left,.right{ position:absolute; top:calc(var(--tileH) * 0.5); height:var(--elev); box-shadow: inset 0 2px 0 #00000022; }
-    .left { left:0; width:var(--halfW); clip-path: polygon(0 0, 100% 0, 100% 100%, 0 78%); background: hsl(var(--hLeft)); }
-    .right{ left:var(--halfW); width:var(--halfW); clip-path: polygon(0 0, 100% 0, 100% 78%, 0 100%); background: hsl(var(--hRight)); }
+        .control-btn:active {
+            background: rgba(52, 73, 94, 1);
+        }
 
-    /* Ground uses grass palette */
-    .grass{ --hTop: var(--grass); --hLeft: var(--grass-l); --hRight: var(--grass-r); }
+        /* Initial player position */
+        #player-block {
+            top: 40px; /* Adjust to grid cell */
+            left: 140px;
+        }
 
-    /* Player: a 2-voxel stack for a 3D character */
-    #player .seg1{ --hTop: var(--player-top2); --hLeft: var(--player-left2); --hRight: var(--player-right2); }
-    #player .seg2{ --hTop: var(--player-top);  --hLeft: var(--player-left);  --hRight: var(--player-right); }
-
-    /* Controls */
-    .controls{ display:grid; grid-template-columns: 1fr 1fr; gap:8px; }
-    .panel{ background:var(--hud); border:1px solid var(--hud-stroke); border-radius:14px; padding:10px; box-shadow:0 6px 18px #0007 }
-
-    .dpad{ display:grid; grid-template-columns:64px 64px 64px; grid-template-rows:64px 64px 64px; gap:6px; justify-content:center }
-    .btn{ border:1px solid #2b3560; background:#182044; border-radius:12px; position:relative }
-    .btn:active{ background:#222a54 }
-    .arrow::before{ content:""; position:absolute; inset:0; margin:auto; width:0; height:0; border-style:solid }
-    .up.arrow::before{    border-width:0 14px 20px 14px; border-color:transparent transparent #7bc4ff transparent }
-    .down.arrow::before{  border-width:20px 14px 0 14px; border-color:#7bc4ff transparent transparent transparent }
-    .left.arrow::before{  border-width:14px 20px 14px 0; border-color:transparent #7bc4ff transparent transparent }
-    .right.arrow::before{ border-width:14px 0 14px 20px; border-color:transparent transparent transparent #7bc4ff }
-
-    @media(orientation:landscape){#rotateHint{display:flex}}
-    #rotateHint{ display:none; position:fixed; inset:0; align-items:center; justify-content:center; background:#05070cb3; z-index:99; backdrop-filter: blur(4px) }
-    #rotateHint .box{ background:#0b1026; border:1px solid #283058; border-radius:16px; padding:16px 18px; text-align:center; font-weight:600 }
-
-    button{-webkit-tap-highlight-color:transparent}
-  </style>
+        /* HUD */
+        #hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #ecf0f1;
+            font-size: 14px;
+            z-index: 200;
+        }
+    </style>
 </head>
 <body>
-  <div id="app">
-    <div class="hud">
-      <div class="left">
-        <div class="badge" id="level">Lvl 1</div>
-        <div class="badge" id="coords" aria-live="polite">x:0 y:0 z:1</div>
-      </div>
-      <div class="right">
-        <div class="badge">Items: <span id="itemCount">0</span></div>
-      </div>
-    </div>
-
-    <div id="viewport">
-      <div id="world" aria-label="isometric voxel grid"></div>
-    </div>
-
-    <div class="controls">
-      <div class="panel">
-        <div class="dpad">
-          <div></div>
-          <button class="btn arrow up"    id="btnUp"    aria-label="Move up"></button>
-          <div></div>
-          <button class="btn arrow left"  id="btnLeft"  aria-label="Move left"></button>
-          <div></div>
-          <button class="btn arrow right" id="btnRight" aria-label="Move right"></button>
-          <div></div>
-          <button class="btn arrow down"  id="btnDown"  aria-label="Move down"></button>
-          <div></div>
+    <div id="game-container">
+        <div id="hud">
+            <div>Position: <span id="pos">1,1</span></div>
+            <div>Score: <span id="score">0</span></div>
         </div>
-      </div>
-      <div class="panel">
-        <button class="btn" style="width:100%; height:64px; font-weight:700; color:#cfe2ff" id="interact">Interact</button>
-      </div>
+        <div id="isometric-map">
+            <!-- Grid cells (minimal 3x5 isometric grid) -->
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+            <!-- Player block -->
+            <div id="player-block"></div>
+        </div>
+        <!-- Mobile controls -->
+        <div id="controls">
+            <div class="control-btn" data-dir="up">↑</div>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div class="control-btn" data-dir="left">←</div>
+                <div></div> <!-- Spacer -->
+                <div class="control-btn" data-dir="right">→</div>
+            </div>
+            <div class="control-btn" data-dir="down">↓</div>
+        </div>
     </div>
-  </div>
 
-  <div id="rotateHint"><div class="box">Rotate to portrait for best play.</div></div>
+    <script>
+        const player = document.getElementById('player-block');
+        const posEl = document.getElementById('pos');
+        const scoreEl = document.getElementById('score');
+        let playerPos = { x: 1, y: 1 }; // Grid coordinates (0-indexed)
+        let score = 0;
 
-  <script>
-    // --- Config ---
-    const COLS = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--cols')) || 9;
-    const ROWS = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--rows')) || 11;
+        const gridWidth = 5;
+        const gridHeight = 3;
+        const cellOffsetX = 40; // Isometric offset per step
+        const cellOffsetY = 20;
 
-    // --- State ---
-    const state = {
-      player: { x: Math.floor(COLS/2), y: Math.floor(ROWS/2) }, // ground z=0; player stands at z=1
-      items: new Set(),
-      collected: 0,
-      level: 1
-    };
+        function updatePlayerPosition(dir) {
+            let newX = playerPos.x;
+            let newY = playerPos.y;
 
-    const world = document.getElementById('world');
+            switch (dir) {
+                case 'up':
+                    newY = Math.max(0, playerPos.y - 1);
+                    break;
+                case 'down':
+                    newY = Math.min(gridHeight - 1, playerPos.y + 1);
+                    break;
+                case 'left':
+                    newX = Math.max(0, playerPos.x - 1);
+                    break;
+                case 'right':
+                    newX = Math.min(gridWidth - 1, playerPos.x + 1);
+                    break;
+            }
 
-    function cssNumber(name){ return parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name)); }
+            if (newX !== playerPos.x || newY !== playerPos.y) {
+                playerPos = { x: newX, y: newY };
+                // Calculate isometric position (simplified; adjust base on your grid layout)
+                const isoX = 100 + (newX * cellOffsetX) + (newY * cellOffsetX / 2);
+                const isoY = (newY * cellOffsetY);
+                player.style.left = isoX + 'px';
+                player.style.top = isoY + 'px';
 
-    // Create a voxel element with palette overrides
-    function makeVoxel(x,y,z, hTop, hLeft, hRight){
-      const v = document.createElement('div');
-      v.className = 'voxel';
-      v.style.setProperty('--x', x);
-      v.style.setProperty('--y', y);
-      v.style.setProperty('--z', z);
-      if (hTop)  v.style.setProperty('--hTop', hTop);
-      if (hLeft) v.style.setProperty('--hLeft', hLeft);
-      if (hRight)v.style.setProperty('--hRight',hRight);
-      v.appendChild(document.createElement('div')).className = 'top';
-      v.appendChild(document.createElement('div')).className = 'left';
-      v.appendChild(document.createElement('div')).className = 'right';
-      return v;
-    }
+                // Simulate score increase
+                score += 10;
+                scoreEl.textContent = score;
 
-    function buildGround(){
-      world.innerHTML = '';
-      const tile = cssNumber('--tile');
-      const ox = -((COLS - ROWS) * (tile));
-      const oy = -(((COLS + ROWS) * (tile * 0.5)) - 10);
-      world.style.setProperty('--ox', ox + 'px');
-      world.style.setProperty('--oy', oy + 'px');
-
-      // one layer of grass voxels
-      for(let y=0;y<ROWS;y++){
-        for(let x=0;x<COLS;x++){
-          const g = makeVoxel(x,y,0);
-          g.classList.add('grass');
-          world.appendChild(g);
+                posEl.textContent = `${newX + 1},${newY + 1}`;
+            }
         }
-      }
 
-      // player is two voxels stacked at z=1 and z=2
-      const p = document.createElement('div');
-      p.id = 'player';
-      p.appendChild(makeVoxel(state.player.x, state.player.y, 1));
-      p.lastChild.classList.add('seg1');
-      p.appendChild(makeVoxel(state.player.x, state.player.y, 2));
-      p.lastChild.classList.add('seg2');
-      world.appendChild(p);
+        // Button event listeners
+        document.querySelectorAll('.control-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                updatePlayerPosition(btn.dataset.dir);
+            });
+        });
 
-      updateHUD();
-    }
+        // Touch swipe detection for mobile
+        let touchStartX = 0;
+        let touchStartY = 0;
 
-    function updatePlayer(){
-      const p = document.getElementById('player');
-      const [seg1, seg2] = p.children;
-      const {x,y} = state.player;
-      seg1.style.setProperty('--x', x);
-      seg1.style.setProperty('--y', y);
-      seg2.style.setProperty('--x', x);
-      seg2.style.setProperty('--y', y);
-      document.getElementById('coords').textContent = `x:${x} y:${y} z:1`;
-    }
+        document.getElementById('game-container').addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        });
 
-    function updateHUD(){
-      document.getElementById('itemCount').textContent = state.collected;
-      document.getElementById('level').textContent = `Lvl ${state.level}`;
-      updatePlayer();
-    }
+        document.getElementById('game-container').addEventListener('touchend', (e) => {
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            const deltaX = touchEndX - touchStartX;
+            const deltaY = touchEndY - touchStartY;
 
-    function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+            if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                // Horizontal swipe
+                if (deltaX > 50) updatePlayerPosition('right');
+                else if (deltaX < -50) updatePlayerPosition('left');
+            } else {
+                // Vertical swipe
+                if (deltaY > 50) updatePlayerPosition('down');
+                else if (deltaY < -50) updatePlayerPosition('up');
+            }
+        });
 
-    function move(dx,dy){
-      state.player.x = clamp(state.player.x + dx, 0, COLS-1);
-      state.player.y = clamp(state.player.y + dy, 0, ROWS-1);
-      updatePlayer();
-    }
-
-    function bindHold(el, fn){
-      let t=null; const start=e=>{e.preventDefault(); fn(); t=setInterval(fn,150)}; const end=()=>{clearInterval(t); t=null};
-      el.addEventListener('touchstart', start, {passive:false});
-      el.addEventListener('mousedown', start);
-      window.addEventListener('touchend', end);
-      window.addEventListener('mouseup', end);
-      window.addEventListener('mouseleave', end);
-    }
-
-    function initControls(){
-      bindHold(document.getElementById('btnUp'),    ()=>move(0,-1));
-      bindHold(document.getElementById('btnDown'),  ()=>move(0, 1));
-      bindHold(document.getElementById('btnLeft'),  ()=>move(-1,0));
-      bindHold(document.getElementById('btnRight'), ()=>move( 1,0));
-
-      document.getElementById('interact').addEventListener('click', ()=>{
-        // placeholder for future item pickup logic
-      });
-
-      // keyboard for desktop testing
-      window.addEventListener('keydown', e=>{
-        if(e.key==='ArrowUp' || e.key==='w') move(0,-1);
-        else if(e.key==='ArrowDown' || e.key==='s') move(0,1);
-        else if(e.key==='ArrowLeft' || e.key==='a') move(-1,0);
-        else if(e.key==='ArrowRight' || e.key==='d') move(1,0);
-      });
-    }
-
-    (function main(){
-      buildGround();
-      initControls();
-    })();
-  </script>
+        // Keyboard support for testing
+        document.addEventListener('keydown', (e) => {
+            switch (e.key) {
+                case 'ArrowUp': updatePlayerPosition('up'); break;
+                case 'ArrowDown': updatePlayerPosition('down'); break;
+                case 'ArrowLeft': updatePlayerPosition('left'); break;
+                case 'ArrowRight': updatePlayerPosition('right'); break;
+            }
+        });
+    </script>
 </body>
 </html>
