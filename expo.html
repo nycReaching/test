@@ -70,8 +70,22 @@
     return { x: Math.round(gx), y: Math.round(gy) };
   }
 
-  // Player
-  const player = { x: 3, y: 3, z: () => map[player.y][player.x], anim:0, moving:false, target:null };
+  // Player (fixed $1 placeholder bug)
+  const player = {
+    x: 3,
+    y: 3,
+    z: () => map[player.y][player.x],
+    anim: 0,
+    moving: false,
+    target: null
+  };
+
+  // Player sprite image (PNG or SVG). Put the file next to this HTML.
+  const PLAYER_IMG_SRC = 'player.png'; // change to 'player.svg' if you prefer
+  const playerSprite = new Image();
+  let playerSpriteReady = false;
+  playerSprite.onload = ()=>{ playerSpriteReady = true; };
+  playerSprite.src = PLAYER_IMG_SRC;
 
   // Movement queue via simple BFS to tapped tile
   let pathQueue = [];
@@ -243,7 +257,7 @@
   function colorLeft(h){ return ['#2a4760','#2f5270','#335c7f','#39658d'][h] || '#2a4760'; }
   function colorRight(h){return ['#203a50','#24435d','#284c69','#2d5474'][h] || '#203a50'; }
 
-  // Player cube
+  // Player sprite or fallback cube
   function drawPlayer(t) {
     // If we have a queued path and we're idle, take the next step
     if(!player.moving && pathQueue.length){
@@ -269,8 +283,19 @@
 
     const baseH = sampleHeightBilinear(px, py);
     const p = isoProject(px, py, baseH + 0.6 + 0.05*Math.sin(t*0.004)); // slight bob
-    const w = 28, h = 16, z = 14;
 
+    if (playerSpriteReady) {
+      // Draw sprite anchored at its bottom center on the tile contact point
+      const spriteW = 48, spriteH = 64; // tune as needed
+      const footX = p.x;
+      const footY = p.y + 8; // small drop to sit nicely on tile
+      ctx.imageSmoothingEnabled = false; // keep pixel art crisp
+      ctx.drawImage(playerSprite, Math.round(footX - spriteW/2), Math.round(footY - spriteH), spriteW, spriteH);
+      return;
+    }
+
+    // Fallback: draw the original yellow cube if image not loaded yet
+    const w = 28, h = 16, z = 14;
     // top
     ctx.beginPath();
     ctx.moveTo(p.x,         p.y - h/2);
@@ -280,7 +305,6 @@
     ctx.closePath();
     ctx.fillStyle = '#ffd166';
     ctx.fill();
-
     // right
     ctx.beginPath();
     ctx.moveTo(p.x + w/2, p.y);
@@ -290,7 +314,6 @@
     ctx.closePath();
     ctx.fillStyle = '#e6b653';
     ctx.fill();
-
     // left
     ctx.beginPath();
     ctx.moveTo(p.x - w/2, p.y);
@@ -366,6 +389,51 @@
     camera.targetX = -p.x; camera.targetY = -p.y;
     if (instant){ camera.offsetX = camera.targetX; camera.offsetY = camera.targetY; }
   }
+
+  // --- Minimal console tests ---
+  function runTests(){
+    const results = [];
+    const centerX = canvas.clientWidth * 0.5;
+    const centerY = canvas.clientHeight * 0.42;
+    const worldToScreen = (gx,gy)=>{
+      const p = isoProject(gx,gy,0);
+      return {
+        x: centerX + (p.x + camera.offsetX) * camera.zoom,
+        y: centerY + (p.y + camera.offsetY) * camera.zoom
+      };
+    };
+    const assert = (name, cond)=> results.push({ test:name, pass:!!cond });
+
+    // Test 1: projection round-trip on several tiles
+    [[player.x,player.y],[0,0],[MAP_W-1,MAP_H-1],[4,7]].forEach(([gx,gy],i)=>{
+      const s = worldToScreen(gx,gy);
+      const t = screenToTile(s.x, s.y);
+      const ok = Math.abs(t.x-gx)<=1 && Math.abs(t.y-gy)<=1; // tolerate rounding
+      assert(`roundtrip_${i} (${gx},${gy})`, ok);
+    });
+
+    // Test 2: bfsPath respects height and adjacency when a path exists
+    const path = bfsPath(player.x, player.y, 0, 0);
+    let ok2 = true;
+    for(let i=1;i<path.length;i++){
+      const [ax,ay]=path[i-1], [bx,by]=path[i];
+      const adj = Math.abs(ax-bx)+Math.abs(ay-by)===1;
+      const hOK = Math.abs(map[by][bx]-map[ay][ax])<=1;
+      ok2 = ok2 && adj && hOK;
+    }
+    // Allow empty path due to terrain; if empty, mark as pass but note length
+    assert(`bfs_height_adjacency_len=${path.length}`, ok2);
+
+    // Test 3: clamp
+    assert('clamp_low', clamp(-5,0,2)===0);
+    assert('clamp_mid', clamp(1,0,2)===1);
+    assert('clamp_high', clamp(5,0,2)===2);
+
+    console.table(results);
+  }
+
+  // Run tests after initial centering so transforms are valid
+  runTests();
 })();
 </script>
 </body>
