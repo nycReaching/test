@@ -1,443 +1,269 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-  <title>Isometric Voxel UI — Mobile First</title>
+  <title>Isometric Voxel Grid — Mobile RPG UI</title>
   <style>
     /*
-      Simple, mobile‑first, portrait isometric voxel UI.
-      Pure HTML/CSS/JS. No libraries. Single file.
-    */:root {
-  /* Base size. Tweak for different looks. */
-  --tile: 28px;              /* half-height diamond */
-  --tileW: calc(var(--tile) * 2);
-  --tileH: var(--tile);
-  --halfW: calc(var(--tile));
-  --halfH: calc(var(--tile) * 0.5);
-  --elev:  calc(var(--tile) * 0.5);  /* side wall thickness */
+      Simple isometric, voxel-like grid with a 3D player.
+      Mobile-first, portrait. Pure HTML/CSS/JS. No libraries.
+    */
 
-  /* Colors */
-  --hud-bg: #0f1220cc;
-  --hud-stroke: #2a2f4a;
-  --hud-text: #e7eaf7;
-  --btn-bg: #1d2340;
-  --btn-stroke: #3a4170;
-  --btn-active: #2a3360;
+    :root{
+      /* Tile geometry */
+      --tile: 24px;              /* half-height of diamond */
+      --tileW: calc(var(--tile) * 2);
+      --tileH: var(--tile);
+      --halfW: var(--tile);
+      --halfH: calc(var(--tile) * 0.5);
+      --elev:  calc(var(--tile) * 0.55); /* visible wall height */
 
-  --safe-top: env(safe-area-inset-top);
-  --safe-bottom: env(safe-area-inset-bottom);
-  --safe-left: env(safe-area-inset-left);
-  --safe-right: env(safe-area-inset-right);
-}
+      /* Grid size */
+      --cols: 9;
+      --rows: 11;
 
-html, body { height: 100%; }
-body {
-  margin: 0;
-  background: radial-gradient(120% 120% at 50% 0%, #0a0d1e, #060812 70%);
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, sans-serif;
-  color: var(--hud-text);
-  overflow: hidden;
-  touch-action: manipulation;
-  -webkit-user-select: none; user-select: none;
-}
+      /* Colors */
+      --bg1: #090c18;
+      --bg2: #070a14;
+      --hud: #0f142b;          
+      --hud-stroke:#263057;
+      --hud-text:#e6ecff;
+      --grass: 145 45% 52%;
+      --grass-l: 145 45% 40%;
+      --grass-r: 145 45% 45%;
 
-/* Layout */
-#app {
-  position: fixed;
-  inset: 0;
-  display: grid;
-  grid-template-rows: auto 1fr auto;
-  height: 100dvh; /* mobile viewport units */
-  padding: calc(var(--safe-top) + 8px) calc(var(--safe-right) + 8px) calc(var(--safe-bottom) + 8px) calc(var(--safe-left) + 8px);
-  gap: 6px;
-}
+      --player-top: 15 85% 60%;
+      --player-left: 15 85% 40%;
+      --player-right: 15 85% 48%;
 
-.hud {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: var(--hud-bg);
-  border: 1px solid var(--hud-stroke);
-  border-radius: 14px;
-  padding: 10px 12px;
-  box-shadow: 0 6px 18px #0007;
-}
+      --player-top2: 210 80% 62%;
+      --player-left2: 210 80% 40%;
+      --player-right2: 210 80% 48%;
 
-.hud .left, .hud .right { display: flex; align-items: center; gap: 10px; }
-.hearts { display: flex; gap: 6px; align-items: center; }
-.heart {
-  width: 16px; height: 14px; position: relative;
-  background: #ff4573;
-  transform: rotate(-45deg);
-  border-radius: 3px 0 6px 0;
-  box-shadow: 0 2px 0 #a41f3f inset;
-}
-.heart:before, .heart:after { content: ""; position: absolute; background: #ff4573; border-radius: 50%; }
-.heart:before { width: 16px; height: 16px; left: -8px; top: -2px; box-shadow: 0 2px 0 #a41f3f inset; }
-.heart:after  { width: 16px; height: 16px; left: 0; top: -10px; box-shadow: 0 2px 0 #a41f3f inset; }
+      --safe-top: env(safe-area-inset-top);
+      --safe-bottom: env(safe-area-inset-bottom);
+      --safe-left: env(safe-area-inset-left);
+      --safe-right: env(safe-area-inset-right);
+    }
 
-.inventory { display: flex; gap: 8px; }
-.slot { width: 28px; height: 28px; border-radius: 7px; background: #12162c; border: 1px solid #31365d; box-shadow: inset 0 2px 0 #0b0f25, 0 4px 8px #0006; position: relative; }
-.slot.selected { outline: 2px solid #69e0ff; outline-offset: 2px; }
+    html,body{height:100%}
+    body{
+      margin:0;
+      background: radial-gradient(120% 100% at 50% 0%, var(--bg1), var(--bg2));
+      color: var(--hud-text);
+      font-family: system-ui, -apple-system, Segoe UI, Inter, Roboto, Arial, sans-serif;
+      overflow:hidden;
+      -webkit-user-select:none; user-select:none;
+      touch-action: manipulation;
+    }
 
-/* Viewport */
-#viewport {
-  position: relative;
-  overflow: hidden;
-  border-radius: 16px;
-  border: 1px solid var(--hud-stroke);
-  background: linear-gradient(#0b0f24, #0a0d21);
-  box-shadow: inset 0 0 80px #000a;
-}
+    #app{
+      position:fixed; inset:0;
+      padding: calc(var(--safe-top) + 8px) calc(var(--safe-right) + 8px) calc(var(--safe-bottom) + 8px) calc(var(--safe-left) + 8px);
+      display:grid; grid-template-rows:auto 1fr auto; gap:8px; height:100dvh;
+    }
 
-/* World anchor centered in the viewport */
-#world {
-  --zoom: 1.0;
-  position: absolute;
-  left: 50%; top: 50%;
-  transform: translate(-50%, -50%) translate(var(--ox, 0px), var(--oy, 0px)) scale(var(--zoom));
-  transform-origin: center center;
-  will-change: transform;
-}
+    .hud{display:flex; align-items:center; justify-content:space-between; background:var(--hud); border:1px solid var(--hud-stroke); border-radius:14px; padding:10px 12px; box-shadow:0 6px 18px #0007}
+    .hud .left,.hud .right{display:flex; gap:10px; align-items:center}
+    .badge{background:#0c1230; border:1px solid var(--hud-stroke); border-radius:999px; padding:6px 10px; font-weight:700}
 
-/* Voxel: composed of top, left, right faces */
-.voxel {
-  position: absolute;
-  transform: translate(
-    calc((var(--x) - var(--y)) * var(--halfW)),
-    calc((var(--x) + var(--y)) * var(--halfH) - var(--z) * var(--elev))
-  );
-  transform-origin: top left;
-  filter: drop-shadow(0 8px 10px #0007);
-}
+    #viewport{position:relative; border:1px solid var(--hud-stroke); border-radius:16px; overflow:hidden; background:#0a0f24; box-shadow:inset 0 0 80px #000a}
 
-.voxel .top {
-  width: var(--tileW); height: var(--tileH);
-  background: hsl(var(--hue, 145) 45% 55%);
-  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
-  box-shadow: inset 0 1px 0 #ffffff30, inset 0 -2px 0 #00000020;
-}
+    /* World anchor */
+    #world{ position:absolute; left:50%; top:50%; transform: translate(-50%, -50%) translate(var(--ox,0px), var(--oy,0px)); transform-origin:center; }
 
-.voxel .left, .voxel .right {
-  position: absolute; top: calc(var(--tileH) * 0.5);
-  height: var(--elev);
-  box-shadow: inset 0 2px 0 #00000020;
-}
-.voxel .left  { left: 0; width: var(--halfW);  background: hsl(var(--hue, 145) 45% 34%); clip-path: polygon(0 0, 100% 0, 100% 100%, 0 78%); }
-.voxel .right { left: var(--halfW); width: var(--halfW); background: hsl(var(--hue, 145) 45% 40%); clip-path: polygon(0 0, 100% 0, 100% 78%, 0 100%); }
+    /* Voxel block */
+    .voxel{ position:absolute; transform: translate(calc((var(--x) - var(--y)) * var(--halfW)), calc((var(--x) + var(--y)) * var(--halfH) - var(--z) * var(--elev))); filter: drop-shadow(0 8px 10px #0007); }
+    .top{ width:var(--tileW); height:var(--tileH); clip-path:polygon(50% 0, 100% 50%, 50% 100%, 0 50%); background: hsl(var(--hTop)); box-shadow: inset 0 1px 0 #ffffff30, inset 0 -2px 0 #00000025; }
+    .left,.right{ position:absolute; top:calc(var(--tileH) * 0.5); height:var(--elev); box-shadow: inset 0 2px 0 #00000022; }
+    .left { left:0; width:var(--halfW); clip-path: polygon(0 0, 100% 0, 100% 100%, 0 78%); background: hsl(var(--hLeft)); }
+    .right{ left:var(--halfW); width:var(--halfW); clip-path: polygon(0 0, 100% 0, 100% 78%, 0 100%); background: hsl(var(--hRight)); }
 
-/* Player avatar as a smaller, bright voxel */
-.player { --scale: 0.8; }
-.player .top   { background: hsl(15 85% 60%); }
-.player .left  { background: hsl(15 85% 38%); }
-.player .right { background: hsl(15 85% 46%); }
-.player { transform: translate(
-    calc((var(--x) - var(--y)) * var(--halfW)),
-    calc((var(--x) + var(--y)) * var(--halfH) - var(--z) * var(--elev))
-  ) scale(var(--scale)); transform-origin: center bottom; }
+    /* Ground uses grass palette */
+    .grass{ --hTop: var(--grass); --hLeft: var(--grass-l); --hRight: var(--grass-r); }
 
-/* Controls */
-.controls {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  align-items: center;
-}
+    /* Player: a 2-voxel stack for a 3D character */
+    #player .seg1{ --hTop: var(--player-top2); --hLeft: var(--player-left2); --hRight: var(--player-right2); }
+    #player .seg2{ --hTop: var(--player-top);  --hLeft: var(--player-left);  --hRight: var(--player-right); }
 
-.panel { background: var(--hud-bg); border: 1px solid var(--hud-stroke); border-radius: 14px; padding: 10px; box-shadow: 0 6px 18px #0007; }
+    /* Controls */
+    .controls{ display:grid; grid-template-columns: 1fr 1fr; gap:8px; }
+    .panel{ background:var(--hud); border:1px solid var(--hud-stroke); border-radius:14px; padding:10px; box-shadow:0 6px 18px #0007 }
 
-.dpad { display: grid; grid-template-columns: 56px 56px 56px; grid-template-rows: 56px 56px 56px; gap: 6px; justify-content: center; align-content: center; }
-.btn { border: 1px solid var(--btn-stroke); background: var(--btn-bg); border-radius: 12px; position: relative; }
-.btn:active { background: var(--btn-active); }
+    .dpad{ display:grid; grid-template-columns:64px 64px 64px; grid-template-rows:64px 64px 64px; gap:6px; justify-content:center }
+    .btn{ border:1px solid #2b3560; background:#182044; border-radius:12px; position:relative }
+    .btn:active{ background:#222a54 }
+    .arrow::before{ content:""; position:absolute; inset:0; margin:auto; width:0; height:0; border-style:solid }
+    .up.arrow::before{    border-width:0 14px 20px 14px; border-color:transparent transparent #7bc4ff transparent }
+    .down.arrow::before{  border-width:20px 14px 0 14px; border-color:#7bc4ff transparent transparent transparent }
+    .left.arrow::before{  border-width:14px 20px 14px 0; border-color:transparent #7bc4ff transparent transparent }
+    .right.arrow::before{ border-width:14px 0 14px 20px; border-color:transparent transparent transparent #7bc4ff }
 
-.arrow::before { content: ""; width: 0; height: 0; border-style: solid; position: absolute; inset: 0; margin: auto; }
-.up.arrow::before    { border-width: 0 13px 18px 13px; border-color: transparent transparent #97b6ff transparent; }
-.down.arrow::before  { border-width: 18px 13px 0 13px; border-color: #97b6ff transparent transparent transparent; }
-.left.arrow::before  { border-width: 13px 18px 13px 0; border-color: transparent #97b6ff transparent transparent; }
-.right.arrow::before { border-width: 13px 0 13px 18px; border-color: transparent transparent transparent #97b6ff; }
+    @media(orientation:landscape){#rotateHint{display:flex}}
+    #rotateHint{ display:none; position:fixed; inset:0; align-items:center; justify-content:center; background:#05070cb3; z-index:99; backdrop-filter: blur(4px) }
+    #rotateHint .box{ background:#0b1026; border:1px solid #283058; border-radius:16px; padding:16px 18px; text-align:center; font-weight:600 }
 
-.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.actionBtn { padding: 10px; border-radius: 12px; border: 1px solid var(--btn-stroke); background: linear-gradient(#1b2142, #171c38); color: #dfe6ff; font-weight: 600; }
-.actionBtn:active { background: #222850; }
-
-.zoomRow { display: flex; gap: 6px; margin-top: 6px; }
-.smallBtn { width: 44px; height: 44px; border-radius: 10px; border: 1px solid var(--btn-stroke); background: var(--btn-bg); font-size: 20px; font-weight: 700; color: #cfe2ff; }
-
-/* Orientation guard */
-@media (orientation: landscape) {
-  #rotateHint { display: flex; }
-}
-#rotateHint {
-  display: none; position: fixed; inset: 0; align-items: center; justify-content: center; background: #05070cb3; z-index: 99; backdrop-filter: blur(4px);
-  font-weight: 600; letter-spacing: 0.2px;
-}
-#rotateHint .box { background: #0b1026; border: 1px solid #283058; border-radius: 16px; padding: 16px 18px; text-align: center; box-shadow: 0 10px 24px #0008; }
-
-/* Accessibility */
-button { -webkit-tap-highlight-color: transparent; }
-
+    button{-webkit-tap-highlight-color:transparent}
   </style>
 </head>
 <body>
   <div id="app">
-    <!-- HUD -->
     <div class="hud">
       <div class="left">
-        <div class="hearts" id="hearts"></div>
-        <div id="coords" aria-live="polite" style="opacity:.8;font-size:.9rem"></div>
+        <div class="badge" id="level">Lvl 1</div>
+        <div class="badge" id="coords" aria-live="polite">x:0 y:0 z:1</div>
       </div>
       <div class="right">
-        <div class="inventory">
-          <div class="slot selected" title="Block"></div>
-          <div class="slot" title="Coming soon"></div>
-          <div class="slot" title="Coming soon"></div>
+        <div class="badge">Items: <span id="itemCount">0</span></div>
+      </div>
+    </div>
+
+    <div id="viewport">
+      <div id="world" aria-label="isometric voxel grid"></div>
+    </div>
+
+    <div class="controls">
+      <div class="panel">
+        <div class="dpad">
+          <div></div>
+          <button class="btn arrow up"    id="btnUp"    aria-label="Move up"></button>
+          <div></div>
+          <button class="btn arrow left"  id="btnLeft"  aria-label="Move left"></button>
+          <div></div>
+          <button class="btn arrow right" id="btnRight" aria-label="Move right"></button>
+          <div></div>
+          <button class="btn arrow down"  id="btnDown"  aria-label="Move down"></button>
+          <div></div>
         </div>
       </div>
-    </div><!-- Viewport / World -->
-<div id="viewport">
-  <div id="world" aria-label="isometric world"></div>
-</div>
-
-<!-- Controls -->
-<div class="controls">
-  <div class="panel">
-    <div class="dpad">
-      <div></div>
-      <button class="btn arrow up"    id="btnUp"    aria-label="Move up"></button>
-      <div></div>
-      <button class="btn arrow left"  id="btnLeft"  aria-label="Move left"></button>
-      <div></div>
-      <button class="btn arrow right" id="btnRight" aria-label="Move right"></button>
-      <div></div>
-      <button class="btn arrow down"  id="btnDown"  aria-label="Move down"></button>
-      <div></div>
-    </div>
-    <div class="zoomRow">
-      <button class="smallBtn" id="zoomOut" aria-label="Zoom out">−</button>
-      <button class="smallBtn" id="zoomIn"  aria-label="Zoom in">+</button>
+      <div class="panel">
+        <button class="btn" style="width:100%; height:64px; font-weight:700; color:#cfe2ff" id="interact">Interact</button>
+      </div>
     </div>
   </div>
 
-  <div class="panel">
-    <div class="actions">
-      <button class="actionBtn" id="place">Place</button>
-      <button class="actionBtn" id="remove">Remove</button>
-    </div>
-  </div>
-</div>
+  <div id="rotateHint"><div class="box">Rotate to portrait for best play.</div></div>
 
-  </div>  <div id="rotateHint"><div class="box">Rotate to portrait for best play.</div></div>  <script>
-    // --- Parameters ---
-    const COLS = 11;
-    const ROWS = 11;
-    const MAX_H = 4;
+  <script>
+    // --- Config ---
+    const COLS = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--cols')) || 9;
+    const ROWS = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--rows')) || 11;
 
     // --- State ---
     const state = {
-      grid: [],
-      player: { x: Math.floor(COLS/2), y: Math.floor(ROWS/2) },
-      zoom: 1.0,
-      hearts: 3
+      player: { x: Math.floor(COLS/2), y: Math.floor(ROWS/2) }, // ground z=0; player stands at z=1
+      items: new Set(),
+      collected: 0,
+      level: 1
     };
 
-    // --- Utilities ---
-    const byId = (id) => document.getElementById(id);
+    const world = document.getElementById('world');
 
-    function cssNumber(varName) {
-      return parseFloat(getComputedStyle(document.documentElement).getPropertyValue(varName));
-    }
+    function cssNumber(name){ return parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name)); }
 
-    function setupHearts(n) {
-      const wrap = byId('hearts');
-      wrap.innerHTML = '';
-      for (let i = 0; i < n; i++) {
-        const h = document.createElement('div');
-        h.className = 'heart';
-        wrap.appendChild(h);
-      }
-    }
-
-    // Build a gentle hill with noise
-    function generateGrid() {
-      const cx = (COLS - 1) / 2, cy = (ROWS - 1) / 2;
-      const grid = Array.from({ length: ROWS }, (_, y) => Array.from({ length: COLS }, (_, x) => {
-        const dx = x - cx, dy = y - cy;
-        const dist = Math.hypot(dx, dy);
-        const base = Math.max(0, 3 - dist * 0.9);
-        // small pseudo noise
-        const seed = Math.sin((x + 13) * 12.9898 + (y + 71) * 78.233) * 43758.5453;
-        const noise = (seed - Math.floor(seed)) * 0.9 - 0.45;
-        const h = Math.round(base + noise);
-        return Math.max(0, Math.min(MAX_H, h));
-      }));
-      return grid;
-    }
-
-    // DOM creation for one voxel
-    function createVoxel(x, y, z, hue) {
+    // Create a voxel element with palette overrides
+    function makeVoxel(x,y,z, hTop, hLeft, hRight){
       const v = document.createElement('div');
       v.className = 'voxel';
       v.style.setProperty('--x', x);
       v.style.setProperty('--y', y);
       v.style.setProperty('--z', z);
-      v.style.setProperty('--hue', hue);
-
-      const top = document.createElement('div');
-      top.className = 'top';
-      const left = document.createElement('div');
-      left.className = 'left';
-      const right = document.createElement('div');
-      right.className = 'right';
-
-      v.append(top, left, right);
+      if (hTop)  v.style.setProperty('--hTop', hTop);
+      if (hLeft) v.style.setProperty('--hLeft', hLeft);
+      if (hRight)v.style.setProperty('--hRight',hRight);
+      v.appendChild(document.createElement('div')).className = 'top';
+      v.appendChild(document.createElement('div')).className = 'left';
+      v.appendChild(document.createElement('div')).className = 'right';
       return v;
     }
 
-    function tileHue(x, y) {
-      // Alternate hues for visual depth
-      const base = 140; // greenish grass
-      const offset = ((x + y) % 2) ? 6 : 0;
-      return base + offset;
-    }
-
-    // Build the entire scene
-    function buildWorld() {
-      const world = byId('world');
+    function buildGround(){
       world.innerHTML = '';
-
-      // Compute offset to center the grid visually
       const tile = cssNumber('--tile');
-      const tileW = tile * 2;
-      const tileH = tile;
-      const ox = -((COLS - ROWS) * (tileW / 4)); // center X
-      const oy = -(((COLS + ROWS - 2) * (tileH / 4)) - 12); // center Y, slight lift
+      const ox = -((COLS - ROWS) * (tile));
+      const oy = -(((COLS + ROWS) * (tile * 0.5)) - 10);
       world.style.setProperty('--ox', ox + 'px');
       world.style.setProperty('--oy', oy + 'px');
 
-      // Draw ground by columns as stacked voxels
-      for (let y = 0; y < ROWS; y++) {
-        for (let x = 0; x < COLS; x++) {
-          const h = state.grid[y][x];
-          const hue = tileHue(x, y);
-          for (let z = 0; z < h; z++) {
-            world.appendChild(createVoxel(x, y, z, hue));
-          }
+      // one layer of grass voxels
+      for(let y=0;y<ROWS;y++){
+        for(let x=0;x<COLS;x++){
+          const g = makeVoxel(x,y,0);
+          g.classList.add('grass');
+          world.appendChild(g);
         }
       }
 
-      // Add player
-      const player = document.createElement('div');
-      player.id = 'player';
-      player.className = 'voxel player';
-      world.appendChild(player);
+      // player is two voxels stacked at z=1 and z=2
+      const p = document.createElement('div');
+      p.id = 'player';
+      p.appendChild(makeVoxel(state.player.x, state.player.y, 1));
+      p.lastChild.classList.add('seg1');
+      p.appendChild(makeVoxel(state.player.x, state.player.y, 2));
+      p.lastChild.classList.add('seg2');
+      world.appendChild(p);
 
-      updatePlayer();
       updateHUD();
     }
 
-    function updatePlayer() {
-      const player = byId('player');
-      const { x, y } = state.player;
-      const z = (state.grid[y]?.[x] ?? 0) + 1; // stand on top
-      player.style.setProperty('--x', x);
-      player.style.setProperty('--y', y);
-      player.style.setProperty('--z', z);
-      // rebuild faces if missing (first build)
-      if (!player.firstChild) {
-        player.appendChild(document.createElement('div')).className = 'top';
-        player.appendChild(document.createElement('div')).className = 'left';
-        player.appendChild(document.createElement('div')).className = 'right';
-      }
-      byId('coords').textContent = `x:${x} y:${y} z:${z}`;
+    function updatePlayer(){
+      const p = document.getElementById('player');
+      const [seg1, seg2] = p.children;
+      const {x,y} = state.player;
+      seg1.style.setProperty('--x', x);
+      seg1.style.setProperty('--y', y);
+      seg2.style.setProperty('--x', x);
+      seg2.style.setProperty('--y', y);
+      document.getElementById('coords').textContent = `x:${x} y:${y} z:1`;
     }
 
-    function updateHUD() {
-      setupHearts(state.hearts);
-      byId('world').style.setProperty('--zoom', state.zoom.toFixed(2));
-    }
-
-    function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
-
-    function move(dx, dy) {
-      const nx = clamp(state.player.x + dx, 0, COLS - 1);
-      const ny = clamp(state.player.y + dy, 0, ROWS - 1);
-      state.player.x = nx; state.player.y = ny;
+    function updateHUD(){
+      document.getElementById('itemCount').textContent = state.collected;
+      document.getElementById('level').textContent = `Lvl ${state.level}`;
       updatePlayer();
     }
 
-    function modifyHeight(delta) {
-      const { x, y } = state.player;
-      const cur = state.grid[y][x];
-      const next = clamp(cur + delta, 0, MAX_H);
-      if (next === cur) return;
+    function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
 
-      state.grid[y][x] = next;
-      const world = byId('world');
-
-      const hue = tileHue(x, y);
-      if (delta > 0) {
-        // add a voxel on top
-        const v = createVoxel(x, y, next - 1, hue);
-        world.insertBefore(v, byId('player')); // keep player above
-      } else {
-        // remove the top voxel for this column
-        const voxels = Array.from(world.querySelectorAll('.voxel'))
-          .filter(el => !el.classList.contains('player'))
-          .filter(el => +el.style.getPropertyValue('--x') === x && +el.style.getPropertyValue('--y') === y)
-          .sort((a, b) => +b.style.getPropertyValue('--z') - +a.style.getPropertyValue('--z'));
-        if (voxels[0]) voxels[0].remove();
-      }
+    function move(dx,dy){
+      state.player.x = clamp(state.player.x + dx, 0, COLS-1);
+      state.player.y = clamp(state.player.y + dy, 0, ROWS-1);
       updatePlayer();
     }
 
-    function setZoom(mult) {
-      state.zoom = clamp(state.zoom * mult, 0.7, 1.8);
-      updateHUD();
-    }
-
-    function bindHold(el, fn) {
-      let timer = null;
-      const start = (e) => { e.preventDefault(); fn(); timer = setInterval(fn, 160); };
-      const end = () => { if (timer) clearInterval(timer); timer = null; };
-      el.addEventListener('touchstart', start, { passive: false });
+    function bindHold(el, fn){
+      let t=null; const start=e=>{e.preventDefault(); fn(); t=setInterval(fn,150)}; const end=()=>{clearInterval(t); t=null};
+      el.addEventListener('touchstart', start, {passive:false});
       el.addEventListener('mousedown', start);
       window.addEventListener('touchend', end);
       window.addEventListener('mouseup', end);
       window.addEventListener('mouseleave', end);
     }
 
-    function initControls() {
-      bindHold(byId('btnUp'),    () => move(0, -1));
-      bindHold(byId('btnDown'),  () => move(0,  1));
-      bindHold(byId('btnLeft'),  () => move(-1, 0));
-      bindHold(byId('btnRight'), () => move( 1, 0));
+    function initControls(){
+      bindHold(document.getElementById('btnUp'),    ()=>move(0,-1));
+      bindHold(document.getElementById('btnDown'),  ()=>move(0, 1));
+      bindHold(document.getElementById('btnLeft'),  ()=>move(-1,0));
+      bindHold(document.getElementById('btnRight'), ()=>move( 1,0));
 
-      bindHold(byId('place'),  () => modifyHeight(+1));
-      bindHold(byId('remove'), () => modifyHeight(-1));
+      document.getElementById('interact').addEventListener('click', ()=>{
+        // placeholder for future item pickup logic
+      });
 
-      byId('zoomIn').addEventListener('click',  () => setZoom(1.12));
-      byId('zoomOut').addEventListener('click', () => setZoom(1/1.12));
-
-      // Optional: keyboard for desktop testing
-      window.addEventListener('keydown', (e) => {
-        const k = e.key;
-        if (k === 'ArrowUp' || k === 'w') move(0,-1);
-        else if (k === 'ArrowDown' || k === 's') move(0,1);
-        else if (k === 'ArrowLeft' || k === 'a') move(-1,0);
-        else if (k === 'ArrowRight' || k === 'd') move(1,0);
-        else if (k === '+') setZoom(1.12);
-        else if (k === '-') setZoom(1/1.12);
-        else if (k === 'q') modifyHeight(+1);
-        else if (k === 'e') modifyHeight(-1);
+      // keyboard for desktop testing
+      window.addEventListener('keydown', e=>{
+        if(e.key==='ArrowUp' || e.key==='w') move(0,-1);
+        else if(e.key==='ArrowDown' || e.key==='s') move(0,1);
+        else if(e.key==='ArrowLeft' || e.key==='a') move(-1,0);
+        else if(e.key==='ArrowRight' || e.key==='d') move(1,0);
       });
     }
 
-    // --- Bootstrap ---
-    (function main() {
-      state.grid = generateGrid();
-      setupHearts(state.hearts);
-      buildWorld();
+    (function main(){
+      buildGround();
       initControls();
     })();
-  </script></body>
+  </script>
+</body>
 </html>
