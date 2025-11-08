@@ -55,6 +55,8 @@
             transform-style: preserve-3d;
             /* Add a transition for smooth movement (optional) */
             transition: transform 0.1s linear;
+            /* Set origin for scaling */
+            transform-origin: center;
         }
 
         #grid {
@@ -70,6 +72,12 @@
             box-sizing: border-box; /* Ensures border is inside the element */
             border-right: 1px solid #333;
             border-bottom: 1px solid #333;
+            /* Add a subtle feedback on tap */
+            transition: background-color 0.1s;
+        }
+
+        .grid-cell:active {
+            background-color: rgba(255, 255, 255, 0.2);
         }
 
         #player {
@@ -87,62 +95,7 @@
             transition: transform 0.1s linear;
         }
 
-        /* --- Control Area --- */
-        #controls {
-            /* This area will not grow, but will not shrink below its content */
-            flex-shrink: 0;
-            padding: 20px;
-            box-sizing: border-box;
-            background-color: #111;
-            border-top: 1px solid #333;
-            
-            /* Center the D-pad */
-            display: grid;
-            place-items: center;
-        }
-
-        .d-pad {
-            display: grid;
-            grid-template-areas:
-                ". up ."
-                "left . right"
-                ". down .";
-            grid-template-columns: 70px 70px 70px;
-            grid-template-rows: 70px 70px 70px;
-            gap: 5px;
-        }
-
-        .control-btn {
-            background-color: #444;
-            border: 1px solid #666;
-            border-radius: 12px;
-            
-            /* Center the arrow icon */
-            display: grid;
-            place-items: center;
-            
-            font-size: 28px;
-            font-weight: bold;
-            color: #fff;
-            
-            /* Prevents text selection on repeated taps */
-            user-select: none;
-            
-            /* Makes it feel responsive */
-            cursor: pointer;
-            transition: background-color 0.1s;
-        }
-
-        /* Active state for tapping */
-        .control-btn:active {
-            background-color: #666;
-        }
-
-        /* Assign buttons to grid areas */
-        #btn-up { grid-area: up; }
-        #btn-left { grid-area: left; }
-        #btn-right { grid-area: right; }
-        #btn-down { grid-area: down; }
+        /* --- Control Area (Removed) --- */
 
     </style>
 </head>
@@ -159,26 +112,28 @@
         </div>
     </div>
 
-    <!-- Control Area: This will be fixed at the bottom -->
-    <div id="controls">
-        <div class="d-pad">
-            <div class="control-btn" id="btn-up">&uarr;</div>
-            <div class="control-btn" id="btn-left">&larr;</div>
-            <div class="control-btn"id="btn-right">&rarr;</div>
-            <div class="control-btn" id="btn-down">&darr;</div>
-        </div>
-    </div>
+    <!-- Control Area (Removed) -->
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
 
             // --- Game State & Constants ---
             const GRID_SIZE = 10; // 10x10 grid
-            let CELL_SIZE = 40; // 40px cells (will be recalculated)
+            const CELL_SIZE = 40; // 40px cells (fixed size)
             
             // Player position (1-indexed, so 1 to 10)
             let playerX = 5;
             let playerY = 5;
+
+            // --- Pan & Zoom State ---
+            let currentScale = 1.0;
+            let currentPanX = 0;
+            let currentPanY = 0;
+            let isPanning = false;
+            let lastPanX = 0;
+            let lastPanY = 0;
+            let isPinching = false;
+            let lastPinchDist = 0;
 
             // --- Element References ---
             const grid = document.getElementById('grid');
@@ -187,21 +142,13 @@
 
             // --- Initialization ---
             function initGame() {
-                // 1. Calculate optimal cell size for the viewport
-                const gameAreaWidth = gameArea.clientWidth;
-                // The isometric grid's diagonal (sqrt(2)) is the widest part.
-                // We give it 10% padding (0.9)
-                const safeDiagonalWidth = gameAreaWidth * 0.9; 
-                CELL_SIZE = Math.floor(safeDiagonalWidth / (GRID_SIZE * Math.sqrt(2)));
-
-
-                // 2. Setup Grid CSS
+                // 1. Setup Grid CSS
                 grid.style.gridTemplateColumns = `repeat(${GRID_SIZE}, ${CELL_SIZE}px)`;
                 grid.style.gridTemplateRows = `repeat(${GRID_SIZE}, ${CELL_SIZE}px)`;
                 player.style.width = `${CELL_SIZE}px`;
                 player.style.height = `${CELL_SIZE}px`;
 
-                // 3. Generate Grid Cells
+                // 2. Generate Grid Cells
                 // Clear any existing cells (for re-runs)
                 grid.innerHTML = ''; 
                 for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
@@ -209,30 +156,38 @@
                     cell.classList.add('grid-cell');
                     cell.style.width = `${CELL_SIZE}px`;
                     cell.style.height = `${CELL_SIZE}px`;
+
+                    // Store coordinates (1-indexed)
+                    const x = (i % GRID_SIZE) + 1;
+                    const y = Math.floor(i / GRID_SIZE) + 1;
+                    cell.dataset.x = x;
+                    cell.dataset.y = y;
+
+                    // Add tap listener
+                    cell.addEventListener('touchstart', (e) => {
+                        // Prevent this tap from being interpreted as a pan
+                        e.stopPropagation(); 
+                        
+                        // Only handle single taps
+                        if (e.touches.length > 1) return;
+                        
+                        // Get coords and move player
+                        const targetX = parseInt(e.currentTarget.dataset.x, 10);
+                        const targetY = parseInt(e.currentTarget.dataset.y, 10);
+                        movePlayerTo(targetX, targetY);
+                    }, { passive: true }); // passive: true for performance
+
                     grid.appendChild(cell);
                 }
 
-                // 4. Set initial player position
+                // 3. Set initial player position
                 updatePlayerPosition();
                 
-                // 5. Attach Control Listeners
-                // Use 'touchstart' for immediate mobile response
-                document.getElementById('btn-up').addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    movePlayer(0, -1);
-                });
-                document.getElementById('btn-down').addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    movePlayer(0, 1);
-                });
-                document.getElementById('btn-left').addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    movePlayer(-1, 0);
-                });
-                document.getElementById('btn-right').addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    movePlayer(1, 0);
-                });
+                // 4. Attach Pan/Zoom Listeners to game area
+                gameArea.addEventListener('touchstart', onTouchStart);
+                gameArea.addEventListener('touchmove', onTouchMove, { passive: false }); // Need false to preventDefault
+                gameArea.addEventListener('touchend', onTouchEnd);
+                gameArea.addEventListener('touchcancel', onTouchEnd);
             }
 
             // --- Game Logic ---
@@ -251,19 +206,16 @@
             }
 
             /**
-             * Moves the player by a delta (dx, dy) and updates the view.
-             * dx: Change in X (-1, 0, or 1)
-             * dy: Change in Y (-1, 0, or 1)
+             * Moves the player to a specific (x, y) coordinate.
+             * x: Target X (1 to 10)
+             * y: Target Y (1 to 10)
              */
-            function movePlayer(dx, dy) {
-                const newX = playerX + dx;
-                const newY = playerY + dy;
-
+            function movePlayerTo(x, y) {
                 // Boundary Check: Ensure the new position is within the grid (1 to GRID_SIZE)
-                if (newX >= 1 && newX <= GRID_SIZE && newY >= 1 && newY <= GRID_SIZE) {
+                if (x >= 1 && x <= GRID_SIZE && y >= 1 && y <= GRID_SIZE) {
                     // Valid move: Update state
-                    playerX = newX;
-                    playerY = newY;
+                    playerX = x;
+                    playerY = y;
                     
                     // Update the visual position
                     updatePlayerPosition();
@@ -271,25 +223,94 @@
                 // If it's not a valid move, do nothing.
             }
             
-            // --- Prevent double-tap zoom on controls ---
-            // This is a common issue on mobile web games.
-            document.getElementById('controls').addEventListener('touchstart', (e) => {
-                // Only prevent default if tapping a button
-                if (e.target.classList.contains('control-btn')) {
-                    e.preventDefault();
+            // --- Pan & Zoom Functions ---
+
+            /**
+             * Applies current pan and scale to the iso-wrapper.
+             */
+            function updateWrapperTransform() {
+                const wrapper = document.getElementById('iso-wrapper');
+                wrapper.style.transform = 
+                    `translate(${currentPanX}px, ${currentPanY}px) ` +
+                    `rotateX(60deg) rotateZ(-45deg) ` +
+                    `scale(${currentScale})`;
+            }
+
+            /**
+             * Calculates distance between two touch points.
+             */
+            function getDist(touch1, touch2) {
+                const dx = touch1.clientX - touch2.clientX;
+                const dy = touch1.clientY - touch2.clientY;
+                return Math.sqrt(dx * dx + dy * dy);
+            }
+
+            function onTouchStart(e) {
+                if (e.touches.length === 1) {
+                    // Start Panning
+                    isPanning = true;
+                    lastPanX = e.touches[0].clientX;
+                    lastPanY = e.touches[0].clientY;
+                } else if (e.touches.length === 2) {
+                    // Start Pinching
+                    isPinching = true;
+                    isPanning = false; // Stop panning when pinch starts
+                    lastPinchDist = getDist(e.touches[0], e.touches[1]);
                 }
-            }, { passive: false });
+            }
+
+            function onTouchMove(e) {
+                // Prevent default browser scroll/zoom
+                e.preventDefault(); 
+
+                if (isPinching && e.touches.length === 2) {
+                    // Handle Pinch
+                    const newDist = getDist(e.touches[0], e.touches[1]);
+                    const deltaDist = newDist - lastPinchDist;
+                    
+                    // Adjust scale (zooming in/out)
+                    // The 0.005 is a sensitivity multiplier, adjust as needed
+                    currentScale += deltaDist * 0.005; 
+                    
+                    // Add constraints to scale
+                    if (currentScale < 0.5) currentScale = 0.5;
+                    if (currentScale > 3.0) currentScale = 3.0;
+
+                    lastPinchDist = newDist;
+                    updateWrapperTransform();
+
+                } else if (isPanning && e.touches.length === 1) {
+                    // Handle Pan
+                    const newX = e.touches[0].clientX;
+                    const newY = e.touches[0].clientY;
+
+                    const deltaX = newX - lastPanX;
+                    const deltaY = newY - lastPanY;
+
+                    currentPanX += deltaX;
+                    currentPanY += deltaY;
+
+                    lastPanX = newX;
+                    lastPanY = newY;
+                    updateWrapperTransform();
+                }
+            }
+
+            function onTouchEnd(e) {
+                if (e.touches.length < 2) {
+                    isPinching = false;
+                }
+                if (e.touches.length < 1) {
+                    isPanning = false;
+                }
+            }
+            
+            // --- (Removed) Prevent double-tap zoom on controls ---
 
             // Start the game
             initGame();
 
-            // --- Handle Resize / Orientation Change ---
-            let resizeTimer;
-            window.addEventListener('resize', () => {
-                // Debounce resize event to avoid spamming initGame
-                clearTimeout(resizeTimer);
-                resizeTimer = setTimeout(initGame, 100);
-            });
+            // --- (Removed) Handle Resize / Orientation Change ---
         });
     </script>
 </body>
