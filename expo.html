@@ -43,8 +43,6 @@
             display: grid;
             place-items: center;
             overflow: hidden;
-            
-            /* REMOVED: perspective: 800px; (Moved to #iso-wrapper) */
         }
 
         #pan-zoom-wrapper {
@@ -61,7 +59,6 @@
             transform-style: preserve-3d;
             /* MOVED from #game-area: Adds 3D perspective to this element */
             perspective: 800px;
-            /* REMOVED: transform-origin: center; (Moved to #pan-zoom-wrapper) */
         }
 
         #grid {
@@ -97,7 +94,7 @@
             transform: translateZ(2px);
             
             /* Smooth movement - Slower and smoother */
-            transition: transform 0.3s ease-in-out;
+            transition: transform 0.5s ease-in-out; /* Increased to 0.5s for slower travel */
         }
 
         /* --- Control Area (Removed) --- */
@@ -123,12 +120,16 @@
         document.addEventListener('DOMContentLoaded', () => {
 
             // --- Game State & Constants ---
-            const GRID_SIZE = 10; // 10x10 grid
-            const CELL_SIZE = 40; // 40px cells (fixed size)
+            const GRID_SIZE = 15; // Increased grid size to 15x15
+            const CELL_SIZE = 60; // Increased cell size to 60px
             
-            // Player position (1-indexed, so 1 to 10)
-            let playerX = 5;
-            let playerY = 5;
+            // Player position (1-indexed, so 1 to GRID_SIZE)
+            let playerX = Math.floor(GRID_SIZE / 2); // Center player initially
+            let playerY = Math.floor(GRID_SIZE / 2);
+
+            // Emojis for the grid (static list)
+            const EMOJIS = ['🚀', '🌲', '⭐', '💎', '🔑', '💡', '💰', '🛡️', '⚔️'];
+            const EMOJI_COUNT = 5;
 
             // --- Pan & Zoom State ---
             let currentScale = 1.0;
@@ -153,8 +154,20 @@
                 player.style.width = `${CELL_SIZE}px`;
                 player.style.height = `${CELL_SIZE}px`;
 
-                // 2. Generate Grid Cells
-                // Clear any existing cells (for re-runs)
+                // 2. Determine random emoji positions
+                const emojiPositions = new Set();
+                while (emojiPositions.size < EMOJI_COUNT) {
+                    // Generate position from 1 to GRID_SIZE
+                    const x = Math.floor(Math.random() * GRID_SIZE) + 1;
+                    const y = Math.floor(Math.random() * GRID_SIZE) + 1;
+                    // Don't place an emoji where the player starts
+                    if (x !== playerX || y !== playerY) {
+                        emojiPositions.add(`${x},${y}`);
+                    }
+                }
+                const emojiArray = Array.from(emojiPositions);
+
+                // 3. Generate Grid Cells and Emojis
                 grid.innerHTML = ''; 
                 for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
                     const cell = document.createElement('div');
@@ -167,6 +180,21 @@
                     const y = Math.floor(i / GRID_SIZE) + 1;
                     cell.dataset.x = x;
                     cell.dataset.y = y;
+
+                    // Add emoji if position matches
+                    if (emojiPositions.has(`${x},${y}`)) {
+                        const randomIndex = Math.floor(Math.random() * EMOJIS.length);
+                        // Center the emoji and lift it with translateZ(5px)
+                        cell.innerHTML = `
+                            <span style="
+                                font-size: ${CELL_SIZE * 0.5}px; 
+                                display: block; 
+                                text-align: center; 
+                                line-height: ${CELL_SIZE}px;
+                                transform: translateZ(5px);
+                                user-select: none;
+                            ">${EMOJIS[randomIndex]}</span>`;
+                    }
 
                     // Add tap listener
                     cell.addEventListener('touchstart', (e) => {
@@ -185,10 +213,10 @@
                     grid.appendChild(cell);
                 }
 
-                // 3. Set initial player position
+                // 4. Set initial player position
                 updatePlayerPosition();
                 
-                // 4. Attach Pan/Zoom Listeners to game area
+                // 5. Attach Pan/Zoom Listeners to game area
                 gameArea.addEventListener('touchstart', onTouchStart);
                 gameArea.addEventListener('touchmove', onTouchMove, { passive: false }); // Need false to preventDefault
                 gameArea.addEventListener('touchend', onTouchEnd);
@@ -212,8 +240,8 @@
 
             /**
              * Moves the player to a specific (x, y) coordinate.
-             * x: Target X (1 to 10)
-             * y: Target Y (1 to 10)
+             * x: Target X (1 to GRID_SIZE)
+             * y: Target Y (1 to GRID_SIZE)
              */
             function movePlayerTo(x, y) {
                 // Boundary Check: Ensure the new position is within the grid (1 to GRID_SIZE)
@@ -310,12 +338,8 @@
                 }
             }
             
-            // --- (Removed) Prevent double-tap zoom on controls ---
-
             // Start the game
             initGame();
-
-            // --- (Removed) Handle Resize / Orientation Change ---
         });
     </script>
 </body>
