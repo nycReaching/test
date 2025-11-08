@@ -53,8 +53,8 @@
             /* This is the isometric transform: tilt forward, then rotate */
             transform: rotateX(60deg) rotateZ(-45deg);
             transform-style: preserve-3d;
-            /* Add a transition for smooth movement (optional) */
-            transition: transform 0.1s linear;
+            /* REMOVED: transition: transform 0.1s linear; */
+            /* This makes panning/zooming instant and responsive */
             /* Set origin for scaling */
             transform-origin: center;
         }
@@ -91,8 +91,8 @@
             /* Lifts the player slightly above the grid lines */
             transform: translateZ(2px);
             
-            /* Smooth movement */
-            transition: transform 0.1s linear;
+            /* Smooth movement - Slower and smoother */
+            transition: transform 0.3s ease-in-out;
         }
 
         /* --- Control Area (Removed) --- */
