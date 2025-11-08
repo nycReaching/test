@@ -3,396 +3,365 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voxel Isometric Game UI</title>
+    <title>Isometric Emoji Collector</title>
     <style>
-        body {
+        * {
             margin: 0;
             padding: 0;
-            background-color: #2c3e50;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #2a3f5f, #1e2a3a);
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
             display: flex;
             flex-direction: column;
+            touch-action: none;
+            user-select: none;
+        }
+
+        .game-header {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            text-align: center;
+            border-bottom: 2px solid #7dd181;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.5);
+            z-index: 100;
+        }
+
+        .game-header h1 {
+            font-size: 16px;
+            color: #7dd181;
+            text-shadow: 2px 2px #000;
+        }
+
+        .game-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 5px;
+            font-size: 12px;
+        }
+
+        .stat {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 3px 8px;
+            border-radius: 10px;
+            color: #a0d0ff;
+        }
+
+        .game-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            display: flex;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            font-family: 'Courier New', monospace;
-            overflow: hidden;
-            touch-action: none; /* Prevent default touch behaviors */
         }
 
-        #game-container {
-            width: 100vw;
-            height: 100vh;
-            max-width: 400px; /* Portrait mobile constraint */
-            max-height: 800px;
+        .game-scene {
+            width: 90%;
+            height: 70%;
             position: relative;
-            background: linear-gradient(180deg, #34495e 0%, #1a252f 100%);
-            overflow: hidden;
+            transform: rotateX(60deg) rotateZ(45deg);
+            transform-style: preserve-3d;
+            perspective: 1000px;
         }
 
-        #isometric-map {
+        .voxel-grid {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotateX(60deg) rotateZ(45deg) scale(1);
-            width: 500px; /* Larger grid area */
-            height: 500px;
-            perspective: 1000px;
-            transition: transform 0.3s ease;
-            will-change: transform;
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(20, 1fr);
+            grid-template-rows: repeat(20, 1fr);
+            gap: 1px;
         }
 
         .grid-cell {
-            position: absolute;
-            width: 40px;
-            height: 20px;
-            background: linear-gradient(45deg, #8b4513 0%, #a0522d 50%, #8b4513 100%);
-            border: 2px solid #654321;
-            box-shadow: 
-                inset 0 2px 4px rgba(139, 69, 19, 0.5),
-                inset 0 -2px 4px rgba(0, 0, 0, 0.3),
-                2px 2px 4px rgba(0, 0, 0, 0.5);
-            transform-style: preserve-3d;
-            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s;
+            position: relative;
+            min-height: 12px;
         }
 
-        .grid-cell::before {
-            content: '';
+        .grid-cell:hover {
+            background: rgba(125, 209, 129, 0.3);
+        }
+
+        .character {
             position: absolute;
-            top: 0;
+            font-size: 24px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 10;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.8));
+        }
+
+        .emoji-item {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 18px;
+            animation: float 2s ease-in-out infinite;
+            filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.6));
+            pointer-events: none;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+            50% { transform: translate(-50%, -50%) translateY(-5px); }
+        }
+
+        @keyframes collect {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(2) rotate(360deg); opacity: 0; }
+        }
+
+        .emoji-item.collected {
+            animation: collect 0.5s ease-out forwards;
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(0,0,0,0.2) 100%);
-            border-radius: 2px;
+            right: 0;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 15px 10px;
+            border-top: 2px solid #7dd181;
+            backdrop-filter: blur(10px);
         }
 
-        .grid-cell::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 30px;
-            height: 10px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 50%;
-            filter: blur(1px);
+        .directional-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            max-width: 180px;
+            margin: 0 auto 10px;
         }
 
-        /* Dynamically positioned via JS for larger grid */
-
-        #player-block {
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(45deg, #ff6b6b 0%, #ee5a52 100%);
-            border: 2px solid #c0392b;
-            box-shadow: 
-                inset 0 4px 8px rgba(255, 107, 107, 0.3),
-                inset 0 -4px 8px rgba(0, 0, 0, 0.2),
-                4px 4px 8px rgba(0, 0, 0, 0.4),
-                0 0 10px rgba(255, 107, 107, 0.5);
-            transform-style: preserve-3d;
-            z-index: 100;
-            transition: all 0.3s ease;
-            border-radius: 4px;
-        }
-
-        #player-block::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(0,0,0,0.3) 100%);
-            border-radius: 4px;
-        }
-
-        #player-block::after {
-            content: '';
-            position: absolute;
-            bottom: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 35px;
-            height: 15px;
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 50%;
-            filter: blur(2px);
-        }
-
-        /* Controls for mobile - improved layout to prevent cutoff */
-        #controls {
-            position: absolute;
-            bottom: 10vh; /* Use viewport height for better spacing */
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 15px;
-            padding: 10px;
-            z-index: 200;
-            pointer-events: auto; /* Ensure touchable */
-        }
-
-        .control-btn {
-            width: 70px; /* Larger for better touch targets */
-            height: 70px;
-            border-radius: 50%;
-            background: rgba(52, 73, 94, 0.8);
-            border: 2px solid #34495e;
-            color: white;
-            font-size: 28px; /* Larger font */
+        .dpad-btn {
+            background: linear-gradient(135deg, #5a7d9e, #3a5f7f);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 15px;
+            font-size: 20px;
             cursor: pointer;
-            user-select: none;
             touch-action: manipulation;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-            flex-shrink: 0; /* Prevent shrinking */
+            transition: all 0.1s;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
         }
 
-        .control-btn:active {
-            background: rgba(52, 73, 94, 1);
+        .dpad-btn:hover {
+            background: linear-gradient(135deg, #7dd181, #5cb85c);
+        }
+
+        .dpad-btn:active {
             transform: scale(0.95);
+            background: linear-gradient(135deg, #7dd181, #5cb85c);
         }
 
-        .control-vertical {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            align-items: center;
-        }
+        .dpad-btn:nth-child(1) { grid-column: 2; } /* Up */
+        .dpad-btn:nth-child(2) { grid-column: 1; grid-row: 2; } /* Left */
+        .dpad-btn:nth-child(3) { grid-column: 2; grid-row: 2; } /* Center (not used) */
+        .dpad-btn:nth-child(4) { grid-column: 3; grid-row: 2; } /* Right */
+        .dpad-btn:nth-child(5) { grid-column: 2; grid-row: 3; } /* Down */
 
-        /* HUD - refined */
-        #hud {
-            position: absolute;
-            top: 5vh;
-            left: 5vw;
-            color: #ecf0f1;
-            font-size: 16px;
-            z-index: 200;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 10px;
-            border-radius: 5px;
-            backdrop-filter: blur(5px);
-        }
-
-        /* Zoom indicator */
-        #zoom-indicator {
-            position: absolute;
-            top: 5vh;
-            right: 5vw;
-            color: #ecf0f1;
-            font-size: 14px;
-            z-index: 200;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 5px 10px;
-            border-radius: 5px;
-            backdrop-filter: blur(5px);
+        .game-info {
+            text-align: center;
+            font-size: 11px;
+            color: #7dd181;
         }
     </style>
 </head>
 <body>
-    <div id="game-container">
-        <div id="hud">
-            <div>Position: <span id="pos">1,1</span></div>
-            <div>Score: <span id="score">0</span></div>
+    <header class="game-header">
+        <h1>🎮 Isometric Emoji Collector</h1>
+        <div class="game-stats">
+            <div class="stat">Score: <span id="score">0</span></div>
+            <div class="stat">Emojis: <span id="count">0</span></div>
+            <div class="stat">Level: <span id="level">1</span></div>
         </div>
-        <div id="zoom-indicator">Zoom: 100%</div>
-        <div id="isometric-map">
-            <!-- Grid cells will be generated by JS -->
-            <!-- Player block -->
-            <div id="player-block"></div>
+    </header>
+
+    <main class="game-container">
+        <div class="game-scene" id="gameScene">
+            <div class="voxel-grid" id="grid"></div>
+            <div class="character" id="character">🤖</div>
         </div>
-        <!-- Mobile controls - refined layout -->
-        <div id="controls">
-            <div class="control-vertical">
-                <div class="control-btn" data-dir="up">↑</div>
-                <div class="control-vertical">
-                    <div class="control-btn" data-dir="left">←</div>
-                    <div style="width: 70px; height: 70px;"></div> <!-- Spacer for centering -->
-                    <div class="control-btn" data-dir="right">→</div>
-                </div>
-                <div class="control-btn" data-dir="down">↓</div>
-            </div>
+    </main>
+
+    <div class="controls">
+        <div class="directional-pad">
+            <button class="dpad-btn" id="moveUp">⬆️</button>
+            <button class="dpad-btn" id="moveLeft">⬅️</button>
+            <div></div>
+            <button class="dpad-btn" id="moveRight">➡️</button>
+            <button class="dpad-btn" id="moveDown">⬇️</button>
+        </div>
+        <div class="game-info">
+            Use directional pad to move and collect emojis!
         </div>
     </div>
 
     <script>
-        const gameContainer = document.getElementById('game-container');
-        const isometricMap = document.getElementById('isometric-map');
-        const player = document.getElementById('player-block');
-        const posEl = document.getElementById('pos');
-        const scoreEl = document.getElementById('score');
-        const zoomEl = document.getElementById('zoom-indicator');
-        
-        let playerPos = { x: 2, y: 2 }; // Center start for larger grid
-        let score = 0;
-        
-        const gridWidth = 7; // Larger grid
-        const gridHeight = 5;
-        const cellSizeX = 40;
-        const cellSizeY = 20;
-        
-        let camera = { x: 0, y: 0, scale: 1 }; // Camera controls
-        let mapOffsetX = 0;
-        let mapOffsetY = 0;
-        
-        // Generate grid cells
-        function generateGrid() {
-            const map = document.getElementById('isometric-map');
-            for (let y = 0; y < gridHeight; y++) {
-                for (let x = 0; x < gridWidth; x++) {
+        class IsometricGame {
+            constructor() {
+                this.grid = document.getElementById('grid');
+                this.gameScene = document.getElementById('gameScene');
+                this.character = document.getElementById('character');
+                
+                this.gridSize = 20;
+                this.cellSize = 5; // 100% / 20 cells
+                this.characterPos = { x: 10, y: 10 };
+                this.score = 0;
+                this.level = 1;
+                this.emojis = new Map();
+                this.emojiTypes = ['🌸', '🌺', '🌼', '🍄', '🌷', '🌹', '🌵', '🌴'];
+                
+                this.setupControls();
+                this.init();
+            }
+
+            init() {
+                this.createGrid();
+                this.updateCharacterPosition();
+                this.spawnEmojis();
+                this.updateStats();
+            }
+
+            createGrid() {
+                this.grid.innerHTML = '';
+                for (let i = 0; i < this.gridSize * this.gridSize; i++) {
                     const cell = document.createElement('div');
                     cell.className = 'grid-cell';
-                    // Isometric positioning
-                    const isoX = (x - y) * (cellSizeX / 2) + (gridWidth * cellSizeX / 4);
-                    const isoY = (x + y) * (cellSizeY / 2) + (gridHeight * cellSizeY / 4);
-                    cell.style.left = isoX + 'px';
-                    cell.style.top = isoY + 'px';
-                    cell.style.zIndex = gridHeight * gridWidth - (x + y * gridWidth);
-                    map.appendChild(cell);
+                    cell.dataset.index = i;
+                    this.grid.appendChild(cell);
                 }
             }
+
+            setupControls() {
+                document.getElementById('moveUp').addEventListener('click', () => this.moveCharacter(0, -1));
+                document.getElementById('moveDown').addEventListener('click', () => this.moveCharacter(0, 1));
+                document.getElementById('moveLeft').addEventListener('click', () => this.moveCharacter(-1, 0));
+                document.getElementById('moveRight').addEventListener('click', () => this.moveCharacter(1, 0));
+
+                // Keyboard support
+                document.addEventListener('keydown', (e) => {
+                    switch(e.key) {
+                        case 'ArrowUp': case 'w': this.moveCharacter(0, -1); break;
+                        case 'ArrowDown': case 's': this.moveCharacter(0, 1); break;
+                        case 'ArrowLeft': case 'a': this.moveCharacter(-1, 0); break;
+                        case 'ArrowRight': case 'd': this.moveCharacter(1, 0); break;
+                    }
+                });
+            }
+
+            moveCharacter(dx, dy) {
+                const newX = this.characterPos.x + dx;
+                const newY = this.characterPos.y + dy;
+                
+                if (newX >= 0 && newX < this.gridSize && newY >= 0 && newY < this.gridSize) {
+                    this.characterPos.x = newX;
+                    this.characterPos.y = newY;
+                    this.updateCharacterPosition();
+                    this.checkForCollection();
+                }
+            }
+
+            updateCharacterPosition() {
+                const xPercent = (this.characterPos.x * this.cellSize) + (this.cellSize / 2);
+                const yPercent = (this.characterPos.y * this.cellSize) + (this.cellSize / 2);
+                
+                this.character.style.left = `${xPercent}%`;
+                this.character.style.top = `${yPercent}%`;
+            }
+
+            spawnEmojis() {
+                // Clear existing emojis
+                this.emojis.forEach(emoji => emoji.remove());
+                this.emojis.clear();
+                
+                // Spawn 8 emojis
+                for (let i = 0; i < 8; i++) {
+                    const idx = Math.floor(Math.random() * 400);
+                    if (idx !== this.characterPos.y * 20 + this.characterPos.x) {
+                        this.placeEmoji(idx);
+                    }
+                }
+            }
+
+            placeEmoji(index) {
+                const cell = this.grid.children[index];
+                if (cell.querySelector('.emoji-item')) return; // Already has emoji
+                
+                const emoji = document.createElement('div');
+                emoji.className = 'emoji-item';
+                emoji.textContent = this.emojiTypes[Math.floor(Math.random() * this.emojiTypes.length)];
+                cell.appendChild(emoji);
+                this.emojis.set(index, emoji);
+                this.updateStats();
+            }
+
+            checkForCollection() {
+                const index = this.characterPos.y * 20 + this.characterPos.x;
+                if (this.emojis.has(index)) {
+                    const emoji = this.emojis.get(index);
+                    emoji.classList.add('collected');
+                    this.emojis.delete(index);
+                    this.score += 50;
+                    this.updateStats();
+                    
+                    // Respawn after delay
+                    setTimeout(() => this.spawnNewEmoji(), 2000);
+                }
+            }
+
+            spawnNewEmoji() {
+                const idx = Math.floor(Math.random() * 400);
+                const currentIndex = this.characterPos.y * 20 + this.characterPos.x;
+                if (!this.emojis.has(idx) && idx !== currentIndex) {
+                    this.placeEmoji(idx);
+                }
+            }
+
+            updateStats() {
+                document.getElementById('score').textContent = this.score;
+                document.getElementById('count').textContent = this.emojis.size;
+                document.getElementById('level').textContent = this.level;
+                
+                // Level up every 200 points
+                if (this.score >= this.level * 200) {
+                    this.level++;
+                    this.showLevelUp();
+                }
+            }
+
+            showLevelUp() {
+                const info = document.querySelector('.game-info');
+                info.textContent = `🎉 Level ${this.level} - New emojis unlocked! 🎉`;
+                info.style.color = '#4a9e4a';
+                
+                // Add more emoji types at higher levels
+                if (this.level === 2) this.emojiTypes.push('🍎', '🍊', '🍋');
+                if (this.level === 3) this.emojiTypes.push('💎', '🏆', '⭐');
+                
+                setTimeout(() => {
+                    info.textContent = 'Use directional pad to move and collect emojis!';
+                    info.style.color = '#7dd181';
+                }, 3000);
+            }
         }
-        
-        function updatePlayerPosition(dir) {
-            let newX = playerPos.x;
-            let newY = playerPos.y;
-            
-            switch (dir) {
-                case 'up': newY = Math.max(0, playerPos.y - 1); break;
-                case 'down': newY = Math.min(gridHeight - 1, playerPos.y + 1); break;
-                case 'left': newX = Math.max(0, playerPos.x - 1); break;
-                case 'right': newX = Math.min(gridWidth - 1, playerPos.x + 1); break;
-            }
-            
-            if (newX !== playerPos.x || newY !== playerPos.y) {
-                playerPos = { x: newX, y: newY };
-                updatePlayerVisual();
-                score += 10;
-                scoreEl.textContent = score;
-                posEl.textContent = `${newX + 1},${newY + 1}`;
-            }
-        }
-        
-        function updatePlayerVisual() {
-            const isoX = (playerPos.x - playerPos.y) * (cellSizeX / 2) + (gridWidth * cellSizeX / 4);
-            const isoY = (playerPos.x + playerPos.y) * (cellSizeY / 2) + (gridHeight * cellSizeY / 4);
-            player.style.left = (isoX * camera.scale) + 'px';
-            player.style.top = (isoY * camera.scale) + 'px';
-            player.style.transform = `scale(${camera.scale})`;
-            player.style.zIndex = 100 + (playerPos.x + playerPos.y);
-        }
-        
-        function updateCamera() {
-            isometricMap.style.transform = 
-                `translate(-50%, -50%) translate(${mapOffsetX}px, ${mapOffsetY}px) rotateX(60deg) rotateZ(45deg) scale(${camera.scale})`;
-            zoomEl.textContent = `Zoom: ${Math.round(camera.scale * 100)}%`;
-        }
-        
-        // Button event listeners
-        document.querySelectorAll('.control-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                updatePlayerPosition(btn.dataset.dir);
-            });
-            // Prevent scrolling on touch
-            btn.addEventListener('touchstart', (e) => e.stopPropagation());
-        });
-        
-        // Touch controls for camera (pan and pinch)
-        let touchStart = [];
-        let initialPinchDistance = 0;
-        let initialScale = 1;
-        let isPanning = false;
-        
-        gameContainer.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            touchStart = Array.from(e.touches);
-            if (touchStart.length === 1) {
-                isPanning = true;
-            } else if (touchStart.length === 2) {
-                initialPinchDistance = Math.hypot(
-                    touchStart[0].pageX - touchStart[1].pageX,
-                    touchStart[0].pageY - touchStart[1].pageY
-                );
-                initialScale = camera.scale;
-                isPanning = false;
-            }
-        }, { passive: false });
-        
-        gameContainer.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            const touches = Array.from(e.touches);
-            
-            if (touches.length === 1 && isPanning) {
-                // Pan
-                const deltaX = touches[0].pageX - touchStart[0].pageX;
-                const deltaY = touches[0].pageY - touchStart[0].pageY;
-                mapOffsetX += deltaX / camera.scale * 0.5; // Scaled sensitivity
-                mapOffsetY += deltaY / camera.scale * 0.5;
-                updateCamera();
-                touchStart[0] = touches[0]; // Update start for continuous pan
-            } else if (touches.length === 2 && !isPanning) {
-                // Pinch zoom
-                const currentDistance = Math.hypot(
-                    touches[0].pageX - touches[1].pageX,
-                    touches[0].pageY - touches[1].pageY
-                );
-                const scaleRatio = currentDistance / initialPinchDistance;
-                camera.scale = Math.max(0.5, Math.min(2, initialScale * scaleRatio));
-                updatePlayerVisual();
-                updateCamera();
-            }
-        }, { passive: false });
-        
-        gameContainer.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            touchStart = [];
-            isPanning = false;
-        }, { passive: false });
-        
-        // Swipe for movement (fallback if not panning over controls)
-        let swipeStartX = 0;
-        let swipeStartY = 0;
-        gameContainer.addEventListener('touchstart', (e) => {
-            if (e.target.closest('#controls')) return; // Ignore if on controls
-            swipeStartX = e.touches[0].clientX;
-            swipeStartY = e.touches[0].clientY;
-        });
-        
-        gameContainer.addEventListener('touchend', (e) => {
-            if (e.target.closest('#controls') || touchStart.length > 1) return;
-            const deltaX = e.changedTouches[0].clientX - swipeStartX;
-            const deltaY = e.changedTouches[0].clientY - swipeStartY;
-            
-            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
-                updatePlayerPosition(deltaX > 0 ? 'right' : 'left');
-            } else if (Math.abs(deltaY) > 50) {
-                updatePlayerPosition(deltaY > 0 ? 'down' : 'up');
-            }
-        });
-        
-        // Keyboard support for testing
-        document.addEventListener('keydown', (e) => {
-            switch (e.key) {
-                case 'ArrowUp': updatePlayerPosition('up'); break;
-                case 'ArrowDown': updatePlayerPosition('down'); break;
-                case 'ArrowLeft': updatePlayerPosition('left'); break;
-                case 'ArrowRight': updatePlayerPosition('right'); break;
-                case '+': case '=': camera.scale = Math.min(2, camera.scale + 0.1); updatePlayerVisual(); updateCamera(); break;
-                case '-': camera.scale = Math.max(0.5, camera.scale - 0.1); updatePlayerVisual(); updateCamera(); break;
-            }
-        });
-        
-        // Initialize
-        generateGrid();
-        updatePlayerVisual();
-        updateCamera();
+
+        // Initialize game
+        const game = new IsometricGame();
     </script>
 </body>
 </html>
