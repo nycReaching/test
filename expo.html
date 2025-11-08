@@ -174,7 +174,7 @@
 
             // --- Game State & Constants ---
             const GRID_SIZE = 10; // 10x10 grid
-            const CELL_SIZE = 40; // 40px cells
+            let CELL_SIZE = 40; // 40px cells (will be recalculated)
             
             // Player position (1-indexed, so 1 to 10)
             let playerX = 5;
@@ -183,16 +183,25 @@
             // --- Element References ---
             const grid = document.getElementById('grid');
             const player = document.getElementById('player');
+            const gameArea = document.getElementById('game-area'); // Get game area
 
             // --- Initialization ---
             function initGame() {
-                // 1. Setup Grid CSS
+                // 1. Calculate optimal cell size for the viewport
+                const gameAreaWidth = gameArea.clientWidth;
+                // The isometric grid's diagonal (sqrt(2)) is the widest part.
+                // We give it 10% padding (0.9)
+                const safeDiagonalWidth = gameAreaWidth * 0.9; 
+                CELL_SIZE = Math.floor(safeDiagonalWidth / (GRID_SIZE * Math.sqrt(2)));
+
+
+                // 2. Setup Grid CSS
                 grid.style.gridTemplateColumns = `repeat(${GRID_SIZE}, ${CELL_SIZE}px)`;
                 grid.style.gridTemplateRows = `repeat(${GRID_SIZE}, ${CELL_SIZE}px)`;
                 player.style.width = `${CELL_SIZE}px`;
                 player.style.height = `${CELL_SIZE}px`;
 
-                // 2. Generate Grid Cells
+                // 3. Generate Grid Cells
                 // Clear any existing cells (for re-runs)
                 grid.innerHTML = ''; 
                 for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
@@ -203,15 +212,27 @@
                     grid.appendChild(cell);
                 }
 
-                // 3. Set initial player position
+                // 4. Set initial player position
                 updatePlayerPosition();
                 
-                // 4. Attach Control Listeners
-                // We use 'mousedown' for quicker response than 'click'
-                document.getElementById('btn-up').addEventListener('click', () => movePlayer(0, -1));
-                document.getElementById('btn-down').addEventListener('click', () => movePlayer(0, 1));
-                document.getElementById('btn-left').addEventListener('click', () => movePlayer(-1, 0));
-                document.getElementById('btn-right').addEventListener('click', () => movePlayer(1, 0));
+                // 5. Attach Control Listeners
+                // Use 'touchstart' for immediate mobile response
+                document.getElementById('btn-up').addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    movePlayer(0, -1);
+                });
+                document.getElementById('btn-down').addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    movePlayer(0, 1);
+                });
+                document.getElementById('btn-left').addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    movePlayer(-1, 0);
+                });
+                document.getElementById('btn-right').addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    movePlayer(1, 0);
+                });
             }
 
             // --- Game Logic ---
@@ -261,6 +282,14 @@
 
             // Start the game
             initGame();
+
+            // --- Handle Resize / Orientation Change ---
+            let resizeTimer;
+            window.addEventListener('resize', () => {
+                // Debounce resize event to avoid spamming initGame
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(initGame, 100);
+            });
         });
     </script>
 </body>
