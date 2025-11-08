@@ -1,592 +1,265 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <!-- CRITICAL: This ensures the game scales correctly on mobile devices -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Voxel Grid Game</title>
-    
-    <!-- 1. Load Tailwind CSS for rapid UI styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- 2. Load Google Font (Inter) for a clean look -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    
-    <!-- 3. Custom CSS for the game's core visual style -->
-    <style>
-        /* Use the Inter font loaded above */
-        body {
-            font-family: 'Inter', sans-serif;
-        }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Isometric Grid UI</title>
+  <style>
+    :root {
+      /* JS will keep this updated as an extra fallback */
+      --vh: 1vh;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; margin: 0; background: #000; color: #fff; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
 
-        /* Force a full-height, non-scrollable body, perfect for a game */
-        html, body {
-            height: 100%;
-            overflow: hidden;
-            background-color: #111827; /* bg-gray-900 */
-        }
+    /* Use the most reliable viewport units on mobile while supporting older engines */
+    #app {
+      position: fixed;
+      inset: 0;
+      /* Prefer small viewport units that ignore browser UI expansion */
+      height: 100svh;
+      /* Fallbacks */
+      height: calc(var(--vh) * 100);
+      background: #000;
+      display: grid;
+      grid-template-rows: 1fr auto;
+    }
 
-        /* This container holds the camera's "view" */
-        .game-viewport {
-            /* This is a CSS trick to create a "perspective" view */
-            perspective: 1000px;
-            /* Prevents touch actions from scrolling the page (e.g., on iOS) */
-            touch-action: none;
-        }
+    #stage {
+      position: relative;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
 
-        /* This is the root of the 3D world. We rotate this to create the isometric view. */
-        .game-world {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform-style: preserve-3d;
-            /* The core isometric transform: rotate on X-axis, then Z-axis */
-            transform: rotateX(60deg) rotateZ(-45deg);
-            /* Smooth transitions for zooming */
-            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
+    canvas { display: block; width: 100%; height: 100%; touch-action: none; }
 
-        /* The grid container holds all tiles and objects */
-        .grid-container {
-            display: grid;
-            transform-style: preserve-3d;
-            /* Position the grid's center at the center of the game-world */
-            transform: translateX(-50%) translateY(-50%);
-            /* This makes the camera follow smoothly */
-            transition: transform 0.18s ease-in-out;
-        }
+    /* Controls */
+    .controls {
+      position: relative;
+      display: grid;
+      grid-template-areas:
+        ".  up   ."
+        "left mid right"
+        ". down .";
+      grid-template-columns: 64px 64px 64px;
+      grid-template-rows: 64px 64px 64px;
+      justify-content: center;
+      gap: 10px;
+      padding: 10px;
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
+      user-select: none;
+    }
 
-        /* A single tile on the grid */
-        .tile {
-            background-color: #374151; /* bg-gray-700 */
-            /* Add a border to define tiles */
-            border: 1px solid #4b5563; /* bg-gray-600 */
-            transform-style: preserve-3d;
-        }
+    .btn {
+      width: 64px; height: 64px; border-radius: 18px; border: 1px solid #444;
+      background: #111; color: #fff; font-size: 18px; display: grid; place-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,.6) inset, 0 4px 16px rgba(0,0,0,.4);
+      transition: transform .05s ease, background-color .1s ease, border-color .1s ease;
+    }
+    .btn:active { transform: translateY(1px) scale(0.98); background: #181818; border-color: #555; }
+    .btn:focus-visible { outline: 2px solid #888; outline-offset: 2px; }
 
-        /* This is the base for all movable objects (player, emojis) */
-        .game-object {
-            position: absolute;
-            top: 0;
-            left: 0;
-            transform-style: preserve-3d;
-            /* Smooth movement animation - this creates the "satisfying feel" */
-            transition: transform 0.2s ease-in-out;
-        }
+    .up    { grid-area: up; }
+    .down  { grid-area: down; }
+    .left  { grid-area: left; }
+    .right { grid-area: right; }
+    .mid   { grid-area: mid; opacity: .5; }
 
-        /* The player's 3D voxel model */
-        .player-model {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            transform-style: preserve-3d;
-            /* Lifts the player model 15px "up" off the tile */
-            transform: translateZ(15px);
-        }
-
-        /* This is the TOP face of the player cube */
-        .player-model .face-top {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background-color: #3b82f6; /* bg-blue-500 */
-            border: 1px solid #60a5fa; /* bg-blue-400 */
-        }
-
-        /* This is the FRONT/LEFT face of the player cube */
-        .player-model .face-front {
-            content: '';
-            position: absolute;
-            left: 0;
-            bottom: 0;
-            width: 100%;
-            height: 15px; /* This is the "thickness" of the voxel */
-            background-color: #2563eb; /* bg-blue-600 */
-            /* Position and rotate it to form the side */
-            transform-origin: 0 100%;
-            transform: rotateX(-90deg) translateY(15px);
-        }
-        
-        /* This is the RIGHT/SIDE face of the player cube */
-        .player-model .face-side {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 15px; /* This is the "thickness" of the voxel */
-            height: 100%;
-            background-color: #1d4ed8; /* bg-blue-700 */
-            /* Position and rotate it to form the other side */
-            transform-origin: 100% 0;
-            transform: rotateY(90deg) translateX(15px);
-        }
-
-        /* The emoji "billboard" model */
-        .emoji-model {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 34px; /* Emoji size (was 28px) */
-            /* This transform does two things:
-              1. Lifts the emoji 10px "up" (translateZ)
-              2. "Un-rotates" it to face the camera, creating the billboard effect
-            */
-            transform: translateZ(10px) rotateX(-60deg) rotateZ(45deg); /* was 5px */
-            /* Disable user selection on emojis */
-            user-select: none;
-            /* Transition for the "pop" effect on collection */
-            transition: all 0.3s ease;
-        }
-        
-        /* A subtle shadow projected onto the tile below */
-        .game-object-shadow {
-            position: absolute;
-            width: 80%;
-            height: 80%;
-            margin: 10%;
-            background: rgba(0, 0, 0, 0.3);
-            filter: blur(4px);
-            /* Pushes the shadow 1px "down" so it's under the object */
-            transform: translateZ(-1px);
-        }
-
-        /* Animation class for when an emoji is collected */
-        .collected {
-            transform: scale(1.5) !important; /* !important to override JS */
-            opacity: 0;
-        }
-
-        /* Keyframes for the "pop in" animation for collected emojis */
-        @keyframes pop-in {
-            0% {
-                transform: scale(0.5) translateY(10px);
-                opacity: 0;
-            }
-            70% {
-                transform: scale(1.1) translateY(0);
-                opacity: 1;
-            }
-            100% {
-                transform: scale(1);
-            }
-        }
-
-        /* Style for the emoji spans in the header */
-        #collected-display span {
-            display: inline-block;
-            animation: pop-in 0.3s ease-out;
-            margin-left: -4px; /* Overlap them slightly */
-        }
-
-    </style>
+    .legend { text-align: center; font-size: 12px; opacity: .7; margin-top: 4px; }
+  </style>
 </head>
-
-<!-- 
-  Main application body:
-  - dark theme (bg-gray-900, text-gray-100)
-  - Full-height, flex-column layout
--->
-<body class="bg-gray-900 text-gray-100 h-full">
-
-    <!-- 
-      This is the main game container.
-      - It's a flex-column, taking up the full screen height.
-      - `max-w-md` and `mx-auto` constrain it to a portrait-friendly width.
-    -->
-    <div id="game-container" class="flex flex-col h-full max-w-md mx-auto shadow-2xl bg-gray-800">
-
-        <!-- 1. Header: Score and UI -->
-        <header class="p-4 border-b border-gray-700 shadow-lg z-10">
-            <h1 class="text-2xl font-bold text-center text-blue-400">Voxel Collector</h1>
-            <div class="flex justify-between items-center mt-3">
-                <div class="text-lg">
-                    Score: <span id="score-display" class="font-bold text-green-400">0</span>
-                </div>
-                <!-- This will show the collected emojis -->
-                <div id="collected-display" class="text-2xl h-8 overflow-hidden whitespace-nowrap">
-                    <!-- Emojis will be added here by JS -->
-                </div>
-            </div>
-        </header>
-
-        <!-- 
-          2. Game Viewport: This is the "camera"
-          - `flex-grow` makes it fill all available space between header and footer.
-          - `overflow-hidden` clips the game world.
-        -->
-        <main id="game-viewport" class="game-viewport flex-grow relative overflow-hidden">
-            
-            <!-- The game world itself, which will be transformed and zoomed -->
-            <div id="game-world" class="game-world">
-                
-                <!-- The grid, which will be populated by JavaScript -->
-                <div id="grid-container" class="grid-container">
-                    <!-- Tiles, player, and emojis go here -->
-                </div>
-
-            </div>
-        </main>
-
-        <!-- 3. Footer: Controls -->
-        <footer class="p-4 border-t border-gray-700 z-10">
-            <div class="flex items-center justify-center space-x-4">
-                <span class="text-sm text-gray-400">Zoom:</span>
-                <button id="zoom-out" class="w-12 h-12 bg-gray-700 text-gray-200 rounded-full text-2xl font-bold shadow-md active:bg-gray-600 active:scale-95 transition-all">-</button>
-                <button id="zoom-in" class="w-12 h-12 bg-blue-500 text-white rounded-full text-2xl font-bold shadow-md active:bg-blue-600 active:scale-95 transition-all">+</button>
-                <button id="reset-game" class="h-12 px-4 bg-red-600 text-white rounded-lg font-semibold shadow-md active:bg-red-700 active:scale-95 transition-all">Reset</button>
-            </div>
-        </footer>
-
+<body>
+  <div id="app" role="application" aria-label="Isometric grid with movable cube">
+    <div id="stage">
+      <canvas id="game" aria-hidden="true"></canvas>
     </div>
 
-    <!-- 4. Game Logic Script -->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
+    <div class="controls" aria-label="Controls">
+      <button class="btn up"    data-move="0,-1" aria-label="Move up">▲</button>
+      <button class="btn left"  data-move="-1,0" aria-label="Move left">◄</button>
+      <div    class="btn mid"   aria-hidden="true">■</div>
+      <button class="btn right" data-move="1,0" aria-label="Move right">►</button>
+      <button class="btn down"  data-move="0,1" aria-label="Move down">▼</button>
+      <div class="legend">Tap arrows or use arrow keys</div>
+    </div>
+  </div>
 
-            // --- CONSTANTS ---
-            const GRID_SIZE = 11; // 11x11 grid
-            const TILE_SIZE_PX = 60; // Each tile is 60x60 pixels (was 50)
-            const PLAYER_MOVE_MS = 180; // 0.18s move speed (was 200)
-            const EMOJI_LIST = ['🍎', '💰', '💎', '🚀', '⭐', '🎁', '🍔', '🍕', '🦄', '🤖'];
-            const STARTING_EMOJIS = 5;
+  <script>
+    // Viewport height fallback for older mobile browsers
+    function setVH() {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    }
+    setVH();
+    window.addEventListener('resize', setVH);
+    window.addEventListener('orientationchange', () => setTimeout(setVH, 100));
 
-            // --- DOM ELEMENTS ---
-            const viewport = document.getElementById('game-viewport');
-            const gameWorld = document.getElementById('game-world');
-            const gridContainer = document.getElementById('grid-container');
-            const scoreDisplay = document.getElementById('score-display');
-            const collectedDisplay = document.getElementById('collected-display');
-            const zoomInButton = document.getElementById('zoom-in');
-            const zoomOutButton = document.getElementById('zoom-out');
-            const resetButton = document.getElementById('reset-game');
+    // Canvas setup with HiDPI scaling
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
 
-            // --- GAME STATE ---
-            let playerPos = { x: 0, y: 0 };
-            let playerEl = null; // Will hold the player's DOM element
-            let emojis = []; // Array to store { x, y, emoji, el }
-            let score = 0;
-            let collectedEmojis = [];
-            let zoomLevel = 1.0;
-            let isMoving = false; // Prevents spamming movement
-            
-            // For swipe controls
-            let touchStartX = 0;
-            let touchStartY = 0;
+    function fitCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.floor(rect.width * dpr);
+      canvas.height = Math.floor(rect.height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // draw in CSS pixels
+      draw();
+    }
 
-            // --- FUNCTIONS ---
+    // Grid configuration
+    const grid = { cols: 10, rows: 10, tileW: 64, tileH: 32 };
+    const cube = { x: 5, y: 5 };
 
-            /**
-             * Initializes or resets the entire game
-             */
-            function initGame() {
-                // Clear existing elements
-                gridContainer.innerHTML = '';
-                
-                // Reset state
-                score = 0;
-                collectedEmojis = [];
-                emojis = [];
-                playerPos = { x: Math.floor(GRID_SIZE / 2), y: Math.floor(GRID_SIZE / 2) };
-                isMoving = false;
-                
-                // Set grid size in CSS
-                gridContainer.style.gridTemplateColumns = `repeat(${GRID_SIZE}, ${TILE_SIZE_PX}px)`;
-                
-                // Create the visual grid
-                for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
-                    const tile = document.createElement('div');
-                    tile.className = 'tile';
-                    tile.style.width = `${TILE_SIZE_PX}px`;
-                    tile.style.height = `${TILE_SIZE_PX}px`;
-                    gridContainer.appendChild(tile);
-                }
+    // Screen coordinate from grid coordinate (isometric)
+    function iso(x, y) {
+      const sx = (x - y) * (grid.tileW / 2);
+      const sy = (x + y) * (grid.tileH / 2);
+      return { x: sx, y: sy };
+    }
 
-                // Spawn game objects
-                spawnPlayer();
-                for (let i = 0; i < STARTING_EMOJIS; i++) {
-                    spawnEmoji();
-                }
+    function centerForGrid() {
+      // Center the grid in the available canvas
+      const totalW = (grid.cols + grid.rows) * (grid.tileW / 2);
+      const totalH = (grid.cols + grid.rows) * (grid.tileH / 2);
+      const rect = canvas.getBoundingClientRect();
+      const cx = rect.width / 2;
+      const cy = rect.height / 2 - grid.tileH; // small lift for cube
+      return { cx, cy, totalW, totalH };
+    }
 
-                // Update UI displays
-                updateUIScore();
-                updateZoom(); // Apply initial zoom
-                updateCamera(true); // Center camera on start
-            }
+    function drawGrid() {
+      const { cx, cy } = centerForGrid();
+      ctx.save();
+      ctx.translate(cx, cy);
 
-            /**
-             * Creates the player's 3D voxel element
-             */
-            function spawnPlayer() {
-                playerEl = document.createElement('div');
-                playerEl.className = 'game-object player';
+      // Grid lines
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = 'rgba(255,255,255,0.12)';
 
-                // Add shadow
-                const shadow = document.createElement('div');
-                shadow.className = 'game-object-shadow';
-                playerEl.appendChild(shadow);
+      // Diagonals one way (constant x+y)
+      for (let k = 0; k <= grid.cols + grid.rows; k++) {
+        const start = iso(Math.max(0, k - grid.rows), Math.min(k, grid.rows));
+        const end   = iso(Math.min(k, grid.cols), Math.max(0, k - grid.cols));
+        ctx.beginPath();
+        ctx.moveTo(start.x, start.y);
+        ctx.lineTo(end.x, end.y);
+        ctx.stroke();
+      }
 
-                // Add 3D model
-                const model = document.createElement('div');
-                model.className = 'player-model';
-                model.innerHTML = `
-                    <div class="face-top"></div>
-                    <div class="face-front"></div>
-                    <div class="face-side"></div>
-                `;
-                playerEl.appendChild(model);
+      // Diagonals the other way (constant x-y)
+      for (let k = -grid.rows; k <= grid.cols; k++) {
+        const start = iso(Math.max(0, k), 0 - Math.min(0, k));
+        const end   = iso(Math.max(0, k) + Math.min(grid.rows, grid.cols - k), Math.min(grid.rows, grid.cols - k));
+        ctx.beginPath();
+        ctx.moveTo(start.x, start.y);
+        ctx.lineTo(end.x, end.y);
+        ctx.stroke();
+      }
 
-                gridContainer.appendChild(playerEl);
-                
-                // Move player to start pos (instant, no animation)
-                movePlayer(playerPos.x, playerPos.y, true);
-            }
+      // Outline
+      const corners = [iso(0,0), iso(grid.cols,0), iso(grid.cols,grid.rows), iso(0,grid.rows)];
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+      ctx.moveTo(corners[0].x, corners[0].y);
+      for (let i=1;i<corners.length;i++) ctx.lineTo(corners[i].x, corners[i].y);
+      ctx.closePath();
+      ctx.stroke();
 
-            /**
-             * Creates a new emoji at a random, unoccupied spot
-             */
-            function spawnEmoji() {
-                let x, y;
-                let positionOccupied = true;
+      ctx.restore();
+    }
 
-                // Find a random spot that isn't the player or another emoji
-                while (positionOccupied) {
-                    x = Math.floor(Math.random() * GRID_SIZE);
-                    y = Math.floor(Math.random() * GRID_SIZE);
+    function drawCube() {
+      const { cx, cy } = centerForGrid();
+      const p = iso(cube.x, cube.y);
+      const baseX = cx + p.x;
+      const baseY = cy + p.y;
 
-                    const onPlayer = (x === playerPos.x && y === playerPos.y);
-                    const onEmoji = emojis.some(e => e.x === x && e.y === y);
-                    
-                    if (!onPlayer && !onEmoji) {
-                        positionOccupied = false;
-                    }
-                }
+      const w = grid.tileW / 2;
+      const h = grid.tileH / 2;
+      const height = grid.tileH; // cube vertical height in pixels
 
-                const emojiChar = EMOJI_LIST[Math.floor(Math.random() * EMOJI_LIST.length)];
-                
-                const emojiEl = document.createElement('div');
-                emojiEl.className = 'game-object emoji';
+      // Top face
+      ctx.beginPath();
+      ctx.moveTo(baseX, baseY - height);
+      ctx.lineTo(baseX + w, baseY - height + h);
+      ctx.lineTo(baseX, baseY - height + 2*h);
+      ctx.lineTo(baseX - w, baseY - height + h);
+      ctx.closePath();
+      ctx.fillStyle = '#9ad5ff';
+      ctx.fill();
 
-                // Add shadow
-                const shadow = document.createElement('div');
-                shadow.className = 'game-object-shadow';
-                emojiEl.appendChild(shadow);
-                
-                // Add "billboard" model
-                const model = document.createElement('div');
-                model.className = 'emoji-model';
-                model.textContent = emojiChar;
-                emojiEl.appendChild(model);
+      // Right face
+      ctx.beginPath();
+      ctx.moveTo(baseX, baseY - height + 2*h);
+      ctx.lineTo(baseX + w, baseY - height + h);
+      ctx.lineTo(baseX + w, baseY + h);
+      ctx.lineTo(baseX, baseY + 2*h);
+      ctx.closePath();
+      ctx.fillStyle = '#6aa7d6';
+      ctx.fill();
 
-                // Position it instantly
-                emojiEl.style.transition = 'none'; // No spawn animation
-                emojiEl.style.transform = `translate(${x * TILE_SIZE_PX}px, ${y * TILE_SIZE_PX}px)`;
-                
-                gridContainer.appendChild(emojiEl);
-                
-                emojis.push({ x, y, emoji: emojiChar, el: emojiEl });
-            }
+      // Left face
+      ctx.beginPath();
+      ctx.moveTo(baseX, baseY - height + 2*h);
+      ctx.lineTo(baseX - w, baseY - height + h);
+      ctx.lineTo(baseX - w, baseY + h);
+      ctx.lineTo(baseX, baseY + 2*h);
+      ctx.closePath();
+      ctx.fillStyle = '#4f88b5';
+      ctx.fill();
 
-            /**
-             * Moves the player to a new grid coordinate
-             * @param {number} newX - The new x-coordinate
-             * @param {number} newY - The new y-coordinate
-             * @param {boolean} instant - If true, snap instantly (no animation)
-             */
-            function movePlayer(newX, newY, instant = false) {
-                // Clamp position to grid boundaries
-                newX = Math.max(0, Math.min(GRID_SIZE - 1, newX));
-                newY = Math.max(0, Math.min(GRID_SIZE - 1, newY));
+      // Base diamond highlight
+      ctx.beginPath();
+      ctx.moveTo(baseX, baseY);
+      ctx.lineTo(baseX + w, baseY + h);
+      ctx.lineTo(baseX, baseY + 2*h);
+      ctx.lineTo(baseX - w, baseY + h);
+      ctx.closePath();
+      ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+      ctx.stroke();
+    }
 
-                // If position hasn't changed, do nothing
-                if (newX === playerPos.x && newY === playerPos.y && !instant) return;
+    function clear() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
 
-                if (isMoving) return; // Prevent new move while one is in progress
+    function draw() {
+      clear();
+      drawGrid();
+      drawCube();
+    }
 
-                isMoving = true;
-                playerPos.x = newX;
-                playerPos.y = newY;
+    function move(dx, dy) {
+      const nx = Math.max(0, Math.min(grid.cols, cube.x + dx));
+      const ny = Math.max(0, Math.min(grid.rows, cube.y + dy));
+      cube.x = nx; cube.y = ny;
+      draw();
+    }
 
-                // Move the camera to center on the new player position
-                updateCamera(instant);
+    // Button controls
+    document.querySelectorAll('.btn[data-move]').forEach(btn => {
+      const [dx, dy] = btn.dataset.move.split(',').map(Number);
+      const press = () => move(dx, dy);
+      btn.addEventListener('click', press);
+      btn.addEventListener('touchstart', e => { e.preventDefault(); press(); }, { passive: false });
+    });
 
-                // Set transition style for player model
-                playerEl.style.transition = instant ? 'none' : `transform ${PLAYER_MOVE_MS}ms ease-in-out`;
-                
-                // Apply CSS transform to move the player
-                playerEl.style.transform = `translate(${newX * TILE_SIZE_PX}px, ${newY * TILE_SIZE_PX}px)`;
+    // Keyboard controls for convenience
+    window.addEventListener('keydown', e => {
+      switch (e.key) {
+        case 'ArrowUp':    move(0,-1); break;
+        case 'ArrowDown':  move(0, 1); break;
+        case 'ArrowLeft':  move(-1,0); break;
+        case 'ArrowRight': move(1, 0); break;
+      }
+    });
 
-                // After the move animation, check for collisions
-                setTimeout(() => {
-                    checkCollision();
-                    isMoving = false;
-                }, instant ? 0 : PLAYER_MOVE_MS);
-            }
-
-            /**
-             * Checks if the player is on the same tile as an emoji
-             */
-            function checkCollision() {
-                const emojiIndex = emojis.findIndex(e => e.x === playerPos.x && e.y === playerPos.y);
-
-                if (emojiIndex > -1) {
-                    const [collected] = emojis.splice(emojiIndex, 1);
-                    
-                    // Add score and update UI
-                    score += 10;
-                    collectedEmojis.push(collected.emoji);
-                    updateUIScore();
-
-                    // Play "collect" animation
-                    collected.el.classList.add('collected');
-                    
-                    // Remove the emoji element after animation
-                    setTimeout(() => {
-                        collected.el.remove();
-                    }, 300);
-
-                    // Spawn a new emoji
-                    spawnEmoji();
-                }
-            }
-
-            /**
-             * Updates the score and collected emoji display
-             */
-            function updateUIScore() {
-                scoreDisplay.textContent = score;
-                // Add the new emoji to the start of the list
-                const newEmojiSpan = document.createElement('span');
-                newEmojiSpan.className = 'inline-block'; // Animation is now handled by CSS
-                newEmojiSpan.textContent = collectedEmojis[collectedEmojis.length - 1] || '';
-                
-                if (newEmojiSpan.textContent) {
-                    collectedDisplay.prepend(newEmojiSpan);
-                }
-                
-                // Limit displayed emojis to ~10 to prevent overflow
-                if (collectedDisplay.children.length > 10) {
-                    collectedDisplay.removeChild(collectedDisplay.lastChild);
-                }
-                
-                // Clear display on reset
-                if (collectedEmojis.length === 0) {
-                    collectedDisplay.innerHTML = '';
-                }
-            }
-
-            /**
-             * Applies the current zoom level to the game world
-             */
-            function updateZoom(amount = 0) {
-                zoomLevel += amount;
-                // Clamp zoom level
-                zoomLevel = Math.max(0.5, Math.min(2.5, zoomLevel));
-                
-                // Apply scale to the existing isometric transform
-                gameWorld.style.transform = `rotateX(60deg) rotateZ(-45deg) scale(${zoomLevel})`;
-            }
-
-            /**
-             * Pans the camera (the grid container) to center on the player
-             * @param {boolean} instant - If true, snap instantly
-             */
-            function updateCamera(instant = false) {
-                const centerX = (GRID_SIZE - 1) / 2;
-                const centerY = (GRID_SIZE - 1) / 2;
-
-                // Calculate the pixel offset needed to center the player
-                const targetX = -(playerPos.x - centerX) * TILE_SIZE_PX;
-                const targetY = -(playerPos.y - centerY) * TILE_SIZE_PX;
-
-                gridContainer.style.transition = instant ? 'none' : `transform ${PLAYER_MOVE_MS}ms ease-in-out`;
-                
-                // The first translate pair centers the grid itself (for rotation)
-                // The second translate pair pans the camera to follow the player
-                gridContainer.style.transform = `translateX(-50%) translateY(-50%) translateX(${targetX}px) translateY(${targetY}px)`;
-            }
-
-            // --- EVENT HANDLERS ---
-
-            function handleKeyDown(e) {
-                e.preventDefault(); // Prevent arrow keys from scrolling page
-                if (isMoving) return;
-
-                switch (e.key) {
-                    case 'ArrowUp':
-                        movePlayer(playerPos.x, playerPos.y - 1);
-                        break;
-                    case 'ArrowDown':
-                        movePlayer(playerPos.x, playerPos.y + 1);
-                        break;
-                    case 'ArrowLeft':
-                        movePlayer(playerPos.x - 1, playerPos.y);
-                        break;
-                    case 'ArrowRight':
-                        movePlayer(playerPos.x + 1, playerPos.y);
-                        break;
-                }
-            }
-
-            function handleTouchStart(e) {
-                // Don't track multi-touch (like pinch-zoom)
-                if (e.touches.length !== 1) return;
-                touchStartX = e.touches[0].clientX;
-                touchStartY = e.touches[0].clientY;
-            }
-
-            function handleTouchMove(e) {
-                // Prevent scrolling while swiping
-                e.preventDefault();
-            }
-
-            function handleTouchEnd(e) {
-                if (isMoving || e.changedTouches.length !== 1) return;
-
-                const touchEndX = e.changedTouches[0].clientX;
-                const touchEndY = e.changedTouches[0].clientY;
-
-                const diffX = touchEndX - touchStartX;
-                const diffY = touchEndY - touchStartY;
-                const swipeThreshold = 40; // Min pixels for a swipe (was 50)
-
-                // Check which axis had the most movement
-                if (Math.abs(diffX) > Math.abs(diffY)) {
-                    // Horizontal swipe
-                    if (diffX > swipeThreshold) {
-                        movePlayer(playerPos.x + 1, playerPos.y); // Right
-                    } else if (diffX < -swipeThreshold) {
-                        movePlayer(playerPos.x - 1, playerPos.y); // Left
-                    }
-                } else {
-                    // Vertical swipe
-                    if (diffY > swipeThreshold) {
-                        movePlayer(playerPos.x, playerPos.y + 1); // Down
-                    } else if (diffY < -swipeThreshold) {
-                        movePlayer(playerPos.x, playerPos.y - 1); // Up
-                    }
-                }
-            }
-
-            // --- ATTACH LISTENERS ---
-            document.addEventListener('keydown', handleKeyDown);
-            
-            viewport.addEventListener('touchstart', handleTouchStart, { passive: false });
-            viewport.addEventListener('touchmove', handleTouchMove, { passive: false });
-            viewport.addEventListener('touchend', handleTouchEnd, { passive: false });
-
-            zoomInButton.addEventListener('click', () => updateZoom(0.2));
-            zoomOutButton.addEventListener('click', () => updateZoom(-0.2));
-            resetButton.addEventListener('click', initGame);
-
-            // --- START GAME ---
-            initGame();
-
-        });
-    </script>
+    // Resize handling and initial draw
+    const ro = new ResizeObserver(fitCanvas);
+    ro.observe(document.getElementById('stage'));
+    fitCanvas();
+  </script>
 </body>
 </html>
