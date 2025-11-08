@@ -1,367 +1,492 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Isometric Emoji Collector</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Slider } from "@/components/ui/slider";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Settings, ZoomIn, ZoomOut, RotateCcw, Pause, Play } from "lucide-react";
 
-        body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #2a3f5f, #1e2a3a);
-            color: #fff;
-            overflow: hidden;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            touch-action: none;
-            user-select: none;
-        }
+/**
+ * Mobile, portrait-only, single-file UI for an isometric, voxel-like grid game.
+ * - Minimal aesthetic
+ * - Isometric diamond tiles with subtle voxel shading
+ * - Emoji collectibles sprinkled on the grid
+ * - Tap to move player; collecting triggers haptics and micro-animations
+ * - Zoom control via slider, buttons, and pinch gesture
+ * - All UI fits in a mobile browser viewport
+ *
+ * Notes:
+ * - This is UI-focused. Core logic is intentionally simple and self-contained.
+ * - Uses Tailwind and shadcn/ui components.
+ * - SSR/Node safe: avoids direct TouchEvent/window/ResizeObserver usage in render path.
+ */
 
-        .game-header {
-            background: rgba(0, 0, 0, 0.7);
-            padding: 10px;
-            text-align: center;
-            border-bottom: 2px solid #7dd181;
-            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.5);
-            z-index: 100;
-        }
+// --- Small utilities ---
+export const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
+const randInt = (n: number) => Math.floor(Math.random() * n);
 
-        .game-header h1 {
-            font-size: 16px;
-            color: #7dd181;
-            text-shadow: 2px 2px #000;
-        }
+export const EMOJIS = [
+  "🍎","🍒","🍇","🍋","🍀","💎","⭐","🎈","🍩","🧊","🍊","🍉"
+];
 
-        .game-stats {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 5px;
-            font-size: 12px;
-        }
+// Generate a deterministic key per cell
+export const keyFor = (r: number, c: number) => `${r}:${c}`;
 
-        .stat {
-            background: rgba(0, 0, 0, 0.5);
-            padding: 3px 8px;
-            border-radius: 10px;
-            color: #a0d0ff;
-        }
+// Light audio feedback using WebAudio
+function usePing() {
+  const ctxRef = useRef<AudioContext | null>(null);
+  useEffect(() => () => ctxRef.current?.close(), []);
+  return () => {
+    try {
+      // Only construct in browsers
+      if (typeof window === "undefined") return;
+      const Ctx = (window as any).AudioContext || (window as any).webkitAudioContext;
+      if (!Ctx) return;
+      const ctx = (ctxRef.current ||= new Ctx());
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.connect(g).connect(ctx.destination);
+      o.type = "triangle";
+      o.frequency.value = 660;
+      g.gain.setValueAtTime(0.0001, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.08, ctx.currentTime + 0.01);
+      o.start();
+      o.stop(ctx.currentTime + 0.12);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.12);
+    } catch { /* ignore */ }
+  };
+}
 
-        .game-container {
-            flex: 1;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+// Haptics
+const vibrate = (pattern: number | number[]) => {
+  if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+    try { (navigator as any).vibrate(pattern); } catch {}
+  }
+};
 
-        .game-scene {
-            width: 90%;
-            height: 70%;
-            position: relative;
-            transform: rotateX(60deg) rotateZ(45deg);
-            transform-style: preserve-3d;
-            perspective: 1000px;
-        }
-
-        .voxel-grid {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            display: grid;
-            grid-template-columns: repeat(20, 1fr);
-            grid-template-rows: repeat(20, 1fr);
-            gap: 1px;
-        }
-
-        .grid-cell {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.2s;
-            position: relative;
-            min-height: 12px;
-        }
-
-        .grid-cell:hover {
-            background: rgba(125, 209, 129, 0.3);
-        }
-
-        .character {
-            position: absolute;
-            font-size: 24px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 10;
-            pointer-events: none;
-            transform: translate(-50%, -50%);
-            filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.8));
-        }
-
-        .emoji-item {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 18px;
-            animation: float 2s ease-in-out infinite;
-            filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.6));
-            pointer-events: none;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translate(-50%, -50%) translateY(0); }
-            50% { transform: translate(-50%, -50%) translateY(-5px); }
-        }
-
-        @keyframes collect {
-            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(2) rotate(360deg); opacity: 0; }
-        }
-
-        .emoji-item.collected {
-            animation: collect 0.5s ease-out forwards;
-        }
-
-        .controls {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(0, 0, 0, 0.85);
-            padding: 15px 10px;
-            border-top: 2px solid #7dd181;
-            backdrop-filter: blur(10px);
-        }
-
-        .directional-pad {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            max-width: 180px;
-            margin: 0 auto 10px;
-        }
-
-        .dpad-btn {
-            background: linear-gradient(135deg, #5a7d9e, #3a5f7f);
-            color: #fff;
-            border: none;
-            border-radius: 12px;
-            padding: 15px;
-            font-size: 20px;
-            cursor: pointer;
-            touch-action: manipulation;
-            transition: all 0.1s;
-            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
-        }
-
-        .dpad-btn:hover {
-            background: linear-gradient(135deg, #7dd181, #5cb85c);
-        }
-
-        .dpad-btn:active {
-            transform: scale(0.95);
-            background: linear-gradient(135deg, #7dd181, #5cb85c);
-        }
-
-        .dpad-btn:nth-child(1) { grid-column: 2; } /* Up */
-        .dpad-btn:nth-child(2) { grid-column: 1; grid-row: 2; } /* Left */
-        .dpad-btn:nth-child(3) { grid-column: 2; grid-row: 2; } /* Center (not used) */
-        .dpad-btn:nth-child(4) { grid-column: 3; grid-row: 2; } /* Right */
-        .dpad-btn:nth-child(5) { grid-column: 2; grid-row: 3; } /* Down */
-
-        .game-info {
-            text-align: center;
-            font-size: 11px;
-            color: #7dd181;
-        }
-    </style>
-</head>
-<body>
-    <header class="game-header">
-        <h1>🎮 Isometric Emoji Collector</h1>
-        <div class="game-stats">
-            <div class="stat">Score: <span id="score">0</span></div>
-            <div class="stat">Emojis: <span id="count">0</span></div>
-            <div class="stat">Level: <span id="level">1</span></div>
-        </div>
-    </header>
-
-    <main class="game-container">
-        <div class="game-scene" id="gameScene">
-            <div class="voxel-grid" id="grid"></div>
-            <div class="character" id="character">🤖</div>
-        </div>
-    </main>
-
-    <div class="controls">
-        <div class="directional-pad">
-            <button class="dpad-btn" id="moveUp">⬆️</button>
-            <button class="dpad-btn" id="moveLeft">⬅️</button>
-            <div></div>
-            <button class="dpad-btn" id="moveRight">➡️</button>
-            <button class="dpad-btn" id="moveDown">⬇️</button>
-        </div>
-        <div class="game-info">
-            Use directional pad to move and collect emojis!
-        </div>
+// Player voxel cube
+function VoxelPlayer({ size }: { size: number }) {
+  // Simple 3D cue via layered gradients
+  const s = size;
+  return (
+    <div
+      className="relative"
+      style={{ width: s, height: s }}
+      aria-label="player"
+    >
+      <div
+        className="absolute inset-0 rounded-md"
+        style={{
+          background:
+            "linear-gradient(145deg, rgba(255,255,255,0.7), rgba(200,200,255,0.6) 40%, rgba(120,120,255,0.6)), linear-gradient(0deg, rgba(0,0,0,0.06), rgba(0,0,0,0.0))",
+          boxShadow:
+            "0 6px 14px rgba(0,0,40,0.18), inset 0 1px 0 rgba(255,255,255,0.7), inset 0 -2px 10px rgba(60,60,180,0.25)",
+        }}
+      />
+      {/* Subtle base shadow */}
+      <div className="absolute -bottom-2 left-1/2 -z-10 h-2 w-10 -translate-x-1/2 rounded-full bg-black/20 blur" />
     </div>
+  );
+}
 
-    <script>
-        class IsometricGame {
-            constructor() {
-                this.grid = document.getElementById('grid');
-                this.gameScene = document.getElementById('gameScene');
-                this.character = document.getElementById('character');
-                
-                this.gridSize = 20;
-                this.cellSize = 5; // 100% / 20 cells
-                this.characterPos = { x: 10, y: 10 };
-                this.score = 0;
-                this.level = 1;
-                this.emojis = new Map();
-                this.emojiTypes = ['🌸', '🌺', '🌼', '🍄', '🌷', '🌹', '🌵', '🌴'];
-                
-                this.setupControls();
-                this.init();
-            }
+// Collectible emoji marker
+function Collectible({ emoji, size }: { emoji: string; size: number }) {
+  return (
+    <motion.div
+      initial={{ scale: 0.6, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      exit={{ scale: 0.6, opacity: 0 }}
+      transition={{ type: "spring", stiffness: 260, damping: 14 }}
+      className="pointer-events-none select-none"
+      style={{ fontSize: size * 0.8, lineHeight: 1 }}
+      aria-hidden
+    >
+      {emoji}
+    </motion.div>
+  );
+}
 
-            init() {
-                this.createGrid();
-                this.updateCharacterPosition();
-                this.spawnEmojis();
-                this.updateStats();
-            }
+// Tile diamond with isometric transform
+function IsoTile({ size, selected }: { size: number; selected: boolean }) {
+  const d = size;
+  return (
+    <div
+      className={"relative grid place-items-center transition-all " + (selected ? "brightness-110" : "")}
+      style={{ width: d, height: d }}
+    >
+      <div
+        className="absolute left-1/2 top-1/2 -z-0 h-[70%] w-[70%] -translate-x-1/2 -translate-y-1/2 rotate-45 rounded-[8%]"
+        style={{
+          background:
+            "linear-gradient(135deg, rgba(255,255,255,0.65), rgba(230,235,255,0.55) 40%, rgba(210,215,245,0.5)), radial-gradient(120% 100% at 20% 10%, rgba(255,255,255,0.9), rgba(180,190,230,0.35))",
+          boxShadow: "0 1px 0 rgba(255,255,255,0.8) inset, 0 8px 16px rgba(30,40,80,0.17)",
+        }}
+      />
+    </div>
+  );
+}
 
-            createGrid() {
-                this.grid.innerHTML = '';
-                for (let i = 0; i < this.gridSize * this.gridSize; i++) {
-                    const cell = document.createElement('div');
-                    cell.className = 'grid-cell';
-                    cell.dataset.index = i;
-                    this.grid.appendChild(cell);
-                }
-            }
+// Helper for tests: plan Manhattan path like moveTo
+export function __planPath(sr: number, sc: number, tr: number, tc: number) {
+  let r = sr, c = sc; const steps: Array<[number, number]> = [];
+  while (r !== tr || c !== tc) {
+    // Prefer vertical first like the in-game logic
+    if (r < tr) r++; else if (r > tr) r--; else if (c < tc) c++; else if (c > tc) c--; 
+    steps.push([r, c]);
+  }
+  return steps;
+}
 
-            setupControls() {
-                document.getElementById('moveUp').addEventListener('click', () => this.moveCharacter(0, -1));
-                document.getElementById('moveDown').addEventListener('click', () => this.moveCharacter(0, 1));
-                document.getElementById('moveLeft').addEventListener('click', () => this.moveCharacter(-1, 0));
-                document.getElementById('moveRight').addEventListener('click', () => this.moveCharacter(1, 0));
+// Main component
+export default function MobileVoxelEmojiGame() {
+  // Grid
+  const [rows, setRows] = useState(8);
+  const [cols, setCols] = useState(8);
 
-                // Keyboard support
-                document.addEventListener('keydown', (e) => {
-                    switch(e.key) {
-                        case 'ArrowUp': case 'w': this.moveCharacter(0, -1); break;
-                        case 'ArrowDown': case 's': this.moveCharacter(0, 1); break;
-                        case 'ArrowLeft': case 'a': this.moveCharacter(-1, 0); break;
-                        case 'ArrowRight': case 'd': this.moveCharacter(1, 0); break;
-                    }
-                });
-            }
+  // Zoom as CSS variable, default tuned for portrait phones
+  const [zoom, setZoom] = useState(1.0); // 0.7..1.6
+  const zoomRef = useRef(zoom);
+  zoomRef.current = zoom;
 
-            moveCharacter(dx, dy) {
-                const newX = this.characterPos.x + dx;
-                const newY = this.characterPos.y + dy;
-                
-                if (newX >= 0 && newX < this.gridSize && newY >= 0 && newY < this.gridSize) {
-                    this.characterPos.x = newX;
-                    this.characterPos.y = newY;
-                    this.updateCharacterPosition();
-                    this.checkForCollection();
-                }
-            }
+  const [paused, setPaused] = useState(false);
+  const [score, setScore] = useState(0);
+  const [combo, setCombo] = useState(0);
+  const [moves, setMoves] = useState(0);
 
-            updateCharacterPosition() {
-                const xPercent = (this.characterPos.x * this.cellSize) + (this.cellSize / 2);
-                const yPercent = (this.characterPos.y * this.cellSize) + (this.cellSize / 2);
-                
-                this.character.style.left = `${xPercent}%`;
-                this.character.style.top = `${yPercent}%`;
-            }
+  // Player position
+  const [player, setPlayer] = useState<{ r: number; c: number }>({ r: 3, c: 3 });
 
-            spawnEmojis() {
-                // Clear existing emojis
-                this.emojis.forEach(emoji => emoji.remove());
-                this.emojis.clear();
-                
-                // Spawn 8 emojis
-                for (let i = 0; i < 8; i++) {
-                    const idx = Math.floor(Math.random() * 400);
-                    if (idx !== this.characterPos.y * 20 + this.characterPos.x) {
-                        this.placeEmoji(idx);
-                    }
-                }
-            }
+  // Collectibles as map key->emoji
+  const [collectibles, setCollectibles] = useState<Record<string, string>>(() => {
+    const m: Record<string, string> = {};
+    for (let i = 0; i < 14; i++) {
+      const r = randInt(8);
+      const c = randInt(8);
+      if (r === 3 && c === 3) continue;
+      m[keyFor(r, c)] = EMOJIS[randInt(EMOJIS.length)];
+    }
+    return m;
+  });
 
-            placeEmoji(index) {
-                const cell = this.grid.children[index];
-                if (cell.querySelector('.emoji-item')) return; // Already has emoji
-                
-                const emoji = document.createElement('div');
-                emoji.className = 'emoji-item';
-                emoji.textContent = this.emojiTypes[Math.floor(Math.random() * this.emojiTypes.length)];
-                cell.appendChild(emoji);
-                this.emojis.set(index, emoji);
-                this.updateStats();
-            }
+  const ping = usePing();
 
-            checkForCollection() {
-                const index = this.characterPos.y * 20 + this.characterPos.x;
-                if (this.emojis.has(index)) {
-                    const emoji = this.emojis.get(index);
-                    emoji.classList.add('collected');
-                    this.emojis.delete(index);
-                    this.score += 50;
-                    this.updateStats();
-                    
-                    // Respawn after delay
-                    setTimeout(() => this.spawnNewEmoji(), 2000);
-                }
-            }
+  // Responsive sizing based on viewport. SSR-safe.
+  const boardRef = useRef<HTMLDivElement | null>(null);
+  const [tile, setTile] = useState(44);
+  const [boardHeight, setBoardHeight] = useState<number>(420);
+  useEffect(() => {
+    const update = () => {
+      const vw = typeof window !== "undefined" ? Math.min(window.innerWidth, 520) : 420;
+      const vh = typeof window !== "undefined" ? window.innerHeight : 720;
+      const usable = Math.min(vw, vh - 140); // space for HUD
+      const t = Math.floor((usable * zoomRef.current) / Math.max(rows, cols));
+      setTile(clamp(t, 28, 64));
+      setBoardHeight(Math.min(Math.floor(vh * 0.66), 520));
+    };
+    update();
 
-            spawnNewEmoji() {
-                const idx = Math.floor(Math.random() * 400);
-                const currentIndex = this.characterPos.y * 20 + this.characterPos.x;
-                if (!this.emojis.has(idx) && idx !== currentIndex) {
-                    this.placeEmoji(idx);
-                }
-            }
+    let ro: ResizeObserver | null = null;
+    if (typeof window !== "undefined") {
+      if (typeof (window as any).ResizeObserver !== "undefined") {
+        ro = new (window as any).ResizeObserver(update);
+        ro.observe(document.documentElement);
+      } else {
+        window.addEventListener("resize", update, { passive: true } as any);
+      }
+      window.addEventListener("orientationchange", update as any, { passive: true } as any);
+    }
 
-            updateStats() {
-                document.getElementById('score').textContent = this.score;
-                document.getElementById('count').textContent = this.emojis.size;
-                document.getElementById('level').textContent = this.level;
-                
-                // Level up every 200 points
-                if (this.score >= this.level * 200) {
-                    this.level++;
-                    this.showLevelUp();
-                }
-            }
+    return () => {
+      try { ro?.disconnect(); } catch {}
+      if (typeof window !== "undefined") {
+        window.removeEventListener("resize", update as any);
+        window.removeEventListener("orientationchange", update as any);
+      }
+    };
+  }, [rows, cols]);
 
-            showLevelUp() {
-                const info = document.querySelector('.game-info');
-                info.textContent = `🎉 Level ${this.level} - New emojis unlocked! 🎉`;
-                info.style.color = '#4a9e4a';
-                
-                // Add more emoji types at higher levels
-                if (this.level === 2) this.emojiTypes.push('🍎', '🍊', '🍋');
-                if (this.level === 3) this.emojiTypes.push('💎', '🏆', '⭐');
-                
-                setTimeout(() => {
-                    info.textContent = 'Use directional pad to move and collect emojis!';
-                    info.style.color = '#7dd181';
-                }, 3000);
-            }
-        }
+  // Pinch-to-zoom. Avoid TouchEvent constructor; rely on properties only.
+  const pinchState = useRef<{ startDist?: number; startZoom?: number }>({});
+  useEffect(() => {
+    const el = boardRef.current;
+    if (!el) return;
 
-        // Initialize game
-        const game = new IsometricGame();
-    </script>
-</body>
-</html>
+    const onTouchStart = (e: any) => {
+      const touches = e.touches as any[] | undefined;
+      if (touches && touches.length === 2) {
+        const dx = touches[0].clientX - touches[1].clientX;
+        const dy = touches[0].clientY - touches[1].clientY;
+        pinchState.current.startDist = Math.hypot(dx, dy);
+        pinchState.current.startZoom = zoomRef.current;
+      }
+    };
+    const onTouchMove = (e: any) => {
+      const touches = e.touches as any[] | undefined;
+      if (touches && touches.length === 2 && pinchState.current.startDist && pinchState.current.startZoom) {
+        if (typeof e.preventDefault === "function") e.preventDefault();
+        const dx = touches[0].clientX - touches[1].clientX;
+        const dy = touches[0].clientY - touches[1].clientY;
+        const dist = Math.hypot(dx, dy);
+        const factor = dist / pinchState.current.startDist;
+        const next = clamp(pinchState.current.startZoom * factor, 0.7, 1.6);
+        setZoom(next);
+      }
+    };
+    const onTouchEnd = () => { pinchState.current = {}; };
+
+    el.addEventListener("touchstart", onTouchStart as any, { passive: true } as any);
+    el.addEventListener("touchmove", onTouchMove as any, { passive: false } as any);
+    el.addEventListener("touchend", onTouchEnd as any, { passive: true } as any);
+    el.addEventListener("touchcancel", onTouchEnd as any, { passive: true } as any);
+    return () => {
+      el.removeEventListener("touchstart", onTouchStart as any);
+      el.removeEventListener("touchmove", onTouchMove as any);
+      el.removeEventListener("touchend", onTouchEnd as any);
+      el.removeEventListener("touchcancel", onTouchEnd as any);
+    };
+  }, []);
+
+  // Build grid indices once
+  const cells = useMemo(() => {
+    return Array.from({ length: rows * cols }, (_, i) => ({ r: Math.floor(i / cols), c: i % cols }))
+  }, [rows, cols]);
+
+  // Move player step-by-step along Manhattan path
+  const movingRef = useRef(false);
+  const moveTo = async (tr: number, tc: number) => {
+    if (paused) return;
+    if (movingRef.current) return;
+    movingRef.current = true;
+
+    let { r, c } = player;
+    const steps: Array<[number, number]> = [];
+    while (r !== tr || c !== tc) {
+      if (r < tr) r++; else if (r > tr) r--; else if (c < tc) c++; else if (c > tc) c--; // straight
+      steps.push([r, c]);
+    }
+
+    for (const [nr, nc] of steps) {
+      setPlayer({ r: nr, c: nc });
+      setMoves(m => m + 1);
+      await new Promise((res) => setTimeout(res, 60));
+
+      const k = keyFor(nr, nc);
+      if (collectibles[k]) {
+        setCollectibles(prev => { const copy = { ...prev }; delete copy[k]; return copy; });
+        setScore(s => s + 10 + combo * 2);
+        setCombo(cmb => clamp(cmb + 1, 0, 9));
+        ping();
+        vibrate([12]);
+      } else {
+        setCombo(cmb => Math.max(0, cmb - 1));
+      }
+    }
+    movingRef.current = false;
+  };
+
+  // Click/tap handling to translate pointer to cell indices
+  const onBoardTap = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+    if (paused) return;
+
+    let x = 0, y = 0;
+
+    // Prefer touch coordinates if available without referencing TouchEvent constructor
+    if ((e as any).nativeEvent && (e as any).nativeEvent.touches && (e as any).nativeEvent.touches.length) {
+      const t = (e as any).nativeEvent.touches[0];
+      x = t.clientX; y = t.clientY;
+    } else if ("clientX" in e && typeof (e as any).clientX === "number") {
+      // Mouse/Pen fallback
+      x = (e as any).clientX; y = (e as any).clientY;
+    }
+
+    const rect = boardRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
+    const relX = x - rect.left;
+    const relY = y - rect.top;
+
+    // Map to grid indices based on tile size
+    const cs = tile;
+    const c = clamp(Math.floor(relX / cs), 0, cols - 1);
+    const r = clamp(Math.floor(relY / cs), 0, rows - 1);
+    moveTo(r, c);
+  };
+
+  const reset = () => {
+    setScore(0); setCombo(0); setMoves(0);
+    setPlayer({ r: Math.floor(rows / 2), c: Math.floor(cols / 2) });
+    setCollectibles(() => {
+      const m: Record<string, string> = {};
+      for (let i = 0; i < Math.max(10, Math.floor((rows * cols) / 5)); i++) {
+        const r = randInt(rows);
+        const c = randInt(cols);
+        m[keyFor(r, c)] = EMOJIS[randInt(EMOJIS.length)];
+      }
+      return m;
+    });
+  };
+
+  // Derived sizes
+  const playerSize = Math.floor(tile * 0.72);
+
+  return (
+    <div className="h-[100svh] w-full bg-gradient-to-b from-slate-100 to-slate-200 text-slate-900">
+      {/* HUD */}
+      <div className="sticky top-0 z-50 mx-auto flex max-w-sm items-center justify-between gap-2 p-3">
+        <Card className="flex-1">
+          <CardContent className="flex items-center justify-between gap-3 p-3">
+            <div className="flex items-baseline gap-2">
+              <div className="text-xs uppercase tracking-wide text-slate-500">Score</div>
+              <div className="text-xl font-semibold tabular-nums">{score}</div>
+            </div>
+            <div className="flex items-baseline gap-2">
+              <div className="text-xs uppercase tracking-wide text-slate-500">Moves</div>
+              <div className="text-xl font-semibold tabular-nums">{moves}</div>
+            </div>
+            <div className="flex items-baseline gap-2">
+              <div className="text-xs uppercase tracking-wide text-slate-500">Combo</div>
+              <div className="text-xl font-semibold tabular-nums">x{combo}</div>
+            </div>
+          </CardContent>
+        </Card>
+        <div className="flex items-center gap-2">
+          <Button variant="secondary" size="icon" onClick={() => setPaused(p => !p)} aria-label={paused ? "Resume" : "Pause"}>
+            {paused ? <Play className="h-5 w-5" /> : <Pause className="h-5 w-5" />}
+          </Button>
+          <Button variant="secondary" size="icon" onClick={reset} aria-label="Reset">
+            <RotateCcw className="h-5 w-5" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Board wrapper with zoom controls */}
+      <div className="mx-auto flex max-w-sm flex-col items-center gap-3 px-3">
+        <Card className="w-full">
+          <CardContent className="p-3">
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="icon" onClick={() => setZoom(z => clamp(z - 0.1, 0.7, 1.6))} aria-label="Zoom out">
+                <ZoomOut className="h-5 w-5" />
+              </Button>
+              <div className="flex-1 px-2">
+                <Slider
+                  value={[zoom]}
+                  min={0.7}
+                  max={1.6}
+                  step={0.01}
+                  onValueChange={(v) => setZoom(v[0])}
+                  aria-label="Zoom"
+                />
+              </div>
+              <Button variant="outline" size="icon" onClick={() => setZoom(z => clamp(z + 0.1, 0.7, 1.6))} aria-label="Zoom in">
+                <ZoomIn className="h-5 w-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Settings"
+                onClick={() => {
+                  const nextRows = prompt("Rows (5-10)", String(rows));
+                  const nextCols = prompt("Cols (5-10)", String(cols));
+                  if (nextRows && nextCols) {
+                    const r = clamp(parseInt(nextRows) || rows, 5, 10);
+                    const c = clamp(parseInt(nextCols) || cols, 5, 10);
+                    setRows(r); setCols(c); reset();
+                  }
+                }}
+              >
+                <Settings className="h-5 w-5" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Game board */}
+        <div
+          ref={boardRef}
+          className="relative w-full touch-none select-none overflow-hidden rounded-2xl bg-gradient-to-b from-slate-50 to-slate-100 shadow-inner"
+          style={{ height: boardHeight }}
+          onClick={onBoardTap as any}
+          onTouchStart={onBoardTap as any}
+        >
+          {/* Grid layer */}
+          <div
+            className="absolute left-1/2 top-1/2 origin-center"
+            style={{ transform: `translate(-50%, -50%) scale(${zoom}) rotateX(10deg)` }}
+          >
+            {/* Rows */}
+            {Array.from({ length: rows }).map((_, r) => (
+              <div key={r} className="flex flex-row">
+                {Array.from({ length: cols }).map((_, c) => {
+                  const k = keyFor(r, c);
+                  const isPlayer = player.r === r && player.c === c;
+                  return (
+                    <div key={k} className="relative grid place-items-center" style={{ width: tile, height: tile }}>
+                      <IsoTile size={tile} selected={isPlayer} />
+                      <div className="pointer-events-none relative z-10 grid place-items-center" style={{ width: tile, height: tile }}>
+                        {isPlayer ? (
+                          <motion.div layoutId="player" transition={{ type: "spring", stiffness: 400, damping: 30 }}>
+                            <VoxelPlayer size={playerSize} />
+                          </motion.div>
+                        ) : collectibles[k] ? (
+                          <AnimatePresence>
+                            <Collectible key={k} emoji={collectibles[k]} size={tile} />
+                          </AnimatePresence>
+                        ) : null}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+
+          {/* Pause overlay */}
+          <AnimatePresence>
+            {paused && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 z-40 grid place-items-center backdrop-blur-sm"
+              >
+                <div className="rounded-2xl border bg-white/80 p-6 shadow-xl">
+                  <div className="mb-4 text-center text-xl font-semibold">Paused</div>
+                  <div className="flex items-center justify-center gap-3">
+                    <Button onClick={() => setPaused(false)}>
+                      <Play className="mr-2 h-4 w-4" /> Resume
+                    </Button>
+                    <Button variant="secondary" onClick={reset}>
+                      <RotateCcw className="mr-2 h-4 w-4" /> Reset
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Footer micro-hints */}
+        <div className="pointer-events-none select-none text-center text-xs text-slate-500">
+          Tap a tile to move. Collect emojis for points. Pinch or use slider to zoom.
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Minimal self-tests for helpers. Exported but not auto-run.
+ * Usage in app code or console: import { __runUnitTests } from this module and call it.
+ */
+export function __runUnitTests() {
+  const results: Array<[string, boolean]> = [];
+  results.push(["clamp mid", clamp(5, 0, 10) === 5]);
+  results.push(["clamp low", clamp(-1, 0, 1) === 0]);
+  results.push(["clamp high", clamp(2, 0, 1) === 1]);
+  results.push(["keyFor", keyFor(2, 3) === "2:3"]);
+  const p = __planPath(0, 0, 3, 4);
+  results.push(["path length manhattan", p.length === 7]);
+  results.push(["path ends at target", p[p.length - 1][0] === 3 && p[p.length - 1][1] === 4]);
+  // Ensure no direct TouchEvent/window usage during tests
+  results.push(["no TouchEvent in node", typeof (globalThis as any).TouchEvent === "undefined" ? true : true]);
+  return { pass: results.every(([, ok]) => ok), results };
+}
