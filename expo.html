@@ -3,184 +3,211 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
-  <title>Emoji Collector • Isometric • v3</title>
+  <title>Isometric Tile Mover UI</title>
   <style>
     :root{
-      --bg: hsl(220 20% 8%);
-      --panel: hsl(220 18% 14%);
-      --panel-2: hsl(220 18% 18%);
-      --ink: hsl(220 15% 92%);
-      --accent: hsl(170 90% 45%);
-      --accent-2: hsl(34 95% 55%);
-      --tile: hsl(221 20% 22%);
-      --tile-edge: hsl(221 25% 17%);
-      --radius: 16px;
+      /* New "Pro" Color Palette */
+      --bg: hsl(220 30% 96%);
+      --tile: hsl(0 0% 100%);
+      --tile-edge: hsl(220 20% 88%);
+      --ink: hsl(220 25% 25%);
+      --accent: hsl(250 80% 60%);
+      --accent-glow: hsl(250 80% 60% / .4);
+      --collectible: hsl(40 100% 60%);
+      --collectible-glow: hsl(40 100% 60% / .5);
+      
+      --radius: 12px;
       --safe-bottom: env(safe-area-inset-bottom,0px);
       --safe-top: env(safe-area-inset-top,0px);
       --size: 9; /* N x N */
-      --tile-size: 42; /* logical px before scale */
+      --tile-size: 48; /* logical px before scale */
       --iso-x: 45deg;
-      --iso-y: 50deg; /* tighter grid than v1 */
-      --edge: 4px; /* side face thickness */
+      --iso-y: 50deg;
+      --edge: 6px; /* Cleaner edge */
     }
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
       margin:0; color:var(--ink);
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
       background: var(--bg);
       overflow:hidden; -webkit-tap-highlight-color:transparent; touch-action:none;
     }
 
-    /* Lightweight background (no heavy filters) */
-    .scene{position:fixed;inset:0; pointer-events:none;
-      background:
-        radial-gradient(80vmax 60vmax at 80% -10%, hsl(200 40% 20% / .12), transparent 60%),
-        radial-gradient(60vmax 40vmax at 10% 110%, hsl(280 40% 25% / .14), transparent 55%),
-        linear-gradient(180deg, hsl(210 40% 10%), hsl(230 30% 8%));}
+    /* Clean background scene */
+    .scene{position:fixed;inset:0; pointer-events:none; background: var(--bg);}
 
-    /* HUD */
-    .hud{position:fixed; inset:0 0 auto 0; padding:calc(8px + var(--safe-top)) 12px 8px; display:grid; grid-template-columns:1fr auto; align-items:center; gap:8px; z-index:10}
-    
-    /* Improvement 1: Consolidated HUD (Score + Time) */
-    .pill{
-      display: grid;
-      grid-template-columns: auto auto; /* Two columns */
-      align-items: center;
-      gap: 4px 12px; /* Row and column gap */
-      padding:8px 12px;
-      border-radius:var(--radius); /* Slightly larger radius */
-      background:linear-gradient(180deg,var(--panel),var(--panel-2));
-      border:1px solid hsl(0 0% 100% / .06);
-      box-shadow: 0 6px 20px hsl(0 0% 0% / .30);
-      font-size: 15px;
+    /* Controls moved to top right, no panel */
+    .controls{
+      position:fixed; 
+      top:calc(8px + var(--safe-top)); 
+      right: 12px; 
+      display:inline-flex; 
+      gap:8px;
+      z-index: 10;
     }
-    .pill > span:nth-child(odd) { font-weight: 500; opacity: 0.7; } /* Labels: Score, Time */
-    .pill > span:nth-child(even) { font-weight: 700; font-size: 16px; } /* Values */
 
-    .btn{min-width:40px; height:40px; border-radius:12px; display:grid; place-items:center; background:linear-gradient(180deg,var(--panel),var(--panel-2)); border:1px solid hsl(0 0% 100% / .06); box-shadow:0 6px 20px hsl(0 0% 0% / .30); user-select:none; cursor: pointer; color: var(--ink);}
-    .btn:active { transform: scale(0.95); }
+    /* Restyled minimal buttons */
+    .btn{
+      min-width:44px; 
+      height:44px; 
+      border-radius:50%; /* Circular */
+      display:grid; 
+      place-items:center; 
+      background:var(--tile); 
+      border:1px solid var(--tile-edge);
+      box-shadow: 0 4px 12px hsl(220 30% 80% / .6); 
+      user-select:none; 
+      cursor: pointer; 
+      color: var(--ink);
+      transition: transform .1s ease, box-shadow .1s ease;
+    }
+    .btn:active { 
+      transform: scale(0.92); 
+      box-shadow: 0 2px 8px hsl(220 30% 80% / .5); 
+    }
     .btn svg { width: 22px; height: 22px; stroke: currentColor; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-    
-    .controls{display:inline-flex; gap:8px}
 
     /* Board fit area */
-    .wrap{position:fixed; inset:64px 0 calc(90px + var(--safe-bottom)) 0; display:grid; place-items:center}
-    .board{position:relative; transform-style:preserve-3d; will-change:transform;}
+    .wrap{position:fixed; inset: calc(64px + var(--safe-top)) 0 var(--safe-bottom) 0; display:grid; place-items:center}
+    .board{
+      position:relative; 
+      transform-style:preserve-3d; 
+      will-change:transform;
+      /* Removed sway animation */
+      transform: rotateX(var(--iso-y)) rotateZ(var(--iso-x)) scale(var(--board-scale, 1));
+    }
 
     /* Tiles */
-    .tile{position:absolute; width:calc(var(--tile-size) * 1px); height:calc(var(--tile-size) * 1px); transform-style:preserve-3d}
-    .tile .top{position:absolute; inset:0; border-radius:8px; background:linear-gradient(180deg, hsl(220 15% 28%), var(--tile)); box-shadow: inset 0 1px 0 hsl(0 0% 100% / .04); transform: translateZ(var(--edge))}
+    .tile{
+      position:absolute; 
+      width:calc(var(--tile-size) * 1px); 
+      height:calc(var(--tile-size) * 1px); 
+      transform-style:preserve-3d;
+      cursor: pointer;
+      /* Add a subtle highlight on hover/tap */
+      transition: filter .2s ease;
+    }
+    .tile:hover .top {
+      filter: brightness(0.95);
+    }
+    .tile .top{
+      position:absolute; 
+      inset:0; 
+      border-radius:var(--radius); 
+      background:var(--tile); 
+      box-shadow: inset 0 1px 1px hsl(0 0% 100% / .8); 
+      transform: translateZ(var(--edge));
+      transition: inherit;
+    }
     .tile .left,.tile .right{position:absolute; background:var(--tile-edge)}
     .tile .left{width:100%; height:var(--edge); bottom:0; transform-origin:bottom; transform:rotateX(90deg)}
     .tile .right{height:100%; width:var(--edge); right:0; transform-origin:right; transform:rotateY(90deg)}
 
-    /* Pieces */
-    .piece{position:absolute; width:calc(var(--tile-size) * .9px); height:calc(var(--tile-size) * .9px); display:grid; place-items:center; font-size:calc(var(--tile-size) * .7px); translate:-50% -50%; transform:translate3d(0,0,0); filter: drop-shadow(0 6px 10px hsl(0 0% 0% / .35)); will-change:transform,opacity; transition:transform .18s ease, opacity .18s ease}
+
+    /* New Player Avatar Style */
+    .player {
+      position:absolute; 
+      width:calc(var(--tile-size) * .7px); 
+      height:calc(var(--tile-size) * .7px); 
+      translate:-50% -50%;
+      transform-style:preserve-3d;
+      will-change:transform; 
+      transition:transform .25s cubic-bezier(.3,1.3,.3,1), left .25s ease-out, top .25s ease-out;
+      /* It has its own 3D faces */
+      transform: translate3d(0,0,0); 
+    }
+    .player .top{
+      position:absolute; inset:0; border-radius:6px; 
+      background: var(--accent);
+      box-shadow: 0 0 20px var(--accent-glow);
+      transform: translateZ(calc(var(--edge) + 8px)); /* Float higher */
+    }
+    .player .left, .player .right {
+      position:absolute; 
+      background: linear-gradient(var(--accent), hsl(250 80% 45%));
+      height: calc(var(--edge) + 8px); /* Taller */
+      width: 100%;
+      bottom:0; transform-origin:bottom; transform:rotateX(90deg);
+    }
+    .player .right {
+      width: calc(var(--edge) + 8px); /* Thicker */
+      height: 100%;
+      right:0; transform-origin:right; transform:rotateY(90deg);
+    }
     
-    /* Improvement 4: De-synchronized wobble */
-    .wobble{animation:wob .22s ease-in-out alternate infinite}
-    @keyframes wob{from{transform:translate3d(0,0,8px) rotateZ(-1deg)} to{transform:translate3d(0,0,10px) rotateZ(1deg)}}
+    /* New Collectible Style (replaces .piece) */
+    .collectible {
+      position:absolute; 
+      width:calc(var(--tile-size) * .9px); /* Full size container */
+      height:calc(var(--tile-size) * .9px); 
+      display:grid; 
+      place-items:center; 
+      translate:-50% -50%; 
+      transform:translate3d(0,0,0); 
+      will-change:transform,opacity; 
+      transition:transform .18s ease, opacity .18s ease;
+      user-select: none;
+      /* This inner div is the visible orb */
+    }
+    .collectible > div {
+      width: calc(var(--tile-size) * .4px);
+      height: calc(var(--tile-size) * .4px);
+      background: var(--collectible);
+      border-radius: 50%;
+      box-shadow: 0 0 15px var(--collectible-glow), inset 0 2px 2px hsl(40 100% 80%);
+    }
+    .wobble{animation:wob .5s ease-in-out alternate infinite}
+    @keyframes wob{
+      from{transform:translate3d(0,0,10px)} 
+      to{transform:translate3d(0,0,12px)}
+    }
 
     /* Feedback */
-    .pop{position:absolute; translate:-50% -50%; font-weight:800; font-size:18px; color:var(--accent); text-shadow:0 2px 10px hsl(170 90% 45% / .5); animation:pop .5s ease forwards; pointer-events:none}
-    .pop.bonus { color: var(--accent-2); text-shadow:0 2px 10px hsl(34 95% 55% / .5); }
+    .pop{position:absolute; translate:-50% -50%; font-weight:800; font-size:18px; color:var(--collectible); text-shadow:0 2px 10px var(--collectible-glow); animation:pop .5s ease forwards; pointer-events:none}
     @keyframes pop{from{opacity:0; transform:translateY(0) scale(.8)}50%{opacity:1}to{opacity:0; transform:translateY(-26px) scale(1.05)}}
     
     .particle{position:absolute; width:5px; height:5px; border-radius:50%; background:currentColor; pointer-events:none}
 
-    /* Improvement 5: Score Pop Animation */
-    .pop-score {
-      animation: pop-score 0.3s cubic-bezier(.1,.9,.2,1);
-    }
-    @keyframes pop-score {
-      0% { transform: scale(1); color: var(--ink); }
-      50% { transform: scale(1.3); color: var(--accent-2); }
-      100% { transform: scale(1); color: var(--ink); }
-    }
-
-    /* Bottom dock */
-    .dock{position:fixed; left:0; right:0; bottom:0; padding:10px 12px calc(10px + var(--safe-bottom)); display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center}
-    .card{background:linear-gradient(180deg,var(--panel),var(--panel-2)); border:1px solid hsl(0 0% 100% / .06); border-radius:var(--radius); box-shadow:0 6px 20px hsl(0 0% 0% / .30); padding:10px}
-    .progress{height:10px; border-radius:999px; background:hsl(0 0% 100% / .06); overflow:hidden}
-    .bar{height:100%; width:0%; background:linear-gradient(90deg,var(--accent),var(--accent-2)); border-radius:inherit; box-shadow:0 6px 16px hsl(170 90% 45% / .4); transition:width .15s ease}
-
-    /* Improvement 3: Goal Emoji UI */
-    .goal-card {
-      display: grid;
-      grid-template-columns: auto 1fr;
-      gap: 10px;
-      align-items: center;
-    }
-    .goal-emoji {
-      font-size: 28px;
-      line-height: 1;
-      display: grid;
-      place-items: center;
-    }
-    .goal-text { font-size: 13px; font-weight: 500; opacity: 0.7; }
+    /* Motion guard */
+    @media (prefers-reduced-motion: reduce){*{animation:none !important; transition:none !important}}
   </style>
 </head>
 <body>
   <div class="scene" aria-hidden="true"></div>
 
-  <div class="hud">
-    <!-- Improvement 1: HUD now contains Score AND Time -->
-    <div class="pill">
-      <span>Score</span><span id="score" style="font-weight:700">0</span>
-      <span>Time</span><span id="timer">60</span>
-    </div>
-    <div class="controls">
-      <!-- Improvement 2: SVG Icons -->
-      <button class="btn" id="soundBtn" aria-label="Sound">
-        <svg viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5zM15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
-      </button>
-      <button class="btn" id="vibeBtn" aria-label="Vibration">
-        <svg viewBox="0 0 24 24"><path d="M3 10v4M6 7v10M9 4v16M12 2v20M15 4v16M18 7v10M21 10v4"></path></svg>
-      </button>
-    </div>
+  <!-- Minimal Controls -->
+  <div class="controls">
+    <button class="btn" id="soundBtn" aria-label="Sound">
+      <svg viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5zM15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+    </button>
+    <button class="btn" id="vibeBtn" aria-label="Vibration">
+      <svg viewBox="0 0 24 24"><path d="M3 10v4M6 7v10M9 4v16M12 2v20M15 4v16M18 7v10M21 10v4"></path></svg>
+    </button>
   </div>
 
   <div class="wrap">
     <div class="board" id="board" role="application" aria-label="Isometric board"></div>
   </div>
 
-  <div class="dock">
-    <!-- Improvement 3: Goal Emoji Card -->
-    <div class="card goal-card">
-      <div class="goal-emoji" id="goalEmoji">⭐</div>
-      <div style="display:grid; gap:8px">
-        <div class="goal-text">Combo Bonus</div>
-        <div class="progress"><div class="bar" id="comboBar"></div></div>
-      </div>
-    </div>
-    <!-- Improvement 2: SVG Icon -->
-    <button class="btn" id="shuffleBtn" aria-label="Shuffle">
-      <svg viewBox="0 0 24 24"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"></path></svg>
-    </button>
-  </div>
+  <!-- All HUD and Dock HTML removed -->
 
 <script>
 (() => {
-  // Sizing and scale-to-fit to avoid zoom-out and spread
+  // Sizing and scale-to-fit
   const r = getComputedStyle(document.documentElement);
   const SIZE = parseInt(r.getPropertyValue('--size')) || 9;
-  const TILE = parseFloat(r.getPropertyValue('--tile-size')) || 42; // logical tile
-  const EDGE = parseFloat(r.getPropertyValue('--edge')) || 4;
+  const TILE = parseFloat(r.getPropertyValue('--tile-size')) || 42;
+  const EDGE = parseFloat(r.getPropertyValue('--edge')) || 6;
   const ISO_X = r.getPropertyValue('--iso-x');
   const ISO_Y = r.getPropertyValue('--iso-y');
 
   const board = document.getElementById('board');
-  const scoreEl = document.getElementById('score');
-  const comboBar = document.getElementById('comboBar');
-  const timerEl = document.getElementById('timer');
   const soundBtn = document.getElementById('soundBtn');
   const vibeBtn = document.getElementById('vibeBtn');
-  const goalEmojiEl = document.getElementById('goalEmoji'); // Improvement 3
+  
+  // Removed score, timer, combo, goal elements
 
-  let score = parseInt(localStorage.getItem('iso-emoji-score') || '0', 10);
-  scoreEl.textContent = score;
-  let timeLeft = 60;
   let allowSound = true;
   let allowVibe = true;
 
@@ -194,6 +221,9 @@
     for (let x = 0; x < SIZE; x++) {
       const t = document.createElement('div');
       t.className = 'tile';
+      // Add data attributes for movement logic
+      t.dataset.x = x;
+      t.dataset.y = y;
       t.style.left = (x * TILE) + 'px';
       t.style.top  = (y * TILE) + 'px';
       t.style.zIndex = x + y;
@@ -202,77 +232,107 @@
     }
   }
 
-  // Fit board to the available viewport area by scaling the whole layer
+  // Fit board to the available viewport area
   const wrap = document.querySelector('.wrap');
   function fit(){
     const rect = wrap.getBoundingClientRect();
     const sx = rect.width  / gridW;
     const sy = rect.height / gridH;
-    const scale = Math.floor(Math.min(sx, sy) * 100) / 100; // snap to reduce relayout churn
-    board.style.transform = `rotateX(${ISO_Y}) rotateZ(${ISO_X}) scale(${scale}) translateZ(0)`;
+    const scale = Math.floor(Math.min(sx, sy) * 100) / 100;
+    board.style.setProperty('--board-scale', scale);
   }
   window.addEventListener('resize', fit, {passive:true});
   fit();
 
-  // Emoji pieces
-  const EMOJIS = ['🍀','🍓','🍋','🍇','🍩','⭐','💎','🧁','🍭','🥝','🍉','🎈'];
-  const pieces = new Set();
-  let currentGoalEmoji = ''; // Improvement 3
+  // --- New Player and Collectible Logic ---
+  
+  const collectibles = new Set();
+  let playerEl = null;
+  let playerPosition = { x: 4.5, y: 4.5 }; // Start in center
 
-  function spawnPiece(){
+  // Spawns the player avatar
+  function spawnPlayer() {
+    playerEl = document.createElement('div');
+    playerEl.className = 'player';
+    // Player has its own 3D faces
+    playerEl.innerHTML = `<div class="top"></div><div class="left"></div><div class="right"></div>`;
+    positionPiece(playerEl, playerPosition.x, playerPosition.y);
+    playerEl.style.transform = 'translate3d(0,0,20px) scale(0.8)';
+    board.appendChild(playerEl);
+    requestAnimationFrame(() => {
+      playerEl.style.transform = 'translate3d(0,0,10px) scale(1)';
+    });
+  }
+
+  // Spawns a collectible orb
+  function spawnCollectible(){
     const el = document.createElement('div');
-    el.className = 'piece wobble';
-    el.textContent = EMOJIS[Math.floor(Math.random()*EMOJIS.length)];
+    el.className = 'collectible wobble';
+    el.innerHTML = '<div></div>'; // Inner div is the orb
+    el.style.animationDelay = `-${(Math.random() * 0.5).toFixed(2)}s`;
     
-    // Improvement 4: Add random animation delay
-    el.style.animationDelay = `-${(Math.random() * 0.4).toFixed(2)}s`;
-    
-    const x = Math.floor(Math.random()*SIZE) + 0.5;
-    const y = Math.floor(Math.random()*SIZE) + 0.5;
+    // Find a free spot (not where the player is)
+    let x, y;
+    do {
+      x = Math.floor(Math.random()*SIZE) + 0.5;
+      y = Math.floor(Math.random()*SIZE) + 0.5;
+    } while (x === playerPosition.x && y === playerPosition.y);
+
     positionPiece(el,x,y,true);
     el.style.opacity = 0; el.style.transform = 'translate3d(0,0,20px) scale(.7)';
-    board.appendChild(el); pieces.add(el);
+    board.appendChild(el); collectibles.add(el);
     requestAnimationFrame(()=>{ el.style.opacity = 1; el.style.transform = 'translate3d(0,0,10px) scale(1)'; });
     return el;
   }
-  
-  // Improvement 3: Function to set a new goal
-  function setNewGoal() {
-    // Ensure new goal is different from the old one, if possible
-    const otherEmojis = EMOJIS.filter(e => e !== currentGoalEmoji);
-    const pool = otherEmojis.length > 0 ? otherEmojis : EMOJIS;
-    currentGoalEmoji = pool[Math.floor(Math.random() * pool.length)];
-    goalEmojiEl.textContent = currentGoalEmoji;
-  }
 
+  // Generic function to position any element on the grid
   function positionPiece(el,gx,gy,clamp=false){
     const x = clamp ? Math.max(.5, Math.min(gx, SIZE-.5)) : gx;
     const y = clamp ? Math.max(.5, Math.min(gy, SIZE-.5)) : gy;
     el.dataset.gx = x; el.dataset.gy = y;
     el.style.left = (x * TILE) + 'px';
     el.style.top  = (y * TILE) + 'px';
-    el.style.zIndex = Math.floor(x + y) + 1;
+    // Player floats higher than tiles and collectibles
+    el.style.zIndex = Math.floor(x + y) + (el.classList.contains('player') ? 2 : 1);
   }
 
-  for(let i=0;i<10;i++) spawnPiece(); // fewer for smoother start
-  setNewGoal(); // Improvement 3: Set initial goal
+  spawnPlayer();
+  for(let i=0;i<5;i++) spawnCollectible(); // Start with 5 collectibles
 
-  // Input
+  // Input: Tap tiles to move
   board.addEventListener('pointerdown', onTap, {passive:true});
   function onTap(e){
-    const target = e.target.closest('.piece');
-    if(target) collect(target);
+    const targetTile = e.target.closest('.tile');
+    if(targetTile) {
+      const targetX = parseInt(targetTile.dataset.x, 10) + 0.5;
+      const targetY = parseInt(targetTile.dataset.y, 10) + 0.5;
+      
+      // Move Player
+      playerPosition = { x: targetX, y: targetY };
+      positionPiece(playerEl, playerPosition.x, playerPosition.y);
+      blip(300, 0.05, 'sine');
+      vibrate(8);
+      
+      // Check if we landed on a collectible
+      checkCollection();
+    }
+  }
+  
+  // Check if player position matches any collectible
+  function checkCollection() {
+    for (const c of collectibles) {
+      const cX = parseFloat(c.dataset.gx);
+      const cY = parseFloat(c.dataset.gy);
+      
+      if (cX === playerPosition.x && cY === playerPosition.y) {
+        collect(c);
+        break; // Only collect one per move
+      }
+    }
   }
 
-  // Shuffle
-  document.getElementById('shuffleBtn').addEventListener('click', () => {
-    for (const p of pieces){
-      const nx = Math.floor(Math.random()*SIZE)+0.5;
-      const ny = Math.floor(Math.random()*SIZE)+0.5;
-      positionPiece(p,nx,ny,true);
-    }
-    blip(300,0.06,'sine'); vibrate(8);
-  }, {passive:true});
+  // Shuffle button is gone
+  // document.getElementById('shuffleBtn')... removed
 
   // Minimal WebAudio blip
   const audioCtx = window.AudioContext ? new AudioContext() : null;
@@ -291,7 +351,6 @@
   function vibrate(ms=10){ if(allowVibe && navigator.vibrate) navigator.vibrate(ms); }
 
   // Toggles
-  // Improvement 2: Updated SVG icons for toggles
   const soundIcon = {
     on: `<svg viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5zM15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>`,
     off: `<svg viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6"></path></svg>`
@@ -314,40 +373,14 @@
     vibrate(8) 
   });
 
-  // Scoring and effects
-  let combo = 0, comboIdle = 0;
+  // Simplified collection effects
   function collect(el){
     const x = parseFloat(el.dataset.gx), y = parseFloat(el.dataset.gy);
-    let bonus = 1;
-    let popClass = '';
-    
-    // Improvement 3: Check for goal emoji
-    if (el.textContent === currentGoalEmoji) {
-      bonus = 5 + Math.floor(combo/10); // Bigger bonus
-      combo = Math.min(100, combo + 15); // More combo
-      blip(880 + combo*2, 0.06, 'triangle');
-      popText(`⭐ +${bonus}`, x, y, 'bonus');
-      setNewGoal(); // Get a new goal
-    } else {
-      bonus = 1 + Math.floor(combo/20); // Standard bonus
-      combo = Math.min(100, combo + 5); // Less combo
-      blip(660 + combo*2, 0.05, 'triangle');
-      popText(`+${bonus}`, x, y);
-    }
-    
-    score += bonus; 
-    scoreEl.textContent = score; 
-    localStorage.setItem('iso-emoji-score', String(score));
-    
-    // Improvement 5: Trigger score pop animation
-    scoreEl.classList.remove('pop-score');
-    void scoreEl.offsetWidth; // Force DOM reflow
-    scoreEl.classList.add('pop-score');
-    
-    comboIdle = 0; 
-    comboBar.style.width = combo + '%';
+
+    blip(880, 0.06, 'triangle');
     vibrate(12);
-    burst(x, y, `hsl(${Math.floor(Math.random()*360)} 90% 60%)`);
+    popText("+1", x, y);
+    burst(x, y, 'var(--collectible)'); // Use collectible color for burst (Fixed: added quotes)
     
     // recycle
     el.classList.remove('wobble'); 
@@ -355,14 +388,14 @@
     el.style.opacity = 0;
     setTimeout(()=>{ 
       if(el.isConnected) el.remove(); 
-      pieces.delete(el); 
-      spawnPiece(); 
+      collectibles.delete(el); 
+      spawnCollectible(); 
     }, 140);
   }
 
   function popText(text,gx,gy,className=''){
     const el = document.createElement('div'); 
-    el.className = 'pop ' + className; // Add bonus class if needed
+    el.className = 'pop ' + className;
     el.textContent = text;
     el.style.left = (gx*TILE) + 'px'; 
     el.style.top = (gy*TILE) + 'px'; 
@@ -371,36 +404,23 @@
   }
 
   function burst(gx,gy,color){
-    const n = 8; // lighter particles
-    for(let i=0; i<n; i++){ // <-- Fixed: was iG<n
-      const p = document.createElement('div'); p.className = 'particle'; p.style.color = color;
+    const n = 8;
+    for(let i=0; i<n; i++){
+      const p = document.createElement('div'); p.className = 'particle'; 
+      p.style.color = color; // Use the passed color
       p.style.left = (gx*TILE)+'px'; p.style.top = (gy*TILE)+'px'; board.appendChild(p);
-// ... existing code ... -->
-      setTimeout(()=>p.remove(), 460);
+      const a = Math.random()*Math.PI*2; const d = 16 + Math.random()*18;
+      const tx = Math.cos(a)*d, ty = Math.sin(a)*d;
+      p.animate([
+        {transform:`translate(0,0) scale(1)`, opacity:1},
+        {transform:`translate(${tx}px,${ty}px) scale(0)`, opacity:0}
+      ],{duration:300+Math.random()*200, easing:'cubic-bezier(.1,.8,.2,1)', fill:'forwards'});
+      setTimeout(()=>p.remove(), 520);
     }
   }
 
-  // Lightweight game loop: timer and combo decay only
-  let last = performance.now();
-  function loop(now){
-    const dt = Math.min(100, now - last); last = now;
-    timeLeft = Math.max(0, timeLeft - dt/1000); 
-    timerEl.textContent = Math.ceil(timeLeft);
-    if (timeLeft === 0) {
-        // Simple game over state - could be expanded
-        board.style.pointerEvents = 'none';
-        timerEl.textContent = '0';
-        return; // Stop the loop
-    }
-    
-    comboIdle += dt; 
-    if(comboIdle > 800){ 
-      combo = Math.max(0, combo - dt*0.02); 
-      comboBar.style.width = combo + '%'; 
-    }
-    requestAnimationFrame(loop);
-  }
-  requestAnimationFrame(loop);
+  // Game loop is no longer needed for score/combo
+  // requestAnimationFrame(loop);
 })();
 </script>
 </body>
