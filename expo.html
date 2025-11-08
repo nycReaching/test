@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Emoji Collector • Isometric</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <title>Emoji Collector • Isometric • v2</title>
   <style>
-    :root {
+    :root{
       --bg: hsl(220 20% 8%);
       --panel: hsl(220 18% 14%);
       --panel-2: hsl(220 18% 18%);
@@ -14,249 +14,115 @@
       --accent-2: hsl(34 95% 55%);
       --tile: hsl(221 20% 22%);
       --tile-edge: hsl(221 25% 17%);
-      --shadow: 0 10px 30px hsl(0 0% 0% / .35);
-      --radius: 18px;
-      --safe-bottom: env(safe-area-inset-bottom, 0px);
-      --safe-top: env(safe-area-inset-top, 0px);
-      --size: 9; /* grid size NxN */
-      --tile-size: clamp(28px, 6.5vw, 44px);
+      --radius: 16px;
+      --safe-bottom: env(safe-area-inset-bottom,0px);
+      --safe-top: env(safe-area-inset-top,0px);
+      --size: 9; /* N x N */
+      --tile-size: 42; /* logical px before scale */
       --iso-x: 45deg;
-      --iso-xr: -45deg;
-      --iso-y: 60deg; /* tilt */
+      --iso-y: 50deg; /* tighter grid than v1 */
+      --edge: 4px; /* side face thickness */
     }
-
-    * { box-sizing: border-box; }
-    html, body { height: 100%; }
-    body {
-      margin: 0;
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; color:var(--ink);
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-      color: var(--ink);
       background: var(--bg);
-      overflow: hidden;
-      -webkit-tap-highlight-color: transparent;
+      overflow:hidden; -webkit-tap-highlight-color:transparent; touch-action:none;
     }
 
-    /* Layered parallax texture */
-    .scene-bg {
-      position: fixed; inset: 0;
+    /* Lightweight background (no heavy filters) */
+    .scene{position:fixed;inset:0; pointer-events:none;
       background:
-        radial-gradient(1200px 800px at 80% -10%, hsl(200 40% 20% / .15), transparent 60%),
-        radial-gradient(800px 600px at 10% 110%, hsl(280 40% 25% / .18), transparent 55%),
-        repeating-linear-gradient(135deg, hsl(0 0% 100% / .02) 0 2px, transparent 2px 6px),
-        linear-gradient(180deg, hsl(210 40% 10%), hsl(230 30% 8%));
-      filter: saturate(1.05);
-      pointer-events: none;
-    }
+        radial-gradient(80vmax 60vmax at 80% -10%, hsl(200 40% 20% / .12), transparent 60%),
+        radial-gradient(60vmax 40vmax at 10% 110%, hsl(280 40% 25% / .14), transparent 55%),
+        linear-gradient(180deg, hsl(210 40% 10%), hsl(230 30% 8%));}
 
     /* HUD */
-    .hud {
-      position: fixed; inset: 0 auto auto 0; width: 100%; padding: calc(10px + var(--safe-top)) 14px 10px;
-      display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px;
-      z-index: 20; pointer-events: none;
-    }
-    .pill {
-      pointer-events: auto;
-      display: inline-flex; align-items: center; gap: 10px;
-      padding: 10px 14px; border-radius: 999px;
-      background: linear-gradient(180deg, var(--panel), var(--panel-2));
-      box-shadow: inset 0 1px 0 hsl(0 0% 100% / .04), var(--shadow);
-      backdrop-filter: blur(6px) saturate(1.2);
-      border: 1px solid hsl(0 0% 100% / .06);
-    }
-    .score { font-weight: 700; letter-spacing: .3px; }
-    .controls { display: inline-flex; gap: 8px; }
-    .btn {
-      pointer-events: auto;
-      min-width: 40px; height: 40px; border-radius: 12px;
-      display: grid; place-items: center;
-      background: linear-gradient(180deg, var(--panel), var(--panel-2));
-      box-shadow: inset 0 1px 0 hsl(0 0% 100% / .04), var(--shadow);
-      border: 1px solid hsl(0 0% 100% / .06);
-      user-select: none;
-    }
-    .btn:active { transform: translateY(1px) scale(.98); }
+    .hud{position:fixed; inset:0 0 auto 0; padding:calc(8px + var(--safe-top)) 12px 8px; display:grid; grid-template-columns:1fr auto; align-items:center; gap:8px; z-index:10}
+    .pill{display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px; background:linear-gradient(180deg,var(--panel),var(--panel-2)); border:1px solid hsl(0 0% 100% / .06); box-shadow: 0 6px 20px hsl(0 0% 0% / .30);}
+    .btn{min-width:40px; height:40px; border-radius:12px; display:grid; place-items:center; background:linear-gradient(180deg,var(--panel),var(--panel-2)); border:1px solid hsl(0 0% 100% / .06); box-shadow:0 6px 20px hsl(0 0% 0% / .30); user-select:none}
+    .controls{display:inline-flex; gap:8px}
 
-    /* Board wrapper provides subtle parallax */
-    .wrap {
-      position: fixed; inset: 80px 0 calc(90px + var(--safe-bottom)) 0; display: grid; place-items: center;
-    }
+    /* Board fit area */
+    .wrap{position:fixed; inset:64px 0 calc(90px + var(--safe-bottom)) 0; display:grid; place-items:center}
+    .board{position:relative; transform-style:preserve-3d; will-change:transform;}
 
-    .board {
-      position: relative;
-      transform: rotateX(var(--iso-y)) rotateZ(var(--iso-x));
-      transform-style: preserve-3d;
-      filter: drop-shadow(0 30px 40px hsl(0 0% 0% / .45));
-    }
+    /* Tiles */
+    .tile{position:absolute; width:calc(var(--tile-size) * 1px); height:calc(var(--tile-size) * 1px); transform-style:preserve-3d}
+    .tile .top{position:absolute; inset:0; border-radius:8px; background:linear-gradient(180deg, hsl(220 15% 28%), var(--tile)); box-shadow: inset 0 1px 0 hsl(0 0% 100% / .04); transform: translateZ(var(--edge))}
+    .tile .left,.tile .right{position:absolute; background:var(--tile-edge)}
+    .tile .left{width:100%; height:var(--edge); bottom:0; transform-origin:bottom; transform:rotateX(90deg)}
+    .tile .right{height:100%; width:var(--edge); right:0; transform-origin:right; transform:rotateY(90deg)}
 
-    /* Tiles: 2.5D lozenges with side faces */
-    .tile {
-      position: absolute; width: var(--tile-size); height: var(--tile-size);
-      transform-style: preserve-3d;
-    }
-    .tile .top {
-      position: absolute; inset: 0; border-radius: 8px; background: linear-gradient(180deg, hsl(220 15% 28%), var(--tile));
-      box-shadow: inset 0 1px 0 hsl(0 0% 100% / .06);
-      transform: translateZ(6px);
-    }
-    .tile .left, .tile .right {
-      position: absolute; background: var(--tile-edge);
-      filter: brightness(.96);
-    }
-    .tile .left { width: 100%; height: 6px; bottom: 0; transform-origin: bottom; transform: rotateX(90deg); }
-    .tile .right { height: 100%; width: 6px; right: 0; transform-origin: right; transform: rotateY(90deg); }
+    /* Pieces */
+    .piece{position:absolute; width:calc(var(--tile-size) * .9px); height:calc(var(--tile-size) * .9px); display:grid; place-items:center; font-size:calc(var(--tile-size) * .7px); translate:-50% -50%; transform:translate3d(0,0,0); filter: drop-shadow(0 6px 10px hsl(0 0% 0% / .35)); will-change:transform,opacity; transition:transform .18s ease, opacity .18s ease}
+    .wobble{animation:wob .18s ease-in-out alternate infinite}
+    @keyframes wob{from{transform:translate3d(0,0,8px) rotateZ(-1deg)} to{transform:translate3d(0,0,10px) rotateZ(1deg)}}
 
-    /* Emoji pieces */
-    .piece {
-      position: absolute; width: calc(var(--tile-size) * .9); height: calc(var(--tile-size) * .9);
-      display: grid; place-items: center; font-size: calc(var(--tile-size) * .7);
-      transform-style: preserve-3d; translate: -50% -50%;
-      filter: drop-shadow(0 10px 14px hsl(0 0% 0% / .35));
-      will-change: transform, opacity;
-      transition: transform .2s ease, opacity .2s ease;
-    }
-    .piece::after { /* subtle pedestal */
-      content: ""; position: absolute; inset: auto 0 -6px 0; height: 8px; border-radius: 50%;
-      background: radial-gradient(closest-side, hsl(0 0% 0% / .35), transparent);
-      transform: rotateX(90deg) translateZ(-2px);
-      pointer-events: none;
-    }
-    .wobble { animation: wobble 2.2s ease-in-out infinite; transform-origin: 50% 80%; }
-    @keyframes wobble {
-      0%,100% { transform: translateZ(10px) rotateX(0deg) rotateZ(0deg); }
-      25% { transform: translateZ(12px) rotateX(4deg) rotateZ(2deg); }
-      50% { transform: translateZ(10px) rotateX(-2deg) rotateZ(-2deg); }
-      75% { transform: translateZ(12px) rotateX(3deg) rotateZ(-1deg); }
-    }
+    /* Feedback */
+    .pop{position:absolute; translate:-50% -50%; font-weight:800; font-size:18px; color:var(--accent); text-shadow:0 2px 10px hsl(170 90% 45% / .5); animation:pop .5s ease forwards; pointer-events:none}
+    @keyframes pop{from{opacity:0; transform:translateY(0) scale(.8)}50%{opacity:1}to{opacity:0; transform:translateY(-26px) scale(1.05)}}
+    .particle{position:absolute; width:5px; height:5px; border-radius:50%; background:currentColor; pointer-events:none}
 
-    /* Floating +1 marker */
-    .pop {
-      position: absolute; translate: -50% -50%; font-weight: 800; font-size: 18px; color: var(--accent);
-      text-shadow: 0 2px 10px hsl(170 90% 45% / .5);
-      animation: pop .6s ease forwards;
-      pointer-events: none;
-    }
-    @keyframes pop { from { opacity: 0; transform: translateY(0) scale(.7);} 50% {opacity:1;} to { opacity:0; transform: translateY(-30px) scale(1.05);} }
+    /* Bottom dock */
+    .dock{position:fixed; left:0; right:0; bottom:0; padding:10px 12px calc(10px + var(--safe-bottom)); display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center}
+    .card{background:linear-gradient(180deg,var(--panel),var(--panel-2)); border:1px solid hsl(0 0% 100% / .06); border-radius:var(--radius); box-shadow:0 6px 20px hsl(0 0% 0% / .30); padding:10px}
+    .progress{height:10px; border-radius:999px; background:hsl(0 0% 100% / .06); overflow:hidden}
+    .bar{height:100%; width:0%; background:linear-gradient(90deg,var(--accent),var(--accent-2)); border-radius:inherit; box-shadow:0 6px 16px hsl(170 90% 45% / .4); transition:width .15s ease}
 
-    /* Particles */
-    .particle { position: absolute; width: 6px; height: 6px; border-radius: 50%; background: currentColor; pointer-events: none; }
-
-    /* Bottom bar */
-    .dock {
-      position: fixed; left: 0; right: 0; bottom: 0; padding: 12px 16px calc(12px + var(--safe-bottom));
-      display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center;
-      z-index: 20; 
-    }
-    .card {
-      background: linear-gradient(180deg, var(--panel), var(--panel-2));
-      border: 1px solid hsl(0 0% 100% / .06);
-      border-radius: var(--radius);
-      box-shadow: inset 0 1px 0 hsl(0 0% 100% / .05), var(--shadow);
-      padding: 12px;
-    }
-    .progress { height: 10px; border-radius: 999px; background: hsl(0 0% 100% / .06); overflow: hidden; }
-    .bar { height: 100%; width: 20%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); border-radius: inherit; box-shadow: 0 6px 16px hsl(170 90% 45% / .4); transition: width .2s ease; }
-
-    .dock .btn { width: 48px; height: 48px; border-radius: 14px; }
-
-    /* Pause overlay */
-    .overlay { position: fixed; inset: 0; display: grid; place-items: center; background: hsl(220 20% 6% / .6); backdrop-filter: blur(4px); z-index: 40; opacity: 0; pointer-events: none; transition: .2s ease; }
-    .overlay.active { opacity: 1; pointer-events: auto; }
-    .modal { width: min(420px, 90vw); text-align: center; }
-    .modal h1 { margin: 0 0 10px; font-size: 28px; }
-    .modal p { margin: 0 0 14px; opacity: .8; }
-    .modal .row { display: flex; gap: 10px; justify-content: center; }
-
-    /* Tap ripple feedback */
-    .ripple {
-      position: absolute; width: 8px; height: 8px; border-radius: 50%; background: hsl(0 0% 100% / .2); pointer-events: none; transform: translate(-50%, -50%) scale(1);
-      box-shadow: 0 0 40px hsl(0 0% 100% / .25), inset 0 0 20px hsl(0 0% 100% / .25);
-      animation: ripple .45s ease-out forwards;
-    }
-    @keyframes ripple { to { opacity: 0; transform: translate(-50%, -50%) scale(12);} }
-
-    /* Motion safeties */
-    @media (prefers-reduced-motion: reduce) {
-      * { animation: none !important; transition: none !important; }
-    }
+    /* Motion guard */
+    @media (prefers-reduced-motion: reduce){*{animation:none !important; transition:none !important}}
   </style>
 </head>
 <body>
-  <div class="scene-bg" aria-hidden="true"></div>
+  <div class="scene" aria-hidden="true"></div>
 
   <div class="hud">
-    <div class="pill"><span>Score</span><span class="score" id="score">0</span></div>
+    <div class="pill"><span>Score</span><span id="score" style="font-weight:700">0</span></div>
     <div class="controls">
       <button class="btn" id="soundBtn" aria-label="Sound">🔊</button>
       <button class="btn" id="vibeBtn" aria-label="Vibration">📳</button>
-      <button class="btn" id="pauseBtn" aria-label="Pause">⏸️</button>
     </div>
   </div>
 
   <div class="wrap">
-    <div class="board" id="board" aria-label="Isometric board" role="application"></div>
+    <div class="board" id="board" role="application" aria-label="Isometric board"></div>
   </div>
 
   <div class="dock">
-    <div class="card" style="display:grid; gap:10px;">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <span>Combo</span>
-        <span id="timer">60</span>
-      </div>
+    <div class="card" style="display:grid; gap:8px">
+      <div style="display:flex; justify-content:space-between; align-items:center"><span>Combo</span><span id="timer">60</span></div>
       <div class="progress"><div class="bar" id="comboBar"></div></div>
     </div>
     <button class="btn" id="shuffleBtn" aria-label="Shuffle">🔀</button>
   </div>
 
-  <div class="overlay" id="pauseOverlay" aria-hidden="true">
-    <div class="modal card">
-      <h1>Paused</h1>
-      <p>Collect emojis. Tap pieces. Aim for chains.</p>
-      <div class="row">
-        <button class="btn" id="resumeBtn">▶️</button>
-        <button class="btn" id="resetBtn">🗘</button>
-      </div>
-    </div>
-  </div>
-
 <script>
 (() => {
-  const SIZE = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--size')) || 9;
-  const TILE = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--tile-size')) || 40;
+  // Sizing and scale-to-fit to avoid zoom-out and spread
+  const r = getComputedStyle(document.documentElement);
+  const SIZE = parseInt(r.getPropertyValue('--size')) || 9;
+  const TILE = parseFloat(r.getPropertyValue('--tile-size')) || 42; // logical tile
+  const EDGE = parseFloat(r.getPropertyValue('--edge')) || 4;
+  const ISO_X = r.getPropertyValue('--iso-x');
+  const ISO_Y = r.getPropertyValue('--iso-y');
+
   const board = document.getElementById('board');
   const scoreEl = document.getElementById('score');
   const comboBar = document.getElementById('comboBar');
   const timerEl = document.getElementById('timer');
-  const overlay = document.getElementById('pauseOverlay');
   const soundBtn = document.getElementById('soundBtn');
   const vibeBtn = document.getElementById('vibeBtn');
 
   let score = parseInt(localStorage.getItem('iso-emoji-score') || '0', 10);
   scoreEl.textContent = score;
   let timeLeft = 60;
-  let paused = false;
   let allowSound = true;
   let allowVibe = true;
 
-  // Sound: tiny synth via WebAudio, no assets
-  const audioCtx = window.AudioContext ? new AudioContext() : null;
-  function blip(freq = 880, duration = 0.08, type = 'triangle') {
-    if (!allowSound || !audioCtx) return;
-    const o = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-    o.type = type; o.frequency.value = freq;
-    g.gain.value = 0.001; // start near-silent to avoid click
-    o.connect(g).connect(audioCtx.destination);
-    const now = audioCtx.currentTime;
-    o.start(now);
-    g.gain.exponentialRampToValueAtTime(0.08, now + 0.01);
-    g.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-    o.stop(now + duration);
-  }
-
-  function vibrate(ms = 10) { if (allowVibe && navigator.vibrate) navigator.vibrate(ms); }
-
-  // Build grid
-  const tiles = [];
+  // Build grid once
   const gridW = SIZE * TILE;
   const gridH = SIZE * TILE;
   board.style.width = gridW + 'px';
@@ -267,175 +133,132 @@
       const t = document.createElement('div');
       t.className = 'tile';
       t.style.left = (x * TILE) + 'px';
-      t.style.top = (y * TILE) + 'px';
-      t.style.zIndex = x + y; // simple painter's order
-      t.innerHTML = '<div class="top"></div><div class="left"></div><div class="right"></div>';
+      t.style.top  = (y * TILE) + 'px';
+      t.style.zIndex = x + y;
+      t.innerHTML = `<div class="top"></div><div class="left" style="height:${EDGE}"></div><div class="right" style="width:${EDGE}"></div>`;
       board.appendChild(t);
-      tiles.push(t);
     }
   }
 
-  // Emoji set
+  // Fit board to the available viewport area by scaling the whole layer
+  const wrap = document.querySelector('.wrap');
+  function fit(){
+    const rect = wrap.getBoundingClientRect();
+    const sx = rect.width  / gridW;
+    const sy = rect.height / gridH;
+    const scale = Math.floor(Math.min(sx, sy) * 100) / 100; // snap to reduce relayout churn
+    board.style.transform = `rotateX(${ISO_Y}) rotateZ(${ISO_X}) scale(${scale}) translateZ(0)`;
+  }
+  window.addEventListener('resize', fit, {passive:true});
+  fit();
+
+  // Emoji pieces
   const EMOJIS = ['🍀','🍓','🍋','🍇','🍩','⭐','💎','🧁','🍭','🥝','🍉','🎈'];
   const pieces = new Set();
 
-  function spawnPiece() {
+  function spawnPiece(){
     const el = document.createElement('div');
     el.className = 'piece wobble';
-    el.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
-    const x = Math.floor(Math.random() * SIZE) + 0.5;
-    const y = Math.floor(Math.random() * SIZE) + 0.5;
-    positionPiece(el, x, y, true);
-    board.appendChild(el);
-    pieces.add(el);
-    // entrance pop
-    el.style.opacity = 0; el.style.transform = 'translateZ(30px) scale(.6)';
-    requestAnimationFrame(() => {
-      el.style.opacity = 1; el.style.transform = 'translateZ(10px) scale(1)';
-    });
+    el.textContent = EMOJIS[Math.floor(Math.random()*EMOJIS.length)];
+    const x = Math.floor(Math.random()*SIZE) + 0.5;
+    const y = Math.floor(Math.random()*SIZE) + 0.5;
+    positionPiece(el,x,y,true);
+    el.style.opacity = 0; el.style.transform = 'translate3d(0,0,20px) scale(.7)';
+    board.appendChild(el); pieces.add(el);
+    requestAnimationFrame(()=>{ el.style.opacity = 1; el.style.transform = 'translate3d(0,0,10px) scale(1)'; });
     return el;
   }
 
-  function positionPiece(el, gx, gy, clamp = false) {
-    const x = clamp ? Math.max(.5, Math.min(gx, SIZE - .5)) : gx;
-    const y = clamp ? Math.max(.5, Math.min(gy, SIZE - .5)) : gy;
+  function positionPiece(el,gx,gy,clamp=false){
+    const x = clamp ? Math.max(.5, Math.min(gx, SIZE-.5)) : gx;
+    const y = clamp ? Math.max(.5, Math.min(gy, SIZE-.5)) : gy;
     el.dataset.gx = x; el.dataset.gy = y;
     el.style.left = (x * TILE) + 'px';
-    el.style.top = (y * TILE) + 'px';
+    el.style.top  = (y * TILE) + 'px';
     el.style.zIndex = Math.floor(x + y) + 1;
   }
 
-  // Initial pieces
-  for (let i = 0; i < 12; i++) spawnPiece();
+  for(let i=0;i<10;i++) spawnPiece(); // fewer for smoother start
 
-  // Tap interactions
-  board.addEventListener('pointerdown', (e) => {
-    // unlock audio on first gesture
-    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-
-    ripple(e);
+  // Input
+  board.addEventListener('pointerdown', onTap, {passive:true});
+  function onTap(e){
     const target = e.target.closest('.piece');
-    if (target) collect(target);
-  });
+    if(target) collect(target);
+  }
 
-  // Shuffle button
+  // Shuffle
   document.getElementById('shuffleBtn').addEventListener('click', () => {
-    for (const p of pieces) {
-      const nx = Math.floor(Math.random() * SIZE) + 0.5;
-      const ny = Math.floor(Math.random() * SIZE) + 0.5;
-      positionPiece(p, nx, ny, true);
+    for (const p of pieces){
+      const nx = Math.floor(Math.random()*SIZE)+0.5;
+      const ny = Math.floor(Math.random()*SIZE)+0.5;
+      positionPiece(p,nx,ny,true);
     }
-    blip(300, 0.07, 'sine'); vibrate(8);
-  });
+    blip(300,0.06,'sine'); vibrate(8);
+  }, {passive:true});
 
-  // Pause controls
-  document.getElementById('pauseBtn').addEventListener('click', togglePause);
-  document.getElementById('resumeBtn').addEventListener('click', togglePause);
-  document.getElementById('resetBtn').addEventListener('click', resetGame);
+  // Minimal WebAudio blip
+  const audioCtx = window.AudioContext ? new AudioContext() : null;
+  function blip(freq=880, dur=0.07, type='triangle'){
+    if(!allowSound || !audioCtx) return;
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = type; o.frequency.value = freq; g.gain.value = 0.0001;
+    o.connect(g).connect(audioCtx.destination);
+    const t = audioCtx.currentTime; o.start(t);
+    g.gain.exponentialRampToValueAtTime(0.06, t+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
+    o.stop(t+dur);
+  }
+  function vibrate(ms=10){ if(allowVibe && navigator.vibrate) navigator.vibrate(ms); }
 
   // Toggles
-  soundBtn.addEventListener('click', () => {
-    allowSound = !allowSound; soundBtn.textContent = allowSound ? '🔊' : '🔇'; blip(200, 0.05);
-  });
-  vibeBtn.addEventListener('click', () => {
-    allowVibe = !allowVibe; vibeBtn.textContent = allowVibe ? '📳' : '📴'; vibrate(8);
-  });
+  soundBtn.addEventListener('click', ()=>{ allowSound=!allowSound; soundBtn.textContent = allowSound ? '🔊' : '🔇'; blip(200,0.05) });
+  vibeBtn.addEventListener('click', ()=>{ allowVibe=!allowVibe; vibeBtn.textContent = allowVibe ? '📳' : '📴'; vibrate(8) });
 
-  function togglePause() {
-    paused = !paused;
-    overlay.classList.toggle('active', paused);
-    overlay.setAttribute('aria-hidden', String(!paused));
-  }
-
-  function resetGame() {
-    score = 0; timeLeft = 60; combo = 0; scoreEl.textContent = score; comboBar.style.width = '0%';
-    for (const p of pieces) p.remove(); pieces.clear();
-    for (let i = 0; i < 12; i++) spawnPiece();
-    togglePause();
-  }
-
-  // Collect logic with effects
-  let combo = 0; let comboDecay = 0; // 0..100
-  function collect(el) {
+  // Scoring and effects
+  let combo = 0, comboIdle = 0;
+  function collect(el){
     const x = parseFloat(el.dataset.gx), y = parseFloat(el.dataset.gy);
-    // score
-    const bonus = 1 + Math.floor(combo / 20);
+    const bonus = 1 + Math.floor(combo/20);
     score += bonus; scoreEl.textContent = score; localStorage.setItem('iso-emoji-score', String(score));
-    combo = Math.min(100, combo + 12); comboDecay = 0; updateCombo();
-    blip(680 + combo * 2, 0.05, 'triangle'); vibrate(12);
-    floatText('+'+bonus, x, y);
-    burst(x, y, el.style.color || 'hsl(' + Math.floor(Math.random()*360) + ' 90% 60%)');
-
-    // animate out and respawn
-    el.classList.remove('wobble');
-    el.style.transform = 'translateZ(40px) scale(.7) rotateZ(10deg)';
-    el.style.opacity = 0;
-    setTimeout(() => { if (el.isConnected) el.remove(); pieces.delete(el); spawnPiece(); }, 160);
+    combo = Math.min(100, combo + 12); comboIdle = 0; comboBar.style.width = combo + '%';
+    blip(660 + combo*2, 0.05, 'triangle'); vibrate(12);
+    popText('+'+bonus, x, y);
+    burst(x, y, el.style.color || `hsl(${Math.floor(Math.random()*360)} 90% 60%)`);
+    // recycle
+    el.classList.remove('wobble'); el.style.transform = 'translate3d(0,0,28px) scale(.7)'; el.style.opacity = 0;
+    setTimeout(()=>{ if(el.isConnected) el.remove(); pieces.delete(el); spawnPiece(); }, 140);
   }
 
-  function updateCombo() {
-    comboBar.style.width = combo + '%';
-    comboBar.style.boxShadow = combo > 0 ? '0 6px 16px hsl(170 90% 45% / .4)' : 'none';
+  function popText(text,gx,gy){
+    const el = document.createElement('div'); el.className = 'pop'; el.textContent = text;
+    el.style.left = (gx*TILE) + 'px'; el.style.top = (gy*TILE) + 'px'; board.appendChild(el);
+    setTimeout(()=> el.remove(), 520);
   }
 
-  function floatText(text, gx, gy) {
-    const el = document.createElement('div');
-    el.className = 'pop'; el.textContent = text;
-    el.style.left = (gx * TILE) + 'px';
-    el.style.top = (gy * TILE) + 'px';
-    board.appendChild(el);
-    setTimeout(() => el.remove(), 620);
-  }
-
-  function burst(gx, gy, color) {
-    const n = 10;
-    for (let i = 0; i < n; i++) {
-      const p = document.createElement('div');
-      p.className = 'particle'; p.style.color = color;
-      p.style.left = (gx * TILE) + 'px'; p.style.top = (gy * TILE) + 'px';
-      board.appendChild(p);
-      const a = Math.random() * Math.PI * 2; const d = 18 + Math.random() * 22;
-      const tx = Math.cos(a) * d; const ty = Math.sin(a) * d;
-      p.animate([
-        { transform: `translate(${tx}px, ${ty}px) scale(1)`, opacity: 1 },
-        { transform: `translate(${tx*1.4}px, ${ty*1.4}px) scale(.2)`, opacity: 0 }
-      ], { duration: 320 + Math.random()*200, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'forwards' });
-      setTimeout(() => p.remove(), 520);
+  function burst(gx,gy,color){
+    const n = 8; // lighter particles
+    for(let i=0;i<n;i++){
+      const p = document.createElement('div'); p.className = 'particle'; p.style.color = color;
+      p.style.left = (gx*TILE)+'px'; p.style.top = (gy*TILE)+'px'; board.appendChild(p);
+      const a = Math.random()*Math.PI*2; const d = 16 + Math.random()*18;
+      const tx = Math.cos(a)*d, ty = Math.sin(a)*d;
+      p.animate([{transform:`translate(${tx}px,${ty}px)`, opacity:1},{transform:`translate(${tx*1.2}px,${ty*1.2}px)`, opacity:0}],{duration:280+Math.random()*160, easing:'cubic-bezier(.2,.8,.2,1)', fill:'forwards'});
+      setTimeout(()=>p.remove(), 460);
     }
   }
 
-  // Timer + combo decay + background drift
+  // Lightweight game loop: timer and combo decay only
   let last = performance.now();
-  function loop(now) {
+  function loop(now){
     const dt = Math.min(100, now - last); last = now;
-    if (!paused) {
-      // timer each second
-      timeLeft -= dt / 1000;
-      if (timeLeft <= 0) { timeLeft = 0; if (!overlay.classList.contains('active')) togglePause(); }
-      timerEl.textContent = Math.ceil(timeLeft);
-      // combo decay after idle
-      comboDecay += dt; if (comboDecay > 900) { combo = Math.max(0, combo - dt * 0.02); updateCombo(); }
-      // subtle parallax drift
-      const drift = Math.sin(now / 1000) * 6;
-      board.style.transform = `rotateX(${getComputedStyle(document.documentElement).getPropertyValue('--iso-y')} ) rotateZ(${getComputedStyle(document.documentElement).getPropertyValue('--iso-x')}) translateZ(0) translateY(${drift}px)`;
-    }
+    timeLeft = Math.max(0, timeLeft - dt/1000); timerEl.textContent = Math.ceil(timeLeft);
+    comboIdle += dt; if(comboIdle > 800){ combo = Math.max(0, combo - dt*0.02); comboBar.style.width = combo + '%'; }
     requestAnimationFrame(loop);
   }
   requestAnimationFrame(loop);
-
-  // Tap ripple anywhere
-  function ripple(e) {
-    const r = document.createElement('div'); r.className = 'ripple';
-    r.style.left = e.clientX + 'px'; r.style.top = e.clientY + 'px';
-    document.body.appendChild(r);
-    setTimeout(() => r.remove(), 500);
-  }
-
-  // Accessibility: keyboard support (desktop debugging)
-  document.addEventListener('keydown', (e) => {
-    if (e.key === ' ') { e.preventDefault(); togglePause(); }
-    if (e.key === 'r') resetGame();
-  });
 })();
 </script>
 </body>
