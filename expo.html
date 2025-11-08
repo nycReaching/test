@@ -1,240 +1,267 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Isometric Grid UI — Yellow Tile + Polished UI</title>
-  <style>
-    :root { --vh: 1vh; }
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html, body { height: 100%; margin: 0; background: #000; color: #fff; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    <meta charset="UTF-8">
+    <!-- 
+      This meta tag is CRITICAL for mobile. 
+      - width=device-width sets the width to the device's screen.
+      - initial-scale=1.0 prevents default zoom.
+      - user-scalable=no stops the user from pinching to zoom, which is good for a game.
+    -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Isometric Game UI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Basic Setup --- */
+        html, body {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', 'Roboto', sans-serif;
+            background-color: #000000;
+            color: #ffffff;
+            /* Prevents scrolling, pull-to-refresh, etc. */
+            overflow: hidden; 
+        }
 
-    #app { position: fixed; inset: 0; height: 100svh; height: calc(var(--vh) * 100); display: grid; grid-template-rows: 1fr auto; background:#000; }
-    #stage { position: relative; display: grid; place-items: center; overflow: hidden; }
-    canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+        body {
+            /* This is the key for full mobile compatibility.
+              100dvh = 100% of the *dynamic* viewport height.
+              It resizes when mobile URL bars and nav bars appear/disappear.
+            */
+            height: 100dvh;
+            
+            /* Main layout: Game area on top, controls on bottom */
+            display: flex;
+            flex-direction: column;
+        }
 
-    /* Polished control pad */
-    .controls {
-      display: grid;
-      grid-template-areas: ". up ." "left mid right" ". down .";
-      grid-template-columns: 72px 72px 72px;
-      grid-template-rows: 72px 72px 72px;
-      justify-content: center;
-      gap: 12px; padding: 14px;
-      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
-      user-select: none;
-    }
-    .btn {
-      width:72px;height:72px;border-radius:20px;border:1px solid rgba(255,255,255,0.14);
-      background: radial-gradient(120% 120% at 30% 20%, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.06) 35%, rgba(0,0,0,0.0) 100%), linear-gradient(#141414,#0e0e0e);
-      color:#fff;display:grid;place-items:center;font-size:22px;
-      box-shadow: 0 8px 20px rgba(0,0,0,.55), inset 0 2px 6px rgba(255,255,255,.05), inset 0 -2px 10px rgba(0,0,0,.6);
-      transition: transform .06s ease, background-color .1s ease, border-color .1s ease, box-shadow .12s ease;
-      backdrop-filter: blur(2px);
-    }
-    .btn:active { transform: translateY(1px) scale(.985); border-color: rgba(255,255,255,0.24); box-shadow: 0 6px 14px rgba(0,0,0,.6), inset 0 2px 10px rgba(255,255,255,.07); }
-    .btn:focus-visible { outline:2px solid rgba(255,255,255,.35); outline-offset: 2px; }
-    .up{grid-area:up}.down{grid-area:down}.left{grid-area:left}.right{grid-area:right}
-    .mid{grid-area:mid;opacity:.45;border-style:dashed;border-color:rgba(255,255,255,.2)}
-    .legend { text-align:center; font-size:12px; opacity:.8; margin-top:4px; letter-spacing:.2px; }
-  </style>
+        /* --- Game Area --- */
+        #game-area {
+            /* This makes the game area fill all available space */
+            flex: 1;
+            display: grid;
+            place-items: center;
+            overflow: hidden;
+            
+            /* Adds 3D perspective, which makes the isometric tilt look better */
+            perspective: 800px;
+        }
+
+        #iso-wrapper {
+            position: relative;
+            /* This is the isometric transform: tilt forward, then rotate */
+            transform: rotateX(60deg) rotateZ(-45deg);
+            transform-style: preserve-3d;
+            /* Add a transition for smooth movement (optional) */
+            transition: transform 0.1s linear;
+        }
+
+        #grid {
+            display: grid;
+            /* Grid size will be set by JS */
+            border-left: 1px solid #333; /* Outer border */
+            border-top: 1px solid #333;  /* Outer border */
+            transform-style: preserve-3d;
+        }
+
+        .grid-cell {
+            /* Cell size will be set by JS */
+            box-sizing: border-box; /* Ensures border is inside the element */
+            border-right: 1px solid #333;
+            border-bottom: 1px solid #333;
+        }
+
+        #player {
+            position: absolute;
+            top: 0;
+            left: 0;
+            /* Size matches grid cells */
+            background-color: #00ff00;
+            box-shadow: 0 0 15px #00ff00, 0 0 5px #ffffff;
+            
+            /* Lifts the player slightly above the grid lines */
+            transform: translateZ(2px);
+            
+            /* Smooth movement */
+            transition: transform 0.1s linear;
+        }
+
+        /* --- Control Area --- */
+        #controls {
+            /* This area will not grow, but will not shrink below its content */
+            flex-shrink: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            background-color: #111;
+            border-top: 1px solid #333;
+            
+            /* Center the D-pad */
+            display: grid;
+            place-items: center;
+        }
+
+        .d-pad {
+            display: grid;
+            grid-template-areas:
+                ". up ."
+                "left . right"
+                ". down .";
+            grid-template-columns: 70px 70px 70px;
+            grid-template-rows: 70px 70px 70px;
+            gap: 5px;
+        }
+
+        .control-btn {
+            background-color: #444;
+            border: 1px solid #666;
+            border-radius: 12px;
+            
+            /* Center the arrow icon */
+            display: grid;
+            place-items: center;
+            
+            font-size: 28px;
+            font-weight: bold;
+            color: #fff;
+            
+            /* Prevents text selection on repeated taps */
+            user-select: none;
+            
+            /* Makes it feel responsive */
+            cursor: pointer;
+            transition: background-color 0.1s;
+        }
+
+        /* Active state for tapping */
+        .control-btn:active {
+            background-color: #666;
+        }
+
+        /* Assign buttons to grid areas */
+        #btn-up { grid-area: up; }
+        #btn-left { grid-area: left; }
+        #btn-right { grid-area: right; }
+        #btn-down { grid-area: down; }
+
+    </style>
 </head>
 <body>
-  <div id="app" role="application" aria-label="Isometric grid with movable cube and collectibles">
-    <div id="stage"><canvas id="game" aria-hidden="true"></canvas></div>
-    <div class="controls" aria-label="Controls">
-      <button class="btn up"    data-move="0,-1" aria-label="Move up">▲</button>
-      <button class="btn left"  data-move="-1,0" aria-label="Move left">◄</button>
-      <div class="btn mid" aria-hidden="true">■</div>
-      <button class="btn right" data-move="1,0" aria-label="Move right">►</button>
-      <button class="btn down"  data-move="0,1" aria-label="Move down">▼</button>
-      <div class="legend">Current square is yellow · Collect the emojis</div>
+
+    <!-- Game Area: This will fill the top portion -->
+    <div id="game-area">
+        <div id="iso-wrapper">
+            <!-- The grid lines will be generated by JS into here -->
+            <div id="grid"></div>
+            
+            <!-- The player cube (a simple div) -->
+            <div id="player"></div>
+        </div>
     </div>
-  </div>
 
-  <script>
-    // Viewport fix for mobile chrome/safari UI
-    function setVH(){ document.documentElement.style.setProperty('--vh', (window.innerHeight*0.01)+'px'); }
-    setVH(); addEventListener('resize', setVH); addEventListener('orientationchange', () => setTimeout(setVH, 100));
+    <!-- Control Area: This will be fixed at the bottom -->
+    <div id="controls">
+        <div class="d-pad">
+            <div class="control-btn" id="btn-up">&uarr;</div>
+            <div class="control-btn" id="btn-left">&larr;</div>
+            <div class="control-btn"id="btn-right">&rarr;</div>
+            <div class="control-btn" id="btn-down">&darr;</div>
+        </div>
+    </div>
 
-    // Canvas
-    const canvas = document.getElementById('game');
-    const ctx = canvas.getContext('2d');
-    const dpr = Math.max(1, Math.min(3, devicePixelRatio || 1));
-    function fitCanvas(){ const r = canvas.getBoundingClientRect(); canvas.width = Math.floor(r.width*dpr); canvas.height = Math.floor(r.height*dpr); ctx.setTransform(dpr,0,0,dpr,0,0); draw(); }
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
 
-    // Grid model
-    const grid = { cols: 12, rows: 12, tileW: 64, tileH: 32 };
-    const cube = { x: 5, y: 5 };
+            // --- Game State & Constants ---
+            const GRID_SIZE = 10; // 10x10 grid
+            const CELL_SIZE = 40; // 40px cells
+            
+            // Player position (1-indexed, so 1 to 10)
+            let playerX = 5;
+            let playerY = 5;
 
-    // Collectibles
-    const EMOJIS = ['⭐','🍀','🔥','💎','🎯','⚡','🧩','🍎'];
-    const collectibles = [];
-    function seedCollectibles(n=6){
-      const used = new Set([key(cube.x, cube.y)]);
-      while(collectibles.length < n){
-        const x = Math.floor(Math.random()*grid.cols);
-        const y = Math.floor(Math.random()*grid.rows);
-        const k = key(x,y);
-        if(used.has(k)) continue;
-        used.add(k);
-        const emoji = EMOJIS[Math.floor(Math.random()*EMOJIS.length)];
-        collectibles.push({x,y,emoji});
-      }
-    }
-    function key(x,y){ return x+','+y; }
+            // --- Element References ---
+            const grid = document.getElementById('grid');
+            const player = document.getElementById('player');
 
-    // Isometric projection
-    function iso(x, y){ return { x: (x - y) * (grid.tileW/2), y: (x + y) * (grid.tileH/2) }; }
+            // --- Initialization ---
+            function initGame() {
+                // 1. Setup Grid CSS
+                grid.style.gridTemplateColumns = `repeat(${GRID_SIZE}, ${CELL_SIZE}px)`;
+                grid.style.gridTemplateRows = `repeat(${GRID_SIZE}, ${CELL_SIZE}px)`;
+                player.style.width = `${CELL_SIZE}px`;
+                player.style.height = `${CELL_SIZE}px`;
 
-    // Layout: center terrain, then nudge up a bit so it feels centered in portrait
-    function layout(){
-      const corners = [ iso(0,0), iso(grid.cols,0), iso(grid.cols,grid.rows), iso(0,grid.rows) ];
-      const minX = Math.min(...corners.map(p=>p.x));
-      const maxX = Math.max(...corners.map(p=>p.x));
-      const minY = Math.min(...corners.map(p=>p.y));
-      const maxY = Math.max(...corners.map(p=>p.y));
-      const gw = maxX - minX, gh = maxY - minY;
-      const r = canvas.getBoundingClientRect();
-      const cx = (r.width - gw)/2 - minX;
-      const cy = (r.height - gh)/2 - minY - grid.tileH*0.25; // slight upward bias
-      return { cx, cy };
-    }
+                // 2. Generate Grid Cells
+                // Clear any existing cells (for re-runs)
+                grid.innerHTML = ''; 
+                for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('grid-cell');
+                    cell.style.width = `${CELL_SIZE}px`;
+                    cell.style.height = `${CELL_SIZE}px`;
+                    grid.appendChild(cell);
+                }
 
-    // Draw exact tiles so each diamond = 1 step. The current tile is a solid yellow diamond.
-    function drawTiles(){
-      const { cx, cy } = layout();
-      ctx.save();
-      ctx.translate(cx, cy);
-      for(let y=0; y<grid.rows; y++){
-        for(let x=0; x<grid.cols; x++){
-          const p0 = iso(x, y);
-          const p1 = iso(x+1, y);
-          const p2 = iso(x+1, y+1);
-          const p3 = iso(x, y+1);
+                // 3. Set initial player position
+                updatePlayerPosition();
+                
+                // 4. Attach Control Listeners
+                // We use 'mousedown' for quicker response than 'click'
+                document.getElementById('btn-up').addEventListener('click', () => movePlayer(0, -1));
+                document.getElementById('btn-down').addEventListener('click', () => movePlayer(0, 1));
+                document.getElementById('btn-left').addEventListener('click', () => movePlayer(-1, 0));
+                document.getElementById('btn-right').addEventListener('click', () => movePlayer(1, 0));
+            }
 
-          // Path for tile
-          ctx.beginPath();
-          ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.lineTo(p3.x, p3.y); ctx.closePath();
+            // --- Game Logic ---
+            
+            /**
+             * Updates the player's visual position on the grid.
+             */
+            function updatePlayerPosition() {
+                // Calculate the pixel position. (playerX-1) because position is 1-indexed.
+                const xPos = (playerX - 1) * CELL_SIZE;
+                const yPos = (playerY - 1) * CELL_SIZE;
 
-          // Fill style: yellow for current tile, subtle checker otherwise
-          if (x === cube.x && y === cube.y) {
-            ctx.fillStyle = 'rgba(255,215,0,0.6)'; // grid-aligned shadow highlight
-            ctx.fill();
-            ctx.lineWidth = 1.25; ctx.strokeStyle = 'rgba(255,215,0,0.9)'; ctx.stroke();
-          } else {
-            ctx.fillStyle = ((x+y)&1) ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.06)';
-            ctx.fill();
-            ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(255,255,255,0.18)'; ctx.stroke();
-          }
-        }
-      }
+                // Use CSS transform to move the player.
+                // We add translateZ(2px) to keep it lifted above the grid lines.
+                player.style.transform = `translate(${xPos}px, ${yPos}px) translateZ(2px)`;
+            }
 
-      // Boundary
-      const c = [ iso(0,0), iso(grid.cols,0), iso(grid.cols,grid.rows), iso(0,grid.rows) ];
-      ctx.beginPath(); ctx.moveTo(c[0].x, c[0].y); for(let i=1;i<c.length;i++) ctx.lineTo(c[i].x, c[i].y); ctx.closePath();
-      ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.stroke();
-      ctx.restore();
-    }
+            /**
+             * Moves the player by a delta (dx, dy) and updates the view.
+             * dx: Change in X (-1, 0, or 1)
+             * dy: Change in Y (-1, 0, or 1)
+             */
+            function movePlayer(dx, dy) {
+                const newX = playerX + dx;
+                const newY = playerY + dy;
 
-    // Draw collectibles as emojis centered on tiles
-    function drawCollectibles(){
-      const { cx, cy } = layout();
-      const fontSize = Math.floor((grid.tileH) * 1.2); // scale with tile
-      ctx.font = `${fontSize}px system-ui, Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji, sans-serif`;
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      for(const it of collectibles){
-        const p = iso(it.x + 0.5, it.y + 0.5);
-        ctx.save();
-        ctx.translate(cx + p.x, cy + p.y + grid.tileH*0.15);
-        ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 6;
-        ctx.fillText(it.emoji, 0, 0);
-        ctx.restore();
-      }
-    }
+                // Boundary Check: Ensure the new position is within the grid (1 to GRID_SIZE)
+                if (newX >= 1 && newX <= GRID_SIZE && newY >= 1 && newY <= GRID_SIZE) {
+                    // Valid move: Update state
+                    playerX = newX;
+                    playerY = newY;
+                    
+                    // Update the visual position
+                    updatePlayerPosition();
+                }
+                // If it's not a valid move, do nothing.
+            }
+            
+            // --- Prevent double-tap zoom on controls ---
+            // This is a common issue on mobile web games.
+            document.getElementById('controls').addEventListener('touchstart', (e) => {
+                // Only prevent default if tapping a button
+                if (e.target.classList.contains('control-btn')) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
 
-    function drawCube(){
-      const { cx, cy } = layout();
-      const center = iso(cube.x + 0.5, cube.y + 0.5);
-      const baseX = cx + center.x;
-      const baseY = cy + center.y;
-      const w = grid.tileW/2, h = grid.tileH/2, height = grid.tileH; // cube height
-
-      // Top
-      ctx.beginPath();
-      ctx.moveTo(baseX, baseY - height);
-      ctx.lineTo(baseX + w, baseY - height + h);
-      ctx.lineTo(baseX, baseY - height + 2*h);
-      ctx.lineTo(baseX - w, baseY - height + h);
-      ctx.closePath(); ctx.fillStyle = '#9ad5ff'; ctx.fill();
-
-      // Right
-      ctx.beginPath();
-      ctx.moveTo(baseX, baseY - height + 2*h);
-      ctx.lineTo(baseX + w, baseY - height + h);
-      ctx.lineTo(baseX + w, baseY + h);
-      ctx.lineTo(baseX, baseY + 2*h);
-      ctx.closePath(); ctx.fillStyle = '#6aa7d6'; ctx.fill();
-
-      // Left
-      ctx.beginPath();
-      ctx.moveTo(baseX, baseY - height + 2*h);
-      ctx.lineTo(baseX - w, baseY - height + h);
-      ctx.lineTo(baseX - w, baseY + h);
-      ctx.lineTo(baseX, baseY + 2*h);
-      ctx.closePath(); ctx.fillStyle = '#4f88b5'; ctx.fill();
-
-      // Base marker for extra grounding
-      ctx.beginPath();
-      ctx.moveTo(baseX, baseY);
-      ctx.lineTo(baseX + w/1.2, baseY + h/1.2);
-      ctx.lineTo(baseX, baseY + 2*h/1.2);
-      ctx.lineTo(baseX - w/1.2, baseY + h/1.2);
-      ctx.closePath(); ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.stroke();
-    }
-
-    function clear(){ ctx.clearRect(0,0,canvas.width,canvas.height); }
-    function draw(){ clear(); drawTiles(); drawCollectibles(); drawCube(); }
-
-    function move(dx, dy){
-      const nx = Math.max(0, Math.min(grid.cols-1, cube.x + dx));
-      const ny = Math.max(0, Math.min(grid.rows-1, cube.y + dy));
-      if (nx !== cube.x || ny !== cube.y){
-        cube.x = nx; cube.y = ny;
-        // Pickup collectibles
-        const idx = collectibles.findIndex(it => it.x === cube.x && it.y === cube.y);
-        if(idx !== -1){ collectibles.splice(idx,1); }
-        // Optional light haptic
-        if (navigator.vibrate) navigator.vibrate(10);
-        draw();
-      }
-    }
-
-    // Button press helpers for nicer feel
-    function bindButton(btn){
-      const [dx, dy] = btn.dataset.move.split(',').map(Number);
-      let holdTimer = null, repeatTimer = null;
-      const pressOnce = () => move(dx, dy);
-      const start = () => {
-        pressOnce();
-        holdTimer = setTimeout(() => { repeatTimer = setInterval(pressOnce, 120); }, 300);
-      };
-      const stop = () => { clearTimeout(holdTimer); clearInterval(repeatTimer); holdTimer = repeatTimer = null; };
-      btn.addEventListener('mousedown', start);
-      btn.addEventListener('touchstart', e => { e.preventDefault(); start(); }, { passive: false });
-      addEventListener('mouseup', stop);
-      addEventListener('mouseleave', stop);
-      addEventListener('touchend', stop);
-      addEventListener('touchcancel', stop);
-      btn.addEventListener('click', e => e.preventDefault()); // prevent duplicate after touch
-    }
-
-    document.querySelectorAll('.btn[data-move]').forEach(bindButton);
-    addEventListener('keydown', e => { if(e.key==='ArrowUp')move(0,-1); else if(e.key==='ArrowDown')move(0,1); else if(e.key==='ArrowLeft')move(-1,0); else if(e.key==='ArrowRight')move(1,0); });
-
-    // Init
-    seedCollectibles(6);
-    const ro = new ResizeObserver(fitCanvas); ro.observe(document.getElementById('stage')); fitCanvas();
-  </script>
+            // Start the game
+            initGame();
+        });
+    </script>
 </body>
 </html>
