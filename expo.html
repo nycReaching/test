@@ -30,11 +30,12 @@
 
     <!-- 
       Top Panel: 25% height (h-1/4)
+      flex-shrink-0: Prevents this panel from shrinking
       p-4: Padding
       bg-gray-900: Dark background for the panel
       rounded-b-lg: Nice modern rounded bottom corners
     -->
-    <div id="top-panel" class="h-1/4 p-4 bg-gray-900 rounded-b-lg shadow-lg overflow-hidden">
+    <div id="top-panel" class="h-1/4 flex-shrink-0 p-4 bg-gray-900 rounded-b-lg shadow-lg overflow-hidden">
         <div class="flex justify-between items-center mb-3">
             <span class="text-lg font-bold text-green-400 animate-pulse">● STATUS: LIVE</span>
             <span class="text-xs font-mono text-gray-400">SYS_8774B</span>
@@ -67,11 +68,32 @@
     </div>
 
     <!-- 
-      Bottom Panel: 75% height (h-3/4)
+      Middle Panel: Fills remaining space (flex-1)
       This area is intentionally left blank as requested.
     -->
-    <div id="bottom-panel" class="h-3/4">
+    <div id="middle-panel" class="flex-1 overflow-auto">
         <!-- Blank area for game content -->
+    </div>
+
+    <!-- 
+      Bottom Bar: 15% height
+      flex-shrink-0: Prevents shrinking
+      bg-gray-900: Match top panel
+      rounded-t-lg: Nice rounded top corners
+      flex justify-center items-center: Center the button
+    -->
+    <div id="bottom-bar" class="h-[15%] flex-shrink-0 bg-gray-900 rounded-t-lg shadow-inner flex justify-center items-center">
+        <!-- 
+          Tappable Button
+          w-20 h-20: Large, easy-to-tap size
+          rounded-full: Makes it round
+          active:scale-90: The tap animation
+          transition-all: Smooths the animation
+        -->
+        <button id="main-button" class="w-20 h-20 bg-cyan-500 rounded-full shadow-lg flex items-center justify-center text-white transition-all duration-150 active:scale-90 active:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-300">
+            <!-- Power icon SVG -->
+            <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.636 5.636a9 9 0 1012.728 0M12 3v9"></path></svg>
+        </button>
     </div>
 
     <script>
