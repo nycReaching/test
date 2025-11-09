@@ -1,427 +1,189 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
-  <title>Isometric Tile Mover UI</title>
+  <title>Minimal Game UI</title>
   <style>
     :root{
-      /* New "Pro" Color Palette */
-      --bg: hsl(220 30% 96%);
-      --tile: hsl(0 0% 100%);
-      --tile-edge: hsl(220 20% 88%);
-      --ink: hsl(220 25% 25%);
-      --accent: hsl(250 80% 60%);
-      --accent-glow: hsl(250 80% 60% / .4);
-      --collectible: hsl(40 100% 60%);
-      --collectible-glow: hsl(40 100% 60% / .5);
-      
-      --radius: 12px;
-      --safe-bottom: env(safe-area-inset-bottom,0px);
-      --safe-top: env(safe-area-inset-top,0px);
-      --size: 9; /* N x N */
-      --tile-size: 48; /* logical px before scale */
-      --iso-x: 45deg;
-      --iso-y: 50deg;
-      --edge: 6px; /* Cleaner edge */
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0; color:var(--ink);
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-      background: var(--bg);
-      overflow:hidden; -webkit-tap-highlight-color:transparent; touch-action:none;
+      --bg: #ffffff;
+      --feed-bg: #0c0f14;
+      --text-muted: #7f8ea3;
+      --accent: #2dd4bf; /* teal */
     }
 
-    /* Clean background scene */
-    .scene{position:fixed;inset:0; pointer-events:none; background: var(--bg);}
+    *{ box-sizing: border-box; }
+    html, body { height: 100%; }
+    body{ margin: 0; background: var(--bg); color: #111; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
 
-    /* Controls moved to top right, no panel */
-    .controls{
-      position:fixed; 
-      top:calc(8px + var(--safe-top)); 
-      right: 12px; 
-      display:inline-flex; 
-      gap:8px;
-      z-index: 10;
-    }
+    /* Full-height app with modern viewport units and safe-area support */
+    .app{ height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+      padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+    @supports (height: 100svh){ .app{ height: 100svh; } }
+    @supports (height: 100dvh){ .app{ height: 100dvh; } }
 
-    /* Restyled minimal buttons */
-    .btn{
-      min-width:44px; 
-      height:44px; 
-      border-radius:50%; /* Circular */
-      display:grid; 
-      place-items:center; 
-      background:var(--tile); 
-      border:1px solid var(--tile-edge);
-      box-shadow: 0 4px 12px hsl(220 30% 80% / .6); 
-      user-select:none; 
-      cursor: pointer; 
-      color: var(--ink);
-      transition: transform .1s ease, box-shadow .1s ease;
-    }
-    .btn:active { 
-      transform: scale(0.92); 
-      box-shadow: 0 2px 8px hsl(220 30% 80% / .5); 
-    }
-    .btn svg { width: 22px; height: 22px; stroke: currentColor; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    /* Top feed panel ~25% */
+    .feed{ position: relative; height: 25%; background: var(--feed-bg); color: #fff; overflow: hidden;
+      border-bottom: 1px solid rgba(255,255,255,0.08); }
 
-    /* Board fit area */
-    .wrap{position:fixed; inset: calc(64px + var(--safe-top)) 0 var(--safe-bottom) 0; display:grid; place-items:center}
-    .board{
-      position:relative; 
-      transform-style:preserve-3d; 
-      will-change:transform;
-      /* Removed sway animation */
-      transform: rotateX(var(--iso-y)) rotateZ(var(--iso-x)) scale(var(--board-scale, 1));
-    }
+    .canvasWrap{ position: absolute; inset: 0; }
+    #chart{ width: 100%; height: 100%; display: block; }
 
-    /* Tiles */
-    .tile{
-      position:absolute; 
-      width:calc(var(--tile-size) * 1px); 
-      height:calc(var(--tile-size) * 1px); 
-      transform-style:preserve-3d;
-      cursor: pointer;
-      /* Add a subtle highlight on hover/tap */
-      transition: filter .2s ease;
-    }
-    .tile:hover .top {
-      filter: brightness(0.95);
-    }
-    .tile .top{
-      position:absolute; 
-      inset:0; 
-      border-radius:var(--radius); 
-      background:var(--tile); 
-      box-shadow: inset 0 1px 1px hsl(0 0% 100% / .8); 
-      transform: translateZ(var(--edge));
-      transition: inherit;
-    }
-    .tile .left,.tile .right{position:absolute; background:var(--tile-edge)}
-    .tile .left{width:100%; height:var(--edge); bottom:0; transform-origin:bottom; transform:rotateX(90deg)}
-    .tile .right{height:100%; width:var(--edge); right:0; transform-origin:right; transform:rotateY(90deg)}
+    /* Lightweight metrics over the chart */
+    .metrics{ position: absolute; top: 8px; left: 12px; right: 12px; display: flex; gap: 12px;
+      font-variant-numeric: tabular-nums; font-size: clamp(10px, 2.6vw, 13px); opacity: .9; }
+    .metric{ display: flex; align-items: baseline; gap: 6px; white-space: nowrap; }
+    .metric .label{ color: var(--text-muted); letter-spacing: .04em; font-size: .9em; }
+    .metric .value{ font-weight: 600; }
+    .metric .delta{ font-size: .85em; }
+    .metric .up{ color: #22c55e; }
+    .metric .down{ color: #ef4444; }
 
-
-    /* New Player Avatar Style */
-    .player {
-      position:absolute; 
-      width:calc(var(--tile-size) * .7px); 
-      height:calc(var(--tile-size) * .7px); 
-      translate:-50% -50%;
-      transform-style:preserve-3d;
-      will-change:transform; 
-      transition:transform .25s cubic-bezier(.3,1.3,.3,1), left .25s ease-out, top .25s ease-out;
-      /* It has its own 3D faces */
-      transform: translate3d(0,0,0); 
-    }
-    .player .top{
-      position:absolute; inset:0; border-radius:6px; 
-      background: var(--accent);
-      box-shadow: 0 0 20px var(--accent-glow);
-      transform: translateZ(calc(var(--edge) + 8px)); /* Float higher */
-    }
-    .player .left, .player .right {
-      position:absolute; 
-      background: linear-gradient(var(--accent), hsl(250 80% 45%));
-      height: calc(var(--edge) + 8px); /* Taller */
-      width: 100%;
-      bottom:0; transform-origin:bottom; transform:rotateX(90deg);
-    }
-    .player .right {
-      width: calc(var(--edge) + 8px); /* Thicker */
-      height: 100%;
-      right:0; transform-origin:right; transform:rotateY(90deg);
-    }
-    
-    /* New Collectible Style (replaces .piece) */
-    .collectible {
-      position:absolute; 
-      width:calc(var(--tile-size) * .9px); /* Full size container */
-      height:calc(var(--tile-size) * .9px); 
-      display:grid; 
-      place-items:center; 
-      translate:-50% -50%; 
-      transform:translate3d(0,0,0); 
-      will-change:transform,opacity; 
-      transition:transform .18s ease, opacity .18s ease;
-      user-select: none;
-      /* This inner div is the visible orb */
-    }
-    .collectible > div {
-      width: calc(var(--tile-size) * .4px);
-      height: calc(var(--tile-size) * .4px);
-      background: var(--collectible);
-      border-radius: 50%;
-      box-shadow: 0 0 15px var(--collectible-glow), inset 0 2px 2px hsl(40 100% 80%);
-    }
-    .wobble{animation:wob .5s ease-in-out alternate infinite}
-    @keyframes wob{
-      from{transform:translate3d(0,0,10px)} 
-      to{transform:translate3d(0,0,12px)}
-    }
-
-    /* Feedback */
-    .pop{position:absolute; translate:-50% -50%; font-weight:800; font-size:18px; color:var(--collectible); text-shadow:0 2px 10px var(--collectible-glow); animation:pop .5s ease forwards; pointer-events:none}
-    @keyframes pop{from{opacity:0; transform:translateY(0) scale(.8)}50%{opacity:1}to{opacity:0; transform:translateY(-26px) scale(1.05)}}
-    
-    .particle{position:absolute; width:5px; height:5px; border-radius:50%; background:currentColor; pointer-events:none}
-
-    /* Motion guard */
-    @media (prefers-reduced-motion: reduce){*{animation:none !important; transition:none !important}}
+    /* Bottom 75% intentionally blank */
+    .playfield{ flex: 1 1 auto; background: transparent; }
   </style>
 </head>
 <body>
-  <div class="scene" aria-hidden="true"></div>
+  <div class="app" role="application" aria-label="Game UI">
+    <section class="feed" aria-label="Live feed">
+      <div class="canvasWrap"><canvas id="chart" aria-hidden="true"></canvas></div>
+      <div class="metrics" aria-live="polite" aria-atomic="false">
+        <div class="metric"><span class="label">HR</span><span class="value" data-key="hr">72</span><span class="delta up" data-key="hrd">+0.2</span></div>
+        <div class="metric"><span class="label">O2</span><span class="value" data-key="o2">98.1%</span><span class="delta down" data-key="o2d">-0.1</span></div>
+        <div class="metric"><span class="label">IDX</span><span class="value" data-key="idx">4123.2</span><span class="delta up" data-key="idxd">+2.1</span></div>
+        <div class="metric"><span class="label">TMP</span><span class="value" data-key="tmp">36.9°C</span><span class="delta up" data-key="tmpd">+0.0</span></div>
+      </div>
+    </section>
 
-  <!-- Minimal Controls -->
-  <div class="controls">
-    <button class="btn" id="soundBtn" aria-label="Sound">
-      <svg viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5zM15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
-    </button>
-    <button class="btn" id="vibeBtn" aria-label="Vibration">
-      <svg viewBox="0 0 24 24"><path d="M3 10v4M6 7v10M9 4v16M12 2v20M15 4v16M18 7v10M21 10v4"></path></svg>
-    </button>
+    <main class="playfield" aria-label="Game playfield" tabindex="-1"></main>
   </div>
 
-  <div class="wrap">
-    <div class="board" id="board" role="application" aria-label="Isometric board"></div>
-  </div>
+  <script>
+  (function(){
+    const canvas = document.getElementById('chart');
+    const ctx = canvas.getContext('2d');
+    let dpr = Math.max(1, window.devicePixelRatio || 1);
+    let width = 0, height = 0;
+    let data = [];
+    const historySeconds = 12;      // visible window width in seconds
+    const samplesPerSecond = 30;     // data sampling rate
+    const speed = 60;                // px per second for scroll speed
+    const gridRows = 4;              // horizontal grid rows
+    let lastTs = 0;
+    let paused = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  <!-- All HUD and Dock HTML removed -->
-
-<script>
-(() => {
-  // Sizing and scale-to-fit
-  const r = getComputedStyle(document.documentElement);
-  const SIZE = parseInt(r.getPropertyValue('--size')) || 9;
-  const TILE = parseFloat(r.getPropertyValue('--tile-size')) || 42;
-  const EDGE = parseFloat(r.getPropertyValue('--edge')) || 6;
-  const ISO_X = r.getPropertyValue('--iso-x');
-  const ISO_Y = r.getPropertyValue('--iso-y');
-
-  const board = document.getElementById('board');
-  const soundBtn = document.getElementById('soundBtn');
-  const vibeBtn = document.getElementById('vibeBtn');
-  
-  // Removed score, timer, combo, goal elements
-
-  let allowSound = true;
-  let allowVibe = true;
-
-  // Build grid once
-  const gridW = SIZE * TILE;
-  const gridH = SIZE * TILE;
-  board.style.width = gridW + 'px';
-  board.style.height = gridH + 'px';
-
-  for (let y = 0; y < SIZE; y++) {
-    for (let x = 0; x < SIZE; x++) {
-      const t = document.createElement('div');
-      t.className = 'tile';
-      // Add data attributes for movement logic
-      t.dataset.x = x;
-      t.dataset.y = y;
-      t.style.left = (x * TILE) + 'px';
-      t.style.top  = (y * TILE) + 'px';
-      t.style.zIndex = x + y;
-      t.innerHTML = `<div class="top"></div><div class="left" style="height:${EDGE}"></div><div class="right" style="width:${EDGE}"></div>`;
-      board.appendChild(t);
+    function resize(){
+      const r = canvas.getBoundingClientRect();
+      width  = Math.floor(r.width * dpr);
+      height = Math.floor(r.height * dpr);
+      canvas.width = width; canvas.height = height;
+      ctx.setTransform(1,0,0,1,0,0); ctx.scale(dpr, dpr);
     }
-  }
 
-  // Fit board to the available viewport area
-  const wrap = document.querySelector('.wrap');
-  function fit(){
-    const rect = wrap.getBoundingClientRect();
-    const sx = rect.width  / gridW;
-    const sy = rect.height / gridH;
-    const scale = Math.floor(Math.min(sx, sy) * 100) / 100;
-    board.style.setProperty('--board-scale', scale);
-  }
-  window.addEventListener('resize', fit, {passive:true});
-  fit();
-
-  // --- New Player and Collectible Logic ---
-  
-  const collectibles = new Set();
-  let playerEl = null;
-  let playerPosition = { x: 4.5, y: 4.5 }; // Start in center
-
-  // Spawns the player avatar
-  function spawnPlayer() {
-    playerEl = document.createElement('div');
-    playerEl.className = 'player';
-    // Player has its own 3D faces
-    playerEl.innerHTML = `<div class="top"></div><div class="left"></div><div class="right"></div>`;
-    positionPiece(playerEl, playerPosition.x, playerPosition.y);
-    playerEl.style.transform = 'translate3d(0,0,20px) scale(0.8)';
-    board.appendChild(playerEl);
-    requestAnimationFrame(() => {
-      playerEl.style.transform = 'translate3d(0,0,10px) scale(1)';
-    });
-  }
-
-  // Spawns a collectible orb
-  function spawnCollectible(){
-    const el = document.createElement('div');
-    el.className = 'collectible wobble';
-    el.innerHTML = '<div></div>'; // Inner div is the orb
-    el.style.animationDelay = `-${(Math.random() * 0.5).toFixed(2)}s`;
-    
-    // Find a free spot (not where the player is)
-    let x, y;
-    do {
-      x = Math.floor(Math.random()*SIZE) + 0.5;
-      y = Math.floor(Math.random()*SIZE) + 0.5;
-    } while (x === playerPosition.x && y === playerPosition.y);
-
-    positionPiece(el,x,y,true);
-    el.style.opacity = 0; el.style.transform = 'translate3d(0,0,20px) scale(.7)';
-    board.appendChild(el); collectibles.add(el);
-    requestAnimationFrame(()=>{ el.style.opacity = 1; el.style.transform = 'translate3d(0,0,10px) scale(1)'; });
-    return el;
-  }
-
-  // Generic function to position any element on the grid
-  function positionPiece(el,gx,gy,clamp=false){
-    const x = clamp ? Math.max(.5, Math.min(gx, SIZE-.5)) : gx;
-    const y = clamp ? Math.max(.5, Math.min(gy, SIZE-.5)) : gy;
-    el.dataset.gx = x; el.dataset.gy = y;
-    el.style.left = (x * TILE) + 'px';
-    el.style.top  = (y * TILE) + 'px';
-    // Player floats higher than tiles and collectibles
-    el.style.zIndex = Math.floor(x + y) + (el.classList.contains('player') ? 2 : 1);
-  }
-
-  spawnPlayer();
-  for(let i=0;i<5;i++) spawnCollectible(); // Start with 5 collectibles
-
-  // Input: Tap tiles to move
-  board.addEventListener('pointerdown', onTap, {passive:true});
-  function onTap(e){
-    const targetTile = e.target.closest('.tile');
-    if(targetTile) {
-      const targetX = parseInt(targetTile.dataset.x, 10) + 0.5;
-      const targetY = parseInt(targetTile.dataset.y, 10) + 0.5;
-      
-      // Move Player
-      playerPosition = { x: targetX, y: targetY };
-      positionPiece(playerEl, playerPosition.x, playerPosition.y);
-      blip(300, 0.05, 'sine');
-      vibrate(8);
-      
-      // Check if we landed on a collectible
-      checkCollection();
-    }
-  }
-  
-  // Check if player position matches any collectible
-  function checkCollection() {
-    for (const c of collectibles) {
-      const cX = parseFloat(c.dataset.gx);
-      const cY = parseFloat(c.dataset.gy);
-      
-      if (cX === playerPosition.x && cY === playerPosition.y) {
-        collect(c);
-        break; // Only collect one per move
+    function seed(){
+      const total = historySeconds * samplesPerSecond;
+      data = new Array(total).fill(0);
+      let v = 0.5; // normalized [0..1]
+      for(let i=0;i<total;i++){
+        v = clamp01(v + (Math.random()-0.5)*0.08); // random walk
+        data[i] = v;
       }
     }
-  }
 
-  // Shuffle button is gone
-  // document.getElementById('shuffleBtn')... removed
+    function clamp01(x){ return Math.max(0, Math.min(1, x)); }
 
-  // Minimal WebAudio blip
-  const audioCtx = window.AudioContext ? new AudioContext() : null;
-  function blip(freq=880, dur=0.07, type='triangle'){
-    if(!allowSound || !audioCtx) return;
-    if(audioCtx.state === 'suspended') audioCtx.resume();
-    const o = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-    o.type = type; o.frequency.value = freq; g.gain.value = 0.0001;
-    o.connect(g).connect(audioCtx.destination);
-    const t = audioCtx.currentTime; o.start(t);
-    g.gain.exponentialRampToValueAtTime(0.06, t+0.01);
-    g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
-    o.stop(t+dur);
-  }
-  function vibrate(ms=10){ if(allowVibe && navigator.vibrate) navigator.vibrate(ms); }
-
-  // Toggles
-  const soundIcon = {
-    on: `<svg viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5zM15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>`,
-    off: `<svg viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6"></path></svg>`
-  }
-  const vibeIcon = {
-    on: `<svg viewBox="0 0 24 24"><path d="M3 10v4M6 7v10M9 4v16M12 2v20M15 4v16M18 7v10M21 10v4"></path></svg>`,
-    off: `<svg viewBox="0 0 24 24"><path d="M3 10v4M6 7v10M9 4v16M12 2v20M15 4v16M18 7v10M21 10v4M1 1l22 22"></path></svg>`
-  }
-  soundBtn.innerHTML = allowSound ? soundIcon.on : soundIcon.off;
-  vibeBtn.innerHTML = allowVibe ? vibeIcon.on : vibeIcon.off;
-  
-  soundBtn.addEventListener('click', ()=>{ 
-    allowSound=!allowSound; 
-    soundBtn.innerHTML = allowSound ? soundIcon.on : soundIcon.off; 
-    blip(200,0.05) 
-  });
-  vibeBtn.addEventListener('click', ()=>{ 
-    allowVibe=!allowVibe; 
-    vibeBtn.innerHTML = allowVibe ? vibeIcon.on : vibeIcon.off; 
-    vibrate(8) 
-  });
-
-  // Simplified collection effects
-  function collect(el){
-    const x = parseFloat(el.dataset.gx), y = parseFloat(el.dataset.gy);
-
-    blip(880, 0.06, 'triangle');
-    vibrate(12);
-    popText("+1", x, y);
-    burst(x, y, 'var(--collectible)'); // Use collectible color for burst (Fixed: added quotes)
-    
-    // recycle
-    el.classList.remove('wobble'); 
-    el.style.transform = 'translate3d(0,0,28px) scale(.7)'; 
-    el.style.opacity = 0;
-    setTimeout(()=>{ 
-      if(el.isConnected) el.remove(); 
-      collectibles.delete(el); 
-      spawnCollectible(); 
-    }, 140);
-  }
-
-  function popText(text,gx,gy,className=''){
-    const el = document.createElement('div'); 
-    el.className = 'pop ' + className;
-    el.textContent = text;
-    el.style.left = (gx*TILE) + 'px'; 
-    el.style.top = (gy*TILE) + 'px'; 
-    board.appendChild(el);
-    setTimeout(()=> el.remove(), 520);
-  }
-
-  function burst(gx,gy,color){
-    const n = 8;
-    for(let i=0; i<n; i++){
-      const p = document.createElement('div'); p.className = 'particle'; 
-      p.style.color = color; // Use the passed color
-      p.style.left = (gx*TILE)+'px'; p.style.top = (gy*TILE)+'px'; board.appendChild(p);
-      const a = Math.random()*Math.PI*2; const d = 16 + Math.random()*18;
-      const tx = Math.cos(a)*d, ty = Math.sin(a)*d;
-      p.animate([
-        {transform:`translate(0,0) scale(1)`, opacity:1},
-        {transform:`translate(${tx}px,${ty}px) scale(0)`, opacity:0}
-      ],{duration:300+Math.random()*200, easing:'cubic-bezier(.1,.8,.2,1)', fill:'forwards'});
-      setTimeout(()=>p.remove(), 520);
+    function drawGrid(){
+      const w = canvas.clientWidth, h = canvas.clientHeight;
+      ctx.clearRect(0,0,w,h);
+      ctx.save();
+      ctx.globalAlpha = 0.35;
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      ctx.lineWidth = 1;
+      // verticals
+      const stepX = 40;
+      for(let x=0; x<=w; x+=stepX){ ctx.beginPath(); ctx.moveTo(x+0.5,0); ctx.lineTo(x+0.5,h); ctx.stroke(); }
+      // horizontals
+      const stepY = h / gridRows;
+      for(let y=0; y<=h; y+=stepY){ ctx.beginPath(); ctx.moveTo(0,y+0.5); ctx.lineTo(w,y+0.5); ctx.stroke(); }
+      ctx.restore();
     }
-  }
 
-  // Game loop is no longer needed for score/combo
-  // requestAnimationFrame(loop);
-})();
-</script>
+    function drawLine(offsetPx){
+      const w = canvas.clientWidth, h = canvas.clientHeight;
+      const n = data.length;
+      const pxPerSample = (w / historySeconds) / samplesPerSecond;
+      ctx.save();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#2dd4bf';
+      ctx.beginPath();
+      const y = v => h - (h*0.15) - v*(h*0.7); // leave headroom and floor
+      for(let i=0;i<n;i++){
+        const idx = n-1-i;          // newest on the right
+        const x = w - (i*pxPerSample) - offsetPx;
+        if(x < -10) break;
+        const v = data[idx];
+        if(i===0) ctx.moveTo(x, y(v)); else ctx.lineTo(x, y(v));
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function tick(ts){
+      if(paused) return;
+      if(!lastTs) lastTs = ts;
+      const dt = Math.min(64, ts - lastTs);
+      lastTs = ts;
+      const offset = (ts/1000 * speed) % (canvas.clientWidth / historySeconds);
+      // probabilistic sample insert roughly at sampling rate
+      if(Math.random() < dt / (1000/samplesPerSecond)){
+        const prev = data[data.length-1];
+        const next = clamp01(prev + (Math.random()-0.5)*0.1);
+        data.push(next); data.shift();
+        updateMetrics(prev, next);
+      }
+      drawGrid();
+      drawLine(offset);
+      requestAnimationFrame(tick);
+    }
+
+    // --- Metrics ---
+    const metrics = { hr:72, o2:98.1, idx:4123.2, tmp:36.9 };
+    function updateMetrics(prev, next){
+      const defs = [
+        ['hr',  (Math.random()*2-1)*0.6,  40,160, 0],
+        ['o2',  (Math.random()*2-1)*0.05, 90,100, 1],
+        ['idx', (Math.random()*2-1)*4.0,   0,1e6, 1],
+        ['tmp', (Math.random()*2-1)*0.02, 34, 40, 1],
+      ];
+      defs.forEach(([k,d,min,max,fix])=>{
+        const old = metrics[k];
+        const val = Math.max(min, Math.min(max, old + d));
+        const delta = +(val - old).toFixed(1);
+        metrics[k] = +val.toFixed(fix);
+        renderMetric(k, delta);
+      });
+    }
+
+    function renderMetric(k, delta){
+      const vEl = document.querySelector(`[data-key="${k}"]`);
+      const dEl = document.querySelector(`[data-key="${k}d"]`);
+      if(!vEl || !dEl) return;
+      const v = metrics[k];
+      vEl.textContent = k==='o2' ? v.toFixed(1)+'%' : k==='tmp' ? v.toFixed(1)+'°C' : k==='idx' ? v.toFixed(1) : Math.round(v);
+      const sign = delta >= 0 ? '+' : '';
+      dEl.textContent = sign + delta.toFixed(1);
+      dEl.classList.toggle('up', delta >= 0);
+      dEl.classList.toggle('down', delta < 0);
+    }
+
+    // Resize and lifecycle
+    const ro = new ResizeObserver(() => { resize(); drawGrid(); });
+    ro.observe(canvas.parentElement);
+    window.addEventListener('orientationchange', () => { setTimeout(()=>{ dpr = Math.max(1, window.devicePixelRatio || 1); resize(); }, 200); }, { passive:true });
+    document.addEventListener('visibilitychange', () => { paused = document.hidden || window.matchMedia('(prefers-reduced-motion: reduce)').matches; if(!paused){ lastTs = 0; requestAnimationFrame(tick); } });
+
+    seed(); resize(); drawGrid(); if(!paused) requestAnimationFrame(tick);
+  })();
+  </script>
 </body>
 </html>
