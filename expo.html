@@ -44,26 +44,27 @@
         <!-- Live Data Numbers -->
         <div class="grid grid-cols-2 gap-2 text-sm mb-3">
             <div>
-                <span class="text-gray-500">SIGNAL_A:</span>
-                <span class="font-mono text-cyan-400 ml-1" id="data-1">--.--</span>
+                <span class="text-gray-500">Counter 1:</span>
+                <span class="font-mono text-cyan-400 ml-1" id="data-1">0.00</span>
             </div>
             <div>
-                <span class="text-gray-500">VOLATILITY:</span>
-                <span class="font-mono text-red-400 ml-1" id="data-2">--.--%</span>
+                <span class="text-gray-500">Rate 1:</span>
+                <span class="font-mono text-cyan-400 ml-1" id="data-2">0.00/s</span>
             </div>
             <div>
-                <span class="text-gray-500">CORE_TEMP:</span>
-                <span class="font-mono text-amber-400 ml-1" id="data-3">--.--</span>
+                <span class="text-gray-500">Counter 2:</span>
+                <span class="font-mono text-amber-400 ml-1" id="data-3">0.00</span>
             </div>
             <div>
-                <span class="text-gray-500">PRESSURE:</span>
-                <span class="font-mono text-fuchsia-400 ml-1" id="data-4">--.--</span>
+                <span class="text-gray-500">Rate 2:</span>
+                <span class="font-mono text-amber-400 ml-1" id="data-4">0.00/s</span>
             </div>
         </div>
 
         <!-- Live Chart Canvas -->
-        <div class="w-full h-16">
-            <canvas id="live-chart" class="w-full h-full bg-black bg-opacity-25 rounded-md"></canvas>
+        <div class="w-full h-16 grid grid-cols-2 gap-2">
+            <canvas id="live-chart-line" class="w-full h-full bg-black bg-opacity-25 rounded-md"></canvas>
+            <canvas id="live-chart-bar" class="w-full h-full bg-black bg-opacity-25 rounded-md"></canvas>
         </div>
     </div>
 
@@ -103,59 +104,102 @@
         const data3 = document.getElementById('data-3');
         const data4 = document.getElementById('data-4');
 
+        // Counter variables
+        let counter1 = 0;
+        let counter2 = 0;
+        const counter1Rate = 1.5; // units per second
+        const counter2Rate = 0.75; // units per second
+
         function updateNumbers() {
-            data1.textContent = (Math.random() * 100).toFixed(2);
-            data2.textContent = (Math.random() * 5 - 2.5).toFixed(2) + '%';
-            data3.textContent = (Math.random() * 20 + 70).toFixed(2);
-            data4.textContent = (Math.random() * 1000 + 500).toFixed(2);
+            // Increment counters based on rate and interval (200ms = 0.2s)
+            counter1 += counter1Rate * 0.2;
+            counter2 += counter2Rate * 0.2;
+
+            data1.textContent = counter1.toFixed(2);
+            data2.textContent = counter1Rate.toFixed(2) + '/s';
+            data3.textContent = counter2.toFixed(2);
+            data4.textContent = counter2Rate.toFixed(2) + '/s';
         }
 
         // --- Canvas Chart Logic ---
-        const canvas = document.getElementById('live-chart');
-        const ctx = canvas.getContext('2d');
+        const lineCanvas = document.getElementById('live-chart-line');
+        const lineCtx = lineCanvas.getContext('2d');
+        const barCanvas = document.getElementById('live-chart-bar');
+        const barCtx = barCanvas.getContext('2d');
         
-        const maxDataPoints = 100; // Number of points on the chart
-        let chartData = [];
-        let lastValue = 50; // Start in the middle (0-100 scale)
+        const maxDataPoints = 50; // Number of points on the line chart
+        let lineChartData = [];
+        let lastValue = 50; // For random walk
 
-        // Initialize chart with some data
-        function initChartData() {
-            chartData = []; // Clear data
+        const numBars = 10; // Number of bars for bar chart
+        let barChartData = [];
+
+        // Initialize line chart with random walk data
+        function initLineChartData() {
+            lineChartData = []; // Clear data
             lastValue = 50;
             for (let i = 0; i < maxDataPoints; i++) {
-                // Create a simple random walk
                 lastValue += (Math.random() - 0.5) * 5;
                 lastValue = Math.max(0, Math.min(100, lastValue)); // Clamp 0-100
-                chartData.push(lastValue);
+                lineChartData.push(lastValue);
             }
         }
 
-        // Draw the chart based on the chartData array
-        function drawChart() {
-            // Set canvas resolution to match its display size (prevents blur)
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
+        // Initialize bar chart with random data
+        function initBarChartData() {
+            barChartData = []; // Clear data
+            for (let i = 0; i < numBars; i++) {
+                barChartData.push(Math.random() * 100); // Random height 0-100
+            }
+        }
 
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.strokeStyle = '#4ade80'; // Tailwind 'green-400'
-            ctx.lineWidth = 2;
-            ctx.beginPath();
+        // Draw the line chart based on the lineChartData array
+        function drawLineChart() {
+            // Set canvas resolution to match its display size (prevents blur)
+            lineCanvas.width = lineCanvas.offsetWidth;
+            lineCanvas.height = lineCanvas.offsetHeight;
+
+            lineCtx.clearRect(0, 0, lineCanvas.width, lineCanvas.height);
+            lineCtx.strokeStyle = '#4ade80'; // Tailwind 'green-400'
+            lineCtx.lineWidth = 2;
+            lineCtx.beginPath();
             
-            const sliceWidth = canvas.width / (maxDataPoints - 1);
+            const sliceWidth = lineCanvas.width / (maxDataPoints - 1);
             
-            for (let i = 0; i < chartData.length; i++) {
+            for (let i = 0; i < lineChartData.length; i++) {
                 // X position is evenly spaced
                 const x = i * sliceWidth;
                 // Y position is inverted (0 is top) and scaled to canvas height
-                const y = (1 - (chartData[i] / 100)) * canvas.height; 
+                const y = (1 - (lineChartData[i] / 100)) * lineCanvas.height; 
                 
                 if (i === 0) {
-                    ctx.moveTo(x, y);
+                    lineCtx.moveTo(x, y);
                 } else {
-                    ctx.lineTo(x, y);
+                    lineCtx.lineTo(x, y);
                 }
             }
-            ctx.stroke();
+            lineCtx.stroke();
+        }
+
+        // Draw the bar chart based on the barChartData array
+        function drawBarChart() {
+            // Set canvas resolution
+            barCanvas.width = barCanvas.offsetWidth;
+            barCanvas.height = barCanvas.offsetHeight;
+
+            barCtx.clearRect(0, 0, barCanvas.width, barCanvas.height);
+            barCtx.fillStyle = '#4ade80'; // Tailwind 'green-400'
+            
+            const barWidth = barCanvas.width / numBars;
+            
+            for (let i = 0; i < barChartData.length; i++) {
+                const barHeight = (barChartData[i] / 100) * barCanvas.height;
+                const x = i * barWidth;
+                const y = barCanvas.height - barHeight; // Y starts from bottom
+                
+                // -2 for a small gap between bars
+                barCtx.fillRect(x, y, barWidth - 2, barHeight);
+            }
         }
 
         // Function to update all data (called by interval)
@@ -163,22 +207,27 @@
             // 1. Update text numbers
             updateNumbers();
 
-            // 2. Update chart data
-            // Add a new value and remove the oldest one to make it scroll
+            // 2. Update line chart data (scrolling random walk)
+            lineChartData.shift(); // Remove oldest data point
             lastValue += (Math.random() - 0.5) * 5; // New random walk step
             lastValue = Math.max(0, Math.min(100, lastValue)); // Clamp 0-100
-            chartData.shift(); // Remove oldest data point
-            chartData.push(lastValue); // Add new data point
+            lineChartData.push(lastValue); // Add new data point
 
-            // 3. Redraw the chart
-            drawChart();
+            // 3. Update bar chart data (randomly change one bar's height)
+            const barIndexToUpdate = Math.floor(Math.random() * numBars);
+            barChartData[barIndexToUpdate] = Math.random() * 100;
+
+            // 4. Redraw both charts
+            drawLineChart();
+            drawBarChart();
         }
         
         // --- Initialization ---
         
         // Wait for the page to be fully loaded
         window.onload = () => {
-            initChartData(); // Fill the chart data array
+            initLineChartData(); // Fill the line chart data array
+            initBarChartData(); // Fill the bar chart data array
             
             // Start the live update loop (updates every 200ms)
             setInterval(updateFeed, 200);
@@ -186,8 +235,9 @@
             // Redraw chart on window resize to prevent stretching/blur
             // This is important for orientation changes on mobile
             window.addEventListener('resize', () => {
-                // We only need to redraw, not regenerate data
-                drawChart();
+                // Redraw both charts
+                drawLineChart();
+                drawBarChart();
             });
         };
     </script>
