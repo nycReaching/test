@@ -1,287 +1,383 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-black">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <!-- This viewport tag is CRITICAL for mobile browsing to prevent cutoff -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Mobile Game UI</title>
-    <!-- Load Tailwind CSS for easy, responsive styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Use Inter font, a clean sans-serif */
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        /* Ensure canvas is crisp on all displays */
-        canvas {
-            image-rendering: -moz-crisp-edges;
-            image-rendering: -webkit-crisp-edges;
-            image-rendering: pixelated;
-            image-rendering: crisp-edges;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Values, Rates, and Dual-Handle Growth Slider</title>
+  <style>
+    :root {
+      --bg: #0b0e12;
+      --panel: #151a21;
+      --accent: #4da3ff;
+      --accent-2: #ff8a3d;
+      --text: #eaeef5;
+      --muted: #9aa7b2;
+      --track: #1f2630;
+      --track-fill: #2b3442;
+      --thumb-size: 18px; /* slim buttons */
+      --track-h: 8px;
+      --max-rate: 99; /* /s */
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background: radial-gradient(1200px 800px at 70% -20%, #1e2430 0%, var(--bg) 55%);
+      color: var(--text);
+      min-height: 100vh; display: grid; place-items: center;
+    }
+
+    .wrap { width: min(900px, 92vw); }
+
+    .card {
+      background: linear-gradient(180deg, #12171d 0%, var(--panel) 100%);
+      border: 1px solid #232a35;
+      border-radius: 16px;
+      padding: 20px clamp(16px, 4vw, 28px);
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+
+    h1 { margin: 0 0 12px 0; font-size: clamp(18px, 3vw, 22px); font-weight: 600; letter-spacing: .2px; color: #f4f7fb; }
+    p.sub { margin: 0 0 18px 0; color: var(--muted); font-size: 14px; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px clamp(12px, 3vw, 24px);
+      margin-bottom: 18px;
+    }
+
+    .stat {
+      background: #0f141a;
+      border: 1px solid #1f2631;
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+
+    .label { font-size: 12px; color: var(--muted); letter-spacing: .25px; }
+    .value { font-size: clamp(18px, 4vw, 28px); font-weight: 700; line-height: 1.2; margin-top: 6px; }
+
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .rate-a .badge { background: color-mix(in oklab, var(--accent), white 6%); color: #06131f; }
+    .rate-b .badge { background: color-mix(in oklab, var(--accent-2), white 6%); color: #180c03; }
+
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+
+    .growth { margin-top: 6px; font-size: 12px; color: var(--muted); }
+
+    /* Slider */
+    .slider-wrap { margin-top: 18px; }
+    .slider-label { font-size: 12px; color: var(--muted); margin-bottom: 8px; display: flex; justify-content: space-between; }
+
+    .slider { position: relative; height: 40px; user-select: none; }
+
+    .track {
+      position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%);
+      height: var(--track-h); border-radius: 999px; background: var(--track);
+      outline: 1px solid #2a3340;
+    }
+    .ticks { position: absolute; left: 0; right: 0; top: calc(50% + 14px); display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); }
+    .ticks span { width: 0; text-align: center; transform: translateX(-50%); }
+
+    .thumb { position: absolute; top: 50%; transform: translate(-50%, -50%);
+      width: var(--thumb-size); height: var(--thumb-size); border-radius: 6px; cursor: grab;
+      box-shadow: 0 2px 0 rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.08);
+      display: grid; place-items: center; font-weight: 800; font-size: 10px; color: #06131f;
+      transition: box-shadow .15s ease;
+    }
+    .thumb:active { cursor: grabbing; box-shadow: 0 0 0 2px rgba(255,255,255,.2); }
+
+    .thumb.a { background: var(--accent); }
+    .thumb.b { background: var(--accent-2); }
+
+    .legend { display: flex; gap: 12px; margin-top: 10px; font-size: 12px; color: var(--muted); align-items: center; flex-wrap: wrap; }
+    .dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+    .dot.a { background: var(--accent); }
+    .dot.b { background: var(--accent-2); }
+
+    .controls { margin-top: 14px; display: flex; gap: 8px; }
+    button.ctrl { background: #0d1117; color: var(--text); border: 1px solid #263041; border-radius: 8px; padding: 8px 10px; font-weight: 600; font-size: 13px; cursor: pointer; }
+    button.ctrl:hover { background: #111824; }
+
+    .small { font-size: 11px; color: var(--muted); }
+  
+    /* Slot machine */
+    .slot { margin-top: 26px; padding-top: 16px; border-top: 1px solid #232a35; }
+    .slot h2 { margin: 0 0 10px 0; font-size: clamp(16px, 2.6vw, 20px); font-weight: 650; }
+    .reels { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 12px 0; }
+    .reel { background:#0f141a; border:1px solid #1f2631; border-radius: 12px; height: 88px; display:grid; place-items:center; font-size: clamp(34px, 6vw, 48px); }
+    .reel.spinning { animation: pulse .6s linear infinite; filter: brightness(1.2); }
+    @keyframes pulse { 0%{transform:translateY(0) scale(1);} 50%{transform:translateY(-4px) scale(.98);} 100%{transform:translateY(0) scale(1);} }
+  </style>
 </head>
-<!--
-  h-screen: Full viewport height
-  overflow-hidden: Prevents scrolling/bouncing on mobile
-  flex flex-col: Main layout axis is vertical
--->
-<body class="h-screen overflow-hidden flex flex-col text-gray-100">
+<body>
+  <div class="wrap">
+    <div class="card">
+      
 
-    <!--
-      Top Panel: 25% height (h-1/4)
-      flex-shrink-0: Prevents this panel from shrinking
-      p-4: Padding
-      bg-gray-900: Dark background for the panel
-      rounded-b-lg: Nice modern rounded bottom corners
-    -->
-    <div id="top-panel" class="h-1/4 flex-shrink-0 p-4 bg-gray-900 rounded-b-lg shadow-lg overflow-hidden">
-        <div class="flex justify-between items-center mb-3">
-            <span class="text-lg font-bold text-green-400 animate-pulse">● STATUS: LIVE</span>
-            <span class="text-xs font-mono text-gray-400">SYS_8774B</span>
+      <!-- Values -->
+      <div class="grid" id="values">
+        <div class="stat">
+          <div class="label">Value 1</div>
+          <div class="value" id="val1">0.00</div>
         </div>
-
-        <!-- Live Data Numbers -->
-        <div class="grid grid-cols-2 gap-2 text-sm mb-3">
-            <div>
-                <span class="text-gray-500">Counter 1:</span>
-                <span class="font-mono text-cyan-400 ml-1" id="data-1">0.00</span>
-            </div>
-            <div>
-                <span class="text-gray-500">Rate 1:</span>
-                <span class="font-mono text-cyan-400 ml-1" id="data-2">0.00/s</span>
-            </div>
-            <div>
-                <span class="text-gray-500">Counter 2:</span>
-                <span class="font-mono text-amber-400 ml-1" id="data-3">0.00</span>
-            </div>
-            <div>
-                <span class="text-gray-500">Rate 2:</span>
-                <span class="font-mono text-amber-400 ml-1" id="data-4">0.00/s</span>
-            </div>
+        <div class="stat">
+          <div class="label">Value 2</div>
+          <div class="value" id="val2">0.00</div>
         </div>
+      </div>
 
-        <!-- Live Chart Canvas -->
-        <div class="w-full h-16 grid grid-cols-2 gap-2">
-            <!-- UPDATE: This canvas will now be used for the sine wave -->
-            <canvas id="live-chart-line" class="w-full h-full bg-black bg-opacity-25 rounded-md"></canvas>
-            <canvas id="live-chart-bar" class="w-full h-full bg-black bg-opacity-25 rounded-md"></canvas>
+      <!-- Rates -->
+      <div class="row">
+        <div class="stat rate-a">
+          <div class="label">Rate 1</div>
+          <div class="value"><span id="rate1">1.00</span> <span class="badge">/s</span></div>
+          <div class="growth">Growth: <span id="grow1">1</span>/m</div>
         </div>
-    </div>
+        <div class="stat rate-b">
+          <div class="label">Rate 2</div>
+          <div class="value"><span id="rate2">2.00</span> <span class="badge">/s</span></div>
+          <div class="growth">Growth: <span id="grow2">1</span>/m</div>
+        </div>
+      </div>
 
-    <!--
-      Middle Panel: Fills remaining space (flex-1)
-      This area is intentionally left blank as requested.
-    -->
-    <div id="middle-panel" class="flex-1 overflow-auto">
-        <!-- Blank area for game content -->
-    </div>
-
-    <!--
-      Bottom Bar: 15% height
-      flex-shrink-0: Prevents shrinking
-      bg-gray-900: Match top panel
-      rounded-t-lg: Nice rounded top corners
-      flex justify-center items-center: Center the button
-    -->
-    <div id="bottom-bar" class="h-[15%] flex-shrink-0 bg-gray-900 rounded-t-lg shadow-inner flex justify-center items-center">
-        <!--
-          Tappable Button
-          w-20 h-20: Large, easy-to-tap size
-          rounded-full: Makes it round
-          active:scale-90: The tap animation
-          transition-all: Smooths the animation
-        -->
-        <button id="main-button" class="w-20 h-20 bg-cyan-500 rounded-full shadow-lg flex items-center justify-center text-white transition-all duration-150 active:scale-90 active:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-300">
-            <!-- SVG icon removed -->
-        </button>
-    </div>
-
-    <script>
-        // --- Data Update Logic ---
-        const data1 = document.getElementById('data-1');
-        const data2 = document.getElementById('data-2');
-        const data3 = document.getElementById('data-3');
-        const data4 = document.getElementById('data-4');
-
-        // Counter variables
-        let counter1 = 0;
-        let counter2 = 0;
-        const counter1Rate = 1.5; // units per second
-        const counter2Rate = 0.75; // units per second
-
-        function updateNumbers() {
-            // Increment counters based on rate and interval (200ms = 0.2s)
-            counter1 += counter1Rate * 0.2;
-            counter2 += counter2Rate * 0.2;
-
-            data1.textContent = counter1.toFixed(2);
-            data2.textContent = counter1Rate.toFixed(2) + '/s';
-            data3.textContent = counter2.toFixed(2);
-            data4.textContent = counter2Rate.toFixed(2) + '/s';
-        }
-
-        // --- Canvas Chart Logic ---
-        const lineCanvas = document.getElementById('live-chart-line');
-        const lineCtx = lineCanvas.getContext('2d');
-        const barCanvas = document.getElementById('live-chart-bar');
-        const barCtx = barCanvas.getContext('2d');
-
-        // --- Bar Chart Logic (Unchanged) ---
-        const numBars = 10; // Number of bars for bar chart
-        let barChartData = [];
-
-        function initBarChartData() {
-            barChartData = []; // Clear data
-            for (let i = 0; i < numBars; i++) {
-                barChartData.push(Math.random() * 100); // Random height 0-100
-            }
-        }
-
-        function drawBarChart() {
-            // Robust resizing check
-            if (barCanvas.offsetWidth > 0 && barCanvas.offsetHeight > 0) {
-                 if (barCanvas.width !== barCanvas.offsetWidth || barCanvas.height !== barCanvas.offsetHeight) {
-                    barCanvas.width = barCanvas.offsetWidth;
-                    barCanvas.height = barCanvas.offsetHeight;
-                 }
-            } else {
-                return; // Don't draw if 0
-            }
-
-            barCtx.clearRect(0, 0, barCanvas.width, barCanvas.height);
-            barCtx.fillStyle = '#4ade80'; // Tailwind 'green-400'
-            const barWidth = barCanvas.width / numBars;
-
-            for (let i = 0; i < barChartData.length; i++) {
-                const barHeight = (barChartData[i] / 100) * barCanvas.height;
-                const x = i * barWidth;
-                const y = barCanvas.height - barHeight;
-                barCtx.fillRect(x, y, barWidth - 2, barHeight);
-            }
-        }
-
-        // --- UPDATED: Dynamic Sine Wave Logic ---
-        let phase = 0; // This will be our time/phase offset
+      <!-- Dual-handle slider -->
+      <div class="slider-wrap">
+        <div class="slider-label"><span>Growth per minute</span><span>1/m → 10/m</span></div>
+        <div class="slider" id="dualSlider" aria-label="Dual growth slider for Rate 1 and Rate 2" role="group">
+          <div class="track"></div>
+          <div class="thumb a" id="thumbA" aria-label="Rate 1 growth handle" role="slider" aria-valuemin="1" aria-valuemax="10" aria-valuenow="1" tabindex="0">1</div>
+          <div class="thumb b" id="thumbB" aria-label="Rate 2 growth handle" role="slider" aria-valuemin="1" aria-valuemax="10" aria-valuenow="2" tabindex="0">2</div>
+          <div class="ticks" id="ticks"></div>
+        </div>
         
-        // Wave shape parameters
-        let currentAmplitude, targetAmplitude;
-        let currentWaves, targetWaves;
-        let lastWaveChange = 0;
-        const waveChangeInterval = 5000; // Change wave every 5 seconds
+      </div>
 
-        function updateWaveShape() {
-            // Check if it's time to change the wave
-            if (Date.now() - lastWaveChange > waveChangeInterval) {
-                // Pick a new target amplitude (20% to 45% of height)
-                targetAmplitude = 0.2 + Math.random() * 0.25; 
-                // Pick a new target frequency (2 to 8 waves across width)
-                targetWaves = 2 + Math.random() * 6; 
-                lastWaveChange = Date.now();
-            }
-
-            // Smoothly "tween" the current values towards the target values
-            // This creates the morphing effect
-            currentAmplitude += (targetAmplitude - currentAmplitude) * 0.02;
-            currentWaves += (targetWaves - currentWaves) * 0.02;
-        }
-
-        function drawSineWave() {
-            // UPDATE: Robust resizing. Check every frame.
-            // This ensures the canvas is always the correct size.
-            if (lineCanvas.offsetWidth > 0 && lineCanvas.offsetHeight > 0) {
-                 if (lineCanvas.width !== lineCanvas.offsetWidth || lineCanvas.height !== lineCanvas.offsetHeight) {
-                    lineCanvas.width = lineCanvas.offsetWidth;
-                    lineCanvas.height = lineCanvas.offsetHeight;
-                 }
-            } else {
-                return; // Don't draw if size is 0
-            }
-
-            // Update the wave shape (amplitude, frequency)
-            updateWaveShape();
-
-            lineCtx.clearRect(0, 0, lineCanvas.width, lineCanvas.height);
-            lineCtx.strokeStyle = '#4ade80'; // Tailwind 'green-400'
-            lineCtx.lineWidth = 2;
-            lineCtx.beginPath();
-
-            const w = lineCanvas.width;
-            const h = lineCanvas.height;
-            const centerY = h / 2;
-            
-            // Use the dynamic amplitude (scaled to 45% of height max)
-            const amplitude = h * currentAmplitude; 
-            // Use the dynamic wave count
-            const frequency = (Math.PI * 2) / w * currentWaves; 
-
-            // Start path at x=0
-            let y = centerY + Math.sin(phase) * amplitude;
-            lineCtx.moveTo(0, y);
-
-            // Draw the wave across the canvas width
-            for (let x = 1; x < w; x++) {
-                y = centerY + Math.sin(x * frequency + phase) * amplitude;
-                lineCtx.lineTo(x, y);
-            }
-
-            lineCtx.stroke();
-        }
+      <div class="controls">
+        <button class="ctrl" id="reset">Reset</button>
+        <button class="ctrl" id="pause">Pause</button>
+      
+      <!-- Slot Machine (standalone) -->
+      <section class="slot" aria-label="3-reel slot machine">
+        <h2>3‑Reel Slot</h2>
+        <div class="reels">
+          <div class="reel" id="reel1">🍒</div>
+          <div class="reel" id="reel2">🍋</div>
+          <div class="reel" id="reel3">🍇</div>
+        </div>
+        <button class="ctrl" id="spin">Spin</button>
         
-        // This is the main animation loop for the sine wave
-        function animateSineWave() {
-            phase += 0.05; // Controls the speed of the wave scrolling
-            drawSineWave();
-            // requestAnimationFrame is smoother than setInterval
-            requestAnimationFrame(animateSineWave);
-        }
-        
-        // --- End of Dynamic Sine Wave Logic ---
+      </section>
+    </div>
+  </div>
 
+  <script>
+    // --- Config ---
+    const STEPS = 10;           // 1..10 per minute
+    const MIN_GROW = 1;         // /m
+    const MAX_GROW = 10;        // /m
+    const MAX_RATE = 99;        // /s
 
-        // Function to update data (called by interval)
-        function updateSlowFeed() {
-            // 1. Update text numbers
-            updateNumbers();
+    // --- State ---
+    let value1 = 0;
+    let value2 = 0;
+    let rate1 = 1;  // /s starting
+    let rate2 = 2;  // /s starting
 
-            // 2. Update bar chart data (randomly change one bar's height)
-            const barIndexToUpdate = Math.floor(Math.random() * numBars);
-            barChartData[barIndexToUpdate] = Math.random() * 100;
+    // growth per minute selected by handles
+    let grow1 = 1;  // /m (starts at 1 for A)
+    let grow2 = 2;  // /m (starts at 2 for B to differentiate)
 
-            // 3. Redraw bar chart
-            drawBarChart();
-        }
+    let running = true;
 
-        // --- Initialization ---
-        document.addEventListener('DOMContentLoaded', () => {
-            // Init bar chart data
-            initBarChartData();
+    // --- DOM ---
+    const val1El = document.getElementById('val1');
+    const val2El = document.getElementById('val2');
+    const rate1El = document.getElementById('rate1');
+    const rate2El = document.getElementById('rate2');
+    const grow1El = document.getElementById('grow1');
+    const grow2El = document.getElementById('grow2');
 
-            // Set initial wave shape
-            currentAmplitude = targetAmplitude = 0.4; // Start at 40% height
-            currentWaves = targetWaves = 4; // Start with 4 waves
-            lastWaveChange = Date.now();
+    const slider = document.getElementById('dualSlider');
+    const thumbA = document.getElementById('thumbA');
+    const thumbB = document.getElementById('thumbB');
+    const ticksEl = document.getElementById('ticks');
 
-            // Set initial canvas sizes with a small delay
-            setTimeout(() => {
-                // Initial draw
-                drawBarChart();
-                // We don't need to call drawSineWave() here, 
-                // animateSineWave() will do it on its first frame.
+    const resetBtn = document.getElementById('reset');
+    const pauseBtn = document.getElementById('pause');
 
-                // Start the SLOW feed for numbers and bar chart
-                setInterval(updateSlowFeed, 200);
+    // --- Helpers ---
+    function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
+    function fmt(n){ return n.toFixed(2); }
 
-                // Start the FAST, smooth animation loop for the sine wave
-                animateSineWave();
+    // Build ticks 1..10
+    function buildTicks(){
+      ticksEl.innerHTML = '';
+      for(let i=1;i<=STEPS;i++){
+        const s = document.createElement('span');
+        s.textContent = i;
+        ticksEl.appendChild(s);
+      }
+    }
 
-                // Add a simple resize listener
-                // The draw functions themselves handle the resizing
-                window.addEventListener('resize', () => {
-                   // The animation loops will catch the new size
-                });
-            }, 50); // 50ms delay to ensure layout
-        });
-    </script>
+    // Position a handle according to a step in [1..10]
+    function positionHandle(el, step){
+      const rect = slider.getBoundingClientRect();
+      const left = rect.left; const width = rect.width;
+      const pct = (step - 1) / (STEPS - 1); // 0..1
+      const x = pct * width; // px within slider
+      el.style.left = `${x}px`;
+      el.setAttribute('aria-valuenow', String(step));
+      el.textContent = step;
+    }
+
+    function stepFromClientX(clientX){
+      const rect = slider.getBoundingClientRect();
+      const x = clamp(clientX - rect.left, 0, rect.width);
+      const pct = rect.width === 0 ? 0 : x / rect.width;
+      let step = Math.round(pct * (STEPS - 1)) + 1; // 1..10
+      step = clamp(step, MIN_GROW, MAX_GROW);
+      return step;
+    }
+
+    function syncHandles(){
+      positionHandle(thumbA, grow1);
+      positionHandle(thumbB, grow2);
+      grow1El.textContent = grow1;
+      grow2El.textContent = grow2;
+    }
+
+    // Drag/keyboard interactions
+    function makeDraggable(el, onStep){
+      let dragging = false;
+      function onDown(ev){
+        dragging = true;
+        el.focus();
+        const c = ('touches' in ev) ? ev.touches[0].clientX : ev.clientX;
+        const step = stepFromClientX(c);
+        onStep(step);
+        ev.preventDefault();
+      }
+      function onMove(ev){
+        if(!dragging) return;
+        const c = ('touches' in ev) ? ev.touches[0].clientX : ev.clientX;
+        const step = stepFromClientX(c);
+        onStep(step);
+      }
+      function onUp(){ dragging = false; }
+
+      el.addEventListener('mousedown', onDown);
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onUp);
+
+      el.addEventListener('touchstart', onDown, {passive:false});
+      window.addEventListener('touchmove', onMove, {passive:false});
+      window.addEventListener('touchend', onUp);
+
+      el.addEventListener('keydown', (e)=>{
+        if(e.key === 'ArrowLeft'){ onStep(clamp(Number(el.getAttribute('aria-valuenow')) - 1, MIN_GROW, MAX_GROW)); e.preventDefault(); }
+        if(e.key === 'ArrowRight'){ onStep(clamp(Number(el.getAttribute('aria-valuenow')) + 1, MIN_GROW, MAX_GROW)); e.preventDefault(); }
+      });
+    }
+
+    makeDraggable(thumbA, step=>{ grow1 = step; syncHandles(); });
+    makeDraggable(thumbB, step=>{ grow2 = step; syncHandles(); });
+
+    // Controls
+    resetBtn.addEventListener('click', ()=>{
+      value1 = 0; value2 = 0; rate1 = 1; rate2 = 2; grow1 = 1; grow2 = 2; running = true;
+      pauseBtn.textContent = 'Pause';
+      syncHandles();
+      updateReadout(0); // immediate paint
+    });
+
+    pauseBtn.addEventListener('click', ()=>{
+      running = !running;
+      pauseBtn.textContent = running ? 'Pause' : 'Resume';
+    });
+
+    // Paint
+    function updateReadout(){
+      val1El.textContent = fmt(value1);
+      val2El.textContent = fmt(value2);
+      rate1El.textContent = fmt(rate1);
+      rate2El.textContent = fmt(rate2);
+    }
+
+    // Simulation loop using rAF with delta timing
+    let lastTs = undefined;
+    function tick(ts){
+      if(lastTs === undefined) lastTs = ts;
+      const dt = (ts - lastTs) / 1000; // seconds
+      lastTs = ts;
+
+      if(running && dt > 0){
+        // Increase values by current rate
+        value1 += rate1 * dt;
+        value2 += rate2 * dt;
+
+        // Increase rates by growth per second, capped to MAX_RATE
+        const g1ps = (grow1 / 60); // /s^2 equivalent as it increases rate per second
+        const g2ps = (grow2 / 60);
+        rate1 = Math.min(MAX_RATE, rate1 + g1ps * dt);
+        rate2 = Math.min(MAX_RATE, rate2 + g2ps * dt);
+      }
+
+      updateReadout();
+      requestAnimationFrame(tick);
+    }
+
+    // Init
+    buildTicks();
+    syncHandles();
+    requestAnimationFrame(tick);
+
+    // Responsive: reposition handles on resize
+    const ro = new ResizeObserver(()=> syncHandles());
+    ro.observe(slider);
+  
+    // --- Slot machine (standalone) ---
+    const symbols = ['🍒','🍋','🍇','🍉','🍊','🍓','🔔','⭐','🍀','🍎'];
+    const reelEls = [
+      document.getElementById('reel1'),
+      document.getElementById('reel2'),
+      document.getElementById('reel3')
+    ];
+    const spinBtn = document.getElementById('spin');
+
+    function randomSymbol(){
+      return symbols[Math.floor(Math.random() * symbols.length)];
+    }
+
+    function spinOnce(){
+      if(!spinBtn) return; // safety if section removed
+      if(spinBtn.disabled) return;
+      spinBtn.disabled = true;
+
+      const speeds = [70, 85, 100];     // ms per symbol update per reel
+      const durations = [900, 1100, 1300]; // ms total spin time per reel
+
+      reelEls.forEach((el, i)=>{
+        if(!el) return;
+        el.classList.add('spinning');
+        const intervalId = setInterval(()=>{ el.textContent = randomSymbol(); }, speeds[i]);
+        setTimeout(()=>{
+          clearInterval(intervalId);
+          el.classList.remove('spinning');
+          el.textContent = randomSymbol();
+          if(i === reelEls.length - 1){ spinBtn.disabled = false; }
+        }, durations[i]);
+      });
+    }
+
+    if(spinBtn){
+      spinBtn.addEventListener('click', spinOnce);
+      // Keyboard: Space/Enter to spin when focused
+      spinBtn.addEventListener('keydown', (e)=>{
+        if(e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); spinOnce(); }
+      });
+    }
+  </script>
 </body>
 </html>
