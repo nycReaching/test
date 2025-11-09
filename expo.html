@@ -1,189 +1,173 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-black">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
-  <title>Minimal Game UI</title>
-  <style>
-    :root{
-      --bg: #ffffff;
-      --feed-bg: #0c0f14;
-      --text-muted: #7f8ea3;
-      --accent: #2dd4bf; /* teal */
-    }
-
-    *{ box-sizing: border-box; }
-    html, body { height: 100%; }
-    body{ margin: 0; background: var(--bg); color: #111; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
-
-    /* Full-height app with modern viewport units and safe-area support */
-    .app{ height: 100vh; display: flex; flex-direction: column; overflow: hidden;
-      padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
-    @supports (height: 100svh){ .app{ height: 100svh; } }
-    @supports (height: 100dvh){ .app{ height: 100dvh; } }
-
-    /* Top feed panel ~25% */
-    .feed{ position: relative; height: 25%; background: var(--feed-bg); color: #fff; overflow: hidden;
-      border-bottom: 1px solid rgba(255,255,255,0.08); }
-
-    .canvasWrap{ position: absolute; inset: 0; }
-    #chart{ width: 100%; height: 100%; display: block; }
-
-    /* Lightweight metrics over the chart */
-    .metrics{ position: absolute; top: 8px; left: 12px; right: 12px; display: flex; gap: 12px;
-      font-variant-numeric: tabular-nums; font-size: clamp(10px, 2.6vw, 13px); opacity: .9; }
-    .metric{ display: flex; align-items: baseline; gap: 6px; white-space: nowrap; }
-    .metric .label{ color: var(--text-muted); letter-spacing: .04em; font-size: .9em; }
-    .metric .value{ font-weight: 600; }
-    .metric .delta{ font-size: .85em; }
-    .metric .up{ color: #22c55e; }
-    .metric .down{ color: #ef4444; }
-
-    /* Bottom 75% intentionally blank */
-    .playfield{ flex: 1 1 auto; background: transparent; }
-  </style>
+    <meta charset="UTF-8">
+    <!-- This viewport tag is CRITICAL for mobile browsing to prevent cutoff -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Mobile Game UI</title>
+    <!-- Load Tailwind CSS for easy, responsive styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Use Inter font, a clean sans-serif */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Ensure canvas is crisp on all displays */
+        canvas {
+            image-rendering: -moz-crisp-edges;
+            image-rendering: -webkit-crisp-edges;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+    </style>
 </head>
-<body>
-  <div class="app" role="application" aria-label="Game UI">
-    <section class="feed" aria-label="Live feed">
-      <div class="canvasWrap"><canvas id="chart" aria-hidden="true"></canvas></div>
-      <div class="metrics" aria-live="polite" aria-atomic="false">
-        <div class="metric"><span class="label">HR</span><span class="value" data-key="hr">72</span><span class="delta up" data-key="hrd">+0.2</span></div>
-        <div class="metric"><span class="label">O2</span><span class="value" data-key="o2">98.1%</span><span class="delta down" data-key="o2d">-0.1</span></div>
-        <div class="metric"><span class="label">IDX</span><span class="value" data-key="idx">4123.2</span><span class="delta up" data-key="idxd">+2.1</span></div>
-        <div class="metric"><span class="label">TMP</span><span class="value" data-key="tmp">36.9°C</span><span class="delta up" data-key="tmpd">+0.0</span></div>
-      </div>
-    </section>
+<!-- 
+  h-screen: Full viewport height
+  overflow-hidden: Prevents scrolling/bouncing on mobile
+  flex flex-col: Main layout axis is vertical
+-->
+<body class="h-screen overflow-hidden flex flex-col text-gray-100">
 
-    <main class="playfield" aria-label="Game playfield" tabindex="-1"></main>
-  </div>
+    <!-- 
+      Top Panel: 25% height (h-1/4)
+      p-4: Padding
+      bg-gray-900: Dark background for the panel
+      rounded-b-lg: Nice modern rounded bottom corners
+    -->
+    <div id="top-panel" class="h-1/4 p-4 bg-gray-900 rounded-b-lg shadow-lg overflow-hidden">
+        <div class="flex justify-between items-center mb-3">
+            <span class="text-lg font-bold text-green-400 animate-pulse">● STATUS: LIVE</span>
+            <span class="text-xs font-mono text-gray-400">SYS_8774B</span>
+        </div>
+        
+        <!-- Live Data Numbers -->
+        <div class="grid grid-cols-2 gap-2 text-sm mb-3">
+            <div>
+                <span class="text-gray-500">SIGNAL_A:</span>
+                <span class="font-mono text-cyan-400 ml-1" id="data-1">--.--</span>
+            </div>
+            <div>
+                <span class="text-gray-500">VOLATILITY:</span>
+                <span class="font-mono text-red-400 ml-1" id="data-2">--.--%</span>
+            </div>
+            <div>
+                <span class="text-gray-500">CORE_TEMP:</span>
+                <span class="font-mono text-amber-400 ml-1" id="data-3">--.--</span>
+            </div>
+            <div>
+                <span class="text-gray-500">PRESSURE:</span>
+                <span class="font-mono text-fuchsia-400 ml-1" id="data-4">--.--</span>
+            </div>
+        </div>
 
-  <script>
-  (function(){
-    const canvas = document.getElementById('chart');
-    const ctx = canvas.getContext('2d');
-    let dpr = Math.max(1, window.devicePixelRatio || 1);
-    let width = 0, height = 0;
-    let data = [];
-    const historySeconds = 12;      // visible window width in seconds
-    const samplesPerSecond = 30;     // data sampling rate
-    const speed = 60;                // px per second for scroll speed
-    const gridRows = 4;              // horizontal grid rows
-    let lastTs = 0;
-    let paused = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        <!-- Live Chart Canvas -->
+        <div class="w-full h-16">
+            <canvas id="live-chart" class="w-full h-full bg-black bg-opacity-25 rounded-md"></canvas>
+        </div>
+    </div>
 
-    function resize(){
-      const r = canvas.getBoundingClientRect();
-      width  = Math.floor(r.width * dpr);
-      height = Math.floor(r.height * dpr);
-      canvas.width = width; canvas.height = height;
-      ctx.setTransform(1,0,0,1,0,0); ctx.scale(dpr, dpr);
-    }
+    <!-- 
+      Bottom Panel: 75% height (h-3/4)
+      This area is intentionally left blank as requested.
+    -->
+    <div id="bottom-panel" class="h-3/4">
+        <!-- Blank area for game content -->
+    </div>
 
-    function seed(){
-      const total = historySeconds * samplesPerSecond;
-      data = new Array(total).fill(0);
-      let v = 0.5; // normalized [0..1]
-      for(let i=0;i<total;i++){
-        v = clamp01(v + (Math.random()-0.5)*0.08); // random walk
-        data[i] = v;
-      }
-    }
+    <script>
+        // --- Data Update Logic ---
+        const data1 = document.getElementById('data-1');
+        const data2 = document.getElementById('data-2');
+        const data3 = document.getElementById('data-3');
+        const data4 = document.getElementById('data-4');
 
-    function clamp01(x){ return Math.max(0, Math.min(1, x)); }
+        function updateNumbers() {
+            data1.textContent = (Math.random() * 100).toFixed(2);
+            data2.textContent = (Math.random() * 5 - 2.5).toFixed(2) + '%';
+            data3.textContent = (Math.random() * 20 + 70).toFixed(2);
+            data4.textContent = (Math.random() * 1000 + 500).toFixed(2);
+        }
 
-    function drawGrid(){
-      const w = canvas.clientWidth, h = canvas.clientHeight;
-      ctx.clearRect(0,0,w,h);
-      ctx.save();
-      ctx.globalAlpha = 0.35;
-      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
-      ctx.lineWidth = 1;
-      // verticals
-      const stepX = 40;
-      for(let x=0; x<=w; x+=stepX){ ctx.beginPath(); ctx.moveTo(x+0.5,0); ctx.lineTo(x+0.5,h); ctx.stroke(); }
-      // horizontals
-      const stepY = h / gridRows;
-      for(let y=0; y<=h; y+=stepY){ ctx.beginPath(); ctx.moveTo(0,y+0.5); ctx.lineTo(w,y+0.5); ctx.stroke(); }
-      ctx.restore();
-    }
+        // --- Canvas Chart Logic ---
+        const canvas = document.getElementById('live-chart');
+        const ctx = canvas.getContext('2d');
+        
+        const maxDataPoints = 100; // Number of points on the chart
+        let chartData = [];
+        let lastValue = 50; // Start in the middle (0-100 scale)
 
-    function drawLine(offsetPx){
-      const w = canvas.clientWidth, h = canvas.clientHeight;
-      const n = data.length;
-      const pxPerSample = (w / historySeconds) / samplesPerSecond;
-      ctx.save();
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#2dd4bf';
-      ctx.beginPath();
-      const y = v => h - (h*0.15) - v*(h*0.7); // leave headroom and floor
-      for(let i=0;i<n;i++){
-        const idx = n-1-i;          // newest on the right
-        const x = w - (i*pxPerSample) - offsetPx;
-        if(x < -10) break;
-        const v = data[idx];
-        if(i===0) ctx.moveTo(x, y(v)); else ctx.lineTo(x, y(v));
-      }
-      ctx.stroke();
-      ctx.restore();
-    }
+        // Initialize chart with some data
+        function initChartData() {
+            chartData = []; // Clear data
+            lastValue = 50;
+            for (let i = 0; i < maxDataPoints; i++) {
+                // Create a simple random walk
+                lastValue += (Math.random() - 0.5) * 5;
+                lastValue = Math.max(0, Math.min(100, lastValue)); // Clamp 0-100
+                chartData.push(lastValue);
+            }
+        }
 
-    function tick(ts){
-      if(paused) return;
-      if(!lastTs) lastTs = ts;
-      const dt = Math.min(64, ts - lastTs);
-      lastTs = ts;
-      const offset = (ts/1000 * speed) % (canvas.clientWidth / historySeconds);
-      // probabilistic sample insert roughly at sampling rate
-      if(Math.random() < dt / (1000/samplesPerSecond)){
-        const prev = data[data.length-1];
-        const next = clamp01(prev + (Math.random()-0.5)*0.1);
-        data.push(next); data.shift();
-        updateMetrics(prev, next);
-      }
-      drawGrid();
-      drawLine(offset);
-      requestAnimationFrame(tick);
-    }
+        // Draw the chart based on the chartData array
+        function drawChart() {
+            // Set canvas resolution to match its display size (prevents blur)
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
 
-    // --- Metrics ---
-    const metrics = { hr:72, o2:98.1, idx:4123.2, tmp:36.9 };
-    function updateMetrics(prev, next){
-      const defs = [
-        ['hr',  (Math.random()*2-1)*0.6,  40,160, 0],
-        ['o2',  (Math.random()*2-1)*0.05, 90,100, 1],
-        ['idx', (Math.random()*2-1)*4.0,   0,1e6, 1],
-        ['tmp', (Math.random()*2-1)*0.02, 34, 40, 1],
-      ];
-      defs.forEach(([k,d,min,max,fix])=>{
-        const old = metrics[k];
-        const val = Math.max(min, Math.min(max, old + d));
-        const delta = +(val - old).toFixed(1);
-        metrics[k] = +val.toFixed(fix);
-        renderMetric(k, delta);
-      });
-    }
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = '#4ade80'; // Tailwind 'green-400'
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            const sliceWidth = canvas.width / (maxDataPoints - 1);
+            
+            for (let i = 0; i < chartData.length; i++) {
+                // X position is evenly spaced
+                const x = i * sliceWidth;
+                // Y position is inverted (0 is top) and scaled to canvas height
+                const y = (1 - (chartData[i] / 100)) * canvas.height; 
+                
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.stroke();
+        }
 
-    function renderMetric(k, delta){
-      const vEl = document.querySelector(`[data-key="${k}"]`);
-      const dEl = document.querySelector(`[data-key="${k}d"]`);
-      if(!vEl || !dEl) return;
-      const v = metrics[k];
-      vEl.textContent = k==='o2' ? v.toFixed(1)+'%' : k==='tmp' ? v.toFixed(1)+'°C' : k==='idx' ? v.toFixed(1) : Math.round(v);
-      const sign = delta >= 0 ? '+' : '';
-      dEl.textContent = sign + delta.toFixed(1);
-      dEl.classList.toggle('up', delta >= 0);
-      dEl.classList.toggle('down', delta < 0);
-    }
+        // Function to update all data (called by interval)
+        function updateFeed() {
+            // 1. Update text numbers
+            updateNumbers();
 
-    // Resize and lifecycle
-    const ro = new ResizeObserver(() => { resize(); drawGrid(); });
-    ro.observe(canvas.parentElement);
-    window.addEventListener('orientationchange', () => { setTimeout(()=>{ dpr = Math.max(1, window.devicePixelRatio || 1); resize(); }, 200); }, { passive:true });
-    document.addEventListener('visibilitychange', () => { paused = document.hidden || window.matchMedia('(prefers-reduced-motion: reduce)').matches; if(!paused){ lastTs = 0; requestAnimationFrame(tick); } });
+            // 2. Update chart data
+            // Add a new value and remove the oldest one to make it scroll
+            lastValue += (Math.random() - 0.5) * 5; // New random walk step
+            lastValue = Math.max(0, Math.min(100, lastValue)); // Clamp 0-100
+            chartData.shift(); // Remove oldest data point
+            chartData.push(lastValue); // Add new data point
 
-    seed(); resize(); drawGrid(); if(!paused) requestAnimationFrame(tick);
-  })();
-  </script>
+            // 3. Redraw the chart
+            drawChart();
+        }
+        
+        // --- Initialization ---
+        
+        // Wait for the page to be fully loaded
+        window.onload = () => {
+            initChartData(); // Fill the chart data array
+            
+            // Start the live update loop (updates every 200ms)
+            setInterval(updateFeed, 200);
+
+            // Redraw chart on window resize to prevent stretching/blur
+            // This is important for orientation changes on mobile
+            window.addEventListener('resize', () => {
+                // We only need to redraw, not regenerate data
+                drawChart();
+            });
+        };
+    </script>
 </body>
 </html>
