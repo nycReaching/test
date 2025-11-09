@@ -1,418 +1,287 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full bg-black">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>System Monitor UI</title>
+    <!-- This viewport tag is CRITICAL for mobile browsing to prevent cutoff -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Mobile Game UI</title>
+    <!-- Load Tailwind CSS for easy, responsive styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        html, body {
-            height: 100%;
-            width: 100%;
-            overflow: hidden;
-            touch-action: none;
-        }
-
+        /* Use Inter font, a clean sans-serif */
         body {
-            background-color: #0a0a0a;
-            font-family: 'Courier New', monospace;
-            color: #e0e0e0;
+            font-family: 'Inter', sans-serif;
         }
-
-        .game-container {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            width: 100vw;
-        }
-
-        .top-panel {
-            height: 25%;
-            background: 
-                radial-gradient(ellipse at 50% -20%, rgba(0, 255, 200, 0.1) 0%, transparent 60%),
-                linear-gradient(180deg, #1a1a2e 0%, #121212 100%);
-            border-bottom: 3px solid #00ffcc;
-            box-shadow: 0 0 20px rgba(0, 255, 200, 0.2);
-            display: flex;
-            flex-direction: column;
-            padding: 12px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .top-panel::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: repeating-linear-gradient(
-                0deg,
-                transparent,
-                transparent 3px,
-                rgba(0, 255, 200, 0.05) 3px,
-                rgba(0, 255, 200, 0.05) 6px
-            );
-            pointer-events: none;
-            animation: scan 8s linear infinite;
-        }
-
-        @keyframes scan {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(6px); }
-        }
-
-        .data-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            font-size: clamp(16px, 4.5vw, 24px);
-            position: relative;
-            z-index: 2;
-        }
-
-        .data-label {
-            color: #00ffcc;
-            text-shadow: 0 0 8px rgba(0, 255, 204, 0.4);
-        }
-
-        .data-value {
-            color: #00ff88;
-            font-weight: bold;
-            text-shadow: 0 0 8px rgba(0, 255, 136, 0.4);
-            transition: all 0.3s ease;
-        }
-
-        .data-value.pulse {
-            transform: scale(1.1);
-            color: #ff00aa;
-            text-shadow: 0 0 12px rgba(255, 0, 170, 0.6);
-        }
-
-        .chart-container {
-            flex: 1;
-            position: relative;
-            min-height: 50px;
-            z-index: 1;
-        }
-
-        #dataChart {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
-
-        .status-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 6px;
-            margin-top: 8px;
-            position: relative;
-            z-index: 2;
-        }
-
-        .status-item {
-            font-size: clamp(11px, 3vw, 16px);
-            text-align: center;
-            background: rgba(0, 255, 200, 0.05);
-            border: 1px solid rgba(0, 255, 200, 0.2);
-            border-radius: 4px;
-            padding: 4px 0;
-            transition: all 0.3s ease;
-        }
-
-        .status-item.active {
-            background: rgba(255, 0, 170, 0.2);
-            border-color: #ff00aa;
-            box-shadow: 0 0 8px rgba(255, 0, 170, 0.4);
-        }
-
-        .status-label {
-            color: #888;
-            font-size: 0.7em;
-            margin-bottom: 2px;
-        }
-
-        .status-value {
-            color: #ffdd00;
-            font-weight: bold;
-        }
-
-        .bottom-panel {
-            height: 75%;
-            background-color: #0a0a0a;
-            position: relative;
-        }
-
-        .alert-indicator {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #ff0044;
-            opacity: 0;
-            animation: alertPulse 2s infinite;
-        }
-
-        @keyframes alertPulse {
-            0%, 100% { opacity: 0; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.5); }
+        /* Ensure canvas is crisp on all displays */
+        canvas {
+            image-rendering: -moz-crisp-edges;
+            image-rendering: -webkit-crisp-edges;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
         }
     </style>
 </head>
-<body>
-    <div class="game-container">
-        <div class="top-panel">
-            <div class="alert-indicator" id="alert"></div>
-            <div class="data-header">
-                <span class="data-label">NEURAL CORE v2.7</span>
-                <span class="data-value" id="mainMetric">127.43</span>
+<!--
+  h-screen: Full viewport height
+  overflow-hidden: Prevents scrolling/bouncing on mobile
+  flex flex-col: Main layout axis is vertical
+-->
+<body class="h-screen overflow-hidden flex flex-col text-gray-100">
+
+    <!--
+      Top Panel: 25% height (h-1/4)
+      flex-shrink-0: Prevents this panel from shrinking
+      p-4: Padding
+      bg-gray-900: Dark background for the panel
+      rounded-b-lg: Nice modern rounded bottom corners
+    -->
+    <div id="top-panel" class="h-1/4 flex-shrink-0 p-4 bg-gray-900 rounded-b-lg shadow-lg overflow-hidden">
+        <div class="flex justify-between items-center mb-3">
+            <span class="text-lg font-bold text-green-400 animate-pulse">● STATUS: LIVE</span>
+            <span class="text-xs font-mono text-gray-400">SYS_8774B</span>
+        </div>
+
+        <!-- Live Data Numbers -->
+        <div class="grid grid-cols-2 gap-2 text-sm mb-3">
+            <div>
+                <span class="text-gray-500">Counter 1:</span>
+                <span class="font-mono text-cyan-400 ml-1" id="data-1">0.00</span>
             </div>
-            <div class="chart-container">
-                <canvas id="dataChart"></canvas>
+            <div>
+                <span class="text-gray-500">Rate 1:</span>
+                <span class="font-mono text-cyan-400 ml-1" id="data-2">0.00/s</span>
             </div>
-            <div class="status-grid">
-                <div class="status-item" id="item0">
-                    <div class="status-label">LAYER 1</div>
-                    <div class="status-value" id="stat1">98.2%</div>
-                </div>
-                <div class="status-item" id="item1">
-                    <div class="status-label">LAYER 2</div>
-                    <div class="status-value" id="stat2">72.8</div>
-                </div>
-                <div class="status-item" id="item2">
-                    <div class="status-label">CYCLE</div>
-                    <div class="status-value" id="stat3">142ms</div>
-                </div>
-                <div class="status-item" id="item3">
-                    <div class="status-label">STATUS</div>
-                    <div class="status-value" id="stat4">OK</div>
-                </div>
+            <div>
+                <span class="text-gray-500">Counter 2:</span>
+                <span class="font-mono text-amber-400 ml-1" id="data-3">0.00</span>
+            </div>
+            <div>
+                <span class="text-gray-500">Rate 2:</span>
+                <span class="font-mono text-amber-400 ml-1" id="data-4">0.00/s</span>
             </div>
         </div>
-        <div class="bottom-panel">
-            <!-- Game content -->
+
+        <!-- Live Chart Canvas -->
+        <div class="w-full h-16 grid grid-cols-2 gap-2">
+            <!-- UPDATE: This canvas will now be used for the sine wave -->
+            <canvas id="live-chart-line" class="w-full h-full bg-black bg-opacity-25 rounded-md"></canvas>
+            <canvas id="live-chart-bar" class="w-full h-full bg-black bg-opacity-25 rounded-md"></canvas>
         </div>
     </div>
 
+    <!--
+      Middle Panel: Fills remaining space (flex-1)
+      This area is intentionally left blank as requested.
+    -->
+    <div id="middle-panel" class="flex-1 overflow-auto">
+        <!-- Blank area for game content -->
+    </div>
+
+    <!--
+      Bottom Bar: 15% height
+      flex-shrink-0: Prevents shrinking
+      bg-gray-900: Match top panel
+      rounded-t-lg: Nice rounded top corners
+      flex justify-center items-center: Center the button
+    -->
+    <div id="bottom-bar" class="h-[15%] flex-shrink-0 bg-gray-900 rounded-t-lg shadow-inner flex justify-center items-center">
+        <!--
+          Tappable Button
+          w-20 h-20: Large, easy-to-tap size
+          rounded-full: Makes it round
+          active:scale-90: The tap animation
+          transition-all: Smooths the animation
+        -->
+        <button id="main-button" class="w-20 h-20 bg-cyan-500 rounded-full shadow-lg flex items-center justify-center text-white transition-all duration-150 active:scale-90 active:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-300">
+            <!-- SVG icon removed -->
+        </button>
+    </div>
+
     <script>
-        const canvas = document.getElementById('dataChart');
-        const ctx = canvas.getContext('2d');
-        
-        function resizeCanvas() {
-            const rect = canvas.getBoundingClientRect();
-            canvas.width = rect.width * window.devicePixelRatio;
-            canvas.height = rect.height * window.devicePixelRatio;
-            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-        }
-        
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
+        // --- Data Update Logic ---
+        const data1 = document.getElementById('data-1');
+        const data2 = document.getElementById('data-2');
+        const data3 = document.getElementById('data-3');
+        const data4 = document.getElementById('data-4');
 
-        const dataPoints = [];
-        const secondaryPoints = [];
-        const maxPoints = 80;
-        
-        for (let i = 0; i < maxPoints; i++) {
-            dataPoints.push(Math.random() * 40 + 110);
-            secondaryPoints.push(Math.random() * 30 + 90);
+        // Counter variables
+        let counter1 = 0;
+        let counter2 = 0;
+        const counter1Rate = 1.5; // units per second
+        const counter2Rate = 0.75; // units per second
+
+        function updateNumbers() {
+            // Increment counters based on rate and interval (200ms = 0.2s)
+            counter1 += counter1Rate * 0.2;
+            counter2 += counter2Rate * 0.2;
+
+            data1.textContent = counter1.toFixed(2);
+            data2.textContent = counter1Rate.toFixed(2) + '/s';
+            data3.textContent = counter2.toFixed(2);
+            data4.textContent = counter2Rate.toFixed(2) + '/s';
         }
 
-        // Particle system
-        const particles = [];
-        
-        class Particle {
-            constructor(x, y, color) {
-                this.x = x;
-                this.y = y;
-                this.vx = (Math.random() - 0.5) * 0.8;
-                this.vy = -Math.random() * 1.5 - 0.5;
-                this.life = 1.0;
-                this.color = color;
-                this.size = Math.random() * 2 + 1;
-            }
-            
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-                this.life -= 0.015;
-            }
-            
-            draw(ctx) {
-                ctx.save();
-                ctx.globalAlpha = this.life * 0.6;
-                ctx.fillStyle = this.color;
-                ctx.shadowBlur = 8;
-                ctx.shadowColor = this.color;
-                ctx.fillRect(this.x, this.y, this.size, this.size);
-                ctx.restore();
+        // --- Canvas Chart Logic ---
+        const lineCanvas = document.getElementById('live-chart-line');
+        const lineCtx = lineCanvas.getContext('2d');
+        const barCanvas = document.getElementById('live-chart-bar');
+        const barCtx = barCanvas.getContext('2d');
+
+        // --- Bar Chart Logic (Unchanged) ---
+        const numBars = 10; // Number of bars for bar chart
+        let barChartData = [];
+
+        function initBarChartData() {
+            barChartData = []; // Clear data
+            for (let i = 0; i < numBars; i++) {
+                barChartData.push(Math.random() * 100); // Random height 0-100
             }
         }
 
-        let lastUpdate = 0;
-        let waveOffset = 0;
+        function drawBarChart() {
+            // Robust resizing check
+            if (barCanvas.offsetWidth > 0 && barCanvas.offsetHeight > 0) {
+                 if (barCanvas.width !== barCanvas.offsetWidth || barCanvas.height !== barCanvas.offsetHeight) {
+                    barCanvas.width = barCanvas.offsetWidth;
+                    barCanvas.height = barCanvas.offsetHeight;
+                 }
+            } else {
+                return; // Don't draw if 0
+            }
+
+            barCtx.clearRect(0, 0, barCanvas.width, barCanvas.height);
+            barCtx.fillStyle = '#4ade80'; // Tailwind 'green-400'
+            const barWidth = barCanvas.width / numBars;
+
+            for (let i = 0; i < barChartData.length; i++) {
+                const barHeight = (barChartData[i] / 100) * barCanvas.height;
+                const x = i * barWidth;
+                const y = barCanvas.height - barHeight;
+                barCtx.fillRect(x, y, barWidth - 2, barHeight);
+            }
+        }
+
+        // --- UPDATED: Dynamic Sine Wave Logic ---
+        let phase = 0; // This will be our time/phase offset
         
-        function animateChart(timestamp) {
-            waveOffset += 0.05;
-            
-            // Update data every 800ms
-            if (timestamp - lastUpdate > 800) {
-                const lastValue = dataPoints[dataPoints.length - 1];
-                const change = Math.sin(waveOffset) * 2 + (Math.random() - 0.5) * 3;
-                let newValue = Math.max(100, Math.min(150, lastValue + change));
-                dataPoints.push(newValue);
-                if (dataPoints.length > maxPoints) dataPoints.shift();
+        // Wave shape parameters
+        let currentAmplitude, targetAmplitude;
+        let currentWaves, targetWaves;
+        let lastWaveChange = 0;
+        const waveChangeInterval = 5000; // Change wave every 5 seconds
 
-                // Secondary line
-                secondaryPoints.push(newValue - 15 + Math.random() * 10);
-                if (secondaryPoints.length > maxPoints) secondaryPoints.shift();
-
-                // Spawn particles
-                if (Math.random() > 0.7) {
-                    const width = canvas.offsetWidth;
-                    const height = canvas.offsetHeight;
-                    const x = width - 10;
-                    const y = height - ((newValue - 100) / 50) * height;
-                    particles.push(new Particle(x, y, '#00ffcc'));
-                }
-
-                lastUpdate = timestamp;
+        function updateWaveShape() {
+            // Check if it's time to change the wave
+            if (Date.now() - lastWaveChange > waveChangeInterval) {
+                // Pick a new target amplitude (20% to 45% of height)
+                targetAmplitude = 0.2 + Math.random() * 0.25; 
+                // Pick a new target frequency (2 to 8 waves across width)
+                targetWaves = 2 + Math.random() * 6; 
+                lastWaveChange = Date.now();
             }
 
-            const width = canvas.offsetWidth;
-            const height = canvas.offsetHeight;
-            ctx.clearRect(0, 0, width, height);
-
-            // Animated grid
-            const gridOffset = (timestamp * 0.01) % 20;
-            ctx.strokeStyle = 'rgba(0, 255, 204, 0.12)';
-            ctx.lineWidth = 1;
-            for (let i = 0; i < 5; i++) {
-                const y = (height / 5) * i + gridOffset;
-                if (y < height) {
-                    ctx.beginPath();
-                    ctx.moveTo(0, y);
-                    ctx.lineTo(width, y);
-                    ctx.stroke();
-                }
-            }
-
-            // Secondary line (background)
-            ctx.strokeStyle = 'rgba(255, 0, 170, 0.4)';
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            secondaryPoints.forEach((value, index) => {
-                const x = (width / maxPoints) * index;
-                const y = height - ((value - 90) / 60) * height;
-                if (index === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-            });
-            ctx.stroke();
-
-            // Primary line with glow
-            ctx.strokeStyle = '#00ffcc';
-            ctx.lineWidth = 3;
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = '#00ffcc';
-            ctx.beginPath();
-            
-            dataPoints.forEach((value, index) => {
-                const x = (width / maxPoints) * index;
-                const waveY = Math.sin(waveOffset + index * 0.1) * 2;
-                const y = height - ((value - 100) / 50) * height + waveY;
-                
-                if (index === 0) ctx.moveTo(x, y);
-                else ctx.quadraticCurveTo(x - (width / maxPoints) / 2, y, x, y);
-            });
-            
-            ctx.stroke();
-            ctx.shadowBlur = 0;
-
-            // Fill area
-            const gradient = ctx.createLinearGradient(0, 0, 0, height);
-            gradient.addColorStop(0, 'rgba(0, 255, 204, 0.2)');
-            gradient.addColorStop(1, 'rgba(0, 255, 204, 0)');
-            
-            ctx.fillStyle = gradient;
-            ctx.lineTo(width, height);
-            ctx.lineTo(0, height);
-            ctx.closePath();
-            ctx.fill();
-
-            // Update and draw particles
-            particles.forEach((p, i) => {
-                p.update();
-                p.draw(ctx);
-                if (p.life <= 0 || p.y < 0) particles.splice(i, 1);
-            });
-
-            requestAnimationFrame(animateChart);
+            // Smoothly "tween" the current values towards the target values
+            // This creates the morphing effect
+            currentAmplitude += (targetAmplitude - currentAmplitude) * 0.02;
+            currentWaves += (targetWaves - currentWaves) * 0.02;
         }
 
-        animateChart();
-
-        // Update every 4 seconds
-        function updateMetrics() {
-            const currentValue = parseFloat(document.getElementById('mainMetric').textContent);
-            const change = (Math.random() - 0.5) * 1.5;
-            const newValue = currentValue + change;
-            document.getElementById('mainMetric').textContent = newValue.toFixed(2);
-            
-            // Pulse effect on significant change
-            const metricEl = document.getElementById('mainMetric');
-            if (Math.abs(change) > 0.5) {
-                metricEl.classList.add('pulse');
-                setTimeout(() => metricEl.classList.remove('pulse'), 300);
+        function drawSineWave() {
+            // UPDATE: Robust resizing. Check every frame.
+            // This ensures the canvas is always the correct size.
+            if (lineCanvas.offsetWidth > 0 && lineCanvas.offsetHeight > 0) {
+                 if (lineCanvas.width !== lineCanvas.offsetWidth || lineCanvas.height !== lineCanvas.offsetHeight) {
+                    lineCanvas.width = lineCanvas.offsetWidth;
+                    lineCanvas.height = lineCanvas.offsetHeight;
+                 }
+            } else {
+                return; // Don't draw if size is 0
             }
 
-            // Update stats
-            const stat1Value = 96 + Math.random() * 3;
-            document.getElementById('stat1').textContent = stat1Value.toFixed(1) + '%';
-            
-            const stat2Value = 70 + Math.random() * 10;
-            document.getElementById('stat2').textContent = stat2Value.toFixed(1);
-            
-            const stat3Value = 140 + Math.random() * 20;
-            document.getElementById('stat3').textContent = stat3Value.toFixed(0) + 'ms';
+            // Update the wave shape (amplitude, frequency)
+            updateWaveShape();
 
-            // Random alert
-            const alert = document.getElementById('alert');
-            if (Math.random() > 0.97) {
-                alert.style.opacity = '1';
-                document.getElementById('stat4').textContent = 'SYNC';
-                document.getElementById('stat4').style.color = '#ff00aa';
-                setTimeout(() => {
-                    alert.style.opacity = '0';
-                    document.getElementById('stat4').textContent = 'OK';
-                    document.getElementById('stat4').style.color = '#ffdd00';
-                }, 1500);
+            lineCtx.clearRect(0, 0, lineCanvas.width, lineCanvas.height);
+            lineCtx.strokeStyle = '#4ade80'; // Tailwind 'green-400'
+            lineCtx.lineWidth = 2;
+            lineCtx.beginPath();
+
+            const w = lineCanvas.width;
+            const h = lineCanvas.height;
+            const centerY = h / 2;
+            
+            // Use the dynamic amplitude (scaled to 45% of height max)
+            const amplitude = h * currentAmplitude; 
+            // Use the dynamic wave count
+            const frequency = (Math.PI * 2) / w * currentWaves; 
+
+            // Start path at x=0
+            let y = centerY + Math.sin(phase) * amplitude;
+            lineCtx.moveTo(0, y);
+
+            // Draw the wave across the canvas width
+            for (let x = 1; x < w; x++) {
+                y = centerY + Math.sin(x * frequency + phase) * amplitude;
+                lineCtx.lineTo(x, y);
             }
 
-            // Random grid item flash
-            const randItem = Math.floor(Math.random() * 4);
-            const item = document.getElementById(`item${randItem}`);
-            item.classList.add('active');
-            setTimeout(() => item.classList.remove('active'), 200);
+            lineCtx.stroke();
         }
-
-        setInterval(updateMetrics, 4000);
-
-        // Prevent scrolling
-        document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
         
-        if (screen.orientation?.lock) {
-            screen.orientation.lock('portrait').catch(() => {});
+        // This is the main animation loop for the sine wave
+        function animateSineWave() {
+            phase += 0.05; // Controls the speed of the wave scrolling
+            drawSineWave();
+            // requestAnimationFrame is smoother than setInterval
+            requestAnimationFrame(animateSineWave);
         }
+        
+        // --- End of Dynamic Sine Wave Logic ---
+
+
+        // Function to update data (called by interval)
+        function updateSlowFeed() {
+            // 1. Update text numbers
+            updateNumbers();
+
+            // 2. Update bar chart data (randomly change one bar's height)
+            const barIndexToUpdate = Math.floor(Math.random() * numBars);
+            barChartData[barIndexToUpdate] = Math.random() * 100;
+
+            // 3. Redraw bar chart
+            drawBarChart();
+        }
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Init bar chart data
+            initBarChartData();
+
+            // Set initial wave shape
+            currentAmplitude = targetAmplitude = 0.4; // Start at 40% height
+            currentWaves = targetWaves = 4; // Start with 4 waves
+            lastWaveChange = Date.now();
+
+            // Set initial canvas sizes with a small delay
+            setTimeout(() => {
+                // Initial draw
+                drawBarChart();
+                // We don't need to call drawSineWave() here, 
+                // animateSineWave() will do it on its first frame.
+
+                // Start the SLOW feed for numbers and bar chart
+                setInterval(updateSlowFeed, 200);
+
+                // Start the FAST, smooth animation loop for the sine wave
+                animateSineWave();
+
+                // Add a simple resize listener
+                // The draw functions themselves handle the resizing
+                window.addEventListener('resize', () => {
+                   // The animation loops will catch the new size
+                });
+            }, 50); // 50ms delay to ensure layout
+        });
     </script>
 </body>
 </html>
