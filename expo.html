@@ -3,124 +3,107 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Values, Rates, and Dual-Handle Growth Slider</title>
+  <title>Values, Rates, and Unified Growth Slider</title>
   <style>
     :root {
       --bg: #0b0e12;
       --panel: #151a21;
-      --accent: #4da3ff;
-      --accent-2: #ff8a3d;
+      --accent: #8ea5bd; /* neutral slider thumb */
       --text: #eaeef5;
       --muted: #9aa7b2;
       --track: #1f2630;
-      --track-fill: #2b3442;
-      --thumb-size: 18px; /* slim buttons */
       --track-h: 8px;
+      --thumb-size: 18px;
       --max-rate: 99; /* /s */
+      --win: #ffd54a;
+
+      /* Money theme */
+      --money-bg: #0f2a1f;   /* dark green */
+      --money-brd:#1e4232;
+      --money-text:#ffdf6e;  /* yellow characters */
+
+      /* Rate1 theme */
+      --rate1-bg: #0d1b2a;   /* dark blue */
+      --rate1-text: #ff9a3d; /* orange */
     }
 
     * { box-sizing: border-box; }
-    body {
-      margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-      background: radial-gradient(1200px 800px at 70% -20%, #1e2430 0%, var(--bg) 55%);
-      color: var(--text);
-      min-height: 100vh; display: grid; place-items: center;
-    }
+    body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji", "Segoe UI Emoji"; background: radial-gradient(1200px 800px at 70% -20%, #1e2430 0%, var(--bg) 55%); color: var(--text); min-height: 100vh; display: grid; place-items: center; }
 
     .wrap { width: min(900px, 92vw); }
 
-    .card {
-      background: linear-gradient(180deg, #12171d 0%, var(--panel) 100%);
-      border: 1px solid #232a35;
-      border-radius: 16px;
-      padding: 20px clamp(16px, 4vw, 28px);
-      box-shadow: 0 10px 30px rgba(0,0,0,.35);
-    }
+    .card { background: linear-gradient(180deg, #12171d 0%, var(--panel) 100%); border: 1px solid #232a35; border-radius: 16px; padding: 20px clamp(16px, 4vw, 28px); box-shadow: 0 10px 30px rgba(0,0,0,.35); }
 
-    h1 { margin: 0 0 12px 0; font-size: clamp(18px, 3vw, 22px); font-weight: 600; letter-spacing: .2px; color: #f4f7fb; }
-    p.sub { margin: 0 0 18px 0; color: var(--muted); font-size: 14px; }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 14px clamp(12px, 3vw, 24px);
-      margin-bottom: 18px;
-    }
-
-    .stat {
-      background: #0f141a;
-      border: 1px solid #1f2631;
-      border-radius: 12px;
-      padding: 14px 16px;
-    }
-
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px clamp(12px, 3vw, 24px); margin-bottom: 18px; }
+    .stat { background: #0f141a; border: 1px solid #1f2631; border-radius: 12px; padding: 14px 16px; }
     .label { font-size: 12px; color: var(--muted); letter-spacing: .25px; }
     .value { font-size: clamp(18px, 4vw, 28px); font-weight: 700; line-height: 1.2; margin-top: 6px; }
 
+    /* Money panel styles */
+    .stat.money { background: var(--money-bg); border-color: var(--money-brd); }
+    .stat.money .label, .stat.money .value { color: var(--money-text); text-shadow: 0 1px 0 rgba(0,0,0,.35); }
+
+    /* Rate 1 card style */
+    .stat.rate1 { background: var(--rate1-bg); border-color: color-mix(in oklab, var(--rate1-bg), white 10%); }
+    .stat.rate1 .label, .stat.rate1 .value, .stat.rate1 .growth { color: var(--rate1-text); }
+    .stat.rate1 .badge { background: color-mix(in oklab, var(--rate1-text), black 70%); color: var(--rate1-text); }
+
     .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-    .rate-a .badge { background: color-mix(in oklab, var(--accent), white 6%); color: #06131f; }
-    .rate-b .badge { background: color-mix(in oklab, var(--accent-2), white 6%); color: #180c03; }
-
-    .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 700; }
-
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #2a3340; color: #dfe7f1; }
     .growth { margin-top: 6px; font-size: 12px; color: var(--muted); }
 
-    /* Slider */
+    /* Unified slider */
     .slider-wrap { margin-top: 18px; }
     .slider-label { font-size: 12px; color: var(--muted); margin-bottom: 8px; display: flex; justify-content: space-between; }
-
     .slider { position: relative; height: 40px; user-select: none; }
-
-    .track {
-      position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%);
-      height: var(--track-h); border-radius: 999px; background: var(--track);
-      outline: 1px solid #2a3340;
-    }
+    .track { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); height: var(--track-h); border-radius: 999px; background: var(--track); outline: 1px solid #2a3340; }
     .ticks { position: absolute; left: 0; right: 0; top: calc(50% + 14px); display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); }
     .ticks span { width: 0; text-align: center; transform: translateX(-50%); }
-
-    .thumb { position: absolute; top: 50%; transform: translate(-50%, -50%);
-      width: var(--thumb-size); height: var(--thumb-size); border-radius: 6px; cursor: grab;
-      box-shadow: 0 2px 0 rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.08);
-      display: grid; place-items: center; font-weight: 800; font-size: 10px; color: #06131f;
-      transition: box-shadow .15s ease;
-    }
+    .thumb { position: absolute; top: 50%; transform: translate(-50%, -50%); width: var(--thumb-size); height: var(--thumb-size); border-radius: 6px; cursor: grab; box-shadow: 0 2px 0 rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.08); display: grid; place-items: center; font-weight: 800; font-size: 10px; color: #0c1116; background: var(--accent); }
     .thumb:active { cursor: grabbing; box-shadow: 0 0 0 2px rgba(255,255,255,.2); }
-
-    .thumb.a { background: var(--accent); }
-    .thumb.b { background: var(--accent-2); }
-
-    .legend { display: flex; gap: 12px; margin-top: 10px; font-size: 12px; color: var(--muted); align-items: center; flex-wrap: wrap; }
-    .dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
-    .dot.a { background: var(--accent); }
-    .dot.b { background: var(--accent-2); }
 
     .controls { margin-top: 14px; display: flex; gap: 8px; }
     button.ctrl { background: #0d1117; color: var(--text); border: 1px solid #263041; border-radius: 8px; padding: 8px 10px; font-weight: 600; font-size: 13px; cursor: pointer; }
     button.ctrl:hover { background: #111824; }
+    .ctrl-fixed { width: 88px; padding: 6px 8px; font-size: 12px; }
 
-    .small { font-size: 11px; color: var(--muted); }
-  
+    /* Spin button matches Money background, cost text matches money yellow */
+    #spin.ctrl { background: var(--money-bg); border-color: var(--money-brd); }
+    #spin.ctrl:hover { background: color-mix(in oklab, var(--money-bg), white 10%); }
+
     /* Slot machine */
     .slot { margin-top: 26px; padding-top: 16px; border-top: 1px solid #232a35; }
     .slot h2 { margin: 0 0 10px 0; font-size: clamp(16px, 2.6vw, 20px); font-weight: 650; }
     .reels { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 12px 0; }
-    .reel { background:#0f141a; border:1px solid #1f2631; border-radius: 12px; height: 88px; display:grid; place-items:center; font-size: clamp(34px, 6vw, 48px); }
+    .reel { background:#0f141a; border:1px solid #1f2631; border-radius: 12px; height: 88px; display:grid; place-items:center; font-size: clamp(34px, 6vw, 48px); transition: box-shadow .2s ease, border-color .2s ease; }
     .reel.spinning { animation: pulse .6s linear infinite; filter: brightness(1.2); }
+    .reel.win { border-color: var(--win); box-shadow: 0 0 0 2px color-mix(in oklab, var(--win), white 10%) inset, 0 0 18px var(--win); }
     @keyframes pulse { 0%{transform:translateY(0) scale(1);} 50%{transform:translateY(-4px) scale(.98);} 100%{transform:translateY(0) scale(1);} }
+
+    .cost { font-size: 12px; color: var(--money-text); margin-left: 8px; }
+    .warn { color: #ff7b7b; font-size: 12px; margin-left: 8px; display:none; }
+
+    /* Modal */
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: none; align-items: center; justify-content: center; z-index: 999; }
+    .modal { background: #0f141a; border: 1px solid #2a3340; border-radius: 12px; width: min(420px, 92vw); padding: 18px; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
+    .modal h3 { margin: 0 0 8px 0; font-size: 18px; }
+    .modal p { margin: 0 0 14px 0; color: var(--muted); font-size: 14px; }
+    .modal .actions { display: flex; gap: 8px; justify-content: flex-end; }
+    .btn { background: #0d1117; color: var(--text); border: 1px solid #263041; border-radius: 10px; padding: 10px 12px; font-weight: 700; font-size: 13px; cursor: pointer; }
+    .btn.primary { background: var(--money-bg); border-color: var(--money-brd); color: var(--money-text); }
+    .btn.secondary { background: #111824; }
+    .btn:focus { outline: 2px solid #425b78; outline-offset: 2px; }
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
-      
 
       <!-- Values -->
-      <div class="grid" id="values">
-        <div class="stat">
-          <div class="label">Value 1</div>
-          <div class="value" id="val1">0.00</div>
+      <div class="grid">
+        <div class="stat money">
+          <div class="label">Money</div>
+          <div class="value" id="val1">$0.00</div>
         </div>
         <div class="stat">
           <div class="label">Value 2</div>
@@ -130,35 +113,34 @@
 
       <!-- Rates -->
       <div class="row">
-        <div class="stat rate-a">
+        <div class="stat rate1">
           <div class="label">Rate 1</div>
           <div class="value"><span id="rate1">1.00</span> <span class="badge">/s</span></div>
           <div class="growth">Growth: <span id="grow1">1</span>/m</div>
         </div>
-        <div class="stat rate-b">
+        <div class="stat">
           <div class="label">Rate 2</div>
           <div class="value"><span id="rate2">2.00</span> <span class="badge">/s</span></div>
           <div class="growth">Growth: <span id="grow2">1</span>/m</div>
         </div>
       </div>
 
-      <!-- Dual-handle slider -->
+      <!-- Unified slider controlling both growths -->
       <div class="slider-wrap">
-        <div class="slider-label"><span>Growth per minute</span><span>1/m → 10/m</span></div>
-        <div class="slider" id="dualSlider" aria-label="Dual growth slider for Rate 1 and Rate 2" role="group">
+        <div class="slider-label"><span>Growth per minute (both)</span><span>1/m → 10/m</span></div>
+        <div class="slider" id="uniSlider" aria-label="Unified growth slider for both rates" role="group">
           <div class="track"></div>
-          <div class="thumb a" id="thumbA" aria-label="Rate 1 growth handle" role="slider" aria-valuemin="1" aria-valuemax="10" aria-valuenow="1" tabindex="0">1</div>
-          <div class="thumb b" id="thumbB" aria-label="Rate 2 growth handle" role="slider" aria-valuemin="1" aria-valuemax="10" aria-valuenow="2" tabindex="0">2</div>
+          <div class="thumb" id="thumb" aria-label="Growth handle" role="slider" aria-valuemin="1" aria-valuemax="10" aria-valuenow="1" tabindex="0">1</div>
           <div class="ticks" id="ticks"></div>
         </div>
-        
       </div>
 
       <div class="controls">
-        <button class="ctrl" id="reset">Reset</button>
-        <button class="ctrl" id="pause">Pause</button>
-      
-      <!-- Slot Machine (standalone) -->
+        <button class="ctrl ctrl-fixed" id="reset">Reset</button>
+        <button class="ctrl ctrl-fixed" id="pause">Pause</button>
+      </div>
+
+      <!-- Slot Machine -->
       <section class="slot" aria-label="3-reel slot machine">
         <h2>3‑Reel Slot</h2>
         <div class="reels">
@@ -166,9 +148,24 @@
           <div class="reel" id="reel2">🍋</div>
           <div class="reel" id="reel3">🍇</div>
         </div>
-        <button class="ctrl" id="spin">Spin</button>
-        
+        <div>
+          <button class="ctrl" id="spin">Spin</button>
+          <span class="cost" id="spinCostMsg">Cost: $50 + 1.0 Rate Point</span>
+          <span class="warn" id="spinWarn">Insufficient Money or Rate 1</span>
+        </div>
       </section>
+    </div>
+  </div>
+
+  <!-- Mandatory-choice modal -->
+  <div class="modal-backdrop" id="winModalBackdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="winTitle" aria-describedby="winDesc">
+      <h3 id="winTitle">3‑of‑a‑kind!</h3>
+      <p id="winDesc">Choose your reward to continue.</p>
+      <div class="actions">
+        <button class="btn secondary" id="reduceBtn">Lower spin cost by 0.1 Rate Point</button>
+        <button class="btn primary" id="takeMoneyBtn">Take $500</button>
+      </div>
     </div>
   </div>
 
@@ -178,18 +175,22 @@
     const MIN_GROW = 1;         // /m
     const MAX_GROW = 10;        // /m
     const MAX_RATE = 99;        // /s
+    const SPIN_DOLLAR_COST = 50; // fixed $ cost
 
     // --- State ---
-    let value1 = 0;
+    let value1 = 0; // Money
     let value2 = 0;
     let rate1 = 1;  // /s starting
     let rate2 = 2;  // /s starting
 
-    // growth per minute selected by handles
-    let grow1 = 1;  // /m (starts at 1 for A)
-    let grow2 = 2;  // /m (starts at 2 for B to differentiate)
+    // unified growth per minute
+    let grow = 1;   // /m
+
+    // spin rate-point cost, starts at 1.0 and can be reduced by wins
+    let spinRateCost = 1.0; // points from Rate 1 per spin
 
     let running = true;
+    let modalOpen = false;
 
     // --- DOM ---
     const val1El = document.getElementById('val1');
@@ -199,17 +200,27 @@
     const grow1El = document.getElementById('grow1');
     const grow2El = document.getElementById('grow2');
 
-    const slider = document.getElementById('dualSlider');
-    const thumbA = document.getElementById('thumbA');
-    const thumbB = document.getElementById('thumbB');
+    const slider = document.getElementById('uniSlider');
+    const thumb = document.getElementById('thumb');
     const ticksEl = document.getElementById('ticks');
 
     const resetBtn = document.getElementById('reset');
     const pauseBtn = document.getElementById('pause');
 
+    const warnEl = document.getElementById('spinWarn');
+    const spinBtn = document.getElementById('spin');
+    const spinCostMsg = document.getElementById('spinCostMsg');
+
+    // Modal DOM
+    const backdrop = document.getElementById('winModalBackdrop');
+    const takeMoneyBtn = document.getElementById('takeMoneyBtn');
+    const reduceBtn = document.getElementById('reduceBtn');
+
     // --- Helpers ---
     function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
     function fmt(n){ return n.toFixed(2); }
+    function fmtRatePts(x){ return `${x.toFixed(1)} Rate Point${x.toFixed(1) === '1.0' ? '' : 's'}`; }
+    function updateCostMsg(){ spinCostMsg.textContent = `Cost: $${SPIN_DOLLAR_COST} + ${fmtRatePts(spinRateCost)}`; }
 
     // Build ticks 1..10
     function buildTicks(){
@@ -221,15 +232,14 @@
       }
     }
 
-    // Position a handle according to a step in [1..10]
-    function positionHandle(el, step){
+    // Position handle according to a step in [1..10]
+    function positionHandle(step){
       const rect = slider.getBoundingClientRect();
-      const left = rect.left; const width = rect.width;
       const pct = (step - 1) / (STEPS - 1); // 0..1
-      const x = pct * width; // px within slider
-      el.style.left = `${x}px`;
-      el.setAttribute('aria-valuenow', String(step));
-      el.textContent = step;
+      const x = pct * rect.width; // px within slider
+      thumb.style.left = `${x}px`;
+      thumb.setAttribute('aria-valuenow', String(step));
+      thumb.textContent = step;
     }
 
     function stepFromClientX(clientX){
@@ -241,55 +251,47 @@
       return step;
     }
 
-    function syncHandles(){
-      positionHandle(thumbA, grow1);
-      positionHandle(thumbB, grow2);
-      grow1El.textContent = grow1;
-      grow2El.textContent = grow2;
-    }
+    function syncHandle(){ positionHandle(grow); grow1El.textContent = grow; grow2El.textContent = grow; }
 
     // Drag/keyboard interactions
-    function makeDraggable(el, onStep){
+    function makeDraggable(){
       let dragging = false;
       function onDown(ev){
         dragging = true;
-        el.focus();
+        thumb.focus();
         const c = ('touches' in ev) ? ev.touches[0].clientX : ev.clientX;
         const step = stepFromClientX(c);
-        onStep(step);
+        grow = step; syncHandle();
         ev.preventDefault();
       }
-      function onMove(ev){
-        if(!dragging) return;
-        const c = ('touches' in ev) ? ev.touches[0].clientX : ev.clientX;
-        const step = stepFromClientX(c);
-        onStep(step);
-      }
+      function onMove(ev){ if(!dragging) return; const c = ('touches' in ev) ? ev.touches[0].clientX : ev.clientX; grow = stepFromClientX(c); syncHandle(); }
       function onUp(){ dragging = false; }
 
-      el.addEventListener('mousedown', onDown);
+      thumb.addEventListener('mousedown', onDown);
       window.addEventListener('mousemove', onMove);
       window.addEventListener('mouseup', onUp);
 
-      el.addEventListener('touchstart', onDown, {passive:false});
+      thumb.addEventListener('touchstart', onDown, {passive:false});
       window.addEventListener('touchmove', onMove, {passive:false});
       window.addEventListener('touchend', onUp);
 
-      el.addEventListener('keydown', (e)=>{
-        if(e.key === 'ArrowLeft'){ onStep(clamp(Number(el.getAttribute('aria-valuenow')) - 1, MIN_GROW, MAX_GROW)); e.preventDefault(); }
-        if(e.key === 'ArrowRight'){ onStep(clamp(Number(el.getAttribute('aria-valuenow')) + 1, MIN_GROW, MAX_GROW)); e.preventDefault(); }
+      thumb.addEventListener('keydown', (e)=>{
+        if(e.key === 'ArrowLeft'){ grow = clamp(Number(thumb.getAttribute('aria-valuenow')) - 1, MIN_GROW, MAX_GROW); syncHandle(); e.preventDefault(); }
+        if(e.key === 'ArrowRight'){ grow = clamp(Number(thumb.getAttribute('aria-valuenow')) + 1, MIN_GROW, MAX_GROW); syncHandle(); e.preventDefault(); }
       });
     }
 
-    makeDraggable(thumbA, step=>{ grow1 = step; syncHandles(); });
-    makeDraggable(thumbB, step=>{ grow2 = step; syncHandles(); });
+    makeDraggable();
 
     // Controls
     resetBtn.addEventListener('click', ()=>{
-      value1 = 0; value2 = 0; rate1 = 1; rate2 = 2; grow1 = 1; grow2 = 2; running = true;
+      value1 = 0; value2 = 0; rate1 = 1; rate2 = 2; grow = 1; running = true;
+      spinRateCost = 1.0;
       pauseBtn.textContent = 'Pause';
-      syncHandles();
-      updateReadout(0); // immediate paint
+      warnEl.style.display = 'none';
+      syncHandle();
+      updateReadout();
+      updateCostMsg();
     });
 
     pauseBtn.addEventListener('click', ()=>{
@@ -299,10 +301,12 @@
 
     // Paint
     function updateReadout(){
-      val1El.textContent = fmt(value1);
+      val1El.textContent = `$${fmt(value1)}`; // Money with $
       val2El.textContent = fmt(value2);
       rate1El.textContent = fmt(rate1);
       rate2El.textContent = fmt(rate2);
+      grow1El.textContent = grow;
+      grow2El.textContent = grow;
     }
 
     // Simulation loop using rAF with delta timing
@@ -317,11 +321,10 @@
         value1 += rate1 * dt;
         value2 += rate2 * dt;
 
-        // Increase rates by growth per second, capped to MAX_RATE
-        const g1ps = (grow1 / 60); // /s^2 equivalent as it increases rate per second
-        const g2ps = (grow2 / 60);
-        rate1 = Math.min(MAX_RATE, rate1 + g1ps * dt);
-        rate2 = Math.min(MAX_RATE, rate2 + g2ps * dt);
+        // Increase rates by unified growth per second, capped to MAX_RATE
+        const gps = (grow / 60); // /s^2
+        rate1 = Math.min(MAX_RATE, rate1 + gps * dt);
+        rate2 = Math.min(MAX_RATE, rate2 + gps * dt);
       }
 
       updateReadout();
@@ -330,53 +333,128 @@
 
     // Init
     buildTicks();
-    syncHandles();
+    syncHandle();
+    updateCostMsg();
     requestAnimationFrame(tick);
 
-    // Responsive: reposition handles on resize
-    const ro = new ResizeObserver(()=> syncHandles());
+    // Responsive: reposition handle on resize
+    const ro = new ResizeObserver(()=> syncHandle());
     ro.observe(slider);
-  
-    // --- Slot machine (standalone) ---
-    const symbols = ['🍒','🍋','🍇','🍉','🍊','🍓','🔔','⭐','🍀','🍎'];
-    const reelEls = [
-      document.getElementById('reel1'),
-      document.getElementById('reel2'),
-      document.getElementById('reel3')
-    ];
-    const spinBtn = document.getElementById('spin');
 
-    function randomSymbol(){
-      return symbols[Math.floor(Math.random() * symbols.length)];
+    // --- Modal logic ---
+    function openWinChoice(){
+      return new Promise((resolve)=>{
+        modalOpen = true;
+        backdrop.style.display = 'flex';
+        backdrop.setAttribute('aria-hidden', 'false');
+        // Focus trap basics
+        const focusables = [reduceBtn, takeMoneyBtn];
+        let idx = 0; focusables[idx].focus();
+
+        function onKey(e){
+          if(e.key === 'Tab'){
+            e.preventDefault();
+            idx = (idx + (e.shiftKey ? -1 : 1) + focusables.length) % focusables.length;
+            focusables[idx].focus();
+          }
+          if(e.key === 'Escape'){
+            // do nothing. must choose.
+            e.preventDefault();
+          }
+        }
+        document.addEventListener('keydown', onKey);
+
+        function cleanup(){
+          document.removeEventListener('keydown', onKey);
+          backdrop.style.display = 'none';
+          backdrop.setAttribute('aria-hidden', 'true');
+          modalOpen = false;
+        }
+
+        reduceBtn.onclick = ()=>{ cleanup(); resolve('reduce'); };
+        takeMoneyBtn.onclick = ()=>{ cleanup(); resolve('money'); };
+        // click on backdrop is ignored to force a choice
+        backdrop.onclick = (e)=>{ if(e.target === backdrop){ /* ignore */ } };
+      });
     }
 
-    function spinOnce(){
-      if(!spinBtn) return; // safety if section removed
-      if(spinBtn.disabled) return;
+    // --- Slot machine ---
+    const symbols = ['🍒','🍋','🍇','🍉','🍊'];
+    const reelEls = [ document.getElementById('reel1'), document.getElementById('reel2'), document.getElementById('reel3') ];
+
+    function randomSymbol(){ return symbols[Math.floor(Math.random() * symbols.length)]; }
+
+    async function spinOnce(){
+      if(!spinBtn || spinBtn.disabled || modalOpen) return;
+
+      // clear previous win glow
+      reelEls.forEach(el=> el.classList.remove('win'));
+
+      // cost check and deduction from Money and Rate 1
+      if(value1 < SPIN_DOLLAR_COST || rate1 < spinRateCost){
+        warnEl.textContent = (value1 < SPIN_DOLLAR_COST && rate1 < spinRateCost) ? 'Insufficient Money and Rate 1' : (value1 < SPIN_DOLLAR_COST ? 'Insufficient Money' : 'Insufficient Rate 1');
+        warnEl.style.display = 'inline';
+        spinBtn.animate([{ transform: 'translateX(0)' },{ transform: 'translateX(-4px)' },{ transform: 'translateX(4px)' },{ transform: 'translateX(0)' }], { duration: 180 });
+        return;
+      }
+      warnEl.style.display = 'none';
+
+      // Pay the spin cost
+      value1 -= SPIN_DOLLAR_COST;
+      rate1 = Math.max(0, rate1 - spinRateCost);
+      updateReadout();
+
       spinBtn.disabled = true;
 
-      const speeds = [70, 85, 100];     // ms per symbol update per reel
-      const durations = [900, 1100, 1300]; // ms total spin time per reel
+      const speeds = [70, 85, 100];
+      const durations = [900, 1100, 1300];
+      const finalSyms = new Array(3);
 
-      reelEls.forEach((el, i)=>{
-        if(!el) return;
-        el.classList.add('spinning');
-        const intervalId = setInterval(()=>{ el.textContent = randomSymbol(); }, speeds[i]);
-        setTimeout(()=>{
-          clearInterval(intervalId);
-          el.classList.remove('spinning');
-          el.textContent = randomSymbol();
-          if(i === reelEls.length - 1){ spinBtn.disabled = false; }
-        }, durations[i]);
+      await new Promise((resolve)=>{
+        let finished = 0;
+        reelEls.forEach((el, i)=>{
+          el.classList.add('spinning');
+          const intervalId = setInterval(()=>{ el.textContent = randomSymbol(); }, speeds[i]);
+          setTimeout(()=>{
+            clearInterval(intervalId);
+            el.classList.remove('spinning');
+            finalSyms[i] = randomSymbol();
+            el.textContent = finalSyms[i];
+            finished++;
+            if(finished === reelEls.length) resolve();
+          }, durations[i]);
+        });
       });
+
+      // After reels stop
+      if(finalSyms[0] && finalSyms[0] === finalSyms[1] && finalSyms[1] === finalSyms[2]){
+        reelEls.forEach(r=> r.classList.add('win')); // persist until next spin
+
+        // Mandatory selection to proceed
+        const choice = await openWinChoice();
+        if(choice === 'money'){
+          value1 += 500;
+          updateReadout();
+        } else if(choice === 'reduce'){
+          spinRateCost = Math.max(0, +(spinRateCost - 0.1).toFixed(1));
+          updateCostMsg();
+        }
+      }
+
+      spinBtn.disabled = false;
     }
 
     if(spinBtn){
+      // make it match money theme
+      spinBtn.classList.add('ctrl');
+      const cs = getComputedStyle(document.documentElement);
+      spinBtn.style.background = cs.getPropertyValue('--money-bg');
+      spinBtn.style.borderColor = cs.getPropertyValue('--money-brd');
+      spinBtn.addEventListener('mouseenter', ()=> spinBtn.style.background = `color-mix(in oklab, ${cs.getPropertyValue('--money-bg')}, white 10%)`);
+      spinBtn.addEventListener('mouseleave', ()=> spinBtn.style.background = cs.getPropertyValue('--money-bg'));
+
       spinBtn.addEventListener('click', spinOnce);
-      // Keyboard: Space/Enter to spin when focused
-      spinBtn.addEventListener('keydown', (e)=>{
-        if(e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); spinOnce(); }
-      });
+      spinBtn.addEventListener('keydown', (e)=>{ if(modalOpen) { e.preventDefault(); return; } if(e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); spinOnce(); } });
     }
   </script>
 </body>
