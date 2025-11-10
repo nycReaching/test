@@ -2,35 +2,39 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Values, Rates, and Unified Growth Slider — Redesign</title>
   <style>
     /* Goals
-       - Keep layout fixed
-       - Add motion, feedback, and depth
-       - Cohesive palettes; Rate 1 and Rate 2 pairings stay consistent
-       - 0.5s win glow before modal
+       - Great mobile experience
+       - No button jump from dynamic text
+       - Bolder borders, higher contrast, better sizing
     */
 
     :root {
       /* Surfaces */
-      --bg: #0b0e12;
-      --panel: #11161d;
-      --panel-2: #0d1218;
+      --bg: #07090d;
+      --panel: #0d1218;
+      --panel-2: #0a0f14;
 
       /* Text */
-      --text: #eef3fb;
-      --muted: #99a6b3;
+      --text: #f5f9ff;
+      --muted: #9eb0c3;
 
       /* Controls */
-      --track: #1d2530;
-      --track-h: 8px;
-      --thumb-size: 18px;
+      --track: #1b2532;
+      --track-h: 10px;
+      --thumb-size: 20px;
       --win: #ffd54a;
 
+      /* Borders */
+      --brd: #2e4053;       /* default */
+      --brd-strong: #49627f;/* emphasized */
+      --brd-width: 2px;
+
       /* Shadow */
-      --shadow-1: 0 2px 6px rgba(0,0,0,.35);
-      --shadow-2: 0 10px 28px rgba(0,0,0,.45);
+      --shadow-1: 0 2px 6px rgba(0,0,0,.45);
+      --shadow-2: 0 18px 36px rgba(0,0,0,.55);
       --glow: 0 0 0 2px rgba(255,255,255,.06);
 
       /* Token hues */
@@ -40,22 +44,26 @@
       --h-rate2: 170;  /* teal */
 
       /* Semantic palettes */
-      --money-bg: oklch(22% .06 var(--h-money));
-      --money-brd: oklch(30% .06 var(--h-money));
-      --money-text: oklch(88% .11 100);
+      --money-bg: oklch(22% .08 var(--h-money));
+      --money-brd: oklch(38% .10 var(--h-money));
+      --money-text: #e7ffee;
 
-      --credit-bg: oklch(28% .08 var(--h-credit));
-      --credit-brd: oklch(36% .08 var(--h-credit));
-      --credit-text: oklch(90% .05 300);
+      --credit-bg: oklch(24% .10 var(--h-credit));
+      --credit-brd: oklch(42% .12 var(--h-credit));
+      --credit-text: #fde8ff;
 
-      --rate1-bg: oklch(28% .09 250);
-      --rate1-accent: oklch(78% .17 var(--h-rate1));
+      --rate1-bg: oklch(26% .10 250);
+      --rate1-accent: oklch(82% .18 var(--h-rate1));
 
-      --rate2-bg: oklch(28% .08 210);
-      --rate2-accent: oklch(82% .13 var(--h-rate2));
+      --rate2-bg: oklch(26% .10 210);
+      --rate2-accent: oklch(86% .14 var(--h-rate2));
 
-      --accent: #9fb0c3;
+      --accent: #b7c6d7;
       --max-rate: 99;
+
+      /* Mobile constants */
+      --tap: 48px; /* minimum hit size */
+      --action-info-h: 1.6em; /* reserve text height under buttons */
     }
 
     @media (prefers-color-scheme: light) {
@@ -69,146 +77,132 @@
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji", "Segoe UI Emoji";
       color: var(--text);
       background:
-        radial-gradient(1200px 800px at 70% -20%, #1c2230 0%, var(--bg) 55%),
+        radial-gradient(1200px 800px at 70% -20%, #17202b 0%, var(--bg) 55%),
         linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0));
       min-height: 100vh;
       display: grid;
       place-items: center;
     }
 
-    .wrap { width: min(900px, 92vw); }
+    .wrap { width: min(920px, 94vw); }
 
     /* Game Timer */
-    #gameTimer {
-      text-align: center;
-      font-size: 14px;
-      color: var(--text);
-      margin-bottom: 12px;
-      font-family: 'Courier New', Courier, monospace;
-      letter-spacing: 1px;
-      opacity: .9;
-    }
+    #gameTimer { text-align: center; font-size: 14px; color: var(--text); margin-bottom: 12px; font-family: 'Courier New', Courier, monospace; letter-spacing: 1px; opacity: .9; }
 
     .card {
       background: linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
-      border: 1px solid #232a35;
-      border-radius: 16px;
-      padding: 20px clamp(16px, 4vw, 28px);
+      border: var(--brd-width) solid var(--brd-strong);
+      border-radius: 18px;
+      padding: 20px clamp(14px, 4vw, 28px);
       box-shadow: var(--shadow-2);
       position: relative;
       overflow: clip;
-      outline: 1px solid rgba(255,255,255,.04);
+      outline: 1px solid rgba(255,255,255,.06);
     }
 
-    .card::before {
-      content: "";
-      position: absolute; inset: 0 0 auto 0; height: 140px;
-      background: radial-gradient(600px 160px at 30% -40px, rgba(255,255,255,.06), transparent 60%);
-      pointer-events: none;
-      transition: transform .35s ease;
-    }
+    .card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 140px; background: radial-gradient(600px 160px at 30% -40px, rgba(255,255,255,.06), transparent 60%); pointer-events: none; transition: transform .35s ease; }
     .card:hover::before { transform: translateY(-2px); }
 
     .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px clamp(12px, 3vw, 24px); margin-bottom: 18px; }
-    .stat { background: #0f141a; border: 1px solid #1f2631; border-radius: 12px; padding: 14px 16px; box-shadow: var(--shadow-1); transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, filter .18s ease; }
+    .stat { background: #0b1117; border: var(--brd-width) solid var(--brd); border-radius: 14px; padding: 14px 16px; box-shadow: var(--shadow-1); transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, filter .18s ease; }
     .stat:hover { transform: translateY(-2px); filter: brightness(1.03); }
     .label { font-size: 12px; color: var(--muted); letter-spacing: .25px; }
-    .value { font-size: clamp(18px, 4vw, 28px); font-weight: 700; line-height: 1.2; margin-top: 6px; }
+    .value { font-size: clamp(20px, 5vw, 30px); font-weight: 800; line-height: 1.1; margin-top: 8px; }
     .growth { margin-top: 6px; font-size: 12px; color: var(--muted); }
 
     .stat.money { background: var(--money-bg); border-color: var(--money-brd); }
-    .stat.money .label, .stat.money .value { color: var(--money-text); text-shadow: 0 1px 0 rgba(0,0,0,.35); }
+    .stat.money .label, .stat.money .value { color: var(--money-text); text-shadow: 0 1px 0 rgba(0,0,0,.45); }
 
     .stat.credit { background: var(--credit-bg); border-color: var(--credit-brd); }
-    .stat.credit .label, .stat.credit .value { color: var(--credit-text); }
+    .stat.credit .label, .stat.credit .value { color: var(--credit-text); text-shadow: 0 1px 0 rgba(0,0,0,.35); }
 
-    .stat.rate1 { background: var(--rate1-bg); border-color: color-mix(in oklab, var(--rate1-bg), white 12%); }
+    .stat.rate1 { background: var(--rate1-bg); border-color: color-mix(in oklab, var(--rate1-bg), white 18%); }
     .stat.rate1 .label, .stat.rate1 .value, .stat.rate1 .growth { color: var(--rate1-accent); }
-    .stat.rate1 .badge { background: color-mix(in oklab, var(--rate1-accent), black 72%); color: var(--rate1-accent); }
 
-    .stat.rate2 { background: var(--rate2-bg); border-color: color-mix(in oklab, var(--rate2-bg), white 12%); }
+    .stat.rate2 { background: var(--rate2-bg); border-color: color-mix(in oklab, var(--rate2-bg), white 18%); }
     .stat.rate2 .label, .stat.rate2 .value, .stat.rate2 .growth { color: var(--rate2-accent); }
-    .stat.rate2 .badge { background: color-mix(in oklab, var(--rate2-accent), black 72%); color: var(--rate2-accent); }
 
     .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #2a3340; color: #dfe7f1; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 800; background: #223042; color: #ecf3fb; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
 
     /* Slider */
     .slider-wrap { margin-top: 18px; }
-    .slider-label { font-size: 12px; color: var(--muted); margin-bottom: 8px; display: flex; justify-content: space-between; }
-    .slider { position: relative; height: 44px; user-select: none; }
-    .track { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); height: var(--track-h); border-radius: 999px; background: linear-gradient(90deg, #1d2632, #222c39 60%, #1d2632); outline: 1px solid #2a3340; box-shadow: inset 0 1px 0 rgba(255,255,255,.04); }
+    .slider { position: relative; height: 50px; user-select: none; }
+    .track { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); height: var(--track-h); border-radius: 999px; background: linear-gradient(90deg, #1a2330, #213041 60%, #1a2330); outline: 1px solid #2a3a4d; box-shadow: inset 0 1px 0 rgba(255,255,255,.06); }
 
     .ticks { position: absolute; left: 0; right: 0; display: flex; justify-content: space-between; font-size: 11px; }
     .ticks span { width: 0; text-align: center; transform: translateX(-50%); }
-    .ticks-top { bottom: calc(50% + 16px); color: var(--rate2-accent); font-weight: 700; text-shadow: 0 1px 0 rgba(0,0,0,.35); }
-    .ticks-bottom { top: calc(50% + 16px); color: var(--rate1-accent); font-weight: 700; text-shadow: 0 1px 0 rgba(0,0,0,.35); }
+    .ticks-top { bottom: calc(50% + 18px); color: var(--rate2-accent); font-weight: 800; text-shadow: 0 1px 0 rgba(0,0,0,.45); }
+    .ticks-bottom { top: calc(50% + 18px); color: var(--rate1-accent); font-weight: 800; text-shadow: 0 1px 0 rgba(0,0,0,.45); }
 
-    .thumb {
-      position: absolute; top: 50%; transform: translate(-50%, -50%);
-      width: var(--thumb-size); height: var(--thumb-size);
-      border-radius: 6px; cursor: grab;
-      box-shadow: 0 2px 0 rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.08), var(--glow);
-      background: linear-gradient(180deg, #b7c6d7 0%, #95a7bc 100%);
-      transition: transform .16s ease, box-shadow .16s ease, background .16s ease;
-    }
+    .thumb { position: absolute; top: 50%; transform: translate(-50%, -50%); width: var(--thumb-size); height: var(--thumb-size); border-radius: 6px; cursor: grab; box-shadow: 0 2px 0 rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.12), var(--glow); background: linear-gradient(180deg, #c5d2df 0%, #9fb0c3 100%); transition: transform .16s ease, box-shadow .16s ease, background .16s ease; }
     .thumb:hover { transform: translate(-50%, -50%) scale(1.06); }
     .thumb:active { cursor: grabbing; box-shadow: 0 0 0 2px rgba(255,255,255,.22), inset 0 0 0 1px rgba(255,255,255,.1); }
     .thumb:focus-visible { outline: 0; box-shadow: 0 0 0 2px color-mix(in oklab, var(--rate2-accent), white 10%); }
 
-    .controls { margin-top: 14px; display: flex; gap: 8px; }
-    button.ctrl {
-      background: #0d1117; color: var(--text); border: 1px solid #263041; border-radius: 10px; padding: 8px 10px; font-weight: 700; font-size: 13px; cursor: pointer;
-      transition: transform .12s ease, box-shadow .12s ease, background .12s ease, border-color .12s ease, filter .12s ease;
-      box-shadow: var(--shadow-1);
-    }
-    button.ctrl:hover { background: #111824; transform: translateY(-1px); }
+    .controls { margin-top: 14px; display: flex; gap: 10px; }
+    button.ctrl { background: #0b1117; color: var(--text); border: var(--brd-width) solid #2a3a4d; border-radius: 12px; padding: 10px 12px; font-weight: 800; font-size: 14px; cursor: pointer; transition: transform .12s ease, box-shadow .12s ease, background .12s ease, border-color .12s ease, filter .12s ease; box-shadow: var(--shadow-1); min-height: var(--tap); }
+    button.ctrl:hover { background: #0f1620; transform: translateY(-1px); }
     button.ctrl:active { transform: translateY(0) scale(.99); }
-    .ctrl-fixed { width: 88px; padding: 8px 10px; font-size: 12px; }
+    .ctrl-fixed { width: 96px; padding: 10px 12px; font-size: 13px; }
 
-    button.ctrl-buy { background: var(--credit-bg); border-color: var(--credit-brd); color: var(--credit-text); padding: 12px 20px; font-size: 16px; font-weight: 800; box-shadow: 0 6px 16px rgba(106, 53, 96, .35); }
-    button.ctrl-buy:hover { background: color-mix(in oklab, var(--credit-bg), white 20%); filter: saturate(1.05); }
-    button.ctrl-buy:disabled { opacity: .75; cursor: not-allowed; filter: grayscale(.1); }
+    button.ctrl-buy { background: var(--credit-bg); border-color: var(--credit-brd); color: var(--credit-text); padding: 14px 20px; font-size: 17px; font-weight: 900; box-shadow: 0 6px 18px rgba(106, 53, 96, .45); }
+    button.ctrl-buy:hover { background: color-mix(in oklab, var(--credit-bg), white 16%); filter: saturate(1.06); }
+    button.ctrl-buy:disabled { opacity: .78; cursor: not-allowed; filter: grayscale(.1); }
 
-    #spin.ctrl { background: var(--money-bg); border-color: var(--money-brd); padding: 12px 20px; font-size: 16px; font-weight: 800; color: var(--money-text); box-shadow: 0 6px 16px rgba(16, 60, 44, .35); }
-    #spin.ctrl:hover { background: color-mix(in oklab, var(--money-bg), white 12%); filter: saturate(1.05); }
+    #spin.ctrl { background: var(--money-bg); border-color: var(--money-brd); padding: 14px 20px; font-size: 17px; font-weight: 900; color: var(--money-text); box-shadow: 0 6px 18px rgba(16, 60, 44, .45); }
+    #spin.ctrl:hover { background: color-mix(in oklab, var(--money-bg), white 14%); filter: saturate(1.08); }
 
-    /* Updated to place info BELOW buttons */
-    .slot-actions { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; margin-top: 10px; }
-    .action { display: flex; flex-direction: column; align-items: flex-start; }
-    .cost, .buy-cost-text { display: block; font-size: 12px; margin-top: 6px; }
-    .cost { color: var(--money-text); margin-left: 0; }
-    .buy-cost-text { color: var(--credit-text); margin-right: 0; }
+    /* Actions: info below buttons, no-jump layout */
+    .slot-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 12px; align-items: start; }
+    .action { display: flex; flex-direction: column; align-items: stretch; }
+    .cost, .buy-cost-text { display: block; font-size: 12px; margin-top: 8px; min-height: var(--action-info-h); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cost { color: var(--money-text); }
+    .buy-cost-text { color: var(--credit-text); }
 
-    .rate-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 800; line-height: 1.2; vertical-align: baseline; margin-left: 4px; border: 1px solid; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
-    .rate-badge-1 { background: var(--rate1-bg); color: var(--rate1-accent); border-color: color-mix(in oklab, var(--rate1-bg), white 12%); }
-    .rate-badge-2 { background: var(--rate2-bg); color: var(--rate2-accent); border-color: color-mix(in oklab, var(--rate2-bg), white 12%); }
+    .rate-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 900; line-height: 1.2; vertical-align: baseline; margin-left: 4px; border: 1px solid; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+    .rate-badge-1 { background: var(--rate1-bg); color: var(--rate1-accent); border-color: color-mix(in oklab, var(--rate1-bg), white 18%); }
+    .rate-badge-2 { background: var(--rate2-bg); color: var(--rate2-accent); border-color: color-mix(in oklab, var(--rate2-bg), white 18%); }
 
     /* Slot machine */
-    .slot { margin-top: 26px; padding-top: 16px; border-top: 1px solid #232a35; }
-    .slot h2 { margin: 0 0 10px 0; font-size: clamp(16px, 2.6vw, 20px); font-weight: 700; letter-spacing: .2px; }
+    .slot { margin-top: 26px; padding-top: 16px; border-top: var(--brd-width) solid var(--brd); }
+    .slot h2 { margin: 0 0 10px 0; font-size: clamp(16px, 2.6vw, 22px); font-weight: 900; letter-spacing: .2px; }
     .reels { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 12px 0; }
-    .reel { background: linear-gradient(180deg, #0e1319, #0c1016); border:1px solid #1f2631; border-radius: 12px; height: 88px; display:grid; place-items:center; font-size: clamp(34px, 6vw, 48px); transition: box-shadow .2s ease, border-color .2s ease, transform .12s ease; box-shadow: var(--shadow-1), inset 0 1px 0 rgba(255,255,255,.04); }
+    .reel { background: linear-gradient(180deg, #0d131a, #0b1016); border:var(--brd-width) solid var(--brd); border-radius: 14px; height: 96px; display:grid; place-items:center; font-size: clamp(40px, 6vw, 56px); transition: box-shadow .2s ease, border-color .2s ease, transform .12s ease; box-shadow: var(--shadow-1), inset 0 1px 0 rgba(255,255,255,.06); }
     .reel:hover { transform: translateY(-1px); }
     .reel.spinning { animation: pulse .6s linear infinite; filter: brightness(1.18); }
     .reel.win { border-color: var(--win); box-shadow: 0 0 0 2px color-mix(in oklab, var(--win), white 10%) inset, 0 0 18px var(--win), var(--shadow-2); animation: winflash .5s ease-out; }
 
     @keyframes pulse { 0%{transform:translateY(0) scale(1);} 50%{transform:translateY(-4px) scale(.985);} 100%{transform:translateY(0) scale(1);} }
-    @keyframes winflash { 0% { box-shadow: 0 0 0 0 rgba(255,213,74,0.0), var(--shadow-2); }
-      50% { box-shadow: 0 0 0 3px color-mix(in oklab, var(--win), white 20%) inset, 0 0 32px var(--win), var(--shadow-2); }
-      100% { box-shadow: 0 0 0 2px color-mix(in oklab, var(--win), white 10%) inset, 0 0 18px var(--win), var(--shadow-2); } }
+    @keyframes winflash { 0% { box-shadow: 0 0 0 0 rgba(255,213,74,0.0), var(--shadow-2); } 50% { box-shadow: 0 0 0 3px color-mix(in oklab, var(--win), white 20%) inset, 0 0 32px var(--win), var(--shadow-2); } 100% { box-shadow: 0 0 0 2px color-mix(in oklab, var(--win), white 10%) inset, 0 0 18px var(--win), var(--shadow-2); } }
 
     /* Modal */
     .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: none; align-items: center; justify-content: center; z-index: 999; backdrop-filter: blur(4px); }
-    .modal { background: #0f141a; border: 1px solid #2a3340; border-radius: 12px; width: min(420px, 92vw); padding: 18px; box-shadow: 0 14px 36px rgba(0,0,0,.55), var(--glow); }
+    .modal { background: #0f141a; border: var(--brd-width) solid #2a3a4d; border-radius: 14px; width: min(420px, 92vw); padding: 18px; box-shadow: 0 14px 36px rgba(0,0,0,.55), var(--glow); }
     .modal h3 { margin: 0 0 8px 0; font-size: 18px; }
     .modal p { margin: 0 0 14px 0; color: var(--muted); font-size: 14px; }
     .modal .actions { display: flex; gap: 8px; justify-content: flex-end; }
-    .btn { background: #0d1117; color: var(--text); border: 1px solid #263041; border-radius: 10px; padding: 10px 12px; font-weight: 800; font-size: 13px; cursor: pointer; box-shadow: var(--shadow-1); transition: transform .12s ease, background .12s ease; }
+    .btn { background: #0d1117; color: var(--text); border: var(--brd-width) solid #2a3a4d; border-radius: 12px; padding: 12px 14px; font-weight: 900; font-size: 14px; cursor: pointer; box-shadow: var(--shadow-1); transition: transform .12s ease, background .12s ease; min-height: var(--tap); }
     .btn.primary { background: var(--money-bg); border-color: var(--money-brd); color: var(--money-text); }
-    .btn.secondary { background: #111824; }
+    .btn.secondary { background: #0f1620; }
     .btn:focus-visible { outline: 2px solid #425b78; outline-offset: 2px; }
     .btn:hover { transform: translateY(-1px); }
+
+    /* Mobile-first refinements */
+    @media (max-width: 640px) {
+      .wrap { width: 100vw; }
+      .card { border-radius: 0; padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); }
+      .grid, .row { grid-template-columns: 1fr; }
+      .value { font-size: clamp(22px, 8vw, 32px); }
+      .slider { height: 56px; }
+      .ticks-top, .ticks-bottom { font-size: 12px; }
+      .slot-actions { grid-template-columns: 1fr; gap: 10px; }
+      .ctrl-fixed { width: auto; flex: 1; }
+      .controls { gap: 8px; }
+      .controls .ctrl { flex: 1; }
+      .reel { height: 110px; font-size: clamp(48px, 16vw, 80px); }
+      .cost, .buy-cost-text { font-size: 13px; min-height: calc(var(--action-info-h) + 0.2em); }
+    }
 
     @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
   </style>
@@ -270,15 +264,15 @@
           <div class="reel" id="reel3">🍇</div>
         </div>
 
-        <!-- Updated actions layout: info under buttons -->
+        <!-- Actions: info below buttons, stabilized height -->
         <div class="slot-actions">
           <div class="action">
             <button class="ctrl" id="spin">Spin</button>
-            <span class="cost" id="spinCostMsg">Cost: $50 + 1.0 Rate Point</span>
+            <span class="cost" id="spinCostMsg" aria-live="polite">Cost: $50 + 1.0 Rate Point</span>
           </div>
           <div class="action">
             <button class="ctrl ctrl-buy" id="buyBtn">Buy</button>
-            <span class="buy-cost-text" id="buyCostMsg">Buy 3x 💎. Cost: 500c + 1.0 Rate 2 Point</span>
+            <span class="buy-cost-text" id="buyCostMsg" aria-live="polite">Buy 3x 💎. Cost: 500c + 1.0 Rate 2 Point</span>
           </div>
         </div>
       </section>
@@ -397,22 +391,23 @@
     }
 
     // --- Slider ---
+    const STEPS_TOTAL = 10;
     function buildTicks(){
       ticksBottomEl.innerHTML = '';
       ticksTopEl.innerHTML = '';
-      for(let i=1;i<=STEPS;i++){
+      for(let i=1;i<=STEPS_TOTAL;i++){
         const sBottom = document.createElement('span');
         sBottom.textContent = i;
         ticksBottomEl.appendChild(sBottom);
         const sTop = document.createElement('span');
-        sTop.textContent = (STEPS + MIN_GROW) - i;
+        sTop.textContent = (STEPS_TOTAL + MIN_GROW) - i;
         ticksTopEl.appendChild(sTop);
       }
     }
 
     function positionHandle(step){
       const rect = slider.getBoundingClientRect();
-      const pct = (step - 1) / (STEPS - 1);
+      const pct = (step - 1) / (STEPS_TOTAL - 1);
       const x = pct * rect.width;
       thumb.style.left = `${x}px`;
       thumb.setAttribute('aria-valuenow', String(step));
@@ -422,7 +417,7 @@
       const rect = slider.getBoundingClientRect();
       const x = clamp(clientX - rect.left, 0, rect.width);
       const pct = rect.width === 0 ? 0 : x / rect.width;
-      let step = Math.round(pct * (STEPS - 1)) + 1;
+      let step = Math.round(pct * (STEPS_TOTAL - 1)) + 1;
       return clamp(step, MIN_GROW, MAX_GROW);
     }
 
@@ -616,7 +611,7 @@
         const cs = getComputedStyle(document.documentElement);
         spinBtn.style.background = cs.getPropertyValue('--money-bg');
         spinBtn.style.borderColor = cs.getPropertyValue('--money-brd');
-        spinBtn.addEventListener('mouseenter', ()=> spinBtn.style.background = `color-mix(in oklab, ${cs.getPropertyValue('--money-bg')}, white 12%)`);
+        spinBtn.addEventListener('mouseenter', ()=> spinBtn.style.background = `color-mix(in oklab, ${cs.getPropertyValue('--money-bg')}, white 14%)`);
         spinBtn.addEventListener('mouseleave', ()=> spinBtn.style.background = cs.getPropertyValue('--money-bg'));
         spinBtn.addEventListener('click', spinOnce);
         spinBtn.addEventListener('keydown', (e)=>{ if(modalOpen) { e.preventDefault(); return; } if(e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); spinOnce(); } });
@@ -650,8 +645,6 @@
       console.assert(nextSpinDollarCost(50) === 51, 'spin cost should +1');
       console.assert(nextWinMoneyReward(500) === 1000, 'win reward +$500');
       const d = nextDiamondCosts(500, 1.0); console.assert(d[0] === 1000 && d[1] === 2.0, 'diamond costs scale');
-      // tick labels
-      const a = (STEPS + MIN_GROW) - 1; console.assert(a === 10, 'top tick math stable');
       console.groupEnd();
     }
 
