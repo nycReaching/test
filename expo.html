@@ -173,8 +173,12 @@
     #spin.ctrl { background: var(--money-bg); border-color: var(--money-brd); padding: 12px 20px; font-size: 16px; font-weight: 800; color: var(--money-text); box-shadow: 0 6px 16px rgba(16, 60, 44, .35); }
     #spin.ctrl:hover { background: color-mix(in oklab, var(--money-bg), white 12%); filter: saturate(1.05); }
 
-    .cost { font-size: 12px; color: var(--money-text); margin-left: 10px; }
-    .buy-cost-text { font-size: 12px; color: var(--credit-text); margin-right: 10px; }
+    /* Updated to place info BELOW buttons */
+    .slot-actions { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; margin-top: 10px; }
+    .action { display: flex; flex-direction: column; align-items: flex-start; }
+    .cost, .buy-cost-text { display: block; font-size: 12px; margin-top: 6px; }
+    .cost { color: var(--money-text); margin-left: 0; }
+    .buy-cost-text { color: var(--credit-text); margin-right: 0; }
 
     .rate-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 800; line-height: 1.2; vertical-align: baseline; margin-left: 4px; border: 1px solid; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
     .rate-badge-1 { background: var(--rate1-bg); color: var(--rate1-accent); border-color: color-mix(in oklab, var(--rate1-bg), white 12%); }
@@ -265,14 +269,16 @@
           <div class="reel" id="reel2">🍋</div>
           <div class="reel" id="reel3">🍇</div>
         </div>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
-          <div>
+
+        <!-- Updated actions layout: info under buttons -->
+        <div class="slot-actions">
+          <div class="action">
             <button class="ctrl" id="spin">Spin</button>
             <span class="cost" id="spinCostMsg">Cost: $50 + 1.0 Rate Point</span>
           </div>
-          <div style="display: flex; align-items: center;">
-            <span class="buy-cost-text" id="buyCostMsg">Buy 3x 💎. Cost: 500c + 1.0 Rate 2 Point</span>
+          <div class="action">
             <button class="ctrl ctrl-buy" id="buyBtn">Buy</button>
+            <span class="buy-cost-text" id="buyCostMsg">Buy 3x 💎. Cost: 500c + 1.0 Rate 2 Point</span>
           </div>
         </div>
       </section>
@@ -304,7 +310,7 @@
     // Dynamic scaling
     let spinDollarCost = SPIN_DOLLAR_COST;   // +$1 per spin
     let spinRateCost = 1.0;                  // unchanged by spins
-    let winMoneyReward = 500;                // +$500 after each money win
+    let winMoneyReward = 500;                // +$500 after each win (regardless of choice)
     let buyDiamondCost = BUY_DIAMOND_COST;   // +500c per diamond purchase
     let buyDiamondRateCost = BUY_DIAMOND_RATE_COST; // +1 per diamond purchase
 
@@ -548,14 +554,18 @@
         reelEls.forEach(r=> r.classList.add('win'));
         await new Promise(res => setTimeout(res, 500)); // glow before modal
         const choice = await openWinChoice();
+
+        // Capture reward for this win, then increment regardless of choice
+        const rewardThisWin = winMoneyReward;
         if(choice === 'money'){
-          value1 += winMoneyReward; // award current reward
-          winMoneyReward += 500;    // increase future reward
+          value1 += rewardThisWin; // award current reward
           updateReadout();
         } else if(choice === 'reduce'){
           spinRateCost = Math.max(0, +(spinRateCost - 0.1).toFixed(1));
           updateCostMsg();
         }
+        // Always increase future reward by $500 even if money was not taken
+        winMoneyReward = rewardThisWin + 500;
       }
       spinBtn.disabled = false;
     }
