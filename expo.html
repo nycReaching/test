@@ -156,12 +156,12 @@
         </div>
         <div class="stat rate1">
           <div class="label">Rate 1</div>
-          <div class="value"><span id="rate1">1.00</span> <span class="badge">/s</span></div>
+          <div class="value"><span id="rate1">3.00</span> <span class="badge">/s</span></div>
           <div class="growth">Growth: <span id="grow1">1</span>/m</div>
         </div>
         <div class="stat rate2">
           <div class="label">Rate 2</div>
-          <div class="value"><span id="rate2">2.00</span> <span class="badge">/s</span></div>
+          <div class="value"><span id="rate2">3.00</span> <span class="badge">/s</span></div>
           <div class="growth">Growth: <span id="grow2">10</span>/m</div>
         </div>
       </div>
@@ -194,7 +194,7 @@
           </div>
           <div class="action">
             <button class="ctrl ctrl-buy" id="buyBtn">Buy</button>
-            <span class="buy-cost-text" id="buyCostMsg" aria-live="polite">Buy 3x 💎. Cost: 500c + 1.0 Rate 2 Point</span>
+            <span class="buy-cost-text" id="buyCostMsg" aria-live="polite">Buy 5x 💎. Cost: 500c + 1.0 Rate 2 Point</span>
           </div>
         </div>
       </section>
@@ -226,7 +226,7 @@
     let buyDiamondRateCost = BUY_DIAMOND_RATE_COST;
 
     // State
-    let value1 = 0, value2 = 0, rate1 = 1, rate2 = 2, gameTimeSeconds = 0;
+    let value1 = 0, value2 = 0, rate1 = 3, rate2 = 3, gameTimeSeconds = 0;
     let grow1 = 1, grow2 = (MAX_GROW + MIN_GROW) - grow1;
 
     const baseSymbols = ['🍒','🍋','🍇','🍉','🍊'];
@@ -268,7 +268,7 @@
     function updateCostMsg(){ spinCostMsg.innerHTML = `Cost: $${spinDollarCost} + ${fmtRatePts(spinRateCost)} <span class="rate-badge rate-badge-1">Rate 1</span>`; }
     function updateBuyBtnUI(){
       if (diamondCount > 0) { buyCostMsg.textContent = `💎 Active (${diamondCount} left)`; buyBtn.disabled = true; }
-      else { buyCostMsg.innerHTML = `Buy 3x 💎. Cost: ${buyDiamondCost}c + ${buyDiamondRateCost.toFixed(1)} <span class="rate-badge rate-badge-2">Rate 2</span>`; buyBtn.disabled = false; }
+      else { buyCostMsg.innerHTML = `Buy 5x 💎. Cost: ${buyDiamondCost}c + ${buyDiamondRateCost.toFixed(1)} <span class="rate-badge rate-badge-2">Rate 2</span>`; buyBtn.disabled = false; }
     }
     function updateReadout(){
       gameTimerEl.textContent = fmtTime(gameTimeSeconds);
@@ -286,6 +286,16 @@
     function stepFromClientX(xc){ const r=slider.getBoundingClientRect(); const x=clamp(xc-r.left,0,r.width); const pct=r.width===0?0:x/r.width; return clamp(Math.round(pct*(STEPS-1))+1, MIN_GROW, MAX_GROW); }
     function syncHandle(step){ const s=(step!==undefined)?step:grow1; grow1=s; grow2=(MAX_GROW+MIN_GROW)-grow1; positionHandle(grow1); grow1El.textContent=grow1; grow2El.textContent=grow2; }
     function makeDraggable(){ let dragging=false; const onDown=(ev)=>{ dragging=true; thumb.focus(); const c=('touches'in ev)?ev.touches[0].clientX:ev.clientX; syncHandle(stepFromClientX(c)); ev.preventDefault();}; const onMove=(ev)=>{ if(!dragging) return; const c=('touches'in ev)?ev.touches[0].clientX:ev.clientX; syncHandle(stepFromClientX(c));}; const onUp=()=>{ dragging=false;}; thumb.addEventListener('mousedown', onDown); window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onUp); thumb.addEventListener('touchstart', onDown,{passive:false}); window.addEventListener('touchmove', onMove,{passive:false}); window.addEventListener('touchend', onUp); thumb.addEventListener('keydown',(e)=>{ if(e.key==='ArrowLeft'){ syncHandle(clamp(Number(thumb.getAttribute('aria-valuenow'))-1,MIN_GROW,MAX_GROW)); e.preventDefault(); } if(e.key==='ArrowRight'){ syncHandle(clamp(Number(thumb.getAttribute('aria-valuenow'))+1,MIN_GROW,MAX_GROW)); e.preventDefault(); }}); }
+    // NEW: tap anywhere on slider to move it
+    function enableTrackTap(){
+      const onTap = (ev) => {
+        if (ev.target === thumb) return; // let drag handler take over
+        const c = ('touches' in ev) ? ev.touches[0].clientX : ev.clientX;
+        syncHandle(stepFromClientX(c));
+      };
+      slider.addEventListener('mousedown', onTap);
+      slider.addEventListener('touchstart', onTap, { passive: false });
+    }
 
     // Modal
     function openWinChoice(){ return new Promise((resolve)=>{ const focusables=[reduceBtn,takeMoneyBtn]; let idx=0; modalOpen=true; takeMoneyBtn.textContent=`Take $${winMoneyReward}`; backdrop.style.display='flex'; backdrop.setAttribute('aria-hidden','false'); focusables[idx].focus(); function onKey(e){ if(e.key==='Tab'){ e.preventDefault(); idx=(idx+(e.shiftKey?-1:1)+focusables.length)%focusables.length; focusables[idx].focus(); } if(e.key==='Escape'){ e.preventDefault(); }} document.addEventListener('keydown', onKey); function cleanup(){ document.removeEventListener('keydown', onKey); backdrop.style.display='none'; backdrop.setAttribute('aria-hidden','true'); modalOpen=false; } reduceBtn.onclick=()=>{ cleanup(); resolve('reduce'); }; takeMoneyBtn.onclick=()=>{ cleanup(); resolve('money'); }; }); }
@@ -298,13 +308,13 @@
     async function spinOnce(){ if(!spinBtn || spinBtn.disabled || modalOpen) return; reelEls.forEach(el=> el.classList.remove('win')); if(value1 < spinDollarCost || rate1 < spinRateCost){ spinBtn.animate([{transform:'translateX(0)'},{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:180}); return; } value1 -= spinDollarCost; rate1 = Math.max(0, rate1 - spinRateCost); spinDollarCost += 1; updateCostMsg(); updateReadout(); spinBtn.disabled=true; const speeds=[70,85,100]; const durations=[900,1100,1300]; const finalSyms=new Array(3); await new Promise((resolve)=>{ let finished=0; reelEls.forEach((el,i)=>{ el.classList.add('spinning'); const id=setInterval(()=>{ el.textContent=visualSymbol(); }, speeds[i]); setTimeout(()=>{ clearInterval(id); el.classList.remove('spinning'); finalSyms[i]=randomSymbol(); el.textContent=finalSyms[i]; finished++; if(finished===reelEls.length) resolve(); }, durations[i]); }); }); const nonWild = finalSyms.filter(s=>s!=='💎'); let win=false; if(nonWild.length<=1) win=true; else if(nonWild.length===2) win=(nonWild[0]===nonWild[1]); else win=(finalSyms[0]===finalSyms[1] && finalSyms[1]===finalSyms[2]); if(win){ await new Promise(res=>{ reelEls.forEach(r=> r.classList.add('win')); setTimeout(res, 500); }); const choice = await openWinChoice(); const rewardThisWin = winMoneyReward; if(choice==='money'){ value1 += rewardThisWin; updateReadout(); } else if(choice==='reduce'){ spinRateCost = Math.max(0, +(spinRateCost - 0.1).toFixed(1)); updateCostMsg(); } winMoneyReward = rewardThisWin + 500; } spinBtn.disabled=false; }
 
     // Controls
-    function attachControls(){ resetBtn.addEventListener('click', ()=>{ value1=0; value2=0; rate1=1; rate2=2; gameTimeSeconds=0; grow1=1; grow2=(MAX_GROW+MIN_GROW)-grow1; running=true; spinRateCost=1.0; spinDollarCost=SPIN_DOLLAR_COST; winMoneyReward=500; buyDiamondCost=BUY_DIAMOND_COST; buyDiamondRateCost=BUY_DIAMOND_RATE_COST; pauseBtn.textContent='Pause'; diamondCount=0; symbols=[...baseSymbols]; updateBuyBtnUI(); syncHandle(); updateReadout(); updateCostMsg(); }); pauseBtn.addEventListener('click', ()=>{ running = !running; pauseBtn.textContent = running ? 'Pause' : 'Resume'; }); buyBtn.addEventListener('click', ()=>{ if(value2>=buyDiamondCost && rate2>=buyDiamondRateCost && diamondCount===0){ value2 -= buyDiamondCost; rate2 = Math.max(0, rate2 - buyDiamondRateCost); diamondCount = 3; if(!symbols.includes('💎')) symbols.push('💎'); buyDiamondCost += 500; buyDiamondRateCost += 1; updateBuyBtnUI(); updateReadout(); } else { if(value2<buyDiamondCost || rate2<buyDiamondRateCost){ buyBtn.animate([{transform:'translateX(0)'},{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:180}); } } }); if(spinBtn){ spinBtn.addEventListener('click', spinOnce); spinBtn.addEventListener('keydown', (e)=>{ if(modalOpen){ e.preventDefault(); return; } if(e.key===' '||e.key==='Enter'){ e.preventDefault(); spinOnce(); } }); } }
+    function attachControls(){ resetBtn.addEventListener('click', ()=>{ value1=0; value2=0; rate1=3; rate2=3; gameTimeSeconds=0; grow1=1; grow2=(MAX_GROW+MIN_GROW)-grow1; running=true; spinRateCost=1.0; spinDollarCost=SPIN_DOLLAR_COST; winMoneyReward=500; buyDiamondCost=BUY_DIAMOND_COST; buyDiamondRateCost=BUY_DIAMOND_RATE_COST; pauseBtn.textContent='Pause'; diamondCount=0; symbols=[...baseSymbols]; updateBuyBtnUI(); syncHandle(); updateReadout(); updateCostMsg(); }); pauseBtn.addEventListener('click', ()=>{ running = !running; pauseBtn.textContent = running ? 'Pause' : 'Resume'; }); buyBtn.addEventListener('click', ()=>{ if(value2>=buyDiamondCost && rate2>=buyDiamondRateCost && diamondCount===0){ value2 -= buyDiamondCost; rate2 = Math.max(0, rate2 - buyDiamondRateCost); diamondCount = 5; if(!symbols.includes('💎')) symbols.push('💎'); buyDiamondCost += 500; buyDiamondRateCost += 1; updateBuyBtnUI(); updateReadout(); } else { if(value2<buyDiamondCost || rate2<buyDiamondRateCost){ buyBtn.animate([{transform:'translateX(0)'},{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:180}); } } }); if(spinBtn){ spinBtn.addEventListener('click', spinOnce); spinBtn.addEventListener('keydown', (e)=>{ if(modalOpen){ e.preventDefault(); return; } if(e.key===' '||e.key==='Enter'){ e.preventDefault(); spinOnce(); } }); } }
 
     // Loop
     let lastTs; function tick(ts){ if(lastTs===undefined) lastTs=ts; const dt=(ts-lastTs)/1000; lastTs=ts; if(running && dt>0){ gameTimeSeconds+=dt; value1 += rate1*dt; value2 += rate2*dt; const gps1=(grow1/60), gps2=(grow2/60); rate1=Math.min(MAX_RATE, rate1 + gps1*dt); rate2=Math.min(MAX_RATE, rate2 + gps2*dt); } updateReadout(); requestAnimationFrame(tick); }
 
     // Init
-    function init(){ buildTicks(); syncHandle(); updateCostMsg(); updateBuyBtnUI(); makeDraggable(); attachControls(); requestAnimationFrame(tick); const ro=new ResizeObserver(()=> syncHandle()); ro.observe(slider); }
+    function init(){ buildTicks(); syncHandle(); updateCostMsg(); updateBuyBtnUI(); makeDraggable(); enableTrackTap(); attachControls(); requestAnimationFrame(tick); const ro=new ResizeObserver(()=> syncHandle()); ro.observe(slider); }
     init();
   </script>
 </body>
