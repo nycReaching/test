@@ -131,7 +131,6 @@
       .value { font-size: clamp(22px, 7.5vw, 32px); }
       .slot-actions { grid-template-columns: 1fr; gap: 10px; }
       .controls { gap: 8px; }
-      .controls .ctrl { flex: 1; }
       .reel { height: 110px; font-size: clamp(48px, 16vw, 80px); }
       .cost, .buy-cost-text { font-size: 13px; min-height: calc(var(--action-info-h) + 0.2em); }
     }
@@ -157,12 +156,12 @@
         <div class="stat rate1">
           <div class="label">Rate 1</div>
           <div class="value"><span id="rate1">3.00</span> <span class="badge">/s</span></div>
-          <div class="growth">Growth: <span id="grow1">1</span>/m</div>
+          <div class="growth">Growth: <span id="grow1">2</span>/m</div>
         </div>
         <div class="stat rate2">
           <div class="label">Rate 2</div>
           <div class="value"><span id="rate2">3.00</span> <span class="badge">/s</span></div>
-          <div class="growth">Growth: <span id="grow2">10</span>/m</div>
+          <div class="growth">Growth: <span id="grow2">11</span>/m</div>
         </div>
       </div>
 
@@ -170,7 +169,7 @@
         <div class="slider" id="uniSlider" aria-label="Unified growth slider for both rates" role="group">
           <div class="ticks ticks-top" id="ticksTop"></div>
           <div class="track"></div>
-          <div class="thumb" id="thumb" aria-label="Growth handle" role="slider" aria-valuemin="1" aria-valuemax="10" aria-valuenow="1" tabindex="0"></div>
+          <div class="thumb" id="thumb" aria-label="Growth handle" role="slider" aria-valuemin="2" aria-valuemax="11" aria-valuenow="2" tabindex="0"></div>
           <div class="ticks ticks-bottom" id="ticksBottom"></div>
         </div>
       </div>
@@ -194,7 +193,7 @@
           </div>
           <div class="action">
             <button class="ctrl ctrl-buy" id="buyBtn">Buy</button>
-            <span class="buy-cost-text" id="buyCostMsg" aria-live="polite">Buy 5x 💎. Cost: 500c + 1.0 Rate 2 Point</span>
+            <span class="buy-cost-text" id="buyCostMsg" aria-live="polite">Buy 6x 💎. Cost: 500c + 1.0 Rate 2 Point</span>
           </div>
         </div>
       </section>
@@ -208,26 +207,26 @@
       <p id="winDesc">Choose your reward to continue.</p>
       <div class="actions">
         <button class="btn secondary" id="reduceBtn">Lower spin cost by 0.1 Rate Point</button>
-        <button class="btn primary" id="takeMoneyBtn">Take $500</button>
+        <button class="btn primary" id="takeMoneyBtn">Take $600</button>
       </div>
     </div>
   </div>
 
   <script>
     // Constants
-    const STEPS = 10, MIN_GROW = 1, MAX_GROW = 10, MAX_RATE = 99;
+    const STEPS = 10, MIN_GROW = 2, MAX_GROW = 11, MAX_RATE = 199; // updated ranges and cap
     const SPIN_DOLLAR_COST = 50, BUY_DIAMOND_COST = 500, BUY_DIAMOND_RATE_COST = 1.0;
 
     // Dynamic scaling
     let spinDollarCost = SPIN_DOLLAR_COST;
     let spinRateCost = 1.0;
-    let winMoneyReward = 500; // increments +500 per win regardless of choice
+    let winMoneyReward = 600; // increments +600 per win regardless of choice
     let buyDiamondCost = BUY_DIAMOND_COST;
     let buyDiamondRateCost = BUY_DIAMOND_RATE_COST;
 
     // State
     let value1 = 0, value2 = 0, rate1 = 3, rate2 = 3, gameTimeSeconds = 0;
-    let grow1 = 1, grow2 = (MAX_GROW + MIN_GROW) - grow1;
+    let grow1 = MIN_GROW, grow2 = (MAX_GROW + MIN_GROW) - grow1;
 
     const baseSymbols = ['🍒','🍋','🍇','🍉','🍊'];
     let symbols = [...baseSymbols];
@@ -268,7 +267,7 @@
     function updateCostMsg(){ spinCostMsg.innerHTML = `Cost: $${spinDollarCost} + ${fmtRatePts(spinRateCost)} <span class="rate-badge rate-badge-1">Rate 1</span>`; }
     function updateBuyBtnUI(){
       if (diamondCount > 0) { buyCostMsg.textContent = `💎 Active (${diamondCount} left)`; buyBtn.disabled = true; }
-      else { buyCostMsg.innerHTML = `Buy 5x 💎. Cost: ${buyDiamondCost}c + ${buyDiamondRateCost.toFixed(1)} <span class="rate-badge rate-badge-2">Rate 2</span>`; buyBtn.disabled = false; }
+      else { buyCostMsg.innerHTML = `Buy 6x 💎. Cost: ${buyDiamondCost}c + ${buyDiamondRateCost.toFixed(1)} <span class="rate-badge rate-badge-2">Rate 2</span>`; buyBtn.disabled = false; }
     }
     function updateReadout(){
       gameTimerEl.textContent = fmtTime(gameTimeSeconds);
@@ -281,11 +280,53 @@
     }
 
     // Slider
-    function buildTicks(){ ticksBottomEl.innerHTML = ''; ticksTopEl.innerHTML = ''; for(let i=1;i<=STEPS;i++){ const b=document.createElement('span'); b.textContent=i; ticksBottomEl.appendChild(b); const t=document.createElement('span'); t.textContent=(STEPS+MIN_GROW)-i; ticksTopEl.appendChild(t);} }
-    function positionHandle(step){ const rect = slider.getBoundingClientRect(); const pct=(step-1)/(STEPS-1); thumb.style.left = `${pct*rect.width}px`; thumb.setAttribute('aria-valuenow', String(step)); }
-    function stepFromClientX(xc){ const r=slider.getBoundingClientRect(); const x=clamp(xc-r.left,0,r.width); const pct=r.width===0?0:x/r.width; return clamp(Math.round(pct*(STEPS-1))+1, MIN_GROW, MAX_GROW); }
-    function syncHandle(step){ const s=(step!==undefined)?step:grow1; grow1=s; grow2=(MAX_GROW+MIN_GROW)-grow1; positionHandle(grow1); grow1El.textContent=grow1; grow2El.textContent=grow2; }
-    function makeDraggable(){ let dragging=false; const onDown=(ev)=>{ dragging=true; thumb.focus(); const c=('touches'in ev)?ev.touches[0].clientX:ev.clientX; syncHandle(stepFromClientX(c)); ev.preventDefault();}; const onMove=(ev)=>{ if(!dragging) return; const c=('touches'in ev)?ev.touches[0].clientX:ev.clientX; syncHandle(stepFromClientX(c));}; const onUp=()=>{ dragging=false;}; thumb.addEventListener('mousedown', onDown); window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onUp); thumb.addEventListener('touchstart', onDown,{passive:false}); window.addEventListener('touchmove', onMove,{passive:false}); window.addEventListener('touchend', onUp); thumb.addEventListener('keydown',(e)=>{ if(e.key==='ArrowLeft'){ syncHandle(clamp(Number(thumb.getAttribute('aria-valuenow'))-1,MIN_GROW,MAX_GROW)); e.preventDefault(); } if(e.key==='ArrowRight'){ syncHandle(clamp(Number(thumb.getAttribute('aria-valuenow'))+1,MIN_GROW,MAX_GROW)); e.preventDefault(); }}); }
+    function buildTicks(){
+      ticksBottomEl.innerHTML = '';
+      ticksTopEl.innerHTML = '';
+      for(let i=0;i<STEPS;i++){
+        const bottomVal = MIN_GROW + i;
+        const topVal = MAX_GROW - i;
+        const b=document.createElement('span'); b.textContent=bottomVal; ticksBottomEl.appendChild(b);
+        const t=document.createElement('span'); t.textContent=topVal; ticksTopEl.appendChild(t);
+      }
+    }
+    function positionHandle(step){
+      const rect = slider.getBoundingClientRect();
+      const pct=(step - MIN_GROW) / (MAX_GROW - MIN_GROW);
+      thumb.style.left = `${pct*rect.width}px`;
+      thumb.setAttribute('aria-valuenow', String(step));
+    }
+    function stepFromClientX(xc){
+      const r=slider.getBoundingClientRect();
+      const x=clamp(xc-r.left,0,r.width);
+      const pct=r.width===0?0:x/r.width;
+      const raw = Math.round(pct*(STEPS-1));
+      return clamp(MIN_GROW + raw, MIN_GROW, MAX_GROW);
+    }
+    function syncHandle(step){
+      const s=(step!==undefined)?step:grow1;
+      grow1=s;
+      grow2=(MAX_GROW+MIN_GROW)-grow1;
+      positionHandle(grow1);
+      grow1El.textContent=grow1;
+      grow2El.textContent=grow2;
+    }
+    function makeDraggable(){
+      let dragging=false;
+      const onDown=(ev)=>{ dragging=true; thumb.focus(); const c=('touches'in ev)?ev.touches[0].clientX:ev.clientX; syncHandle(stepFromClientX(c)); ev.preventDefault();};
+      const onMove=(ev)=>{ if(!dragging) return; const c=('touches'in ev)?ev.touches[0].clientX:ev.clientX; syncHandle(stepFromClientX(c));};
+      const onUp=()=>{ dragging=false;};
+      thumb.addEventListener('mousedown', onDown);
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onUp);
+      thumb.addEventListener('touchstart', onDown,{passive:false});
+      window.addEventListener('touchmove', onMove,{passive:false});
+      window.addEventListener('touchend', onUp);
+      thumb.addEventListener('keydown',(e)=>{
+        if(e.key==='ArrowLeft'){ syncHandle(clamp(Number(thumb.getAttribute('aria-valuenow'))-1,MIN_GROW,MAX_GROW)); e.preventDefault(); }
+        if(e.key==='ArrowRight'){ syncHandle(clamp(Number(thumb.getAttribute('aria-valuenow'))+1,MIN_GROW,MAX_GROW)); e.preventDefault(); }
+      });
+    }
     // NEW: tap anywhere on slider to move it
     function enableTrackTap(){
       const onTap = (ev) => {
@@ -305,16 +346,43 @@
     const visualSymbol=()=>symbols[Math.floor(Math.random()*symbols.length)];
     function randomSymbol(){ let s=symbols[Math.floor(Math.random()*symbols.length)]; if(s==='💎'){ if(diamondCount>0){ diamondCount--; updateBuyBtnUI(); if(diamondCount===0) symbols=symbols.filter(x=>x!=='💎'); return '💎'; } else { return baseSymbols[Math.floor(Math.random()*baseSymbols.length)]; } } return s; }
 
-    async function spinOnce(){ if(!spinBtn || spinBtn.disabled || modalOpen) return; reelEls.forEach(el=> el.classList.remove('win')); if(value1 < spinDollarCost || rate1 < spinRateCost){ spinBtn.animate([{transform:'translateX(0)'},{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:180}); return; } value1 -= spinDollarCost; rate1 = Math.max(0, rate1 - spinRateCost); spinDollarCost += 1; updateCostMsg(); updateReadout(); spinBtn.disabled=true; const speeds=[70,85,100]; const durations=[900,1100,1300]; const finalSyms=new Array(3); await new Promise((resolve)=>{ let finished=0; reelEls.forEach((el,i)=>{ el.classList.add('spinning'); const id=setInterval(()=>{ el.textContent=visualSymbol(); }, speeds[i]); setTimeout(()=>{ clearInterval(id); el.classList.remove('spinning'); finalSyms[i]=randomSymbol(); el.textContent=finalSyms[i]; finished++; if(finished===reelEls.length) resolve(); }, durations[i]); }); }); const nonWild = finalSyms.filter(s=>s!=='💎'); let win=false; if(nonWild.length<=1) win=true; else if(nonWild.length===2) win=(nonWild[0]===nonWild[1]); else win=(finalSyms[0]===finalSyms[1] && finalSyms[1]===finalSyms[2]); if(win){ await new Promise(res=>{ reelEls.forEach(r=> r.classList.add('win')); setTimeout(res, 500); }); const choice = await openWinChoice(); const rewardThisWin = winMoneyReward; if(choice==='money'){ value1 += rewardThisWin; updateReadout(); } else if(choice==='reduce'){ spinRateCost = Math.max(0, +(spinRateCost - 0.1).toFixed(1)); updateCostMsg(); } winMoneyReward = rewardThisWin + 500; } spinBtn.disabled=false; }
+    async function spinOnce(){ if(!spinBtn || spinBtn.disabled || modalOpen) return; reelEls.forEach(el=> el.classList.remove('win')); if(value1 < spinDollarCost || rate1 < spinRateCost){ spinBtn.animate([{transform:'translateX(0)'},{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:180}); return; } value1 -= spinDollarCost; rate1 = Math.max(0, rate1 - spinRateCost); spinDollarCost += 1; updateCostMsg(); updateReadout(); spinBtn.disabled=true; const speeds=[70,85,100]; const durations=[900,1100,1300]; const finalSyms=new Array(3); await new Promise((resolve)=>{ let finished=0; reelEls.forEach((el,i)=>{ el.classList.add('spinning'); const id=setInterval(()=>{ el.textContent=visualSymbol(); }, speeds[i]); setTimeout(()=>{ clearInterval(id); el.classList.remove('spinning'); finalSyms[i]=randomSymbol(); el.textContent=finalSyms[i]; finished++; if(finished===reelEls.length) resolve(); }, durations[i]); }); }); const nonWild = finalSyms.filter(s=>s!=='💎'); let win=false; if(nonWild.length<=1) win=true; else if(nonWild.length===2) win=(nonWild[0]===nonWild[1]); else win=(finalSyms[0]===finalSyms[1] && finalSyms[1]===finalSyms[2]); if(win){ await new Promise(res=>{ reelEls.forEach(r=> r.classList.add('win')); setTimeout(res, 500); }); const choice = await openWinChoice(); const rewardThisWin = winMoneyReward; if(choice==='money'){ value1 += rewardThisWin; updateReadout(); } else if(choice==='reduce'){ spinRateCost = Math.max(0, +(spinRateCost - 0.1).toFixed(1)); updateCostMsg(); } winMoneyReward = rewardThisWin + 600; } spinBtn.disabled=false; }
 
     // Controls
-    function attachControls(){ resetBtn.addEventListener('click', ()=>{ value1=0; value2=0; rate1=3; rate2=3; gameTimeSeconds=0; grow1=1; grow2=(MAX_GROW+MIN_GROW)-grow1; running=true; spinRateCost=1.0; spinDollarCost=SPIN_DOLLAR_COST; winMoneyReward=500; buyDiamondCost=BUY_DIAMOND_COST; buyDiamondRateCost=BUY_DIAMOND_RATE_COST; pauseBtn.textContent='Pause'; diamondCount=0; symbols=[...baseSymbols]; updateBuyBtnUI(); syncHandle(); updateReadout(); updateCostMsg(); }); pauseBtn.addEventListener('click', ()=>{ running = !running; pauseBtn.textContent = running ? 'Pause' : 'Resume'; }); buyBtn.addEventListener('click', ()=>{ if(value2>=buyDiamondCost && rate2>=buyDiamondRateCost && diamondCount===0){ value2 -= buyDiamondCost; rate2 = Math.max(0, rate2 - buyDiamondRateCost); diamondCount = 5; if(!symbols.includes('💎')) symbols.push('💎'); buyDiamondCost += 500; buyDiamondRateCost += 1; updateBuyBtnUI(); updateReadout(); } else { if(value2<buyDiamondCost || rate2<buyDiamondRateCost){ buyBtn.animate([{transform:'translateX(0)'},{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:180}); } } }); if(spinBtn){ spinBtn.addEventListener('click', spinOnce); spinBtn.addEventListener('keydown', (e)=>{ if(modalOpen){ e.preventDefault(); return; } if(e.key===' '||e.key==='Enter'){ e.preventDefault(); spinOnce(); } }); } }
+    function attachControls(){
+      resetBtn.addEventListener('click', ()=>{
+        value1=0; value2=0; rate1=3; rate2=3; gameTimeSeconds=0;
+        grow1=MIN_GROW; grow2=(MAX_GROW+MIN_GROW)-grow1;
+        running=true; spinRateCost=1.0; spinDollarCost=SPIN_DOLLAR_COST; winMoneyReward=600;
+        buyDiamondCost=BUY_DIAMOND_COST; buyDiamondRateCost=BUY_DIAMOND_RATE_COST; pauseBtn.textContent='Pause';
+        diamondCount=0; symbols=[...baseSymbols];
+        updateBuyBtnUI(); syncHandle(); updateReadout(); updateCostMsg();
+      });
+      pauseBtn.addEventListener('click', ()=>{ running = !running; pauseBtn.textContent = running ? 'Pause' : 'Resume'; });
+      buyBtn.addEventListener('click', ()=>{
+        if(value2>=buyDiamondCost && rate2>=buyDiamondRateCost && diamondCount===0){
+          value2 -= buyDiamondCost; rate2 = Math.max(0, rate2 - buyDiamondRateCost);
+          diamondCount = 6; // updated from 5
+          if(!symbols.includes('💎')) symbols.push('💎');
+          buyDiamondCost += 500; buyDiamondRateCost += 1;
+          updateBuyBtnUI(); updateReadout();
+        } else {
+          if(value2<buyDiamondCost || rate2<buyDiamondRateCost){
+            buyBtn.animate([{transform:'translateX(0)'},{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:180});
+          }
+        }
+      });
+      if(spinBtn){
+        spinBtn.addEventListener('click', spinOnce);
+        spinBtn.addEventListener('keydown', (e)=>{ if(modalOpen){ e.preventDefault(); return; } if(e.key===' '||e.key==='Enter'){ e.preventDefault(); spinOnce(); } });
+      }
+    }
 
     // Loop
     let lastTs; function tick(ts){ if(lastTs===undefined) lastTs=ts; const dt=(ts-lastTs)/1000; lastTs=ts; if(running && dt>0){ gameTimeSeconds+=dt; value1 += rate1*dt; value2 += rate2*dt; const gps1=(grow1/60), gps2=(grow2/60); rate1=Math.min(MAX_RATE, rate1 + gps1*dt); rate2=Math.min(MAX_RATE, rate2 + gps2*dt); } updateReadout(); requestAnimationFrame(tick); }
 
     // Init
-    function init(){ buildTicks(); syncHandle(); updateCostMsg(); updateBuyBtnUI(); makeDraggable(); enableTrackTap(); attachControls(); requestAnimationFrame(tick); const ro=new ResizeObserver(()=> syncHandle()); ro.observe(slider); }
+    function init(){ buildTicks(); syncHandle(MIN_GROW); updateCostMsg(); updateBuyBtnUI(); makeDraggable(); enableTrackTap(); attachControls(); requestAnimationFrame(tick); const ro=new ResizeObserver(()=> syncHandle()); ro.observe(slider); }
     init();
   </script>
 </body>
