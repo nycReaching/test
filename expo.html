@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Slot Game — UI Tweaks</title>
+  <title>Slot Game — UI Fix</title>
   <style>
     :root{
       --bg:#07090d;--panel:#0d1218;--panel-2:#0a0f14;--text:#fff;--muted:#9eb0c3;--track:#1b2532;--track-h:12px;--thumb-size:22px;--brd:#2e4053;--brd-strong:#49627f;--brd-width:2px;--shadow-1:0 2px 6px rgba(0,0,0,.45);--shadow-2:0 18px 36px rgba(0,0,0,.55);--glow:0 0 0 2px rgba(255,255,255,.06);
@@ -50,6 +50,22 @@
       border: 1px solid oklch(from var(--rate2-accent) l c h / 0.5);
       box-shadow: none;
     }
+    
+    /* New styles for Money and Credit badges */
+    .badge.badge-money {
+      background-color: var(--money-bg);
+      color: var(--text);
+      border: 1px solid oklch(from var(--money-brd) l c h / 0.5);
+      text-shadow: 0 1px 0 rgba(0,0,0,.45);
+      box-shadow: none;
+    }
+    .badge.badge-credit {
+      background-color: var(--credit-bg);
+      color: var(--text);
+      border: 1px solid oklch(from var(--credit-brd) l c h / 0.5);
+      text-shadow: 0 1px 0 rgba(0,0,0,.35);
+      box-shadow: none;
+    }
 
     /*
       Simplified Slider: 6 positions [2,4,6,8,10,12]
@@ -59,37 +75,26 @@
     .slider{position:relative;height:64px;user-select:none;width:min(420px,88%);margin:0 auto;padding:0 16px}
     .track{position:absolute;left:16px;right:16px;top:50%;transform:translateY(-50%);height:var(--track-h);border-radius:999px;background:linear-gradient(90deg,#1a2330,#213041 60%,#1a2330);outline:1px solid #2a3a4d;box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
     
-    /* Ticks layout using CSS Grid for proper alignment */
+    /* Ticks layout - container is positioned, spans inside are positioned by JS */
     .ticks{
       position:absolute;
-      left:16px;
-      right:16px;
-      display: grid; /* Use Grid for alignment */
-      grid-template-columns: repeat(6, 1fr); /* 6 equal columns for 6 steps */
+      left:16px; /* Match track padding */
+      right:16px; /* Match track padding */
       font-size:12px;
       font-weight:900;
       text-shadow:0 1px 0 rgba(0,0,0,.45);
+      /* All layout properties (flex, grid) removed. */
     }
-    /* Center all tick text by default */
-    .ticks span {
-      text-align: center;
-    }
-    /* Align first tick left, last tick right */
-    .ticks span:first-child {
-      text-align: left;
-    }
-    .ticks span:last-child {
-      text-align: right;
-    }
+    /* Individual tick spans are now styled with position:absolute by JS */
     
-    /* Rate 2 ticks (Top) */
+    /* Rate 2 ticks (Top) - Increased spacing from center */
     .ticks-top{
-      bottom: calc(50% + 18px); /* Positioned above the center line */
+      bottom: calc(50% + 22px); /* Was 18px, increased to 22px */
       color: var(--rate2-accent);
     }
-    /* Rate 1 ticks (Bottom) */
+    /* Rate 1 ticks (Bottom) - Increased spacing from center */
     .ticks-bottom{
-      top: calc(50% + 18px); /* Positioned below the center line */
+      top: calc(50% + 22px); /* Was 18px, increased to 22px */
       color: var(--rate1-accent);
     }
     
@@ -292,14 +297,14 @@
     const fmtTime=(t)=>{const s=Math.floor(t),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;return [h,m,sec].map(v=>String(v).padStart(2,'0')).join(':')};
 
     function updateCostMsg(){ 
-      // Added .badge-rate1 class
-      spinCostMsg.innerHTML = `Cost: $${spinDollarCost} + ${fmtRatePts(spinRateCost)} <span class="badge badge-rate1">Rate 1</span>`; 
+      // Added .badge-money span
+      spinCostMsg.innerHTML = `Cost: <span class="badge badge-money">$${spinDollarCost}</span> + ${fmtRatePts(spinRateCost)} <span class="badge badge-rate1">Rate 1</span>`; 
     }
     function updateBuyBtnUI(){
       if(diamondCount>0){ buyCostMsg.textContent=`💎 Active (${diamondCount} left)`; buyBtn.disabled=true; }
       else{ 
-        // Added .badge-rate2 class
-        buyCostMsg.innerHTML=`Buy 6x 💎. Cost: ${buyDiamondCost}c + ${buyDiamondRateCost.toFixed(1)} <span class="badge badge-rate2">Rate 2</span>`; 
+        // Added .badge-credit span
+        buyCostMsg.innerHTML=`Buy 6x 💎. Cost: <span class="badge badge-credit">${buyDiamondCost}c</span> + ${buyDiamondRateCost.toFixed(1)} <span class="badge badge-rate2">Rate 2</span>`; 
         buyBtn.disabled=false; 
       }
     }
@@ -320,12 +325,33 @@
     function buildTicks(){
       ticksBottomEl.innerHTML='';
       ticksTopEl.innerHTML = ''; // Clear top ticks
+      
       const growStepsDesc = [...GROW_STEPS].reverse(); // [12, 10, 8, 6, 4, 2]
 
-      // Rate 1 ticks (bottom)
-      for(const v of GROW_STEPS){ const s=document.createElement('span'); s.textContent=v; ticksBottomEl.appendChild(s);}
-      // Rate 2 ticks (top)
-      for(const v of growStepsDesc){ const s=document.createElement('span'); s.textContent=v; ticksTopEl.appendChild(s);}
+      // Function to create and position ticks
+      const createTicks = (parentElement, steps) => {
+        steps.forEach((value, idx) => {
+          const s = document.createElement('span');
+          s.textContent = value;
+          s.style.position = 'absolute'; // Position absolutely
+
+          const pct = (STEP_COUNT <= 1) ? 0 : (idx / (STEP_COUNT - 1));
+          s.style.left = `${pct * 100}%`;
+
+          // Align text: 0% at start, 100% at end, all others centered
+          if (idx === 0) {
+            s.style.transform = 'translateX(0)'; // Align start
+          } else if (idx === STEP_COUNT - 1) {
+            s.style.transform = 'translateX(-100%)'; // Align end
+          } else {
+            s.style.transform = 'translateX(-50%)'; // Align center
+          }
+          parentElement.appendChild(s);
+        });
+      };
+
+      createTicks(ticksBottomEl, GROW_STEPS); // Rate 1 ticks (bottom)
+      createTicks(ticksTopEl, growStepsDesc); // Rate 2 ticks (top)
     }
 
     function sliderInnerRect(){
