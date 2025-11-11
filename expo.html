@@ -198,14 +198,29 @@
 
     @media (max-width:640px){
       .wrap{width:100vw}
-      .card{border-radius:0;padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
-      .value{font-size:clamp(22px,7.5vw,32px)}
-      .slot-actions{grid-template-columns:1fr;gap:10px} /* Mobile: stack buttons */
-      .controls{gap:8px}
-      .reel{height:110px;font-size:clamp(48px,16vw,80px)}
+      /* UPDATED: Reduced bottom padding from 16px to 12px */
+      .card{border-radius:0;padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+      /* UPDATED: Slightly smaller font clamp */
+      .value{font-size:clamp(20px, 6.5vw, 28px); margin-top: 6px;} /* was clamp(22px, 7.5vw, 32px) and 8px */
+      /* UPDATED: Reduced gap and margin */
+      .slot-actions{grid-template-columns:1fr;gap:8px; margin-top: 12px;} /* was 10px, 16px */
+      /* UPDATED: Reduced margin-top */
+      .controls{gap:8px; margin-top: 10px;} /* global was 14px */
+      /* UPDATED: Reduced height and font clamp */
+      .reel{height:100px;font-size:clamp(44px,14vw,72px)} /* was 110px, clamp(48px,16vw,80px) */
       .modal{width:min(500px,96vw)}
       .modal .actions{grid-template-columns:1fr}
       .btn{font-size:18px;padding:16px 18px;min-height:56px}
+
+      /* === ADDED RULES TO COMPRESS VERTICAL SPACING ON MOBILE === */
+      #gameTimer { margin-bottom: 10px; } /* was 16px */
+      .stats-grid { gap: 10px; margin-bottom: 12px; } /* was 14px, 18px */
+      .stat { padding: 12px 14px; } /* was 14px 16px */
+      .slider-wrap { margin-top: 4px; } /* was 6px */
+      .slot { margin-top: 12px; padding-top: 10px; } /* was 20px, 16px */
+      .slot h2 { margin-bottom: 8px; } /* was 10px */
+      .reels { gap: 8px; margin: 8px 0; } /* was 12px, 12px 0 */
+      .cost, .buy-cost-text { margin-top: 6px; } /* was 8px */
     }
     @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
   </style>
