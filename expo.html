@@ -64,6 +64,15 @@
 
     .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:800;background:#223042;color:#ecf3fb;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06); vertical-align: middle;}
 
+    /* NEW: Styling for "per second" text */
+    .per-second {
+      font-size: 12px;
+      font-weight: 600;
+      vertical-align: baseline; /* Align with number */
+      margin-left: 4px;
+      /* Color is inherited from parent .stat.rate1 or .stat.rate2 */
+    }
+
     /* Color-coded badges for rates */
     .badge.badge-rate1 {
       background-color: var(--rate1-bg);
@@ -116,7 +125,7 @@
 
     /* Rate 2 ticks (Top) - Switched to simple 'top' positioning */
     .ticks-top{
-      top: 5px; /* Places text top 5px from slider top, clear of thumb */
+      top: 2px; /* UPDATED: Was 5px, lifted text up */
       color: var(--rate2-accent);
       /* Removed bottom: ... */
     }
@@ -170,7 +179,7 @@
     }
     .cost, .buy-cost-text {
       font-size: 11px;
-      color: var(--muted);
+      color: var(--text); /* UPDATED: Was var(--muted) */
       text-align: center;
       margin-top: 8px;
       line-height: 1.4;
@@ -210,8 +219,10 @@
       <div class="stats-grid">
         <div class="stat money"><div class="label">Money</div><div class="value" id="val1">$0.00</div></div>
         <div class="stat credit"><div class="label">Credit</div><div class="value" id="val2">0.00</div></div>
-        <div class="stat rate1"><div class="label">Rate 1</div><div class="value"><span id="rate1">3.00</span> <span class="badge">/s</span></div><div class="growth">Growth: <span id="grow1">2</span>/m</div></div>
-        <div class="stat rate2"><div class="label">Rate 2</div><div class="value"><span id="rate2">3.00</span> <span class="badge">/s</span></div><div class="growth">Growth: <span id="grow2">12</span>/m</div></div>
+        <!-- UPDATED: Replaced badge with .per-second span -->
+        <div class="stat rate1"><div class="label">Rate 1</div><div class="value"><span id="rate1">3.00</span> <span class="per-second">per second</span></div><div class="growth">Growth: <span id="grow1">2</span>/m</div></div>
+        <!-- UPDATED: Replaced badge with .per-second span -->
+        <div class="stat rate2"><div class="label">Rate 2</div><div class="value"><span id="rate2">3.00</span> <span class="per-second">per second</span></div><div class="growth">Growth: <span id="grow2">12</span>/m</div></div>
       </div>
 
       <!-- Simplified slider: 6 positions 2..12 step 2; narrowed and padded to avoid edge tapping issues -->
