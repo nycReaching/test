@@ -168,8 +168,7 @@
     #swapBtn:disabled {
       opacity: 0.5;
       cursor: not-allowed;
-      background: var(--panel); /* Dull background */
-      border-color: var(--brd);
+      /* REMOVED: background and border-color to keep gradient */
     }
     /* NEW: Style for Upgrade button */
     #upgradeBtn {
@@ -415,10 +414,11 @@
 
       <!-- Option 2: Double Slider Value -->
       <div class="upgrade-option">
-        <p>Double a random value on the slider.<br><small>(Max 12 purchases, one per value)</small></p>
-        <!-- UPDATED: Cost display with badges -->
+        <!-- UPDATED: Text changed to reflect new upgrade logic -->
+        <p>Double a specific slider value.<br><small>(4 purchases total, follows a set sequence)</small></p>
+        <!-- UPDATED: Cost display with new price -->
         <button class="btn primary" id="buyDoubleSlider">
-          <span class="badge badge-credit">25,000 C</span> + <span class="badge badge-rate2">25 Rate 2</span>
+          <span class="badge badge-credit">15,000 C</span> + <span class="badge badge-rate2">15 Rate 2</span>
         </button>
       </div>
 
@@ -446,8 +446,9 @@
     let growStepsTop = [12, 10, 8, 6, 4, 2];
     const STEP_COUNT = growStepsBottom.length; // 6
 
-    let doubledBottom = new Array(STEP_COUNT).fill(false);
-    let doubledTop = new Array(STEP_COUNT).fill(false);
+    // REMOVED: Old 'doubled' arrays
+    // let doubledBottom = new Array(STEP_COUNT).fill(false);
+    // let doubledTop = new Array(STEP_COUNT).fill(false);
 
     // State
     // Timer now starts at 20 minutes and counts down
@@ -470,6 +471,8 @@
 
     // NEW: State for upgrades
     let isSpinCostResetPurchased = false;
+    // NEW: State for sequential slider upgrade
+    let doubleUpgradeLevel = 0; // Tracks progress from 0 to 4
 
     // Elements
     const gameTimerEl=document.getElementById('gameTimer');
@@ -505,7 +508,7 @@
     const closeUpgradeModalBtn = document.getElementById('closeUpgradeModal');
     const buyResetSpinCostBtn = document.getElementById('buyResetSpinCost');
     const buyDoubleSliderBtn = document.getElementById('buyDoubleSlider');
-    
+
     // NEW: Confetti canvas elements
     const confettiCanvas = document.getElementById('confettiCanvas');
     const confettiCtx = confettiCanvas.getContext('2d');
@@ -524,7 +527,7 @@
       confettiParticles = [];
       const particleCount = 200;
       const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50', '#8bc34a', '#cddc39', '#ffeb3b', '#ffc107', '#ff9800', '#ff5722'];
-      
+
       confettiCanvas.width = window.innerWidth;
       confettiCanvas.height = window.innerHeight;
 
@@ -544,7 +547,7 @@
 
     function animateConfetti() {
       confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
-      
+
       confettiParticles.forEach((p, index) => {
         p.x += p.vx;
         p.y += p.vy;
@@ -575,7 +578,7 @@
       confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
       confettiParticles = [];
     }
-    
+
     // Resize confetti canvas with window
     window.addEventListener('resize', () => {
       if (confettiCanvas.style.display === 'block') {
@@ -757,6 +760,7 @@
     }
 
     // NEW: Upgrade modal open/close
+    // UPDATED: To handle new sequential upgrade
     function openUpgradeModal() {
       modalOpen = true; // Use global modal flag
       upgradeModalBackdrop.style.display = 'flex';
@@ -771,13 +775,14 @@
         buyResetSpinCostBtn.innerHTML = `<span class="badge badge-money">$5,000</span> + <span class="badge badge-rate1">10 Rate 1</span>`;
       }
 
-      let remaining = doubledBottom.includes(false) || doubledTop.includes(false);
+      // UPDATED: Check sequential upgrade level
+      let remaining = doubleUpgradeLevel < 4;
       buyDoubleSliderBtn.disabled = !remaining;
       if (!remaining) {
         buyDoubleSliderBtn.textContent = "Maxed Out";
       } else {
-        // UPDATED: Cost display with badges
-        buyDoubleSliderBtn.innerHTML = `<span class="badge badge-credit">25,000 C</span> + <span class="badge badge-rate2">25 Rate 2</span>`;
+        // UPDATED: Cost display with new price
+        buyDoubleSliderBtn.innerHTML = `<span class="badge badge-credit">15,000 C</span> + <span class="badge badge-rate2">15 Rate 2</span>`;
       }
 
       closeUpgradeModalBtn.focus();
@@ -792,6 +797,54 @@
     // Slot logic
     const reelEls=[document.getElementById('reel1'),document.getElementById('reel2'),document.getElementById('reel3')];
     const visualSymbol=()=>symbols[Math.floor(Math.random()*symbols.length)];
+
+    // NEW "Softer" Spin Animation Function
+    function animateReel(reelEl, finalSymbol, duration) {
+      return new Promise(resolve => {
+        const startTime = performance.now();
+        let lastUpdate = startTime;
+        
+        // Spin speed parameters
+        const minInterval = 50; // 50ms (fast)
+        const maxInterval = 200; // 200ms (slow)
+
+        // Add blur/opacity effect
+        reelEl.style.transition = 'filter 0.1s, opacity 0.1s';
+        reelEl.style.filter = 'blur(3px)';
+        reelEl.style.opacity = '0.8';
+
+        function spin(currentTime) {
+          const elapsedTime = currentTime - startTime;
+          let progress = elapsedTime / duration;
+          if (progress > 1) progress = 1;
+
+          // Easing function: (1 - (1 - x)^3) -> Cubic Ease-Out
+          // This means progress_easeout starts fast and slows down
+          const progress_easeout = 1 - Math.pow(1 - progress, 3);
+          
+          // The interval *between* flickers should increase
+          const currentInterval = minInterval + (maxInterval - minInterval) * progress_easeout;
+
+          if (currentTime - lastUpdate > currentInterval) {
+            reelEl.textContent = visualSymbol(); // Update symbol
+            lastUpdate = currentTime;
+          }
+
+          if (progress < 1) {
+            requestAnimationFrame(spin);
+          } else {
+            // Stop
+            reelEl.style.transition = 'filter 0.3s, opacity 0.3s'; // Slower transition back
+            reelEl.style.filter = 'blur(0px)';
+            reelEl.style.opacity = '1';
+            reelEl.textContent = finalSymbol; // Set final symbol
+            resolve();
+          }
+        }
+        requestAnimationFrame(spin);
+      });
+    }
+
     function randomSymbol(){ let s=symbols[Math.floor(Math.random()*symbols.length)]; if(s==='💎'){ if(diamondCount>0){ diamondCount--; updateBuyBtnUI(); if(diamondCount===0) symbols=symbols.filter(x=>x!=='💎'); return '💎'; } else { return baseSymbols[Math.floor(Math.random()*baseSymbols.length)]; } } return s; }
 
     // UPDATED: Modified spinOnce() to handle the new 'reduceRate2' choice and 'isSpinCostResetPurchased'
@@ -813,10 +866,13 @@
       swapBtn.disabled=true;
       buyBtn.disabled=true;
       upgradeBtn.disabled=true;
-      
-      const speeds=[70,85,100];
-      const durations=[900,1100,1300];
-      const finalSyms=new Array(3);
+
+      // const speeds=[70,85,100]; // OLD
+      // const durations=[900,1100,1300]; // OLD
+      const durations = [1200, 1600, 2000]; // NEW: slightly longer durations
+      const finalSyms = [randomSymbol(), randomSymbol(), randomSymbol()]; // NEW: Get finals first
+
+      /* OLD Spin Logic (Replaced)
       await new Promise((resolve)=>{
         let finished=0;
         reelEls.forEach((el,i)=>{
@@ -830,6 +886,13 @@
           }, durations[i]);
         });
       });
+      */
+
+      // NEW Spin Logic
+      await Promise.all(reelEls.map((el, i) => 
+        animateReel(el, finalSyms[i], durations[i])
+      ));
+
       const nonWild=finalSyms.filter(s=>s!=='💎');
       let win=false;
       if(nonWild.length<=1) win=true;
@@ -843,13 +906,13 @@
           updateCostMsg(); // Update UI immediately
         }
         // END NEW
-        
+
         // NEW: Add pulse/glow animation
         reelEls.forEach(el => el.classList.add('reel-win'));
-        
+
         // Wait for 1 second
         await new Promise(resolve => setTimeout(resolve, 1000));
-        
+
         // Remove animation class
         reelEls.forEach(el => el.classList.remove('reel-win'));
 
@@ -857,10 +920,10 @@
         startConfetti();
 
         const choice=await openWinChoice();
-        
+
         // Stop confetti when modal closes
         stopConfetti();
-        
+
         const rewardThisWin=winMoneyReward;
 
         if(choice==='money'){
@@ -875,7 +938,7 @@
 
         winMoneyReward = rewardThisWin + 600;
       }
-      
+
       // Re-enable other buttons *only if game is not over*
       if (running) {
         pauseBtn.disabled=false;
@@ -933,45 +996,49 @@
         updateReadout();
       });
 
+      // UPDATED: buyDoubleSliderBtn to use sequential logic
       buyDoubleSliderBtn.addEventListener('click', () => {
-        // Find available upgrades
-        let available = [];
-        for (let i = 0; i < STEP_COUNT; i++) {
-          if (!doubledBottom[i]) available.push({ type: 'bottom', index: i });
-          if (!doubledTop[i]) available.push({ type: 'top', index: i });
-        }
-        if (available.length === 0) return; // Should be disabled, but good to check
+        if (doubleUpgradeLevel >= 4) return; // Already maxed
 
-        // UPDATED: Cost check changed
-        if (value2 < 25000 || rate2 < 25) {
+        // UPDATED: Cost check with new price
+        if (value2 < 15000 || rate2 < 15) {
           buyDoubleSliderBtn.animate([{transform:'translateX(0)'},{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:180});
           return;
         }
 
-        // UPDATED: Cost deduction changed
-        value2 -= 25000;
-        rate2 -= 25;
+        // UPDATED: Cost deduction with new price
+        value2 -= 15000;
+        rate2 -= 15;
 
-        // Pick random upgrade
-        const upgrade = available[Math.floor(Math.random() * available.length)];
-
-        // Apply upgrade
-        if (upgrade.type === 'bottom') {
-          growStepsBottom[upgrade.index] *= 2;
-          doubledBottom[upgrade.index] = true;
-        } else { // 'top'
-          growStepsTop[upgrade.index] *= 2;
-          doubledTop[upgrade.index] = true;
+        // Apply sequential upgrade
+        switch (doubleUpgradeLevel) {
+          case 0:
+            // Purchase 1: upper 10 doubles to 20
+            growStepsTop[1] *= 2; // Index 1 is 10
+            break;
+          case 1:
+            // Purchase 2: lower 10 doubles to 20
+            growStepsBottom[4] *= 2; // Index 4 is 10
+            break;
+          case 2:
+            // Purchase 3: upper 12 doubles to 24
+            growStepsTop[0] *= 2; // Index 0 is 12
+            break;
+          case 3:
+            // Purchase 4: lower 12 doubles to 24
+            growStepsBottom[5] *= 2; // Index 5 is 12
+            break;
         }
+
+        doubleUpgradeLevel++; // Increment progress
 
         // Update UI
         buildTicks(); // Re-draw ticks with new numbers
-        setGrowthByIndex(currentIndex()); // Update grow1/grow2 display
+        setGrowthByIndex(currentIndex()); // Update grow1/grow2 display if current index was affected
         updateReadout();
 
-        // Check if more upgrades are possible
-        let remaining = doubledBottom.includes(false) || doubledTop.includes(false);
-        if (!remaining) {
+        // Check if maxed out
+        if (doubleUpgradeLevel >= 4) {
           buyDoubleSliderBtn.disabled = true;
           buyDoubleSliderBtn.textContent = "Maxed Out";
         }
