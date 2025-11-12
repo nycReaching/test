@@ -26,19 +26,29 @@
       100% { background-position: 0% 50%; }
     }
 
-    /* UPDATED: Swapped static gradient for animated one with requested colors */
+    /* UPDATED: Outer area (body) is black */
     body{
       margin:0;
       font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Arial;
       color:var(--text);
-      background:linear-gradient(270deg, #2a0808, #2e1a0b, #3d1c02, #0a0a0a);
-      background-size: 800% 800%;
-      animation: shiftBackground 30s ease infinite;
+      background: #000; /* CHANGED: Was a gradient, now solid black */
       display:grid;
       place-items:center
     }
     .wrap{width:min(920px,94vw)}
-    .card{background:linear-gradient(180deg,var(--panel) 0%,var(--panel-2) 100%);border:var(--brd-width) solid var(--brd-strong);border-radius:18px;padding:20px clamp(14px,4vw,28px);box-shadow:var(--shadow-2);position:relative;overflow:clip;outline:1px solid rgba(255,255,255,.06)}
+    /* UPDATED: Main game area (card) has the shifting gradient */
+    .card{
+      background:linear-gradient(270deg, #2a0808, #2e1a0b, #3d1c02, #0a0a0a); /* CHANGED: Was panel gradient */
+      background-size: 800% 800%; /* ADDED */
+      animation: shiftBackground 30s ease infinite; /* ADDED */
+      border:var(--brd-width) solid var(--brd-strong);
+      border-radius:18px;
+      padding:20px clamp(14px,4vw,28px);
+      box-shadow:var(--shadow-2);
+      position:relative;
+      overflow:clip;
+      outline:1px solid rgba(255,255,255,.06)
+    }
 
     /* Timer styling updated */
     #gameTimer{
@@ -364,22 +374,24 @@
   <div class="modal-backdrop" id="upgradeModalBackdrop" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="upgradeTitle">
       <h3 id="upgradeTitle">Upgrades</h3>
-      
+
       <!-- Option 1: Reset Spin Cost -->
       <div class="upgrade-option">
         <p>Wins (without 💎) reset Spin cost to $50.<br><small>(One-time purchase)</small></p>
+        <!-- UPDATED: Cost changed -->
         <button class="btn primary" id="buyResetSpinCost">
-          $25,000 + 50 <span class="badge badge-rate1">Rate 1</span>
+          $5,000 + 10 <span class="badge badge-rate1">Rate 1</span>
         </button>
       </div>
-      
+
       <hr style="border:0; border-top: 1px solid var(--brd); margin: 20px 0;">
 
       <!-- Option 2: Double Slider Value -->
       <div class="upgrade-option">
         <p>Double a random value on the slider.<br><small>(Max 12 purchases, one per value)</small></p>
+        <!-- UPDATED: Cost changed -->
         <button class="btn primary" id="buyDoubleSlider">
-          50,000 <span class="badge badge-credit">C</span> + 50 <span class="badge badge-rate2">Rate 2</span>
+          25,000 <span class="badge badge-credit">C</span> + 25 <span class="badge badge-rate2">Rate 2</span>
         </button>
       </div>
 
@@ -411,6 +423,7 @@
     let value1 = 0, value2 = 0, rate1 = 3, rate2 = 3, gameTimeSeconds = GAME_DURATION_SECONDS;
     let grow1 = growStepsBottom[0];
     let grow2 = growStepsTop[0]; // complementary as before
+    let swapUses = 2; // CHANGED: Added swap uses counter
 
     let spinDollarCost = SPIN_DOLLAR_COST;
     let spinRateCost = 1.0;
@@ -640,13 +653,14 @@
       modalOpen = true; // Use global modal flag
       upgradeModalBackdrop.style.display = 'flex';
       upgradeModalBackdrop.setAttribute('aria-hidden', 'false');
-      
+
       // Update button states
       buyResetSpinCostBtn.disabled = isSpinCostResetPurchased;
       if (isSpinCostResetPurchased) {
         buyResetSpinCostBtn.textContent = "Purchased";
       } else {
-        buyResetSpinCostBtn.innerHTML = `$25,000 + 50 <span class="badge badge-rate1">Rate 1</span>`;
+        // UPDATED: Cost changed
+        buyResetSpinCostBtn.innerHTML = `$5,000 + 10 <span class="badge badge-rate1">Rate 1</span>`;
       }
 
       let remaining = doubledBottom.includes(false) || doubledTop.includes(false);
@@ -654,7 +668,8 @@
       if (!remaining) {
         buyDoubleSliderBtn.textContent = "Maxed Out";
       } else {
-        buyDoubleSliderBtn.innerHTML = `50,000 <span class="badge badge-credit">C</span> + 50 <span class="badge badge-rate2">Rate 2</span>`;
+        // UPDATED: Cost changed
+        buyDoubleSliderBtn.innerHTML = `25,000 <span class="badge badge-credit">C</span> + 25 <span class="badge badge-rate2">Rate 2</span>`;
       }
 
       closeUpgradeModalBtn.focus();
@@ -735,16 +750,21 @@
 
     // Controls
     function attachControls(){
-      // Swap button logic
+      // UPDATED: Swap button logic for 2 uses
+      swapBtn.textContent = `Swap (${swapUses})`; // Set initial text
       swapBtn.addEventListener('click', ()=>{
-        if (modalOpen) return;
+        if (modalOpen || swapUses <= 0) return;
         [value1, value2] = [value2, value1]; // Swap values
-        swapBtn.disabled = true; // One-time use
+        swapUses--; // Decrement uses
+        swapBtn.textContent = `Swap (${swapUses})`; // Update text
+        if (swapUses <= 0) {
+          swapBtn.disabled = true; // Disable at 0
+        }
         updateReadout(); // Update UI
       });
-      pauseBtn.addEventListener('click', ()=>{ 
+      pauseBtn.addEventListener('click', ()=>{
         if (modalOpen) return;
-        running=!running; pauseBtn.textContent= running? 'Pause':'Resume'; 
+        running=!running; pauseBtn.textContent= running? 'Pause':'Resume';
       });
       buyBtn.addEventListener('click', ()=>{
         if (modalOpen) return;
@@ -753,19 +773,21 @@
       });
       spinBtn.addEventListener('click', spinOnce);
       spinBtn.addEventListener('keydown',(e)=>{ if(modalOpen){ e.preventDefault(); return; } if(e.key===' '||e.key==='Enter'){ e.preventDefault(); spinOnce(); } });
-    
+
       // NEW: Upgrade modal controls
       upgradeBtn.addEventListener('click', openUpgradeModal);
       closeUpgradeModalBtn.addEventListener('click', closeUpgradeModal);
 
       buyResetSpinCostBtn.addEventListener('click', () => {
         if (isSpinCostResetPurchased) return;
-        if (value1 < 25000 || rate1 < 50) {
+        // UPDATED: Cost check changed
+        if (value1 < 5000 || rate1 < 10) {
           buyResetSpinCostBtn.animate([{transform:'translateX(0)'},{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:180});
           return;
         }
-        value1 -= 25000;
-        rate1 -= 50;
+        // UPDATED: Cost deduction changed
+        value1 -= 5000;
+        rate1 -= 10;
         isSpinCostResetPurchased = true;
         buyResetSpinCostBtn.disabled = true;
         buyResetSpinCostBtn.textContent = "Purchased";
@@ -781,15 +803,15 @@
         }
         if (available.length === 0) return; // Should be disabled, but good to check
 
-        // Check cost
-        if (value2 < 50000 || rate2 < 50) {
+        // UPDATED: Cost check changed
+        if (value2 < 25000 || rate2 < 25) {
           buyDoubleSliderBtn.animate([{transform:'translateX(0)'},{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:180});
           return;
         }
 
-        // Deduct cost
-        value2 -= 50000;
-        rate2 -= 50;
+        // UPDATED: Cost deduction changed
+        value2 -= 25000;
+        rate2 -= 25;
 
         // Pick random upgrade
         const upgrade = available[Math.floor(Math.random() * available.length)];
