@@ -3,15 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Slot Game — Upgrades Added</title>
+  <title>Slot Game — Upgrades + Onboarding</title>
   <style>
     :root{
-      --bg:#07090d;--panel:#0d1218;--panel-2:#0a0f14;--text:#fff;--muted:#9eb0c3;--track:#1b2532;--track-h:12px;--thumb-size:22px;--brd:#2e4053;--brd-strong:#49627f;--brd-width:2px;--shadow-1:0 2px 6px rgba(0,0,0,.45);--shadow-2:0 18px 36px rgba(0,0,0,.55);--glow:0 0 0 2px rgba(255,255,255,.06);
+      --bg:#07090d;--panel:#0d1218;--panel-2:#0a0f14;--text:#fff;--muted:#9eb0c3;--track:#1b2532;--track-h:12px;--thumb-size:22px;--brd:#2e4053;--brd-strong:#49627f;--brd-width:2px;--shadow-1:0 2px 6px rgba(0,0,0,.45);--shadow-2:0 18px 36px rgba(0,0,0,.55);
       --money-bg: oklch(22% .08 150); --money-brd: oklch(38% .10 150);
       --credit-bg: oklch(24% .10 315); --credit-brd: oklch(42% .12 315);
       --rate1-bg: oklch(26% .10 250); --rate1-accent: oklch(82% .18 28);
       --rate2-bg: oklch(26% .10 210); --rate2-accent: oklch(86% .14 170);
-      /* Added text colors for money and credit stats */
       --money-text: oklch(92% .15 100);
       --credit-text: oklch(90% .1 345);
       --tap:48px;
@@ -19,24 +18,17 @@
     *{box-sizing:border-box}
     html,body{height:100%}
 
-    /* REMOVED: Keyframes for shifting background */
-
-    /* UPDATED: Outer area (body) is black */
     body{
       margin:0;
       font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Arial;
       color:var(--text);
-      background: #000; /* Was a gradient, now solid black */
+      background:#000;
       display:grid;
       place-items:center
     }
     .wrap{width:min(920px,94vw)}
-    /* UPDATED: Main game area (card) has the new static gradient */
     .card{
-      /* UPDATED: Gradient from very dark red to black, no animation */
       background: linear-gradient(180deg, #1a0404, #000);
-      /* REMOVED: background-size: 800% 800%; */
-      /* REMOVED: animation: shiftBackground 30s ease infinite; */
       border:var(--brd-width) solid var(--brd-strong);
       border-radius:18px;
       padding:20px clamp(14px,4vw,28px);
@@ -46,22 +38,30 @@
       outline:1px solid rgba(255,255,255,.06)
     }
 
-    /* Timer styling updated */
     #gameTimer{
       text-align:center;
-      font-size:16px; /* Increased size */
-      margin-bottom:16px; /* Increased margin */
-      /* REMOVED: font-family:'Courier New',monospace; */
-      letter-spacing:1.5px; /* Increased spacing */
+      font-size:16px;
+      margin-bottom:8px;
+      letter-spacing:1.5px;
       opacity:.95;
-      background: var(--panel-2); /* Use a panel color */
-      border: var(--brd-width) solid var(--brd); /* Use theme border */
-      padding: 8px 14px; /* Added padding */
-      border-radius: 12px; /* Rounded corners */
-      width: fit-content; /* Fit to content */
-      margin-left: auto; /* Center the block */
-      margin-right: auto; /* Center the block */
-      box-shadow: var(--shadow-1); /* Add shadow */
+      background: var(--panel-2);
+      border: var(--brd-width) solid var(--brd);
+      padding: 8px 14px;
+      border-radius: 12px;
+      width: fit-content;
+      margin-left: auto;
+      margin-right: auto;
+      box-shadow: var(--shadow-1);
+    }
+
+    .goal-text{
+      font-size:13px;
+      color:var(--muted);
+      text-align:center;
+      margin-bottom:14px;
+    }
+    .goal-text strong{
+      color:var(--money-text);
     }
 
     .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px clamp(12px,3vw,24px);margin-bottom:18px}
@@ -71,12 +71,10 @@
     .growth{margin-top:6px;font-size:12px;color:var(--muted)}
 
     .stat.money{background:var(--money-bg);border-color:var(--money-brd)}
-    /* Split label/value rules to apply new colors */
     .stat.money .label {color:var(--text);text-shadow:0 1px 0 rgba(0,0,0,.45)}
     .stat.money .value {color:var(--money-text);text-shadow:0 1px 0 rgba(0,0,0,.45)}
 
     .stat.credit{background:var(--credit-bg);border-color:var(--credit-brd)}
-    /* Split label/value rules to apply new colors */
     .stat.credit .label {color:var(--text);text-shadow:0 1px 0 rgba(0,0,0,.35)}
     .stat.credit .value {color:var(--credit-text);text-shadow:0 1px 0 rgba(0,0,0,.35)}
 
@@ -87,9 +85,6 @@
 
     .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:800;background:#223042;color:#ecf3fb;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06); vertical-align: middle;}
 
-    /* REMOVED: .per-second style block is no longer needed */
-
-    /* Color-coded badges for rates */
     .badge.badge-rate1 {
       background-color: var(--rate1-bg);
       color: var(--rate1-accent);
@@ -103,102 +98,92 @@
       box-shadow: none;
     }
 
-    /* New styles for Money and Credit badges */
     .badge.badge-money {
       background-color: var(--money-bg);
-      color: var(--money-text); /* Changed from var(--text) */
+      color: var(--money-text);
       border: 1px solid oklch(from var(--money-brd) l c h / 0.5);
       text-shadow: 0 1px 0 rgba(0,0,0,.45);
       box-shadow: none;
     }
     .badge.badge-credit {
       background-color: var(--credit-bg);
-      color: var(--credit-text); /* Changed from var(--text) */
+      color: var(--credit-text);
       border: 1px solid oklch(from var(--credit-brd) l c h / 0.5);
       text-shadow: 0 1px 0 rgba(0,0,0,.35);
       box-shadow: none;
     }
 
-    /*
-      Simplified Slider: 6 positions [2,4,6,8,10,12]
-      Narrower width and internal side padding to avoid hard-to-tap edges.
-    */
     .slider-wrap{margin-top:6px;display:flex;justify-content:center}
     .slider{position:relative;height:64px;user-select:none;width:min(420px,88%);margin:0 auto;padding:0 16px}
     .track{position:absolute;left:16px;right:16px;top:50%;transform:translateY(-50%);height:var(--track-h);border-radius:999px;background:linear-gradient(90deg,#1a2330,#213041 60%,#1a2330);outline:1px solid #2a3a4d;box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
 
-    /* Ticks layout - container is positioned, spans inside are positioned by JS */
     .ticks{
       position:absolute;
-      left:16px; /* Match track padding */
-      right:16px; /* Match track padding */
+      left:16px;
+      right:16px;
       font-size:12px;
       font-weight:900;
       text-shadow:0 1px 0 rgba(0,0,0,.45);
-      /* All layout properties (flex, grid) removed. */
     }
-    /* Individual tick spans are now styled with position:absolute by JS */
-
-    /* Rate 2 ticks (Top) - Switched to simple 'top' positioning */
     .ticks-top{
-      top: 2px; /* UPDATED: Was 5px, lifted text up */
+      top: 2px;
       color: var(--rate2-accent);
-      /* Removed bottom: ... */
     }
-    /* Rate 1 ticks (Bottom) - Switched to simple 'top' positioning */
     .ticks-bottom{
-      top: 47px; /* Places text top 47px from slider top, clear of thumb */
+      top: 47px;
       color: var(--rate1-accent);
     }
 
-    /* UPDATED: Removed var(--glow) from box-shadow */
     .thumb{position:absolute;top:50%;transform:translate(-50%,-50%);width:var(--thumb-size);height:var(--thumb-size);border-radius:6px;cursor:grab;box-shadow:0 2px 0 rgba(0,0,0,.35),inset 0 0 0 1px rgba(255,255,255,.12);background:linear-gradient(180deg,#c5d2df 0%,#9fb0c3 100%)}
 
-    .controls{margin-top:14px;display:flex;gap:10px; justify-content: center;}
-    /* UPDATED: Removed box-shadow (glow) */
-    button.ctrl{background:#0b1117;color:var(--text);border:var(--brd-width) solid #2a3a4d;border-radius:12px;padding:10px 12px;font-weight:800;font-size:14px;cursor:pointer;min-height:var(--tap)}
-    .ctrl-fixed{width:96px;padding:10px 12px;font-size:13px; flex-shrink: 0;} /* Added flex-shrink: 0 */
+    .helper-text{
+      font-size:12px;
+      color:var(--muted);
+      text-align:center;
+      margin-top:8px;
+    }
+    .helper-text.helper-slot{
+      margin-top:4px;
+    }
 
-    /* Swap button styling */
+    .controls{margin-top:14px;display:flex;gap:10px; justify-content: center;}
+    button.ctrl{background:#0b1117;color:var(--text);border:var(--brd-width) solid #2a3a4d;border-radius:12px;padding:10px 12px;font-weight:800;font-size:14px;cursor:pointer;min-height:var(--tap)}
+    .ctrl-fixed{width:96px;padding:10px 12px;font-size:13px; flex-shrink: 0;}
+
     #swapBtn {
       background: linear-gradient(90deg, var(--credit-bg) 0%, var(--credit-bg) 50%, var(--money-bg) 50%, var(--money-bg) 100%);
       border-color: var(--brd-strong);
       transition: background 0.2s, opacity 0.2s;
     }
     #swapBtn:disabled {
-      /* opacity: 0.5; */ /* REMOVED by user request */
-      cursor: not-allowed;
-      /* REMOVED: background and border-color to keep gradient */
-    }
-    /* NEW: Stop other buttons from fading when disabled during spin */
-    #upgradeBtn:disabled,
-    #pause:disabled,
-    #buyBtn:disabled {
-      opacity: 1;
       cursor: not-allowed;
     }
-    /* NEW: Style for Upgrade button */
+
     #upgradeBtn {
       background: oklch(28% .08 280);
       border-color: oklch(40% .1 280);
       color: oklch(90% .1 310);
     }
 
-    /* UPDATED: Removed box-shadow (glow) */
+    #upgradeBtn:disabled,
+    #pause:disabled,
+    #buyBtn:disabled {
+      opacity: 1;
+      cursor: not-allowed;
+    }
+
     button.ctrl-buy{background:var(--credit-bg);border-color:var(--credit-brd);color:var(--text);padding:14px 20px;font-size:17px;font-weight:900;}
-    /* UPDATED: Removed box-shadow (glow) */
     #spin.ctrl{background:var(--money-bg);border-color:var(--money-brd);color:var(--text);padding:14px 20px;font-size:17px;font-weight:900;}
 
     .slot{margin-top:20px;padding-top:16px;border-top:var(--brd-width) solid var(--brd)}
-    .slot h2{margin:0 0 10px 0;font-size:clamp(16px,2.6vw,22px);font-weight:900}
+    .slot h2{margin:0 0 6px 0;font-size:clamp(16px,2.6vw,22px);font-weight:900}
     .reels{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:12px 0}
     .reel{background:linear-gradient(180deg,#0d131a,#0b1016);border:var(--brd-width) solid var(--brd);border-radius:14px;height:96px;display:grid;place-items:center;font-size:clamp(40px,6vw,56px);box-shadow:var(--shadow-1),inset 0 1px 0 rgba(255,255,255,.06)}
 
-    /* Desktop layout for slot actions */
     .slot-actions {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 20px; /* Added gap between buttons */
+      gap: 20px;
       margin-top: 16px;
     }
     .action {
@@ -206,20 +191,37 @@
       flex-direction: column;
     }
     .action .ctrl {
-      width: 100%; /* Make buttons fill column */
+      width: 100%;
     }
     .cost, .buy-cost-text {
       font-size: 11px;
-      color: var(--text); /* UPDATED: Was var(--muted) */
+      color: var(--text);
       text-align: center;
       margin-top: 8px;
       line-height: 1.4;
     }
 
-    /* Modal styling + mobile-friendly actions */
-    /* UPDATED: z-index from 999 to 1001 to appear over confetti */
+    .summary{
+      margin-top:18px;
+      padding-top:12px;
+      border-top:var(--brd-width) dashed var(--brd);
+      font-size:13px;
+      color:var(--muted);
+    }
+    .summary h2{
+      font-size:15px;
+      margin:0 0 6px 0;
+      text-align:center;
+    }
+    .summary-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:6px 16px;
+    }
+    .summary-label{color:var(--muted);}
+    .summary-value{color:var(--text);font-weight:600;}
+
     .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:1001;backdrop-filter:blur(4px)}
-    /* UPDATED: Removed var(--glow) from box-shadow */
     .modal{background:#0f141a;border:var(--brd-width) solid #2a3a4d;border-radius:14px;width:min(420px,92vw);padding:18px;box-shadow:0 14px 36px rgba(0,0,0,.55)}
     .modal h3{margin:0 0 8px 0;font-size:18px; text-align: center;}
     .modal p{margin:0 0 12px 0;color:var(--muted);font-size:14px}
@@ -228,10 +230,9 @@
     .btn.primary{background:oklch(48% .13 160);border-color:oklch(62% .14 160);color:#fff}
     .btn.secondary{background:#0b1117;border-color:#2a3a4d;color:#e9f1fa}
 
-    /* NEW: Styles for Upgrade Modal */
     .modal .upgrade-option p {
       margin: 0 0 12px 0;
-      color: var(--text); /* Brighter than muted */
+      color: var(--text);
       font-size: 15px;
       line-height: 1.4;
       text-align: center;
@@ -243,14 +244,12 @@
     .modal .upgrade-option .btn {
       width: 100%;
     }
-    /* Make badges inside buttons smaller */
     .modal .upgrade-option .btn .badge {
       font-size: 11px;
       padding: 2px 7px;
       vertical-align: baseline;
       margin: 0 2px;
     }
-    /* Need to override badge-money/credit colors */
     .modal .upgrade-option .btn .badge.badge-rate1 {
       background-color: var(--rate1-bg);
       color: var(--rate1-accent);
@@ -261,7 +260,6 @@
       color: var(--rate2-accent);
       border: 1px solid oklch(from var(--rate2-accent) l c h / 0.5);
     }
-    /* ADDED: Styling for money badge in modal button */
     .modal .upgrade-option .btn .badge.badge-money {
       background-color: var(--money-bg);
       color: var(--money-text);
@@ -274,7 +272,6 @@
       border: 1px solid oklch(from var(--credit-brd) l c h / 0.5);
     }
 
-    /* NEW: Keyframes and class for win animation */
     @keyframes winPulse {
       0%, 100% {
         transform: scale(1);
@@ -286,11 +283,10 @@
       }
     }
     .reel-win {
-      animation: winPulse 0.5s 2; /* 0.5s duration, 2 iterations = 1 second */
-      border-color: #ffc800; /* Also change border color */
+      animation: winPulse 0.5s 2;
+      border-color: #ffc800;
     }
 
-    /* NEW: Style for confetti canvas */
     #confettiCanvas {
       position: fixed;
       top: 0;
@@ -298,35 +294,29 @@
       width: 100%;
       height: 100%;
       pointer-events: none;
-      z-index: 1000; /* Behind modal backdrop */
-      display: none; /* Hide by default */
+      z-index: 1000;
+      display: none;
     }
 
     @media (max-width:640px){
       .wrap{width:100vw}
-      /* UPDATED: Reduced bottom padding from 16px to 12px */
       .card{border-radius:0;padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
-      /* UPDATED: Slightly smaller font clamp */
-      .value{font-size:clamp(20px, 6.5vw, 28px); margin-top: 6px;} /* was clamp(22px, 7.5vw, 32px) and 8px */
-      /* UPDATED: Reduced gap and margin */
-      .slot-actions{grid-template-columns:1fr;gap:8px; margin-top: 12px;} /* was 10px, 16px */
-      /* UPDATED: Reduced margin-top */
-      .controls{gap:8px; margin-top: 10px; flex-wrap: wrap;} /* global was 14px, added wrap */
-      /* UPDATED: Reduced height and font clamp */
-      .reel{height:100px;font-size:clamp(44px,14vw,72px)} /* was 110px, clamp(48px,16vw,80px) */
+      .value{font-size:clamp(20px, 6.5vw, 28px); margin-top: 6px;}
+      .slot-actions{grid-template-columns:1fr;gap:8px; margin-top: 12px;}
+      .controls{gap:8px; margin-top: 10px; flex-wrap: wrap;}
+      .reel{height:100px;font-size:clamp(44px,14vw,72px)}
       .modal{width:min(500px,96vw)}
       .modal .actions{grid-template-columns:1fr}
       .btn{font-size:18px;padding:16px 18px;min-height:56px}
-
-      /* === ADDED RULES TO COMPRESS VERTICAL SPACING ON MOBILE === */
-      #gameTimer { margin-bottom: 10px; } /* was 16px */
-      .stats-grid { gap: 10px; margin-bottom: 12px; } /* was 14px, 18px */
-      .stat { padding: 12px 14px; } /* was 14px 16px */
-      .slider-wrap { margin-top: 4px; } /* was 6px */
-      .slot { margin-top: 12px; padding-top: 10px; } /* was 20px, 16px */
-      .slot h2 { margin-bottom: 8px; } /* was 10px */
-      .reels { gap: 8px; margin: 8px 0; } /* was 12px, 12px 0 */
-      .cost, .buy-cost-text { margin-top: 6px; } /* was 8px */
+      #gameTimer { margin-bottom: 6px; }
+      .goal-text{margin-bottom:10px;}
+      .stats-grid { gap: 10px; margin-bottom: 12px; }
+      .stat { padding: 12px 14px; }
+      .slider-wrap { margin-top: 4px; }
+      .slot { margin-top: 12px; padding-top: 10px; }
+      .slot h2 { margin-bottom: 6px; }
+      .reels { gap: 8px; margin: 8px 0; }
+      .cost, .buy-cost-text { margin-top: 6px; }
     }
     @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
   </style>
@@ -334,39 +324,35 @@
 <body>
   <div class="wrap">
     <div class="card">
-      <!-- UPDATED: Timer starts at 20:00 and counts down -->
       <div id="gameTimer">20:00</div>
+      <div class="goal-text">Goal: Finish the 20:00 timer with as much <strong>Money</strong> as you can. Use the slider to shape your economy, then risk it on the slot.</div>
 
       <div class="stats-grid">
         <div class="stat money"><div class="label">Money</div><div class="value" id="val1">$0.00</div></div>
         <div class="stat credit"><div class="label">Credit</div><div class="value" id="val2">0.00</div></div>
-        <!-- UPDATED: Removed 'per second' and 'growth' displays -->
         <div class="stat rate1"><div class="label">Rate 1</div><div class="value"><span id="rate1">3.00</span></div></div>
         <div class="stat rate2"><div class="label">Rate 2</div><div class="value"><span id="rate2">3.00</span></div></div>
       </div>
 
-      <!-- Simplified slider: 6 positions 2..12 step 2; narrowed and padded to avoid edge tapping issues -->
       <div class="slider-wrap">
         <div class="slider" id="uniSlider" role="group" aria-label="Growth slider">
           <div class="track"></div>
           <div class="thumb" id="thumb" role="slider" aria-valuemin="2" aria-valuemax="12" aria-valuenow="2" aria-valuetext="2" tabindex="0"></div>
-          <!-- Rate 2 ticks (descending) -->
           <div class="ticks ticks-top" id="ticksTop"></div>
-          <!-- Rate 1 ticks (ascending) -->
           <div class="ticks ticks-bottom" id="ticksBottom"></div>
         </div>
       </div>
+      <p class="helper-text" id="growthHelper">Top numbers: <strong>Rate 2</strong> growth · Bottom numbers: <strong>Rate 1</strong> growth. Move the slider to favor one rate or the other.</p>
 
       <div class="controls">
-        <!-- Reset button replaced with Swap button -->
         <button class="ctrl ctrl-fixed" id="swapBtn">Swap</button>
         <button class="ctrl ctrl-fixed" id="pause">Pause</button>
-        <!-- NEW: Upgrade button -->
         <button class="ctrl ctrl-fixed" id="upgradeBtn">Upgrade</button>
       </div>
 
       <section class="slot" aria-label="3-reel slot machine">
         <h2>3‑Reel Slot</h2>
+        <p class="helper-text helper-slot">Spins cost <strong>Money</strong> and <strong>Rate 1</strong>. 💎 symbols act as wildcards during special 6-spin bursts you buy with Credit and Rate 2.</p>
         <div class="reels">
           <div class="reel" id="reel1">🍒</div>
           <div class="reel" id="reel2">🍋</div>
@@ -375,724 +361,688 @@
         <div class="slot-actions">
           <div class="action">
             <button class="ctrl" id="spin">Spin</button>
-            <!-- Removed "Cost:" from initial HTML -->
             <span class="cost" id="spinCostMsg" aria-live="polite">$50 + 1.0 Rate Point</span>
           </div>
           <div class="action">
-            <!-- UPDATED: Button text changed -->
             <button class="ctrl ctrl-buy" id="buyBtn">Buy 6x 💎</button>
-            <!-- UPDATED: Text removed from cost message -->
             <span class="buy-cost-text" id="buyCostMsg" aria-live="polite">500c + 1.0 Rate 2 Point</span>
           </div>
+        </div>
+      </section>
+
+      <section class="summary" id="runSummary" aria-live="polite" hidden>
+        <h2>Run summary</h2>
+        <div class="summary-grid">
+          <div class="summary-label">Final Money</div><div class="summary-value" id="sumMoney">$0.00</div>
+          <div class="summary-label">Final Credit</div><div class="summary-value" id="sumCredit">0.00</div>
+          <div class="summary-label">Rate 1</div><div class="summary-value" id="sumRate1">0.00</div>
+          <div class="summary-label">Rate 2</div><div class="summary-value" id="sumRate2">0.00</div>
+          <div class="summary-label">Total Spins</div><div class="summary-value" id="sumSpins">0</div>
+          <div class="summary-label">Wins</div><div class="summary-value" id="sumWins">0</div>
         </div>
       </section>
     </div>
   </div>
 
-  <!-- Win modal with styled, larger choices (mobile-friendly) -->
   <div class="modal-backdrop" id="winModalBackdrop" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="winTitle" aria-describedby="winDesc">
       <h3 id="winTitle">3‑of‑a‑kind!</h3>
       <p id="winDesc">Choose your reward to continue.</p>
       <div class="actions">
         <button class="btn secondary" id="reduceBtn">Lower spin cost by 0.1 Rate Point</button>
-        <!-- ADDED: New button for reducing Rate 2 cost, hidden by default -->
         <button class="btn secondary" id="reduceRate2Btn" style="display: none;">Lower Buy cost by 1.0 Rate 2 Point</button>
         <button class="btn primary" id="takeMoneyBtn">Take $600</button>
       </div>
     </div>
   </div>
 
-  <!-- NEW: Upgrade modal -->
   <div class="modal-backdrop" id="upgradeModalBackdrop" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="upgradeTitle">
       <h3 id="upgradeTitle">Upgrades</h3>
-
-      <!-- Option 1: Reset Spin Cost -->
       <div class="upgrade-option">
         <p>Wins (without 💎) reset Spin cost to $50.<br><small>(One-time purchase)</small></p>
-        <!-- UPDATED: Cost display with badges -->
         <button class="btn primary" id="buyResetSpinCost">
           <span class="badge badge-money">$5,000</span> + <span class="badge badge-rate1">10 Rate 1</span>
         </button>
       </div>
-
       <hr style="border:0; border-top: 1px solid var(--brd); margin: 20px 0;">
-
-      <!-- Option 2: Double Slider Value -->
       <div class="upgrade-option">
-        <!-- UPDATED: Text changed to reflect new upgrade logic -->
         <p>Double a specific slider value.<br><small>(4 purchases total, follows a set sequence)</small></p>
-        <!-- UPDATED: Cost display with new price -->
         <button class="btn primary" id="buyDoubleSlider">
           <span class="badge badge-credit">15,000 C</span> + <span class="badge badge-rate2">15 Rate 2</span>
         </button>
       </div>
-
       <div class="actions" style="margin-top: 20px; grid-template-columns: 1fr;">
         <button class="btn secondary" id="closeUpgradeModal">Close</button>
       </div>
     </div>
   </div>
 
-  <!-- NEW: Confetti canvas -->
   <canvas id="confettiCanvas"></canvas>
 
   <script>
-    // Constants reflecting prior balance changes
-    const MAX_RATE = 199;
-    const SPIN_DOLLAR_COST = 50;
-    const BUY_DIAMOND_COST = 500;
-    const BUY_DIAMOND_RATE_COST = 1.0;
-    // UPDATED: Game time increased to 20 minutes
-    const GAME_DURATION_SECONDS = 20 * 60; // 20 minutes
+  // ===== CONFIG =====
+  const MAX_RATE = 199;
+  const SPIN_DOLLAR_COST = 50;
+  const BUY_DIAMOND_COST = 500;
+  const BUY_DIAMOND_RATE_COST = 1.0;
+  const GAME_DURATION_SECONDS = 20 * 60; // 20 minutes
 
-    // Simplified slider values
-    // UPDATED: Decoupled slider values and added tracking arrays for upgrades
-    let growStepsBottom = [2, 4, 6, 8, 10, 12];
-    let growStepsTop = [12, 10, 8, 6, 4, 2];
-    const STEP_COUNT = growStepsBottom.length; // 6
+  // Slider growth steps (bottom = Rate 1 growth, top = Rate 2 growth)
+  let growStepsBottom = [2, 4, 6, 8, 10, 12];
+  let growStepsTop = [12, 10, 8, 6, 4, 2];
+  const STEP_COUNT = growStepsBottom.length;
 
-    // REMOVED: Old 'doubled' arrays
-    // let doubledBottom = new Array(STEP_COUNT).fill(false);
-    // let doubledTop = new Array(STEP_COUNT).fill(false);
+  // ===== STATE =====
+  let value1 = 0, value2 = 0, rate1 = 3, rate2 = 3, gameTimeSeconds = GAME_DURATION_SECONDS;
+  let grow1 = growStepsBottom[0];
+  let grow2 = growStepsTop[0];
+  let swapUses = 2;
 
-    // State
-    // Timer now starts at 20 minutes and counts down
-    let value1 = 0, value2 = 0, rate1 = 3, rate2 = 3, gameTimeSeconds = GAME_DURATION_SECONDS;
-    let grow1 = growStepsBottom[0];
-    let grow2 = growStepsTop[0]; // complementary as before
-    let swapUses = 2; // CHANGED: Added swap uses counter
+  let spinDollarCost = SPIN_DOLLAR_COST;
+  let spinRateCost = 1.0;
+  let winMoneyReward = 600;
 
-    let spinDollarCost = SPIN_DOLLAR_COST;
-    let spinRateCost = 1.0;
-    let winMoneyReward = 600; // +600 after every win regardless of choice
+  let buyDiamondCost = BUY_DIAMOND_COST;
+  let buyDiamondRateCost = BUY_DIAMOND_RATE_COST;
 
-    let buyDiamondCost = BUY_DIAMOND_COST;
-    let buyDiamondRateCost = BUY_DIAMOND_RATE_COST;
+  const baseSymbols=['🍒','🍋','🍇','🍉','🍊'];
+  let symbols=[...baseSymbols];
+  let diamondCount=0;
+  let running=true, modalOpen=false;
 
-    const baseSymbols=['🍒','🍋','🍇','🍉','🍊'];
-    let symbols=[...baseSymbols];
-    let diamondCount=0;
-    let running=true, modalOpen=false;
+  let isSpinCostResetPurchased = false;
+  let doubleUpgradeLevel = 0;
 
-    // NEW: State for upgrades
-    let isSpinCostResetPurchased = false;
-    // NEW: State for sequential slider upgrade
-    let doubleUpgradeLevel = 0; // Tracks progress from 0 to 4
+  let totalSpins = 0;
+  let totalWins = 0;
 
-    // Elements
-    const gameTimerEl=document.getElementById('gameTimer');
-    const val1El=document.getElementById('val1');
-    const val2El=document.getElementById('val2');
-    const rate1El=document.getElementById('rate1');
-    const rate2El=document.getElementById('rate2');
-    // REMOVED: grow1El and grow2El are no longer in the HTML
-    // const grow1El=document.getElementById('grow1');
-    // const grow2El=document.getElementById('grow2');
+  // ===== DOM LOOKUPS =====
+  const gameTimerEl=document.getElementById('gameTimer');
+  const val1El=document.getElementById('val1');
+  const val2El=document.getElementById('val2');
+  const rate1El=document.getElementById('rate1');
+  const rate2El=document.getElementById('rate2');
 
-    const slider=document.getElementById('uniSlider');
-    const thumb=document.getElementById('thumb');
-    const ticksTopEl = document.getElementById('ticksTop'); // Ticks for Rate 2
-    const ticksBottomEl=document.getElementById('ticksBottom'); // Ticks for Rate 1
+  const slider=document.getElementById('uniSlider');
+  const thumb=document.getElementById('thumb');
+  const ticksTopEl = document.getElementById('ticksTop');
+  const ticksBottomEl=document.getElementById('ticksBottom');
 
-    const swapBtn = document.getElementById('swapBtn'); // Was resetBtn
-    const pauseBtn=document.getElementById('pause');
-    const spinBtn=document.getElementById('spin');
-    const spinCostMsg=document.getElementById('spinCostMsg');
-    const buyBtn=document.getElementById('buyBtn');
-    const buyCostMsg=document.getElementById('buyCostMsg');
+  const swapBtn = document.getElementById('swapBtn');
+  const pauseBtn=document.getElementById('pause');
+  const spinBtn=document.getElementById('spin');
+  const spinCostMsg=document.getElementById('spinCostMsg');
+  const buyBtn=document.getElementById('buyBtn');
+  const buyCostMsg=document.getElementById('buyCostMsg');
 
-    const backdrop=document.getElementById('winModalBackdrop');
-    const takeMoneyBtn=document.getElementById('takeMoneyBtn');
-    const reduceBtn=document.getElementById('reduceBtn');
-    // ADDED: Get new button element
-    const reduceRate2Btn=document.getElementById('reduceRate2Btn');
+  const backdrop=document.getElementById('winModalBackdrop');
+  const takeMoneyBtn=document.getElementById('takeMoneyBtn');
+  const reduceBtn=document.getElementById('reduceBtn');
+  const reduceRate2Btn=document.getElementById('reduceRate2Btn');
 
-    // NEW: Upgrade modal elements
-    const upgradeBtn = document.getElementById('upgradeBtn');
-    const upgradeModalBackdrop = document.getElementById('upgradeModalBackdrop');
-    const closeUpgradeModalBtn = document.getElementById('closeUpgradeModal');
-    const buyResetSpinCostBtn = document.getElementById('buyResetSpinCost');
-    const buyDoubleSliderBtn = document.getElementById('buyDoubleSlider');
+  const upgradeBtn = document.getElementById('upgradeBtn');
+  const upgradeModalBackdrop = document.getElementById('upgradeModalBackdrop');
+  const closeUpgradeModalBtn = document.getElementById('closeUpgradeModal');
+  const buyResetSpinCostBtn = document.getElementById('buyResetSpinCost');
+  const buyDoubleSliderBtn = document.getElementById('buyDoubleSlider');
 
-    // NEW: Confetti canvas elements
-    const confettiCanvas = document.getElementById('confettiCanvas');
-    const confettiCtx = confettiCanvas.getContext('2d');
-    let confettiParticles = [];
-    let confettiAnimationId;
+  const confettiCanvas = document.getElementById('confettiCanvas');
+  const confettiCtx = confettiCanvas.getContext('2d');
+  let confettiParticles = [];
+  let confettiAnimationId;
 
-    // Utils
-    const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
-    const fmt=(n)=>n.toFixed(2);
-    const fmtRatePts=(x)=>x.toFixed(1);
-    const fmtTime=(t)=>{const s=Math.floor(t),m=Math.floor(s/60),sec=s%60;return [m,sec].map(v=>String(v).padStart(2,'0')).join(':')};
+  const summaryEl = document.getElementById('runSummary');
+  const sumMoneyEl = document.getElementById('sumMoney');
+  const sumCreditEl = document.getElementById('sumCredit');
+  const sumRate1El = document.getElementById('sumRate1');
+  const sumRate2El = document.getElementById('sumRate2');
+  const sumSpinsEl = document.getElementById('sumSpins');
+  const sumWinsEl = document.getElementById('sumWins');
 
-    // NEW: Confetti animation functions
-    function startConfetti() {
-      confettiCanvas.style.display = 'block';
-      confettiParticles = [];
-      const particleCount = 200;
-      const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50', '#8bc34a', '#cddc39', '#ffeb3b', '#ffc107', '#ff9800', '#ff5722'];
+  const reelEls=[document.getElementById('reel1'),document.getElementById('reel2'),document.getElementById('reel3')];
 
-      confettiCanvas.width = window.innerWidth;
-      confettiCanvas.height = window.innerHeight;
+  // ===== UTILS =====
+  const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
+  const fmt=(n)=>n.toFixed(2);
+  const fmtRatePts=(x)=>x.toFixed(1);
+  const fmtTime=(t)=>{const s=Math.floor(t),m=Math.floor(s/60),sec=s%60;return [m,sec].map(v=>String(v).padStart(2,'0')).join(':')};
 
-      for (let i = 0; i < particleCount; i++) {
-        confettiParticles.push({
-          x: Math.random() * confettiCanvas.width,
-          y: Math.random() * confettiCanvas.height - confettiCanvas.height, // Start above screen
-          size: Math.random() * 5 + 2,
-          color: colors[Math.floor(Math.random() * colors.length)],
-          vx: Math.random() * 6 - 3, // Horizontal drift
-          vy: Math.random() * 5 + 3, // Fall down
-          opacity: 1,
-        });
-      }
-      animateConfetti();
-    }
+  // ===== CONFETTI =====
+  function startConfetti() {
+    confettiCanvas.style.display = 'block';
+    confettiParticles = [];
+    const particleCount = 200;
+    const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50', '#8bc34a', '#cddc39', '#ffeb3b', '#ffc107', '#ff9800', '#ff5722'];
 
-    function animateConfetti() {
-      confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+    confettiCanvas.width = window.innerWidth;
+    confettiCanvas.height = window.innerHeight;
 
-      confettiParticles.forEach((p, index) => {
-        p.x += p.vx;
-        p.y += p.vy;
-        p.opacity -= 0.005; // Fade out slowly
-
-        if (p.y > confettiCanvas.height || p.opacity <= 0) {
-          confettiParticles.splice(index, 1); // Remove particle
-        } else {
-          confettiCtx.globalAlpha = p.opacity;
-          confettiCtx.fillStyle = p.color;
-          confettiCtx.fillRect(p.x, p.y, p.size, p.size * 2); // Rectangular confetti
-          confettiCtx.globalAlpha = 1;
-        }
+    for (let i = 0; i < particleCount; i++) {
+      confettiParticles.push({
+        x: Math.random() * confettiCanvas.width,
+        y: Math.random() * confettiCanvas.height - confettiCanvas.height,
+        size: Math.random() * 5 + 2,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        vx: Math.random() * 6 - 3,
+        vy: Math.random() * 5 + 3,
+        opacity: 1,
       });
+    }
+    animateConfetti();
+  }
 
-      if (confettiParticles.length > 0) {
-        confettiAnimationId = requestAnimationFrame(animateConfetti);
+  function animateConfetti() {
+    confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+
+    confettiParticles.forEach((p, index) => {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.opacity -= 0.005;
+
+      if (p.y > confettiCanvas.height || p.opacity <= 0) {
+        confettiParticles.splice(index, 1);
       } else {
-        stopConfetti(); // Auto-stop when all particles are gone
-      }
-    }
-
-    function stopConfetti() {
-      if (confettiAnimationId) {
-        cancelAnimationFrame(confettiAnimationId);
-      }
-      confettiCanvas.style.display = 'none';
-      confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
-      confettiParticles = [];
-    }
-
-    // Resize confetti canvas with window
-    window.addEventListener('resize', () => {
-      if (confettiCanvas.style.display === 'block') {
-        confettiCanvas.width = window.innerWidth;
-        confettiCanvas.height = window.innerHeight;
+        confettiCtx.globalAlpha = p.opacity;
+        confettiCtx.fillStyle = p.color;
+        confettiCtx.fillRect(p.x, p.y, p.size, p.size * 2);
+        confettiCtx.globalAlpha = 1;
       }
     });
-    // END NEW Confetti functions
 
-
-    function updateCostMsg(){
-      // UPDATED: Moved rate cost text inside the badge
-      spinCostMsg.innerHTML = `<span class="badge badge-money">$${spinDollarCost}</span> + <span class="badge badge-rate1">${fmtRatePts(spinRateCost)} Rate 1</span>`;
+    if (confettiParticles.length > 0) {
+      confettiAnimationId = requestAnimationFrame(animateConfetti);
+    } else {
+      stopConfetti();
     }
-    function updateBuyBtnUI(){
-      if(diamondCount>0){ buyCostMsg.textContent=`💎 Active (${diamondCount} left)`; buyBtn.disabled=true; }
-      else{
-        // UPDATED: Moved rate cost text inside the badge and removed redundant text
-        buyCostMsg.innerHTML=`<span class="badge badge-credit">${buyDiamondCost}c</span> + <span class="badge badge-rate2">${buyDiamondRateCost.toFixed(1)} Rate 2</span>`;
-        buyBtn.disabled=false;
-      }
+  }
+
+  function stopConfetti() {
+    if (confettiAnimationId) {
+      cancelAnimationFrame(confettiAnimationId);
     }
-    function updateReadout(){
-      // Timer display is handled by the tick loop to show "GAME OVER"
-      if (gameTimeSeconds > 0 || running) {
-        gameTimerEl.textContent = fmtTime(gameTimeSeconds);
-      }
-      val1El.textContent=`$${fmt(value1)}`;
-      val2El.textContent=fmt(value2);
-      rate1El.textContent=fmt(rate1);
-      rate2El.textContent=fmt(rate2);
-      // REMOVED: grow1El and grow2El references
-      // grow1El.textContent=grow1;
-      // grow2El.textContent=grow2;
+    confettiCanvas.style.display = 'none';
+    confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+    confettiParticles = [];
+  }
+
+  window.addEventListener('resize', () => {
+    if (confettiCanvas.style.display === 'block') {
+      confettiCanvas.width = window.innerWidth;
+      confettiCanvas.height = window.innerHeight;
     }
+  });
 
-    // Slider helpers
-    // UPDATED: To use decoupled growStepsBottom and growStepsTop arrays
-    function buildTicks(){
-      ticksBottomEl.innerHTML='';
-      ticksTopEl.innerHTML = ''; // Clear top ticks
+  // ===== UI UPDATE HELPERS =====
+  function updateCostMsg(){
+    spinCostMsg.innerHTML = `<span class="badge badge-money">$${spinDollarCost}</span> + <span class="badge badge-rate1">${fmtRatePts(spinRateCost)} Rate 1</span>`;
+  }
 
-      const growStepsDesc = [...growStepsTop]; // Use the new top array
-
-      // Function to create and position ticks
-      const createTicks = (parentElement, steps) => {
-        steps.forEach((value, idx) => {
-          const s = document.createElement('span');
-          s.textContent = value;
-          s.style.position = 'absolute'; // Position absolutely
-
-          const pct = (STEP_COUNT <= 1) ? 0 : (idx / (STEP_COUNT - 1));
-          s.style.left = `${pct * 100}%`;
-
-          // Align text: 0% at start, 100% at end, all others centered
-          if (idx === 0) {
-            s.style.transform = 'translateX(0)'; // Align start
-          } else if (idx === STEP_COUNT - 1) {
-            s.style.transform = 'translateX(-100%)'; // Align end
-          } else {
-            s.style.transform = 'translateX(-50%)'; // Align center
-          }
-          parentElement.appendChild(s);
-        });
-      };
-
-      createTicks(ticksBottomEl, growStepsBottom); // Rate 1 ticks (bottom)
-      createTicks(ticksTopEl, growStepsDesc); // Rate 2 ticks (top)
+  function updateBuyBtnUI(){
+    if(diamondCount>0){
+      buyCostMsg.textContent=`💎 Active (${diamondCount} left)`;
+      buyBtn.disabled=true;
+    } else {
+      buyCostMsg.innerHTML=`<span class="badge badge-credit">${buyDiamondCost}c</span> + <span class="badge badge-rate2">${buyDiamondRateCost.toFixed(1)} Rate 2</span>`;
+      buyBtn.disabled=false;
     }
+  }
 
-    function sliderInnerRect(){
-      const r=slider.getBoundingClientRect();
-      const left=r.left+16, right=r.right-16, width=Math.max(0,right-left);
-      return {left,right,width};
+  function updateReadout(){
+    if (gameTimeSeconds > 0 || running) {
+      gameTimerEl.textContent = fmtTime(gameTimeSeconds);
     }
+    val1El.textContent=`$${fmt(value1)}`;
+    val2El.textContent=fmt(value2);
+    rate1El.textContent=fmt(rate1);
+    rate2El.textContent=fmt(rate2);
+  }
 
-    function positionHandleByIndex(idx){
-      const {left,width}=sliderInnerRect();
-      const pct = (STEP_COUNT<=1)?0: idx/(STEP_COUNT-1);
-      const x = left + pct*width;
-      thumb.style.left = `${x - slider.getBoundingClientRect().left}px`;
-      const val = growStepsBottom[idx]; // Use bottom array for ARIA value
-      thumb.setAttribute('aria-valuenow', String(val));
-      thumb.setAttribute('aria-valuetext', String(val));
-    }
+  function showSummary(){
+    if(!summaryEl) return;
+    sumMoneyEl.textContent = `$${fmt(value1)}`;
+    sumCreditEl.textContent = fmt(value2);
+    sumRate1El.textContent = fmt(rate1);
+    sumRate2El.textContent = fmt(rate2);
+    sumSpinsEl.textContent = String(totalSpins);
+    sumWinsEl.textContent = String(totalWins);
+    summaryEl.hidden = false;
+  }
 
-    function nearestIndexFromClientX(xc){
-      const {left,width}=sliderInnerRect();
-      const x = clamp(xc-left,0,width);
-      const pct = width===0?0:x/width;
-      return clamp(Math.round(pct*(STEP_COUNT-1)),0,STEP_COUNT-1);
-    }
+  // ===== SLIDER =====
+  function buildTicks(){
+    ticksBottomEl.innerHTML='';
+    ticksTopEl.innerHTML = '';
 
-    // UPDATED: To use decoupled arrays
-    function setGrowthByIndex(idx){
-      const v1 = growStepsBottom[idx];
-      const v2 = growStepsTop[idx];
-      grow1=v1; grow2=v2;
-      positionHandleByIndex(idx);
-      // REMOVED: grow1El and grow2El references
-      // grow1El.textContent=grow1;
-      // grow2El.textContent=grow2;
-    }
+    const growStepsDesc = [...growStepsTop];
 
-    // UPDATED: To use growStepsBottom
-    function currentIndex(){ return Math.max(0, growStepsBottom.indexOf(grow1)); }
+    const createTicks = (parentElement, steps) => {
+      steps.forEach((value, idx) => {
+        const s = document.createElement('span');
+        s.textContent = value;
+        s.style.position = 'absolute';
 
-    function makeSliderInteractive(){
-      buildTicks();
-      setGrowthByIndex(0);
-      let dragging=false;
-      const onDown=(ev)=>{ if(modalOpen) return; dragging=true; thumb.focus(); const c=('touches'in ev)?ev.touches[0].clientX:ev.clientX; setGrowthByIndex(nearestIndexFromClientX(c)); ev.preventDefault(); };
-      const onMove=(ev)=>{ if(!dragging || modalOpen) return; const c=('touches'in ev)?ev.touches[0].clientX:ev.clientX; setGrowthByIndex(nearestIndexFromClientX(c)); };
-      const onUp=()=>{ dragging=false; };
-      thumb.addEventListener('mousedown', onDown);
-      thumb.addEventListener('touchstart', onDown, {passive:false});
-      window.addEventListener('mousemove', onMove);
-      window.addEventListener('touchmove', onMove, {passive:false});
-      window.addEventListener('mouseup', onUp);
-      window.addEventListener('touchend', onUp);
-      // Tap anywhere on slider, not only thumb
-      slider.addEventListener('mousedown', (ev)=>{ if(ev.target===thumb || modalOpen) return; const c=ev.clientX; setGrowthByIndex(nearestIndexFromClientX(c)); });
-      slider.addEventListener('touchstart', (ev)=>{ if(ev.target===thumb || modalOpen) return; const c=ev.touches[0].clientX; setGrowthByIndex(nearestIndexFromClientX(c)); }, {passive:false});
-      // Keyboard
-      thumb.addEventListener('keydown',(e)=>{
-        if(modalOpen) return;
-        let idx=currentIndex();
-        if(e.key==='ArrowLeft'){ idx=clamp(idx-1,0,STEP_COUNT-1); setGrowthByIndex(idx); e.preventDefault(); }
-        if(e.key==='ArrowRight'){ idx=clamp(idx+1,0,STEP_COUNT-1); setGrowthByIndex(idx); e.preventDefault(); }
-        if(e.key==='Home'){ setGrowthByIndex(0); e.preventDefault(); }
-        if(e.key==='End'){ setGrowthByIndex(STEP_COUNT-1); e.preventDefault(); }
-      });
-      const ro=new ResizeObserver(()=> positionHandleByIndex(currentIndex()));
-      ro.observe(slider);
-    }
+        const pct = (STEP_COUNT <= 1) ? 0 : (idx / (STEP_COUNT - 1));
+        s.style.left = `${pct * 100}%`;
 
-    // Modal helpers
-    // UPDATED: Modified function to show different buttons based on spinRateCost
-    function openWinChoice(){
-      return new Promise((resolve)=>{
-        modalOpen=true;
-        takeMoneyBtn.textContent=`Take $${winMoneyReward}`;
-
-        // NEW: Show/hide buttons based on spinRateCost
-        let focusables;
-        if (spinRateCost <= 0) {
-          reduceBtn.style.display = 'none';
-          reduceRate2Btn.style.display = 'block';
-          focusables = [reduceRate2Btn, takeMoneyBtn];
+        if (idx === 0) {
+          s.style.transform = 'translateX(0)';
+        } else if (idx === STEP_COUNT - 1) {
+          s.style.transform = 'translateX(-100%)';
         } else {
-          reduceBtn.style.display = 'block';
-          reduceRate2Btn.style.display = 'none';
-          focusables = [reduceBtn, takeMoneyBtn];
+          s.style.transform = 'translateX(-50%)';
         }
-        // END NEW
-
-        backdrop.style.display='flex';
-        backdrop.setAttribute('aria-hidden','false');
-
-        let idx=0; focusables[idx].focus();
-        function onKey(e){ if(e.key==='Tab'){ e.preventDefault(); idx=(idx+(e.shiftKey?-1:1)+focusables.length)%focusables.length; focusables[idx].focus(); } if(e.key==='Escape'){ e.preventDefault(); } }
-        document.addEventListener('keydown', onKey);
-
-        function cleanup(){
-          document.removeEventListener('keydown', onKey);
-          backdrop.style.display='none';
-          backdrop.setAttribute('aria-hidden','true');
-          modalOpen=false;
-          // Reset button display for next time
-          reduceBtn.style.display = 'block';
-          reduceRate2Btn.style.display = 'none';
-        }
-
-        reduceBtn.onclick=()=>{ cleanup(); resolve('reduce'); };
-        // ADDED: Handler for new button
-        reduceRate2Btn.onclick=()=>{ cleanup(); resolve('reduceRate2'); };
-        takeMoneyBtn.onclick=()=>{ cleanup(); resolve('money'); };
+        parentElement.appendChild(s);
       });
-    }
+    };
 
-    // NEW: Upgrade modal open/close
-    // UPDATED: To handle new sequential upgrade
-    function openUpgradeModal() {
-      modalOpen = true; // Use global modal flag
-      upgradeModalBackdrop.style.display = 'flex';
-      upgradeModalBackdrop.setAttribute('aria-hidden', 'false');
+    createTicks(ticksBottomEl, growStepsBottom);
+    createTicks(ticksTopEl, growStepsDesc);
+  }
 
-      // Update button states
-      buyResetSpinCostBtn.disabled = isSpinCostResetPurchased;
-      if (isSpinCostResetPurchased) {
-        buyResetSpinCostBtn.textContent = "Purchased";
+  function sliderInnerRect(){
+    const r=slider.getBoundingClientRect();
+    const left=r.left+16, right=r.right-16, width=Math.max(0,right-left);
+    return {left,right,width};
+  }
+
+  function positionHandleByIndex(idx){
+    const {left,width}=sliderInnerRect();
+    const pct = (STEP_COUNT<=1)?0: idx/(STEP_COUNT-1);
+    const x = left + pct*width;
+    thumb.style.left = `${x - slider.getBoundingClientRect().left}px`;
+    const val = growStepsBottom[idx];
+    thumb.setAttribute('aria-valuenow', String(val));
+    thumb.setAttribute('aria-valuetext', String(val));
+  }
+
+  function nearestIndexFromClientX(xc){
+    const {left,width}=sliderInnerRect();
+    const x = clamp(xc-left,0,width);
+    const pct = width===0?0:x/width;
+    return clamp(Math.round(pct*(STEP_COUNT-1)),0,STEP_COUNT-1);
+  }
+
+  function setGrowthByIndex(idx){
+    const v1 = growStepsBottom[idx];
+    const v2 = growStepsTop[idx];
+    grow1=v1; grow2=v2;
+    positionHandleByIndex(idx);
+  }
+
+  function currentIndex(){ return Math.max(0, growStepsBottom.indexOf(grow1)); }
+
+  function makeSliderInteractive(){
+    buildTicks();
+    setGrowthByIndex(0);
+    let dragging=false;
+    const onDown=(ev)=>{ if(modalOpen) return; dragging=true; thumb.focus(); const c=('touches'in ev)?ev.touches[0].clientX:ev.clientX; setGrowthByIndex(nearestIndexFromClientX(c)); ev.preventDefault(); };
+    const onMove=(ev)=>{ if(!dragging || modalOpen) return; const c=('touches'in ev)?ev.touches[0].clientX:ev.clientX; setGrowthByIndex(nearestIndexFromClientX(c)); };
+    const onUp=()=>{ dragging=false; };
+    thumb.addEventListener('mousedown', onDown);
+    thumb.addEventListener('touchstart', onDown, {passive:false});
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('touchmove', onMove, {passive:false});
+    window.addEventListener('mouseup', onUp);
+    window.addEventListener('touchend', onUp);
+    slider.addEventListener('mousedown', (ev)=>{ if(ev.target===thumb || modalOpen) return; const c=ev.clientX; setGrowthByIndex(nearestIndexFromClientX(c)); });
+    slider.addEventListener('touchstart', (ev)=>{ if(ev.target===thumb || modalOpen) return; const c=ev.touches[0].clientX; setGrowthByIndex(nearestIndexFromClientX(c)); }, {passive:false});
+    thumb.addEventListener('keydown',(e)=>{
+      if(modalOpen) return;
+      let idx=currentIndex();
+      if(e.key==='ArrowLeft'){ idx=clamp(idx-1,0,STEP_COUNT-1); setGrowthByIndex(idx); e.preventDefault(); }
+      if(e.key==='ArrowRight'){ idx=clamp(idx+1,0,STEP_COUNT-1); setGrowthByIndex(idx); e.preventDefault(); }
+      if(e.key==='Home'){ setGrowthByIndex(0); e.preventDefault(); }
+      if(e.key==='End'){ setGrowthByIndex(STEP_COUNT-1); e.preventDefault(); }
+    });
+    const ro=new ResizeObserver(()=> positionHandleByIndex(currentIndex()));
+    ro.observe(slider);
+  }
+
+  // ===== MODALS =====
+  function openWinChoice(){
+    return new Promise((resolve)=>{
+      modalOpen=true;
+      takeMoneyBtn.textContent=`Take $${winMoneyReward}`;
+
+      let focusables;
+      if (spinRateCost <= 0) {
+        reduceBtn.style.display = 'none';
+        reduceRate2Btn.style.display = 'block';
+        focusables = [reduceRate2Btn, takeMoneyBtn];
       } else {
-        // UPDATED: Cost display with badges
-        buyResetSpinCostBtn.innerHTML = `<span class="badge badge-money">$5,000</span> + <span class="badge badge-rate1">10 Rate 1</span>`;
+        reduceBtn.style.display = 'block';
+        reduceRate2Btn.style.display = 'none';
+        focusables = [reduceBtn, takeMoneyBtn];
       }
 
-      // UPDATED: Check sequential upgrade level
-      let remaining = doubleUpgradeLevel < 4;
-      buyDoubleSliderBtn.disabled = !remaining;
-      if (!remaining) {
-        buyDoubleSliderBtn.textContent = "Maxed Out";
-      } else {
-        // UPDATED: Cost display with new price
-        buyDoubleSliderBtn.innerHTML = `<span class="badge badge-credit">15,000 C</span> + <span class="badge badge-rate2">15 Rate 2</span>`;
+      backdrop.style.display='flex';
+      backdrop.setAttribute('aria-hidden','false');
+
+      let idx=0; focusables[idx].focus();
+      function onKey(e){ if(e.key==='Tab'){ e.preventDefault(); idx=(idx+(e.shiftKey?-1:1)+focusables.length)%focusables.length; focusables[idx].focus(); } if(e.key==='Escape'){ e.preventDefault(); } }
+      document.addEventListener('keydown', onKey);
+
+      function cleanup(){
+        document.removeEventListener('keydown', onKey);
+        backdrop.style.display='none';
+        backdrop.setAttribute('aria-hidden','true');
+        modalOpen=false;
+        reduceBtn.style.display = 'block';
+        reduceRate2Btn.style.display = 'none';
       }
 
-      closeUpgradeModalBtn.focus();
+      reduceBtn.onclick=()=>{ cleanup(); resolve('reduce'); };
+      reduceRate2Btn.onclick=()=>{ cleanup(); resolve('reduceRate2'); };
+      takeMoneyBtn.onclick=()=>{ cleanup(); resolve('money'); };
+    });
+  }
+
+  function openUpgradeModal() {
+    modalOpen = true;
+    upgradeModalBackdrop.style.display = 'flex';
+    upgradeModalBackdrop.setAttribute('aria-hidden', 'false');
+
+    buyResetSpinCostBtn.disabled = isSpinCostResetPurchased;
+    if (isSpinCostResetPurchased) {
+      buyResetSpinCostBtn.textContent = "Purchased";
+    } else {
+      buyResetSpinCostBtn.innerHTML = `<span class="badge badge-money">$5,000</span> + <span class="badge badge-rate1">10 Rate 1</span>`;
     }
 
-    function closeUpgradeModal() {
-      modalOpen = false;
-      upgradeModalBackdrop.style.display = 'none';
-      upgradeModalBackdrop.setAttribute('aria-hidden', 'true');
+    let remaining = doubleUpgradeLevel < 4;
+    buyDoubleSliderBtn.disabled = !remaining;
+    if (!remaining) {
+      buyDoubleSliderBtn.textContent = "Maxed Out";
+    } else {
+      buyDoubleSliderBtn.innerHTML = `<span class="badge badge-credit">15,000 C</span> + <span class="badge badge-rate2">15 Rate 2</span>`;
     }
 
-    // Slot logic
-    const reelEls=[document.getElementById('reel1'),document.getElementById('reel2'),document.getElementById('reel3')];
-    const visualSymbol=()=>symbols[Math.floor(Math.random()*symbols.length)];
+    closeUpgradeModalBtn.focus();
+  }
 
-    // NEW "Softer" Spin Animation Function
-    function animateReel(reelEl, finalSymbol, duration) {
-      return new Promise(resolve => {
-        const startTime = performance.now();
-        let lastUpdate = startTime;
-        
-        // Spin speed parameters
-        const minInterval = 50; // 50ms (fast)
-        const maxInterval = 200; // 200ms (slow)
+  function closeUpgradeModal() {
+    modalOpen = false;
+    upgradeModalBackdrop.style.display = 'none';
+    upgradeModalBackdrop.setAttribute('aria-hidden', 'true');
+  }
 
-        // Add blur/opacity effect
-        reelEl.style.transition = 'filter 0.1s, opacity 0.1s';
-        reelEl.style.filter = 'blur(3px)';
-        reelEl.style.opacity = '0.8';
+  // ===== SLOT / SPIN =====
+  const visualSymbol=()=>symbols[Math.floor(Math.random()*symbols.length)];
 
-        function spin(currentTime) {
-          const elapsedTime = currentTime - startTime;
-          let progress = elapsedTime / duration;
-          if (progress > 1) progress = 1;
+  function animateReel(reelEl, finalSymbol, duration) {
+    return new Promise(resolve => {
+      const startTime = performance.now();
+      let lastUpdate = startTime;
+      const minInterval = 50;
+      const maxInterval = 200;
 
-          // Easing function: (1 - (1 - x)^3) -> Cubic Ease-Out
-          // This means progress_easeout starts fast and slows down
-          const progress_easeout = 1 - Math.pow(1 - progress, 3);
-          
-          // The interval *between* flickers should increase
-          const currentInterval = minInterval + (maxInterval - minInterval) * progress_easeout;
+      reelEl.style.transition = 'filter 0.1s, opacity 0.1s';
+      reelEl.style.filter = 'blur(3px)';
+      reelEl.style.opacity = '0.8';
 
-          if (currentTime - lastUpdate > currentInterval) {
-            reelEl.textContent = visualSymbol(); // Update symbol
-            lastUpdate = currentTime;
-          }
+      function spin(currentTime) {
+        const elapsedTime = currentTime - startTime;
+        let progress = elapsedTime / duration;
+        if (progress > 1) progress = 1;
+        const progress_easeout = 1 - Math.pow(1 - progress, 3);
+        const currentInterval = minInterval + (maxInterval - minInterval) * progress_easeout;
 
-          if (progress < 1) {
-            requestAnimationFrame(spin);
-          } else {
-            // Stop
-            reelEl.style.transition = 'filter 0.3s, opacity 0.3s'; // Slower transition back
-            reelEl.style.filter = 'blur(0px)';
-            reelEl.style.opacity = '1';
-            reelEl.textContent = finalSymbol; // Set final symbol
-            resolve();
-          }
+        if (currentTime - lastUpdate > currentInterval) {
+          reelEl.textContent = visualSymbol();
+          lastUpdate = currentTime;
         }
-        requestAnimationFrame(spin);
-      });
+
+        if (progress < 1) {
+          requestAnimationFrame(spin);
+        } else {
+          reelEl.style.transition = 'filter 0.3s, opacity 0.3s';
+          reelEl.style.filter = 'blur(0px)';
+          reelEl.style.opacity = '1';
+          reelEl.textContent = finalSymbol;
+          resolve();
+        }
+      }
+      requestAnimationFrame(spin);
+    });
+  }
+
+  function randomSymbol(){
+    let s=symbols[Math.floor(Math.random()*symbols.length)];
+    if(s==='💎'){
+      if(diamondCount>0){
+        diamondCount--;
+        updateBuyBtnUI();
+        if(diamondCount===0) symbols=symbols.filter(x=>x!=='💎');
+        return '💎';
+      } else {
+        return baseSymbols[Math.floor(Math.random()*baseSymbols.length)];
+      }
+    }
+    return s;
+  }
+
+  async function spinOnce(){
+    if(!spinBtn || spinBtn.disabled || modalOpen) return;
+    if(value1 < spinDollarCost || rate1 < spinRateCost){
+      spinBtn.animate([{transform:'translateX(0)'},{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:180});
+      return;
     }
 
-    function randomSymbol(){ let s=symbols[Math.floor(Math.random()*symbols.length)]; if(s==='💎'){ if(diamondCount>0){ diamondCount--; updateBuyBtnUI(); if(diamondCount===0) symbols=symbols.filter(x=>x!=='💎'); return '💎'; } else { return baseSymbols[Math.floor(Math.random()*baseSymbols.length)]; } } return s; }
+    totalSpins++;
 
-    // UPDATED: Modified spinOnce() to handle the new 'reduceRate2' choice and 'isSpinCostResetPurchased'
-    // UPDATED: Added win animation, delay, and confetti
-    async function spinOnce(){
-      if(!spinBtn || spinBtn.disabled || modalOpen) return;
-      if(value1 < spinDollarCost || rate1 < spinRateCost){
-        spinBtn.animate([{transform:'translateX(0)'},{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:180});
+    value1 -= spinDollarCost;
+    rate1 = Math.max(0, rate1 - spinRateCost);
+    spinDollarCost += 1;
+    updateCostMsg();
+    updateReadout();
+    spinBtn.disabled=true;
+    pauseBtn.disabled=true;
+    swapBtn.disabled=true;
+    buyBtn.disabled=true;
+    upgradeBtn.disabled=true;
+
+    const durations = [600, 800, 1000];
+    const finalSyms = [randomSymbol(), randomSymbol(), randomSymbol()];
+
+    await Promise.all(reelEls.map((el, i) =>
+      animateReel(el, finalSyms[i], durations[i])
+    ));
+
+    const nonWild=finalSyms.filter(s=>s!=='💎');
+    let win=false;
+    if(nonWild.length<=1) win=true;
+    else if(nonWild.length===2) win=(nonWild[0]===nonWild[1]);
+    else win=(finalSyms[0]===finalSyms[1] && finalSyms[1]===finalSyms[2]);
+
+    if(win){
+      totalWins++;
+
+      if (isSpinCostResetPurchased && !finalSyms.includes('💎')) {
+        spinDollarCost = SPIN_DOLLAR_COST;
+        updateCostMsg();
+      }
+
+      reelEls.forEach(el => el.classList.add('reel-win'));
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      reelEls.forEach(el => el.classList.remove('reel-win'));
+
+      startConfetti();
+      const choice=await openWinChoice();
+      stopConfetti();
+
+      const rewardThisWin=winMoneyReward;
+
+      if(choice==='money'){
+        value1 += rewardThisWin;
+      } else if (choice === 'reduce') {
+        spinRateCost = Math.max(0, +(spinRateCost - 0.1).toFixed(1));
+        updateCostMsg();
+      } else if (choice === 'reduceRate2') {
+        buyDiamondRateCost = Math.max(0, buyDiamondRateCost - 1.0);
+        updateBuyBtnUI();
+      }
+
+      winMoneyReward = rewardThisWin + 600;
+    }
+
+    if (running) {
+      pauseBtn.disabled=false;
+      swapBtn.disabled = (swapUses <= 0);
+      buyBtn.disabled=false;
+      upgradeBtn.disabled=false;
+    }
+    spinBtn.disabled=false;
+    updateReadout();
+  }
+
+  // ===== CONTROLS =====
+  function attachControls(){
+    swapBtn.textContent = `Swap (${swapUses})`;
+    swapBtn.addEventListener('click', ()=>{
+      if (modalOpen || swapUses <= 0) return;
+      [value1, value2] = [value2, value1];
+      swapUses--;
+      swapBtn.textContent = `Swap (${swapUses})`;
+      if (swapUses <= 0) {
+        swapBtn.disabled = true;
+      }
+      updateReadout();
+    });
+
+    pauseBtn.addEventListener('click', ()=>{
+      if (modalOpen) return;
+      running=!running; pauseBtn.textContent= running? 'Pause':'Resume';
+    });
+
+    buyBtn.addEventListener('click', ()=>{
+      if (modalOpen) return;
+      if(value2>=buyDiamondCost && rate2>=buyDiamondRateCost && diamondCount===0){
+        value2-=buyDiamondCost;
+        rate2=Math.max(0, rate2-buyDiamondRateCost);
+        diamondCount=6;
+        if(!symbols.includes('💎')) symbols.push('💎');
+        buyDiamondCost+=500;
+        buyDiamondRateCost+=1;
+        updateBuyBtnUI();
+        updateReadout();
+      } else {
+        if(value2<buyDiamondCost || rate2<buyDiamondRateCost){
+          buyBtn.animate([{transform:'translateX(0)'},{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:180});
+        }
+      }
+    });
+
+    spinBtn.addEventListener('click', spinOnce);
+    spinBtn.addEventListener('keydown',(e)=>{
+      if(modalOpen){ e.preventDefault(); return; }
+      if(e.key===' '||e.key==='Enter'){ e.preventDefault(); spinOnce(); }
+    });
+
+    upgradeBtn.addEventListener('click', openUpgradeModal);
+    closeUpgradeModalBtn.addEventListener('click', closeUpgradeModal);
+
+    buyResetSpinCostBtn.addEventListener('click', () => {
+      if (isSpinCostResetPurchased) return;
+      if (value1 < 5000 || rate1 < 10) {
+        buyResetSpinCostBtn.animate([{transform:'translateX(0)'},{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:180});
         return;
       }
-      value1 -= spinDollarCost;
-      rate1 = Math.max(0, rate1 - spinRateCost);
-      spinDollarCost += 1;
-      updateCostMsg();
+      value1 -= 5000;
+      rate1 -= 10;
+      isSpinCostResetPurchased = true;
+      buyResetSpinCostBtn.disabled = true;
+      buyResetSpinCostBtn.textContent = "Purchased";
       updateReadout();
-      spinBtn.disabled=true;
-      // NEW: Disable all other controls during spin
-      pauseBtn.disabled=true;
-      swapBtn.disabled=true;
-      buyBtn.disabled=true;
-      upgradeBtn.disabled=true;
+    });
 
-      // const speeds=[70,85,100]; // OLD
-      // const durations=[900,1100,1300]; // OLD
-      const durations = [600, 800, 1000]; // NEW: Halved per user request
-      const finalSyms = [randomSymbol(), randomSymbol(), randomSymbol()]; // NEW: Get finals first
+    buyDoubleSliderBtn.addEventListener('click', () => {
+      if (doubleUpgradeLevel >= 4) return;
 
-      /* OLD Spin Logic (Replaced)
-      await new Promise((resolve)=>{
-        let finished=0;
-        reelEls.forEach((el,i)=>{
-          const id=setInterval(()=>{ el.textContent=visualSymbol(); }, speeds[i]);
-          setTimeout(()=>{
-            clearInterval(id);
-            finalSyms[i]=randomSymbol();
-            el.textContent=finalSyms[i];
-            finished++;
-            if(finished===reelEls.length) resolve();
-          }, durations[i]);
-        });
-      });
-      */
-
-      // NEW Spin Logic
-      await Promise.all(reelEls.map((el, i) => 
-        animateReel(el, finalSyms[i], durations[i])
-      ));
-
-      const nonWild=finalSyms.filter(s=>s!=='💎');
-      let win=false;
-      if(nonWild.length<=1) win=true;
-      else if(nonWild.length===2) win=(nonWild[0]===nonWild[1]);
-      else win=(finalSyms[0]===finalSyms[1] && finalSyms[1]===finalSyms[2]);
-
-      if(win){
-        // NEW: Check for spin cost reset upgrade
-        if (isSpinCostResetPurchased && !finalSyms.includes('💎')) {
-          spinDollarCost = SPIN_DOLLAR_COST;
-          updateCostMsg(); // Update UI immediately
-        }
-        // END NEW
-
-        // NEW: Add pulse/glow animation
-        reelEls.forEach(el => el.classList.add('reel-win'));
-
-        // Wait for 1 second
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        // Remove animation class
-        reelEls.forEach(el => el.classList.remove('reel-win'));
-
-        // Start confetti
-        startConfetti();
-
-        const choice=await openWinChoice();
-
-        // Stop confetti when modal closes
-        stopConfetti();
-
-        const rewardThisWin=winMoneyReward;
-
-        if(choice==='money'){
-          value1 += rewardThisWin;
-        } else if (choice === 'reduce') { // Was just 'else'
-          spinRateCost = Math.max(0, +(spinRateCost - 0.1).toFixed(1));
-          updateCostMsg();
-        } else if (choice === 'reduceRate2') { // NEW: Handle new choice
-          buyDiamondRateCost = Math.max(0, buyDiamondRateCost - 1.0);
-          updateBuyBtnUI(); // Update the buy button text
-        }
-
-        winMoneyReward = rewardThisWin + 600;
+      if (value2 < 15000 || rate2 < 15) {
+        buyDoubleSliderBtn.animate([{transform:'translateX(0)'},{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:180});
+        return;
       }
 
-      // Re-enable other buttons *only if game is not over*
-      if (running) {
-        pauseBtn.disabled=false;
-        swapBtn.disabled = (swapUses <= 0); // Re-set based on swapUses
-        buyBtn.disabled=false;
-        upgradeBtn.disabled=false;
+      value2 -= 15000;
+      rate2 -= 15;
+
+      switch (doubleUpgradeLevel) {
+        case 0:
+          growStepsTop[1] *= 2;
+          break;
+        case 1:
+          growStepsBottom[4] *= 2;
+          break;
+        case 2:
+          growStepsTop[0] *= 2;
+          break;
+        case 3:
+          growStepsBottom[5] *= 2;
+          break;
       }
-      spinBtn.disabled=false;
+
+      doubleUpgradeLevel++;
+
+      buildTicks();
+      setGrowthByIndex(currentIndex());
       updateReadout();
-    }
 
-    // Controls
-    function attachControls(){
-      // UPDATED: Swap button logic for 2 uses
-      swapBtn.textContent = `Swap (${swapUses})`; // Set initial text
-      swapBtn.addEventListener('click', ()=>{
-        if (modalOpen || swapUses <= 0) return;
-        [value1, value2] = [value2, value1]; // Swap values
-        swapUses--; // Decrement uses
-        swapBtn.textContent = `Swap (${swapUses})`; // Update text
-        if (swapUses <= 0) {
-          swapBtn.disabled = true; // Disable at 0
-        }
-        updateReadout(); // Update UI
-      });
-      pauseBtn.addEventListener('click', ()=>{
-        if (modalOpen) return;
-        running=!running; pauseBtn.textContent= running? 'Pause':'Resume';
-      });
-      buyBtn.addEventListener('click', ()=>{
-        if (modalOpen) return;
-        if(value2>=buyDiamondCost && rate2>=buyDiamondRateCost && diamondCount===0){ value2-=buyDiamondCost; rate2=Math.max(0, rate2-buyDiamondRateCost); diamondCount=6; if(!symbols.includes('💎')) symbols.push('💎'); buyDiamondCost+=500; buyDiamondRateCost+=1; updateBuyBtnUI(); updateReadout(); }
-        else{ if(value2<buyDiamondCost || rate2<buyDiamondRateCost){ buyBtn.animate([{transform:'translateX(0)'},{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:180}); } }
-      });
-      spinBtn.addEventListener('click', spinOnce);
-      spinBtn.addEventListener('keydown',(e)=>{ if(modalOpen){ e.preventDefault(); return; } if(e.key===' '||e.key==='Enter'){ e.preventDefault(); spinOnce(); } });
-
-      // NEW: Upgrade modal controls
-      upgradeBtn.addEventListener('click', openUpgradeModal);
-      closeUpgradeModalBtn.addEventListener('click', closeUpgradeModal);
-
-      buyResetSpinCostBtn.addEventListener('click', () => {
-        if (isSpinCostResetPurchased) return;
-        // UPDATED: Cost check changed
-        if (value1 < 5000 || rate1 < 10) {
-          buyResetSpinCostBtn.animate([{transform:'translateX(0)'},{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:180});
-          return;
-        }
-        // UPDATED: Cost deduction changed
-        value1 -= 5000;
-        rate1 -= 10;
-        isSpinCostResetPurchased = true;
-        buyResetSpinCostBtn.disabled = true;
-        buyResetSpinCostBtn.textContent = "Purchased";
-        updateReadout();
-      });
-
-      // UPDATED: buyDoubleSliderBtn to use sequential logic
-      buyDoubleSliderBtn.addEventListener('click', () => {
-        if (doubleUpgradeLevel >= 4) return; // Already maxed
-
-        // UPDATED: Cost check with new price
-        if (value2 < 15000 || rate2 < 15) {
-          buyDoubleSliderBtn.animate([{transform:'translateX(0)'},{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:180});
-          return;
-        }
-
-        // UPDATED: Cost deduction with new price
-        value2 -= 15000;
-        rate2 -= 15;
-
-        // Apply sequential upgrade
-        switch (doubleUpgradeLevel) {
-          case 0:
-            // Purchase 1: upper 10 doubles to 20
-            growStepsTop[1] *= 2; // Index 1 is 10
-            break;
-          case 1:
-            // Purchase 2: lower 10 doubles to 20
-            growStepsBottom[4] *= 2; // Index 4 is 10
-            break;
-          case 2:
-            // Purchase 3: upper 12 doubles to 24
-            growStepsTop[0] *= 2; // Index 0 is 12
-            break;
-          case 3:
-            // Purchase 4: lower 12 doubles to 24
-            growStepsBottom[5] *= 2; // Index 5 is 12
-            break;
-        }
-
-        doubleUpgradeLevel++; // Increment progress
-
-        // Update UI
-        buildTicks(); // Re-draw ticks with new numbers
-        setGrowthByIndex(currentIndex()); // Update grow1/grow2 display if current index was affected
-        updateReadout();
-
-        // Check if maxed out
-        if (doubleUpgradeLevel >= 4) {
-          buyDoubleSliderBtn.disabled = true;
-          buyDoubleSliderBtn.textContent = "Maxed Out";
-        }
-      });
-    }
-
-    // Loop
-    let lastTs; function tick(ts){
-      if(lastTs===undefined) lastTs=ts;
-      const dt=(ts-lastTs)/1000;
-      lastTs=ts;
-
-      if(running && dt>0){
-        gameTimeSeconds -= dt; // Count down
-
-        value1 += rate1 * dt;
-        value2 += rate2 * dt;
-        const gps1=(grow1/60), gps2=(grow2/60); // <-- Fixed 6D0 to 60
-        rate1=Math.min(MAX_RATE, rate1 + gps1*dt);
-        rate2=Math.min(MAX_RATE, rate2 + gps2*dt);
-
-        if (gameTimeSeconds <= 0) {
-          gameTimeSeconds = 0;
-          running = false; // Stop the game
-          // Disable all controls
-          pauseBtn.disabled = true;
-          spinBtn.disabled = true;
-          buyBtn.disabled = true;
-          if (swapBtn) swapBtn.disabled = true;
-          if (upgradeBtn) upgradeBtn.disabled = true; // NEW: Disable upgrade btn
-          pauseBtn.textContent = "Over";
-        }
+      if (doubleUpgradeLevel >= 4) {
+        buyDoubleSliderBtn.disabled = true;
+        buyDoubleSliderBtn.textContent = "Maxed Out";
       }
+    });
+  }
 
-      updateReadout(); // Update UI
+  // ===== GAME LOOP =====
+  let lastTs;
+  function tick(ts){
+    if(lastTs===undefined) lastTs=ts;
+    const dt=(ts-lastTs)/1000;
+    lastTs=ts;
 
-      if (gameTimeSeconds > 0 || (gameTimeSeconds <= 0 && running)) {
-        // Continue loop if time > 0, or if we just hit 0 (so 'running' is still true for one last frame)
-        requestAnimationFrame(tick);
-      } else if (gameTimeSeconds <= 0 && !running) {
-        // This is the final state: game over and timer at 0
-        gameTimerEl.textContent = "GAME OVER";
+    if(running && dt>0){
+      gameTimeSeconds -= dt;
+
+      value1 += rate1 * dt;
+      value2 += rate2 * dt;
+      const gps1=(grow1/60), gps2=(grow2/60);
+      rate1=Math.min(MAX_RATE, rate1 + gps1*dt);
+      rate2=Math.min(MAX_RATE, rate2 + gps2*dt);
+
+      if (gameTimeSeconds <= 0) {
+        gameTimeSeconds = 0;
+        running = false;
+        pauseBtn.disabled = true;
+        spinBtn.disabled = true;
+        buyBtn.disabled = true;
+        if (swapBtn) swapBtn.disabled = true;
+        if (upgradeBtn) upgradeBtn.disabled = true;
+        pauseBtn.textContent = "Over";
+        showSummary();
       }
     }
 
-    function init(){ makeSliderInteractive(); updateCostMsg(); updateBuyBtnUI(); attachControls(); requestAnimationFrame(tick); }
-    init();
+    updateReadout();
+
+    if (gameTimeSeconds > 0 || (gameTimeSeconds <= 0 && running)) {
+      requestAnimationFrame(tick);
+    } else if (gameTimeSeconds <= 0 && !running) {
+      gameTimerEl.textContent = "GAME OVER";
+    }
+  }
+
+  // ===== INIT =====
+  function init(){
+    makeSliderInteractive();
+    updateCostMsg();
+    updateBuyBtnUI();
+    attachControls();
+    requestAnimationFrame(tick);
+  }
+
+  init();
   </script>
 </body>
 </html>
