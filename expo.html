@@ -38,7 +38,8 @@
     .wrap{width:min(920px,94vw)}
     /* UPDATED: Main game area (card) has the shifting gradient */
     .card{
-      background:linear-gradient(270deg, #2a0808, #2e1a0b, #3d1c02, #0a0a0a); /* CHANGED: Was panel gradient */
+      /* UPDATED: Gradient colors are much darker */
+      background:linear-gradient(270deg, #1a0404, #1e1007, #2d1201, #050505);
       background-size: 800% 800%; /* ADDED */
       animation: shiftBackground 30s ease infinite; /* ADDED */
       border:var(--brd-width) solid var(--brd-strong);
@@ -481,15 +482,14 @@
     const fmtTime=(t)=>{const s=Math.floor(t),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;return [h,m,sec].map(v=>String(v).padStart(2,'0')).join(':')};
 
     function updateCostMsg(){
-      // Removed "Cost:"
-      spinCostMsg.innerHTML = `<span class="badge badge-money">$${spinDollarCost}</span> + ${fmtRatePts(spinRateCost)} <span class="badge badge-rate1">Rate 1</span>`;
+      // UPDATED: Moved rate cost text inside the badge
+      spinCostMsg.innerHTML = `<span class="badge badge-money">$${spinDollarCost}</span> + <span class="badge badge-rate1">${fmtRatePts(spinRateCost)} Rate 1</span>`;
     }
     function updateBuyBtnUI(){
       if(diamondCount>0){ buyCostMsg.textContent=`💎 Active (${diamondCount} left)`; buyBtn.disabled=true; }
       else{
-        // Removed "Cost:"
-        // UPDATED: Text changed from "Buy 6x 💎." to "Get 6x 💎 (wild)"
-        buyCostMsg.innerHTML=`Get 6x 💎 (wild) <span class="badge badge-credit">${buyDiamondCost}c</span> + ${buyDiamondRateCost.toFixed(1)} <span class="badge badge-rate2">Rate 2</span>`;
+        // UPDATED: Moved rate cost text inside the badge
+        buyCostMsg.innerHTML=`Get 6x 💎 (wild) <span class="badge badge-credit">${buyDiamondCost}c</span> + <span class="badge badge-rate2">${buyDiamondRateCost.toFixed(1)} Rate 2</span>`;
         buyBtn.disabled=false;
       }
     }
@@ -850,7 +850,7 @@
 
         value1 += rate1 * dt;
         value2 += rate2 * dt;
-        const gps1=(grow1/60), gps2=(grow2/60);
+        const gps1=(grow1/60), gps2=(grow2/60); // <-- Fixed 6D0 to 60
         rate1=Math.min(MAX_RATE, rate1 + gps1*dt);
         rate2=Math.min(MAX_RATE, rate2 + gps2*dt);
 
