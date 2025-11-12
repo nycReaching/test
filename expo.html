@@ -19,29 +19,24 @@
     *{box-sizing:border-box}
     html,body{height:100%}
 
-    /* NEW: Keyframes for shifting background */
-    @keyframes shiftBackground {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
+    /* REMOVED: Keyframes for shifting background */
 
     /* UPDATED: Outer area (body) is black */
     body{
       margin:0;
       font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Arial;
       color:var(--text);
-      background: #000; /* CHANGED: Was a gradient, now solid black */
+      background: #000; /* Was a gradient, now solid black */
       display:grid;
       place-items:center
     }
     .wrap{width:min(920px,94vw)}
-    /* UPDATED: Main game area (card) has the shifting gradient */
+    /* UPDATED: Main game area (card) has the new static gradient */
     .card{
-      /* UPDATED: Gradient colors are much darker */
-      background:linear-gradient(270deg, #1a0404, #1e1007, #2d1201, #050505);
-      background-size: 800% 800%; /* ADDED */
-      animation: shiftBackground 30s ease infinite; /* ADDED */
+      /* UPDATED: Gradient from very dark red to black, no animation */
+      background: linear-gradient(180deg, #1a0404, #000);
+      /* REMOVED: background-size: 800% 800%; */
+      /* REMOVED: animation: shiftBackground 30s ease infinite; */
       border:var(--brd-width) solid var(--brd-strong);
       border-radius:18px;
       padding:20px clamp(14px,4vw,28px);
@@ -56,7 +51,7 @@
       text-align:center;
       font-size:16px; /* Increased size */
       margin-bottom:16px; /* Increased margin */
-      font-family:'Courier New',monospace;
+      /* REMOVED: font-family:'Courier New',monospace; */
       letter-spacing:1.5px; /* Increased spacing */
       opacity:.95;
       background: var(--panel-2); /* Use a panel color */
@@ -160,7 +155,8 @@
     .thumb{position:absolute;top:50%;transform:translate(-50%,-50%);width:var(--thumb-size);height:var(--thumb-size);border-radius:6px;cursor:grab;box-shadow:0 2px 0 rgba(0,0,0,.35),inset 0 0 0 1px rgba(255,255,255,.12);background:linear-gradient(180deg,#c5d2df 0%,#9fb0c3 100%)}
 
     .controls{margin-top:14px;display:flex;gap:10px; justify-content: center;}
-    button.ctrl{background:#0b1117;color:var(--text);border:var(--brd-width) solid #2a3a4d;border-radius:12px;padding:10px 12px;font-weight:800;font-size:14px;cursor:pointer;box-shadow:var(--shadow-1);min-height:var(--tap)}
+    /* UPDATED: Removed box-shadow (glow) */
+    button.ctrl{background:#0b1117;color:var(--text);border:var(--brd-width) solid #2a3a4d;border-radius:12px;padding:10px 12px;font-weight:800;font-size:14px;cursor:pointer;min-height:var(--tap)}
     .ctrl-fixed{width:96px;padding:10px 12px;font-size:13px; flex-shrink: 0;} /* Added flex-shrink: 0 */
 
     /* Swap button styling */
@@ -182,8 +178,10 @@
       color: oklch(90% .1 310);
     }
 
-    button.ctrl-buy{background:var(--credit-bg);border-color:var(--credit-brd);color:var(--text);padding:14px 20px;font-size:17px;font-weight:900;box-shadow:0 6px 18px rgba(106,53,96,.45)}
-    #spin.ctrl{background:var(--money-bg);border-color:var(--money-brd);color:var(--text);padding:14px 20px;font-size:17px;font-weight:900;box-shadow:0 6px 18px rgba(16,60,44,.45)}
+    /* UPDATED: Removed box-shadow (glow) */
+    button.ctrl-buy{background:var(--credit-bg);border-color:var(--credit-brd);color:var(--text);padding:14px 20px;font-size:17px;font-weight:900;}
+    /* UPDATED: Removed box-shadow (glow) */
+    #spin.ctrl{background:var(--money-bg);border-color:var(--money-brd);color:var(--text);padding:14px 20px;font-size:17px;font-weight:900;}
 
     .slot{margin-top:20px;padding-top:16px;border-top:var(--brd-width) solid var(--brd)}
     .slot h2{margin:0 0 10px 0;font-size:clamp(16px,2.6vw,22px);font-weight:900}
@@ -213,7 +211,8 @@
     }
 
     /* Modal styling + mobile-friendly actions */
-    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:999;backdrop-filter:blur(4px)}
+    /* UPDATED: z-index from 999 to 1001 to appear over confetti */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:1001;backdrop-filter:blur(4px)}
     /* UPDATED: Removed var(--glow) from box-shadow */
     .modal{background:#0f141a;border:var(--brd-width) solid #2a3a4d;border-radius:14px;width:min(420px,92vw);padding:18px;box-shadow:0 14px 36px rgba(0,0,0,.55)}
     .modal h3{margin:0 0 8px 0;font-size:18px; text-align: center;}
@@ -269,6 +268,34 @@
       border: 1px solid oklch(from var(--credit-brd) l c h / 0.5);
     }
 
+    /* NEW: Keyframes and class for win animation */
+    @keyframes winPulse {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: var(--shadow-1), inset 0 1px 0 rgba(255,255,255,.06);
+      }
+      50% {
+        transform: scale(1.1);
+        box-shadow: 0 0 15px 5px #ffc800, inset 0 1px 0 rgba(255,255,255,.06);
+      }
+    }
+    .reel-win {
+      animation: winPulse 0.5s 2; /* 0.5s duration, 2 iterations = 1 second */
+      border-color: #ffc800; /* Also change border color */
+    }
+
+    /* NEW: Style for confetti canvas */
+    #confettiCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1000; /* Behind modal backdrop */
+      display: none; /* Hide by default */
+    }
+
     @media (max-width:640px){
       .wrap{width:100vw}
       /* UPDATED: Reduced bottom padding from 16px to 12px */
@@ -302,7 +329,7 @@
   <div class="wrap">
     <div class="card">
       <!-- UPDATED: Timer starts at 20:00 and counts down -->
-      <div id="gameTimer">20:00:00</div>
+      <div id="gameTimer">20:00</div>
 
       <div class="stats-grid">
         <div class="stat money"><div class="label">Money</div><div class="value" id="val1">$0.00</div></div>
@@ -401,6 +428,9 @@
     </div>
   </div>
 
+  <!-- NEW: Confetti canvas -->
+  <canvas id="confettiCanvas"></canvas>
+
   <script>
     // Constants reflecting prior balance changes
     const MAX_RATE = 199;
@@ -475,12 +505,86 @@
     const closeUpgradeModalBtn = document.getElementById('closeUpgradeModal');
     const buyResetSpinCostBtn = document.getElementById('buyResetSpinCost');
     const buyDoubleSliderBtn = document.getElementById('buyDoubleSlider');
+    
+    // NEW: Confetti canvas elements
+    const confettiCanvas = document.getElementById('confettiCanvas');
+    const confettiCtx = confettiCanvas.getContext('2d');
+    let confettiParticles = [];
+    let confettiAnimationId;
 
     // Utils
     const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
     const fmt=(n)=>n.toFixed(2);
     const fmtRatePts=(x)=>x.toFixed(1);
-    const fmtTime=(t)=>{const s=Math.floor(t),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;return [h,m,sec].map(v=>String(v).padStart(2,'0')).join(':')};
+    const fmtTime=(t)=>{const s=Math.floor(t),m=Math.floor(s/60),sec=s%60;return [m,sec].map(v=>String(v).padStart(2,'0')).join(':')};
+
+    // NEW: Confetti animation functions
+    function startConfetti() {
+      confettiCanvas.style.display = 'block';
+      confettiParticles = [];
+      const particleCount = 200;
+      const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50', '#8bc34a', '#cddc39', '#ffeb3b', '#ffc107', '#ff9800', '#ff5722'];
+      
+      confettiCanvas.width = window.innerWidth;
+      confettiCanvas.height = window.innerHeight;
+
+      for (let i = 0; i < particleCount; i++) {
+        confettiParticles.push({
+          x: Math.random() * confettiCanvas.width,
+          y: Math.random() * confettiCanvas.height - confettiCanvas.height, // Start above screen
+          size: Math.random() * 5 + 2,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          vx: Math.random() * 6 - 3, // Horizontal drift
+          vy: Math.random() * 5 + 3, // Fall down
+          opacity: 1,
+        });
+      }
+      animateConfetti();
+    }
+
+    function animateConfetti() {
+      confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      
+      confettiParticles.forEach((p, index) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.opacity -= 0.005; // Fade out slowly
+
+        if (p.y > confettiCanvas.height || p.opacity <= 0) {
+          confettiParticles.splice(index, 1); // Remove particle
+        } else {
+          confettiCtx.globalAlpha = p.opacity;
+          confettiCtx.fillStyle = p.color;
+          confettiCtx.fillRect(p.x, p.y, p.size, p.size * 2); // Rectangular confetti
+          confettiCtx.globalAlpha = 1;
+        }
+      });
+
+      if (confettiParticles.length > 0) {
+        confettiAnimationId = requestAnimationFrame(animateConfetti);
+      } else {
+        stopConfetti(); // Auto-stop when all particles are gone
+      }
+    }
+
+    function stopConfetti() {
+      if (confettiAnimationId) {
+        cancelAnimationFrame(confettiAnimationId);
+      }
+      confettiCanvas.style.display = 'none';
+      confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      confettiParticles = [];
+    }
+    
+    // Resize confetti canvas with window
+    window.addEventListener('resize', () => {
+      if (confettiCanvas.style.display === 'block') {
+        confettiCanvas.width = window.innerWidth;
+        confettiCanvas.height = window.innerHeight;
+      }
+    });
+    // END NEW Confetti functions
+
 
     function updateCostMsg(){
       // UPDATED: Moved rate cost text inside the badge
@@ -691,6 +795,7 @@
     function randomSymbol(){ let s=symbols[Math.floor(Math.random()*symbols.length)]; if(s==='💎'){ if(diamondCount>0){ diamondCount--; updateBuyBtnUI(); if(diamondCount===0) symbols=symbols.filter(x=>x!=='💎'); return '💎'; } else { return baseSymbols[Math.floor(Math.random()*baseSymbols.length)]; } } return s; }
 
     // UPDATED: Modified spinOnce() to handle the new 'reduceRate2' choice and 'isSpinCostResetPurchased'
+    // UPDATED: Added win animation, delay, and confetti
     async function spinOnce(){
       if(!spinBtn || spinBtn.disabled || modalOpen) return;
       if(value1 < spinDollarCost || rate1 < spinRateCost){
@@ -703,6 +808,12 @@
       updateCostMsg();
       updateReadout();
       spinBtn.disabled=true;
+      // NEW: Disable all other controls during spin
+      pauseBtn.disabled=true;
+      swapBtn.disabled=true;
+      buyBtn.disabled=true;
+      upgradeBtn.disabled=true;
+      
       const speeds=[70,85,100];
       const durations=[900,1100,1300];
       const finalSyms=new Array(3);
@@ -732,8 +843,24 @@
           updateCostMsg(); // Update UI immediately
         }
         // END NEW
+        
+        // NEW: Add pulse/glow animation
+        reelEls.forEach(el => el.classList.add('reel-win'));
+        
+        // Wait for 1 second
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Remove animation class
+        reelEls.forEach(el => el.classList.remove('reel-win'));
+
+        // Start confetti
+        startConfetti();
 
         const choice=await openWinChoice();
+        
+        // Stop confetti when modal closes
+        stopConfetti();
+        
         const rewardThisWin=winMoneyReward;
 
         if(choice==='money'){
@@ -747,6 +874,14 @@
         }
 
         winMoneyReward = rewardThisWin + 600;
+      }
+      
+      // Re-enable other buttons *only if game is not over*
+      if (running) {
+        pauseBtn.disabled=false;
+        swapBtn.disabled = (swapUses <= 0); // Re-set based on swapUses
+        buyBtn.disabled=false;
+        upgradeBtn.disabled=false;
       }
       spinBtn.disabled=false;
       updateReadout();
