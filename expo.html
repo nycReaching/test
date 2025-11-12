@@ -166,9 +166,16 @@
       transition: background 0.2s, opacity 0.2s;
     }
     #swapBtn:disabled {
-      opacity: 0.5;
+      /* opacity: 0.5; */ /* REMOVED by user request */
       cursor: not-allowed;
       /* REMOVED: background and border-color to keep gradient */
+    }
+    /* NEW: Stop other buttons from fading when disabled during spin */
+    #upgradeBtn:disabled,
+    #pause:disabled,
+    #buyBtn:disabled {
+      opacity: 1;
+      cursor: not-allowed;
     }
     /* NEW: Style for Upgrade button */
     #upgradeBtn {
@@ -869,7 +876,7 @@
 
       // const speeds=[70,85,100]; // OLD
       // const durations=[900,1100,1300]; // OLD
-      const durations = [1200, 1600, 2000]; // NEW: slightly longer durations
+      const durations = [600, 800, 1000]; // NEW: Halved per user request
       const finalSyms = [randomSymbol(), randomSymbol(), randomSymbol()]; // NEW: Get finals first
 
       /* OLD Spin Logic (Replaced)
