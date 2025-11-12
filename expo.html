@@ -263,6 +263,13 @@
       color: var(--rate2-accent);
       border: 1px solid oklch(from var(--rate2-accent) l c h / 0.5);
     }
+    /* ADDED: Styling for money badge in modal button */
+    .modal .upgrade-option .btn .badge.badge-money {
+      background-color: var(--money-bg);
+      color: var(--money-text);
+      border: 1px solid oklch(from var(--money-brd) l c h / 0.5);
+      text-shadow: 0 1px 0 rgba(0,0,0,.45);
+    }
     .modal .upgrade-option .btn .badge.badge-credit {
       background-color: var(--credit-bg);
       color: var(--credit-text);
@@ -347,10 +354,10 @@
             <span class="cost" id="spinCostMsg" aria-live="polite">$50 + 1.0 Rate Point</span>
           </div>
           <div class="action">
-            <button class="ctrl ctrl-buy" id="buyBtn">Buy</button>
-            <!-- Removed "Cost:" from initial HTML -->
-            <!-- UPDATED: Changed text from "Buy 6x 💎." to "Get 6x 💎 (wild)" -->
-            <span class="buy-cost-text" id="buyCostMsg" aria-live="polite">Get 6x 💎 (wild) 500c + 1.0 Rate 2 Point</span>
+            <!-- UPDATED: Button text changed -->
+            <button class="ctrl ctrl-buy" id="buyBtn">Buy 6x 💎</button>
+            <!-- UPDATED: Text removed from cost message -->
+            <span class="buy-cost-text" id="buyCostMsg" aria-live="polite">500c + 1.0 Rate 2 Point</span>
           </div>
         </div>
       </section>
@@ -379,9 +386,9 @@
       <!-- Option 1: Reset Spin Cost -->
       <div class="upgrade-option">
         <p>Wins (without 💎) reset Spin cost to $50.<br><small>(One-time purchase)</small></p>
-        <!-- UPDATED: Cost changed -->
+        <!-- UPDATED: Cost display with badges -->
         <button class="btn primary" id="buyResetSpinCost">
-          $5,000 + 10 <span class="badge badge-rate1">Rate 1</span>
+          <span class="badge badge-money">$5,000</span> + <span class="badge badge-rate1">10 Rate 1</span>
         </button>
       </div>
 
@@ -390,9 +397,9 @@
       <!-- Option 2: Double Slider Value -->
       <div class="upgrade-option">
         <p>Double a random value on the slider.<br><small>(Max 12 purchases, one per value)</small></p>
-        <!-- UPDATED: Cost changed -->
+        <!-- UPDATED: Cost display with badges -->
         <button class="btn primary" id="buyDoubleSlider">
-          25,000 <span class="badge badge-credit">C</span> + 25 <span class="badge badge-rate2">Rate 2</span>
+          <span class="badge badge-credit">25,000 C</span> + <span class="badge badge-rate2">25 Rate 2</span>
         </button>
       </div>
 
@@ -488,8 +495,8 @@
     function updateBuyBtnUI(){
       if(diamondCount>0){ buyCostMsg.textContent=`💎 Active (${diamondCount} left)`; buyBtn.disabled=true; }
       else{
-        // UPDATED: Moved rate cost text inside the badge
-        buyCostMsg.innerHTML=`Get 6x 💎 (wild) <span class="badge badge-credit">${buyDiamondCost}c</span> + <span class="badge badge-rate2">${buyDiamondRateCost.toFixed(1)} Rate 2</span>`;
+        // UPDATED: Moved rate cost text inside the badge and removed redundant text
+        buyCostMsg.innerHTML=`<span class="badge badge-credit">${buyDiamondCost}c</span> + <span class="badge badge-rate2">${buyDiamondRateCost.toFixed(1)} Rate 2</span>`;
         buyBtn.disabled=false;
       }
     }
@@ -659,8 +666,8 @@
       if (isSpinCostResetPurchased) {
         buyResetSpinCostBtn.textContent = "Purchased";
       } else {
-        // UPDATED: Cost changed
-        buyResetSpinCostBtn.innerHTML = `$5,000 + 10 <span class="badge badge-rate1">Rate 1</span>`;
+        // UPDATED: Cost display with badges
+        buyResetSpinCostBtn.innerHTML = `<span class="badge badge-money">$5,000</span> + <span class="badge badge-rate1">10 Rate 1</span>`;
       }
 
       let remaining = doubledBottom.includes(false) || doubledTop.includes(false);
@@ -668,8 +675,8 @@
       if (!remaining) {
         buyDoubleSliderBtn.textContent = "Maxed Out";
       } else {
-        // UPDATED: Cost changed
-        buyDoubleSliderBtn.innerHTML = `25,000 <span class="badge badge-credit">C</span> + 25 <span class="badge badge-rate2">Rate 2</span>`;
+        // UPDATED: Cost display with badges
+        buyDoubleSliderBtn.innerHTML = `<span class="badge badge-credit">25,000 C</span> + <span class="badge badge-rate2">25 Rate 2</span>`;
       }
 
       closeUpgradeModalBtn.focus();
