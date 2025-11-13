@@ -127,7 +127,7 @@
     }
     .ticks-top{
       /* MODIFIED: Moved to bottom */
-      top: 47px; 
+      top: 47px;
       color: var(--rate2-accent);
     }
     .ticks-bottom{
@@ -367,8 +367,8 @@
           <div class="ticks ticks-bottom" id="ticksBottom"></div>
         </div>
       </div>
-      <!-- MODIFIED: Swapped text to match new layout -->
-      <p class="helper-text" id="growthHelper">Top numbers: <strong>Rate 1</strong> growth · Bottom numbers: <strong>Rate 2</strong> growth. Move the slider to favor one rate or the other.</p>
+      <!-- MODIFIED: Removed helper text -->
+      <!-- <p class="helper-text" id="growthHelper">Top numbers: <strong>Rate 1</strong> growth · Bottom numbers: <strong>Rate 2</strong> growth. Move the slider to favor one rate or the other.</p> -->
 
       <div class="controls">
         <button class="ctrl ctrl-fixed" id="swapBtn">Swap</button>
@@ -474,6 +474,7 @@
 
   let isSpinCostResetPurchased = false;
   let doubleUpgradeLevel = 0;
+  let nextDiamondPurchaseFreeRate2 = false; // MODIFICATION: Added state for new reward
 
   let totalSpins = 0;
   let totalWins = 0;
@@ -732,6 +733,8 @@
       if (spinRateCost <= 0) {
         reduceBtn.style.display = 'none';
         reduceRate2Btn.style.display = 'block';
+        // MODIFICATION: Change text for new reward
+        reduceRate2Btn.textContent = 'Next 💎 buy costs 0 Rate 2';
         focusables = [reduceRate2Btn, takeMoneyBtn];
       } else {
         reduceBtn.style.display = 'block';
@@ -753,6 +756,8 @@
         modalOpen=false;
         reduceBtn.style.display = 'block';
         reduceRate2Btn.style.display = 'none';
+        // MODIFICATION: Reset text on cleanup
+        reduceRate2Btn.textContent = 'Lower Buy cost by 1.0 Rate 2 Point';
       }
 
       reduceBtn.onclick=()=>{ cleanup(); resolve('reduce'); };
@@ -813,7 +818,7 @@
         const elapsedTime = currentTime - startTime;
         let progress = elapsedTime / duration;
         if (progress > 1) progress = 1;
-        
+
         // Use a different easing: ease-out quad
         const progress_easeout = 1 - (1 - progress) * (1 - progress);
         const currentInterval = minInterval + (maxInterval - minInterval) * progress_easeout;
@@ -882,12 +887,14 @@
     buyBtn.disabled=true;
     upgradeBtn.disabled=true;
 
-    const durations = [600, 800, 1000];
+    // MODIFIED: Changed durations and call for sequential reveal
+    const durationPerReel = 330; // ~1000ms total
     const finalSyms = [randomSymbol(), randomSymbol(), randomSymbol()];
 
-    await Promise.all(reelEls.map((el, i) =>
-      animateReel(el, finalSyms[i], durations[i])
-    ));
+    await animateReel(reelEls[0], finalSyms[0], durationPerReel);
+    await animateReel(reelEls[1], finalSyms[1], durationPerReel);
+    await animateReel(reelEls[2], finalSyms[2], durationPerReel);
+    // END MODIFICATION
 
     const nonWild=finalSyms.filter(s=>s!=='💎');
     let win=false;
@@ -919,8 +926,9 @@
         spinRateCost = Math.max(0, +(spinRateCost - 0.1).toFixed(1));
         updateCostMsg();
       } else if (choice === 'reduceRate2') {
-        buyDiamondRateCost = Math.max(0, buyDiamondRateCost - 1.0);
-        updateBuyBtnUI();
+        // MODIFICATION: Change reward logic
+        nextDiamondPurchaseFreeRate2 = true;
+        // END MODIFICATION
       }
 
       winMoneyReward = rewardThisWin + 600;
@@ -957,6 +965,31 @@
 
     buyBtn.addEventListener('click', ()=>{
       if (modalOpen) return;
+
+      // MODIFICATION: Add check for free Rate 2 purchase
+      if (nextDiamondPurchaseFreeRate2 && diamondCount === 0) {
+        if (value2 >= buyDiamondCost) {
+          value2 -= buyDiamondCost;
+          // rate2 is NOT consumed
+          rate2 = Math.max(0, rate2); // Ensure it's not negative, just in case
+          diamondCount = 6;
+          if (!symbols.includes('💎')) symbols.push('💎');
+          buyDiamondCost += 500;
+          buyDiamondRateCost += 1; // The *next* cost still increases
+          nextDiamondPurchaseFreeRate2 = false; // Buff is used
+          updateBuyBtnUI();
+          updateReadout();
+        } else {
+          // Not enough money
+          if (typeof buyBtn.animate === 'function') {
+            buyBtn.animate([{transform:'translateX(0)'},{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:180});
+          }
+        }
+        return; // Important: exit handler
+      }
+      // END MODIFICATION
+
+      // Original logic
       if(value2>=buyDiamondCost && rate2>=buyDiamondRateCost && diamondCount===0){
         value2-=buyDiamondCost;
         rate2=Math.max(0, rate2-buyDiamondRateCost);
@@ -969,7 +1002,8 @@
       } else {
         if(value2<buyDiamondCost || rate2<buyDiamondRateCost){
           if (typeof buyBtn.animate === 'function') {
-            buyBtn.animate([{transform:'translateX(0)'},{transform:'translateX(-4px)'},{transform:'translateX(40)'},{transform:'translateX(0)'}],{duration:180});
+            // MODIFICATION: Fixed typo in animation (40 -> 4px)
+            buyBtn.animate([{transform:'translateX(0)'},{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:180});
           }
         }
       }
