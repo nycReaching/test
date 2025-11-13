@@ -126,11 +126,13 @@
       text-shadow:0 1px 0 rgba(0,0,0,.45);
     }
     .ticks-top{
-      top: 2px;
+      /* MODIFIED: Moved to bottom */
+      top: 47px; 
       color: var(--rate2-accent);
     }
     .ticks-bottom{
-      top: 47px;
+      /* MODIFIED: Moved to top */
+      top: 2px;
       color: var(--rate1-accent);
     }
 
@@ -147,7 +149,7 @@
     }
 
     .controls{margin-top:14px;display:flex;gap:10px; justify-content: center;}
-    button.ctrl{background:#0b1117;color:var(--text);border:var(--brd-width) solid #2a3a4d;border-radius:12px;padding:10px 12px;font-weight:800;font-size:14px;cursor:pointer;min-height:var(--tap);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1}
+    button.ctrl{background:#0b1117;color:var(--text);border:var(--brd-width) solid #2a3a4d;border-radius:12px;padding:10px 12px;font-weight:800;font-size:14px;cursor:pointer;min-height:var(--tap)}
     .ctrl-fixed{width:96px;padding:10px 12px;font-size:13px; flex-shrink: 0;}
 
     #swapBtn {
@@ -172,20 +174,44 @@
       cursor: not-allowed;
     }
 
-    .btn-label {
-      font-size:15px;
-      font-weight:900;
+    /* Updated button styles */
+    button.ctrl-buy {
+      background:var(--credit-bg);
+      border-color:var(--credit-brd);
+      color:var(--text);
+      padding:10px 16px;
+      font-size:16px;
+      font-weight:800;
+      line-height: 1.4;
+      text-align: center;
     }
-    .btn-sub {
-      font-size:11px;
-      font-weight:600;
-      opacity:0.9;
-      margin-top:2px;
-      white-space:nowrap;
+    #spin.ctrl {
+      background:var(--money-bg);
+      border-color:var(--money-brd);
+      color:var(--text);
+      padding:10px 16px;
+      font-size:16px;
+      font-weight:800;
+      line-height: 1.4;
+      text-align: center;
     }
 
-    button.ctrl-buy{background:var(--credit-bg);border-color:var(--credit-brd);color:var(--text);padding:12px 16px;font-size:15px;font-weight:900;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1;}
-    #spin.ctrl{background:var(--money-bg);border-color:var(--money-brd);color:var(--text);padding:12px 16px;font-size:15px;font-weight:900;}
+    /* New styles for text inside buttons */
+    .ctrl small {
+      font-size: 11px;
+      font-weight: 600;
+      color: oklch(from var(--text) l c h / 0.9);
+      letter-spacing: 0.25px;
+      display: block; /* Makes it stack */
+      margin-top: 4px; /* Space between lines */
+    }
+
+    /* Adjust badge size within buttons */
+    .ctrl .badge {
+      font-size: 10px;
+      padding: 1px 6px;
+      vertical-align: baseline; /* Better alignment */
+    }
 
     .slot{margin-top:20px;padding-top:16px;border-top:var(--brd-width) solid var(--brd)}
     .slot h2{margin:0 0 6px 0;font-size:clamp(16px,2.6vw,22px);font-weight:900}
@@ -195,23 +221,10 @@
     .slot-actions {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-top: 8px;
+      gap: 12px; /* Reduced gap */
+      margin-top: 16px;
     }
-    .action {
-      display: flex;
-      flex-direction: column;
-    }
-    .action .ctrl {
-      width: 100%;
-    }
-    .cost, .buy-cost-text {
-      font-size: 11px;
-      color: var(--text);
-      text-align: center;
-      margin-top: 8px;
-      line-height: 1.4;
-    }
+    /* Removed .action, .cost, .buy-cost-text styles as they are no longer used */
 
     .summary{
       margin-top:18px;
@@ -314,7 +327,7 @@
       .wrap{width:100vw}
       .card{border-radius:0;padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
       .value{font-size:clamp(20px, 6.5vw, 28px); margin-top: 6px;}
-      .slot-actions{grid-template-columns:1fr;gap:8px; margin-top: 10px;}
+      .slot-actions{grid-template-columns:1fr;gap:8px; margin-top: 12px;}
       .controls{gap:8px; margin-top: 10px; flex-wrap: wrap;}
       .reel{height:100px;font-size:clamp(44px,14vw,72px)}
       .modal{width:min(500px,96vw)}
@@ -328,7 +341,7 @@
       .slot { margin-top: 12px; padding-top: 10px; }
       .slot h2 { margin-bottom: 6px; }
       .reels { gap: 8px; margin: 8px 0; }
-      .cost, .buy-cost-text { margin-top: 6px; }
+      /* Removed .cost, .buy-cost-text media query */
     }
     @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
   </style>
@@ -354,34 +367,27 @@
           <div class="ticks ticks-bottom" id="ticksBottom"></div>
         </div>
       </div>
-      <p class="helper-text" id="growthHelper">Top numbers: <strong>Rate 2</strong> growth · Bottom numbers: <strong>Rate 1</strong> growth. Move the slider to favor one rate or the other.</p>
+      <!-- MODIFIED: Swapped text to match new layout -->
+      <p class="helper-text" id="growthHelper">Top numbers: <strong>Rate 1</strong> growth · Bottom numbers: <strong>Rate 2</strong> growth. Move the slider to favor one rate or the other.</p>
 
       <div class="controls">
-        <button class="ctrl ctrl-fixed" id="swapBtn"><span class="btn-label">Swap</span></button>
-        <button class="ctrl ctrl-fixed" id="pause"><span class="btn-label">Pause</span></button>
-        <button class="ctrl ctrl-fixed" id="upgradeBtn"><span class="btn-label">Upgrade</span></button>
+        <button class="ctrl ctrl-fixed" id="swapBtn">Swap</button>
+        <button class="ctrl ctrl-fixed" id="pause">Pause</button>
+        <button class="ctrl ctrl-fixed" id="upgradeBtn">Upgrade</button>
       </div>
 
       <section class="slot" aria-label="3-reel slot machine">
         <h2>3‑Reel Slot</h2>
+        <!-- Removed helper-slot paragraph -->
         <div class="reels">
           <div class="reel" id="reel1">🍒</div>
           <div class="reel" id="reel2">🍋</div>
           <div class="reel" id="reel3">🍇</div>
         </div>
         <div class="slot-actions">
-          <div class="action">
-            <button class="ctrl" id="spin">
-              <span class="btn-label">Spin</span>
-              <span class="btn-sub" id="spinCostMsg" aria-live="polite">$50 + 1.0 Rate Point</span>
-            </button>
-          </div>
-          <div class="action">
-            <button class="ctrl ctrl-buy" id="buyBtn">
-              <span class="btn-label">Buy 6x 💎</span>
-              <span class="btn-sub" id="buyCostMsg" aria-live="polite">500c + 1.0 Rate 2 Point</span>
-            </button>
-          </div>
+          <!-- Removed .action wrappers and span elements -->
+          <button class="ctrl" id="spin">Spin</button>
+          <button class="ctrl ctrl-buy" id="buyBtn">Buy 6x 💎</button>
         </div>
       </section>
 
@@ -411,7 +417,7 @@
     </div>
   </div>
 
-  <div class="modal-backdrop" id="upgradeModalBackdrop" aria-hidden="true"">
+  <div class="modal-backdrop" id="upgradeModalBackdrop" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="upgradeTitle">
       <h3 id="upgradeTitle">Upgrades</h3>
       <div class="upgrade-option">
@@ -444,8 +450,8 @@
   const GAME_DURATION_SECONDS = 20 * 60; // 20 minutes
 
   // Slider growth steps (bottom = Rate 1 growth, top = Rate 2 growth)
-  let growStepsBottom = [2, 4, 6, 8, 10, 12];
-  let growStepsTop = [12, 10, 8, 6, 4, 2];
+  let growStepsBottom = [12, 10, 8, 6, 4, 2];
+  let growStepsTop = [2, 4, 6, 8, 10, 12];
   const STEP_COUNT = growStepsBottom.length;
 
   // ===== STATE =====
@@ -487,9 +493,9 @@
   const swapBtn = document.getElementById('swapBtn');
   const pauseBtn=document.getElementById('pause');
   const spinBtn=document.getElementById('spin');
-  const spinCostMsg=document.getElementById('spinCostMsg');
+  // Removed spinCostMsg
   const buyBtn=document.getElementById('buyBtn');
-  const buyCostMsg=document.getElementById('buyCostMsg');
+  // Removed buyCostMsg
 
   const backdrop=document.getElementById('winModalBackdrop');
   const takeMoneyBtn=document.getElementById('takeMoneyBtn');
@@ -589,16 +595,18 @@
   });
 
   // ===== UI UPDATE HELPERS =====
+  // Updated function to write directly to the button
   function updateCostMsg(){
-    spinCostMsg.innerHTML = `<span class="badge badge-money">$${spinDollarCost}</span> + <span class="badge badge-rate1">${fmtRatePts(spinRateCost)} Rate 1</span>`;
+    spinBtn.innerHTML = `Spin<br><small><span class="badge badge-money">$${spinDollarCost}</span> + <span class="badge badge-rate1">${fmtRatePts(spinRateCost)} Rate 1</span></small>`;
   }
 
+  // Updated function to write directly to the button
   function updateBuyBtnUI(){
     if(diamondCount>0){
-      buyCostMsg.textContent=`💎 Active (${diamondCount} left)`;
+      buyBtn.innerHTML = `💎 Active<br><small>(${diamondCount} left)</small>`;
       buyBtn.disabled=true;
     } else {
-      buyCostMsg.innerHTML=`<span class="badge badge-credit">${buyDiamondCost}c</span> + <span class="badge badge-rate2">${buyDiamondRateCost.toFixed(1)} Rate 2</span>`;
+      buyBtn.innerHTML = `Buy 6x 💎<br><small><span class="badge badge-credit">${buyDiamondCost}c</span> + <span class="badge badge-rate2">${buyDiamondRateCost.toFixed(1)} Rate 2</span></small>`;
       buyBtn.disabled=false;
     }
   }
@@ -785,36 +793,51 @@
   // ===== SLOT / SPIN =====
   const visualSymbol=()=>symbols[Math.floor(Math.random()*symbols.length)];
 
+  // MODIFIED: Replaced animation function
   function animateReel(reelEl, finalSymbol, duration) {
     return new Promise(resolve => {
       const startTime = performance.now();
       let lastUpdate = startTime;
-      const minInterval = 50;
-      const maxInterval = 200;
+      const minInterval = 50; // Start fast
+      const maxInterval = 300; // End slow
 
-      reelEl.style.transition = 'filter 0.1s, opacity 0.1s';
-      reelEl.style.filter = 'blur(3px)';
-      reelEl.style.opacity = '0.8';
+      // Add a "jump" effect for each symbol change
+      const jumpAnim = [
+        { transform: 'scale(1.0)' },
+        { transform: 'scale(1.15)' },
+        { transform: 'scale(1.0)' }
+      ];
+      const jumpTiming = { duration: 100, easing: 'ease-in-out' };
 
       function spin(currentTime) {
         const elapsedTime = currentTime - startTime;
         let progress = elapsedTime / duration;
         if (progress > 1) progress = 1;
-        const progress_easeout = 1 - Math.pow(1 - progress, 3);
+        
+        // Use a different easing: ease-out quad
+        const progress_easeout = 1 - (1 - progress) * (1 - progress);
         const currentInterval = minInterval + (maxInterval - minInterval) * progress_easeout;
 
         if (currentTime - lastUpdate > currentInterval) {
           reelEl.textContent = visualSymbol();
+          // Check if animations are supported before calling
+          if (typeof reelEl.animate === 'function') {
+            reelEl.animate(jumpAnim, jumpTiming); // Add jump animation
+          }
           lastUpdate = currentTime;
         }
 
         if (progress < 1) {
           requestAnimationFrame(spin);
         } else {
-          reelEl.style.transition = 'filter 0.3s, opacity 0.3s';
-          reelEl.style.filter = 'blur(0px)';
-          reelEl.style.opacity = '1';
           reelEl.textContent = finalSymbol;
+          // Final "land" animation
+          if (typeof reelEl.animate === 'function') {
+            reelEl.animate([
+              { transform: 'scale(1.2)' },
+              { transform: 'scale(1.0)' }
+            ], { duration: 150, easing: 'ease-out' });
+          }
           resolve();
         }
       }
@@ -840,7 +863,9 @@
   async function spinOnce(){
     if(!spinBtn || spinBtn.disabled || modalOpen) return;
     if(value1 < spinDollarCost || rate1 < spinRateCost){
-      spinBtn.animate([{transform:'translateX(0)'},{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:180});
+      if (typeof spinBtn.animate === 'function') {
+        spinBtn.animate([{transform:'translateX(0)'},{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:180});
+      }
       return;
     }
 
@@ -943,7 +968,9 @@
         updateReadout();
       } else {
         if(value2<buyDiamondCost || rate2<buyDiamondRateCost){
-          buyBtn.animate([{transform:'translateX(0)'},{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:180});
+          if (typeof buyBtn.animate === 'function') {
+            buyBtn.animate([{transform:'translateX(0)'},{transform:'translateX(-4px)'},{transform:'translateX(40)'},{transform:'translateX(0)'}],{duration:180});
+          }
         }
       }
     });
@@ -960,7 +987,9 @@
     buyResetSpinCostBtn.addEventListener('click', () => {
       if (isSpinCostResetPurchased) return;
       if (value1 < 5000 || rate1 < 10) {
-        buyResetSpinCostBtn.animate([{transform:'translateX(0)'},{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:180});
+        if (typeof buyResetSpinCostBtn.animate === 'function') {
+          buyResetSpinCostBtn.animate([{transform:'translateX(0)'},{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:180});
+        }
         return;
       }
       value1 -= 5000;
@@ -975,7 +1004,9 @@
       if (doubleUpgradeLevel >= 4) return;
 
       if (value2 < 15000 || rate2 < 15) {
-        buyDoubleSliderBtn.animate([{transform:'translateX(0)'},{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:180});
+        if (typeof buyDoubleSliderBtn.animate === 'function') {
+          buyDoubleSliderBtn.animate([{transform:'translateX(0)'},{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:180});
+        }
         return;
       }
 
