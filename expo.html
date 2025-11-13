@@ -604,7 +604,12 @@
   // ===== UI UPDATE HELPERS =====
   // Updated function to write directly to the button
   function updateCostMsg(){
-    spinBtn.innerHTML = `Spin<br><small><span class="badge badge-money">$${spinDollarCost}</span> + <span class="badge badge-rate1">${fmtRatePts(spinRateCost)} Rate 1</span></small>`;
+    // MODIFICATION: Check if rate cost is 0
+    if (spinRateCost <= 0) {
+      spinBtn.innerHTML = `Spin<br><small><span class="badge badge-money">$${spinDollarCost}</span></small>`;
+    } else {
+      spinBtn.innerHTML = `Spin<br><small><span class="badge badge-money">$${spinDollarCost}</span> + <span class="badge badge-rate1">${fmtRatePts(spinRateCost)} Rate 1</span></small>`;
+    }
   }
 
   // Updated function to write directly to the button
@@ -613,7 +618,13 @@
       buyBtn.innerHTML = `💎 Active<br><small>(${diamondCount} left)</small>`;
       buyBtn.disabled=true;
     } else {
-      buyBtn.innerHTML = `Buy 6x 💎<br><small><span class="badge badge-credit">${buyDiamondCost}c</span> + <span class="badge badge-rate2">${buyDiamondRateCost.toFixed(1)} Rate 2</span></small>`;
+      // MODIFICATION: Check for free rate buff
+      if (nextDiamondPurchaseFreeRate2) {
+        buyBtn.innerHTML = `Buy 6x 💎<br><small><span class="badge badge-credit">${buyDiamondCost}c</span></small>`;
+      } else {
+        buyBtn.innerHTML = `Buy 6x 💎<br><small><span class="badge badge-credit">${buyDiamondCost}c</span> + <span class="badge badge-rate2">${buyDiamondRateCost.toFixed(1)} Rate 2</span></small>`;
+      }
+      // END MODIFICATION
       buyBtn.disabled=false;
     }
   }
@@ -741,6 +752,8 @@
         reduceRate2Btn.style.display = 'block';
         // MODIFICATION: Change text for new reward
         reduceRate2Btn.textContent = 'Next 💎 buy costs 0 Rate 2';
+        // MODIFICATION: Disable if buff is already active
+        reduceRate2Btn.disabled = nextDiamondPurchaseFreeRate2;
         focusables = [reduceRate2Btn, takeMoneyBtn];
       } else {
         reduceBtn.style.display = 'block';
@@ -764,6 +777,8 @@
         reduceRate2Btn.style.display = 'none';
         // MODIFICATION: Reset text on cleanup
         reduceRate2Btn.textContent = 'Lower Buy cost by 1.0 Rate 2 Point';
+        // MODIFICATION: Reset disabled state
+        reduceRate2Btn.disabled = false;
       }
 
       reduceBtn.onclick=()=>{ cleanup(); resolve('reduce'); };
@@ -1037,20 +1052,22 @@
       value2 -= 15000;
       rate2 -= 15;
 
+      // MODIFICATION: Changed upgrade sequence
       switch (doubleUpgradeLevel) {
         case 0:
-          growStepsTop[1] *= 2;
+          growStepsBottom[1] *= 2; // bottom 10
           break;
         case 1:
-          growStepsBottom[4] *= 2;
+          growStepsTop[4] *= 2; // top 10
           break;
         case 2:
-          growStepsTop[0] *= 2;
+          growStepsBottom[0] *= 2; // bottom 12
           break;
         case 3:
-          growStepsBottom[5] *= 2;
+          growStepsTop[5] *= 2; // top 12
           break;
       }
+      // END MODIFICATION
 
       doubleUpgradeLevel++;
 
