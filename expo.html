@@ -312,6 +312,12 @@
       border-color: #ffc800;
     }
 
+    /* NEW STYLE FOR SPINNING */
+    .reel-spinning {
+      filter: blur(3px);
+      transition: filter 0.05s;
+    }
+
     #confettiCanvas {
       position: fixed;
       top: 0;
@@ -801,52 +807,36 @@
   // MODIFIED: Replaced animation function
   function animateReel(reelEl, finalSymbol, duration) {
     return new Promise(resolve => {
-      const startTime = performance.now();
-      let lastUpdate = startTime;
-      const minInterval = 50; // Start fast
-      const maxInterval = 300; // End slow
+      // 1. Add blur class immediately
+      reelEl.classList.add('reel-spinning');
 
-      // Add a "jump" effect for each symbol change
-      const jumpAnim = [
-        { transform: 'scale(1.0)' },
-        { transform: 'scale(1.15)' },
-        { transform: 'scale(1.0)' }
-      ];
-      const jumpTiming = { duration: 100, easing: 'ease-in-out' };
+      // 2. Start rapid symbol cycling
+      const spinInterval = setInterval(() => {
+        reelEl.textContent = visualSymbol();
+      }, 50); // Cycle every 50ms
 
-      function spin(currentTime) {
-        const elapsedTime = currentTime - startTime;
-        let progress = elapsedTime / duration;
-        if (progress > 1) progress = 1;
+      // 3. Set a timeout to stop the spin
+      setTimeout(() => {
+        // 4. Stop cycling
+        clearInterval(spinInterval);
 
-        // Use a different easing: ease-out quad
-        const progress_easeout = 1 - (1 - progress) * (1 - progress);
-        const currentInterval = minInterval + (maxInterval - minInterval) * progress_easeout;
+        // 5. Remove blur
+        reelEl.classList.remove('reel-spinning');
 
-        if (currentTime - lastUpdate > currentInterval) {
-          reelEl.textContent = visualSymbol();
-          // Check if animations are supported before calling
-          if (typeof reelEl.animate === 'function') {
-            reelEl.animate(jumpAnim, jumpTiming); // Add jump animation
-          }
-          lastUpdate = currentTime;
+        // 6. Set final symbol
+        reelEl.textContent = finalSymbol;
+
+        // 7. Final "land" animation
+        if (typeof reelEl.animate === 'function') {
+          reelEl.animate([
+            { transform: 'scale(1.2) rotate(-3deg)', opacity: 0.8 },
+            { transform: 'scale(1.0) rotate(0deg)', opacity: 1.0 }
+          ], { duration: 200, easing: 'ease-out' });
         }
 
-        if (progress < 1) {
-          requestAnimationFrame(spin);
-        } else {
-          reelEl.textContent = finalSymbol;
-          // Final "land" animation
-          if (typeof reelEl.animate === 'function') {
-            reelEl.animate([
-              { transform: 'scale(1.2)' },
-              { transform: 'scale(1.0)' }
-            ], { duration: 150, easing: 'ease-out' });
-          }
-          resolve();
-        }
-      }
-      requestAnimationFrame(spin);
+        // 8. Resolve promise
+        resolve();
+      }, duration); // Total spin duration
     });
   }
 
