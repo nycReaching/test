@@ -3,131 +3,55 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Slot Game — Retro Arcade</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+  <title>Slot Game — Upgrades + Onboarding</title>
   <style>
     :root{
-      /* Retro Arcade Palette */
-      --bg: #000;
-      --panel: #0a0a0a;
-      --panel-2: #111;
-      --text: #fff;
-      --muted: #aaa;
-      --track: #333;
-      --track-h: 10px;
-      --thumb-size: 20px;
-      --brd: #00ff00; /* Bright Green */
-      --brd-strong: #fff;
-      --brd-width: 2px;
-      --shadow-1: none;
-      --shadow-2: none;
-
-      --money-bg: #006600; /* Dark Green */
-      --money-brd: #00ff00; /* Bright Green */
-      --money-text: #00ff00; /* Bright Green */
-      
-      --credit-bg: #660066; /* Dark Purple */
-      --credit-brd: #ff00ff; /* Fuchsia */
-      --credit-text: #ff00ff; /* Fuchsia */
-      
-      --rate1-bg: #0033cc; /* Dark Blue */
-      --rate1-accent: #00ffff; /* Cyan */
-
-      --rate2-bg: #cc0033; /* Dark Red */
-      --rate2-accent: #ff99cc; /* Pink */
-
-      --tap: 48px;
+      --bg:#07090d;--panel:#0d1218;--panel-2:#0a0f14;--text:#fff;--muted:#9eb0c3;--track:#1b2532;--track-h:12px;--thumb-size:22px;--brd:#2e4053;--brd-strong:#49627f;--brd-width:2px;--shadow-1:0 2px 6px rgba(0,0,0,.45);--shadow-2:0 18px 36px rgba(0,0,0,.55);
+      --money-bg: oklch(22% .08 150); --money-brd: oklch(38% .10 150);
+      --credit-bg: oklch(24% .10 315); --credit-brd: oklch(42% .12 315);
+      --rate1-bg: oklch(26% .10 250); --rate1-accent: oklch(82% .18 28);
+      --rate2-bg: oklch(26% .10 210); --rate2-accent: oklch(86% .14 170);
+      --money-text: oklch(92% .15 100);
+      --credit-text: oklch(90% .1 345);
+      --tap:48px;
     }
     *{box-sizing:border-box}
-    html,body{
-      /* height:100%; */ /* REMOVED */
-      image-rendering: pixelated;
-    }
+    html,body{height:100%}
 
     body{
       margin:0;
-      font-family: 'Silkscreen', 'Press Start 2P', monospace;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Arial;
       color:var(--text);
-      background:var(--bg);
+      background:#000;
       display:grid;
-      place-items:center;
-      -webkit-font-smoothing: none;
-      -moz-osx-font-smoothing: grayscale;
-      position: relative;
-      /* overflow: hidden; */ /* REMOVED - This was causing the mobile cutoff */
-      text-shadow: 0 0 1px rgba(255, 255, 255, 0.2);
-      min-height: 100vh; /* ADDED - Ensures body is at least viewport height */
+      place-items:center
     }
-
-    /* CRT Vignette */
-    body::before {
-        content: "";
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: radial-gradient(ellipse at center, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%);
-        pointer-events: none;
-        z-index: 1002;
-    }
-
-    /* CRT Scanlines and flicker */
-    body::after {
-        content: "";
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: repeating-linear-gradient(
-            to bottom,
-            rgba(0, 0, 0, 0.4) 0,
-            rgba(0, 0, 0, 0.4) 1px,
-            transparent 1px,
-            transparent 3px
-        );
-        pointer-events: none;
-        z-index: 1003;
-        opacity: 0.5;
-        animation: crt-flicker 0.1s infinite alternate;
-    }
-
-    @keyframes crt-flicker {
-        0% { opacity: 0.4; }
-        100% { opacity: 0.6; }
-    }
-
     .wrap{width:min(920px,94vw)}
     .card{
-      background: var(--bg);
-      border: 4px solid var(--brd-strong);
-      border-radius: 0;
+      background: linear-gradient(180deg, #1a0404, #000);
+      border:var(--brd-width) solid var(--brd-strong);
+      border-radius:18px;
       padding:20px clamp(14px,4vw,28px);
-      box-shadow: 0 0 10px 2px var(--brd-strong), inset 0 0 10px 2px var(--brd-strong);
+      box-shadow:var(--shadow-2);
       position:relative;
       overflow:clip;
-      outline: none;
+      outline:1px solid rgba(255,255,255,.06)
     }
 
     #gameTimer{
-      font-family: 'Press Start 2P', monospace;
       text-align:center;
       font-size:16px;
       margin-bottom:8px;
-      letter-spacing: 1.5px;
+      letter-spacing:1.5px;
       opacity:.95;
       background: var(--panel-2);
       border: var(--brd-width) solid var(--brd);
       padding: 8px 14px;
-      border-radius: 0;
+      border-radius: 12px;
       width: fit-content;
       margin-left: auto;
       margin-right: auto;
       box-shadow: var(--shadow-1);
-      text-shadow: 0 0 4px var(--brd);
     }
 
     .goal-text{
@@ -135,221 +59,126 @@
       color:var(--muted);
       text-align:center;
       margin-bottom:14px;
-      line-height: 1.5;
     }
     .goal-text strong{
       color:var(--money-text);
-      text-shadow: 0 0 4px var(--money-text);
     }
 
     .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px clamp(12px,3vw,24px);margin-bottom:18px}
-    .stat{
-      background: var(--panel);
-      border: var(--brd-width) solid var(--brd);
-      border-radius: 0;
-      padding:14px 16px;
-      box-shadow:var(--shadow-1);
-    }
-    .label{
-      font-family: 'Silkscreen', monospace;
-      font-size:12px;
-      color:var(--muted);
-      letter-spacing:.25px;
-    }
-    .value{
-      font-family: 'Press Start 2P', monospace;
-      font-size:clamp(18px, 4.5vw, 26px);
-      font-weight:400;
-      line-height:1.1;
-      margin-top:8px;
-      text-shadow: 0 0 5px currentColor;
-    }
+    .stat{background:#0b1117;border:var(--brd-width) solid var(--brd);border-radius:14px;padding:14px 16px;box-shadow:var(--shadow-1)}
+    .label{font-size:12px;color:var(--muted);letter-spacing:.25px}
+    .value{font-size:clamp(20px,5vw,30px);font-weight:800;line-height:1.1;margin-top:8px}
     .growth{margin-top:6px;font-size:12px;color:var(--muted)}
 
     .stat.money{background:var(--money-bg);border-color:var(--money-brd)}
-    .stat.money .label {color:var(--text);}
-    .stat.money .value {color:var(--money-text);}
+    .stat.money .label {color:var(--text);text-shadow:0 1px 0 rgba(0,0,0,.45)}
+    .stat.money .value {color:var(--money-text);text-shadow:0 1px 0 rgba(0,0,0,.45)}
 
     .stat.credit{background:var(--credit-bg);border-color:var(--credit-brd)}
-    .stat.credit .label {color:var(--text);}
-    .stat.credit .value {color:var(--credit-text);}
+    .stat.credit .label {color:var(--text);text-shadow:0 1px 0 rgba(0,0,0,.35)}
+    .stat.credit .value {color:var(--credit-text);text-shadow:0 1px 0 rgba(0,0,0,.35)}
 
-    .stat.rate1{background:var(--rate1-bg);border-color:var(--rate1-accent)}
+    .stat.rate1{background:var(--rate1-bg);border-color:color-mix(in oklab,var(--rate1-bg),white 18%)}
     .stat.rate1 .label,.stat.rate1 .value,.stat.rate1 .growth{color:var(--rate1-accent)}
-    .stat.rate2{background:var(--rate2-bg);border-color:var(--rate2-accent)}
+    .stat.rate2{background:var(--rate2-bg);border-color:color-mix(in oklab,var(--rate2-bg),white 18%)}
     .stat.rate2 .label,.stat.rate2 .value,.stat.rate2 .growth{color:var(--rate2-accent)}
 
-    .badge{
-      display:inline-block;
-      padding:4px 6px;
-      border-radius: 0;
-      font-size: 8px;
-      font-weight:400;
-      font-family: 'Press Start 2P', monospace;
-      background: #222;
-      color: #eee;
-      box-shadow: none; 
-      vertical-align: middle;
-      border: 1px solid #555;
-      text-shadow: none;
-    }
+    .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:800;background:#223042;color:#ecf3fb;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06); vertical-align: middle;}
 
     .badge.badge-rate1 {
       background-color: var(--rate1-bg);
       color: var(--rate1-accent);
-      border: 1px solid var(--rate1-accent);
+      border: 1px solid oklch(from var(--rate1-accent) l c h / 0.5);
+      box-shadow: none;
     }
     .badge.badge-rate2 {
       background-color: var(--rate2-bg);
       color: var(--rate2-accent);
-      border: 1px solid var(--rate2-accent);
+      border: 1px solid oklch(from var(--rate2-accent) l c h / 0.5);
+      box-shadow: none;
     }
+
     .badge.badge-money {
       background-color: var(--money-bg);
       color: var(--money-text);
-      border: 1px solid var(--money-brd);
+      border: 1px solid oklch(from var(--money-brd) l c h / 0.5);
+      text-shadow: 0 1px 0 rgba(0,0,0,.45);
+      box-shadow: none;
     }
     .badge.badge-credit {
       background-color: var(--credit-bg);
       color: var(--credit-text);
-      border: 1px solid var(--credit-brd);
-    }
-
-    .slider-wrap{margin: 12px 0 8px 0; display:flex;justify-content:center}
-    .slider{position:relative;height: 64px;user-select:none;width:min(420px,88%);margin:0 auto;padding:0 16px}
-    .track{
-      position:absolute;
-      left:16px;
-      right:16px;
-      top:50%;
-      transform:translateY(-50%);
-      height:var(--track-h);
-      border-radius: 0;
-      background: var(--track);
-      outline: 2px solid var(--brd);
+      border: 1px solid oklch(from var(--credit-brd) l c h / 0.5);
+      text-shadow: 0 1px 0 rgba(0,0,0,.35);
       box-shadow: none;
     }
+
+    .slider-wrap{margin-top:6px;display:flex;justify-content:center}
+    .slider{position:relative;height:64px;user-select:none;width:min(420px,88%);margin:0 auto;padding:0 16px}
+    .track{position:absolute;left:16px;right:16px;top:50%;transform:translateY(-50%);height:var(--track-h);border-radius:999px;background:linear-gradient(90deg,#1a2330,#213041 60%,#1a2330);outline:1px solid #2a3a4d;box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
 
     .ticks{
       position:absolute;
       left:16px;
       right:16px;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 10px;
-      font-weight:400;
+      font-size:12px;
+      font-weight:900;
       text-shadow:0 1px 0 rgba(0,0,0,.45);
     }
     .ticks-top{
-      top: 10px;
+      top: 2px;
       color: var(--rate2-accent);
-      text-shadow: 0 0 4px var(--rate2-accent);
     }
     .ticks-bottom{
-      top: 50px;
+      top: 47px;
       color: var(--rate1-accent);
-      text-shadow: 0 0 4px var(--rate1-accent);
     }
 
-    .thumb{
-      position:absolute;
-      top:50%;
-      transform:translate(-50%,-50%);
-      width:var(--thumb-size);
-      height: 40px;
-      border-radius: 0;
-      cursor:grab;
-      box-shadow: 2px 2px 0 #000;
-      background: var(--rate1-accent);
-      border: 2px solid #000;
-    }
+    .thumb{position:absolute;top:50%;transform:translate(-50%,-50%);width:var(--thumb-size);height:var(--thumb-size);border-radius:6px;cursor:grab;box-shadow:0 2px 0 rgba(0,0,0,.35),inset 0 0 0 1px rgba(255,255,255,.12);background:linear-gradient(180deg,#c5d2df 0%,#9fb0c3 100%)}
 
     .helper-text{
       font-size:12px;
       color:var(--muted);
       text-align:center;
-      margin-top: 0;
+      margin-top:8px;
     }
     .helper-text.helper-slot{
       margin-top:4px;
     }
 
     .controls{margin-top:14px;display:flex;gap:10px; justify-content: center;}
-    
-    button.ctrl, .btn {
-      background: #222;
-      color:var(--text);
-      border: var(--brd-width) solid var(--brd-strong);
-      border-radius: 0;
-      padding:10px 12px;
-      font-family: 'Press Start 2P', monospace;
-      font-weight:400;
-      font-size:12px;
-      cursor:pointer;
-      min-height:var(--tap);
-      box-shadow: inset 0 0 0 2px #000, 4px 4px 0 0 #000;
-      transition: none;
-      -webkit-font-smoothing: none;
-      -moz-osx-font-smoothing: grayscale;
-    }
-    button.ctrl:active, .btn:active {
-      box-shadow: inset 0 0 0 2px #000, 0 0 0 0 #000;
-      transform: translate(4px, 4px);
-    }
-    
-    .ctrl-fixed{width:96px;padding:10px 12px;font-size:12px; flex-shrink: 0;}
+    button.ctrl{background:#0b1117;color:var(--text);border:var(--brd-width) solid #2a3a4d;border-radius:12px;padding:10px 12px;font-weight:800;font-size:14px;cursor:pointer;min-height:var(--tap)}
+    .ctrl-fixed{width:96px;padding:10px 12px;font-size:13px; flex-shrink: 0;}
 
     #swapBtn {
       background: linear-gradient(90deg, var(--credit-bg) 0%, var(--credit-bg) 50%, var(--money-bg) 50%, var(--money-bg) 100%);
       border-color: var(--brd-strong);
+      transition: background 0.2s, opacity 0.2s;
+    }
+    #swapBtn:disabled {
+      cursor: not-allowed;
     }
 
     #upgradeBtn {
-      background: #440066;
-      border-color: #9900cc;
-      color: #cc99ff;
+      background: oklch(28% .08 280);
+      border-color: oklch(40% .1 280);
+      color: oklch(90% .1 310);
     }
 
     #upgradeBtn:disabled,
     #pause:disabled,
-    #buyBtn:disabled,
-    #swapBtn:disabled {
-      opacity: 0.4 !important;
-      color: #888;
-      box-shadow: inset 0 0 0 2px #000;
-      transform: none;
+    #buyBtn:disabled {
+      opacity: 1;
       cursor: not-allowed;
-      background: #222;
     }
 
-    button.ctrl-buy{
-      background:var(--credit-bg);
-      border-color:var(--credit-brd);
-      color:var(--credit-text);
-      padding:14px 20px;
-      font-size:14px;
-    }
-    #spin.ctrl{
-      background:var(--money-bg);
-      border-color:var(--money-brd);
-      color:var(--money-text);
-      padding:14px 20px;
-      font-size:14px;
-    }
+    button.ctrl-buy{background:var(--credit-bg);border-color:var(--credit-brd);color:var(--text);padding:14px 20px;font-size:17px;font-weight:900;}
+    #spin.ctrl{background:var(--money-bg);border-color:var(--money-brd);color:var(--text);padding:14px 20px;font-size:17px;font-weight:900;}
 
     .slot{margin-top:20px;padding-top:16px;border-top:var(--brd-width) solid var(--brd)}
-    .slot h2{margin:0 0 6px 0;font-size:clamp(16px, 2.6vw, 20px); font-family: 'Press Start 2P', monospace; font-weight:400;}
-    .reels{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
-    .reel{
-      background: #111;
-      border: 4px solid #444;
-      border-radius: 0;
-      height:96px;
-      display:grid;
-      place-items:center;
-      font-size:clamp(40px, 10vw, 64px);
-      box-shadow:var(--shadow-1);
-      text-shadow: 0 0 10px #fff, 0 0 20px #fff;
-    }
+    .slot h2{margin:0 0 6px 0;font-size:clamp(16px,2.6vw,22px);font-weight:900}
+    .reels{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:12px 0}
+    .reel{background:linear-gradient(180deg,#0d131a,#0b1016);border:var(--brd-width) solid var(--brd);border-radius:14px;height:96px;display:grid;place-items:center;font-size:clamp(40px,6vw,56px);box-shadow:var(--shadow-1),inset 0 1px 0 rgba(255,255,255,.06)}
 
     .slot-actions {
       display: grid;
@@ -366,7 +195,7 @@
     }
     .cost, .buy-cost-text {
       font-size: 11px;
-      color:var(--text);
+      color: var(--text);
       text-align: center;
       margin-top: 8px;
       line-height: 1.4;
@@ -380,11 +209,9 @@
       color:var(--muted);
     }
     .summary h2{
-      font-family: 'Press Start 2P', monospace;
       font-size:15px;
       margin:0 0 6px 0;
       text-align:center;
-      color: var(--brd);
     }
     .summary-grid{
       display:grid;
@@ -395,36 +222,13 @@
     .summary-value{color:var(--text);font-weight:600;}
 
     .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:1001;backdrop-filter:blur(4px)}
-    .modal{
-      background: #000;
-      border: 4px solid var(--brd);
-      border-radius: 0;
-      width:min(420px,92vw);
-      padding:18px;
-      box-shadow: 0 0 15px 5px var(--brd);
-    }
-    .modal h3{
-      margin:0 0 8px 0;
-      font-size:18px; 
-      text-align: center;
-      font-family: 'Press Start 2P', monospace;
-      font-weight: 400;
-      color: var(--brd);
-      text-shadow: 0 0 4px var(--brd);
-    }
-    .modal p{margin:0 0 12px 0;color:var(--muted);font-size:14px; line-height: 1.5;}
+    .modal{background:#0f141a;border:var(--brd-width) solid #2a3a4d;border-radius:14px;width:min(420px,92vw);padding:18px;box-shadow:0 14px 36px rgba(0,0,0,.55)}
+    .modal h3{margin:0 0 8px 0;font-size:18px; text-align: center;}
+    .modal p{margin:0 0 12px 0;color:var(--muted);font-size:14px}
     .modal .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    
-    .btn.primary{
-      background: var(--rate1-bg);
-      border-color: var(--rate1-accent);
-      color: var(--rate1-accent);
-    }
-    .btn.secondary{
-      background: #222;
-      border-color: #aaa;
-      color: #fff;
-    }
+    .btn{appearance:none;border:2px solid transparent;border-radius:12px;padding:14px 16px;font-weight:900;font-size:16px;cursor:pointer;min-height:48px}
+    .btn.primary{background:oklch(48% .13 160);border-color:oklch(62% .14 160);color:#fff}
+    .btn.secondary{background:#0b1117;border-color:#2a3a4d;color:#e9f1fa}
 
     .modal .upgrade-option p {
       margin: 0 0 12px 0;
@@ -439,28 +243,48 @@
     }
     .modal .upgrade-option .btn {
       width: 100%;
-      font-size: 10px;
     }
     .modal .upgrade-option .btn .badge {
-      font-size: 8px;
-      padding: 4px 6px;
+      font-size: 11px;
+      padding: 2px 7px;
       vertical-align: baseline;
       margin: 0 2px;
+    }
+    .modal .upgrade-option .btn .badge.badge-rate1 {
+      background-color: var(--rate1-bg);
+      color: var(--rate1-accent);
+      border: 1px solid oklch(from var(--rate1-accent) l c h / 0.5);
+    }
+    .modal .upgrade-option .btn .badge.badge-rate2 {
+      background-color: var(--rate2-bg);
+      color: var(--rate2-accent);
+      border: 1px solid oklch(from var(--rate2-accent) l c h / 0.5);
+    }
+    .modal .upgrade-option .btn .badge.badge-money {
+      background-color: var(--money-bg);
+      color: var(--money-text);
+      border: 1px solid oklch(from var(--money-brd) l c h / 0.5);
+      text-shadow: 0 1px 0 rgba(0,0,0,.45);
+    }
+    .modal .upgrade-option .btn .badge.badge-credit {
+      background-color: var(--credit-bg);
+      color: var(--credit-text);
+      border: 1px solid oklch(from var(--credit-brd) l c h / 0.5);
     }
 
     @keyframes winPulse {
       0%, 100% {
         transform: scale(1);
-        box-shadow: var(--shadow-1);
+        box-shadow: var(--shadow-1), inset 0 1px 0 rgba(255,255,255,.06);
       }
       50% {
-        transform: scale(1.05);
-        box-shadow: 0 0 20px 8px #ff00ff, inset 0 0 10px #fff;
+        transform: scale(1.1);
+        box-shadow: 0 0 15px 5px #ffc800, inset 0 1px 0 rgba(255,255,255,.06);
       }
     }
     .reel-win {
       animation: winPulse 0.5s 2;
-      border-color: #ff00ff; /* Fuchsia */
+      border-color: #ffc800;
     }
 
     #confettiCanvas {
@@ -476,14 +300,14 @@
 
     @media (max-width:640px){
       .wrap{width:100vw}
-      .card{border-radius:0;padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left)); border-width: 2px;}
-      .value{font-size:clamp(18px, 6vw, 24px); margin-top: 6px;}
+      .card{border-radius:0;padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+      .value{font-size:clamp(20px, 6.5vw, 28px); margin-top: 6px;}
       .slot-actions{grid-template-columns:1fr;gap:8px; margin-top: 12px;}
       .controls{gap:8px; margin-top: 10px; flex-wrap: wrap;}
       .reel{height:100px;font-size:clamp(44px,14vw,72px)}
       .modal{width:min(500px,96vw)}
       .modal .actions{grid-template-columns:1fr}
-      .btn{font-size:14px;padding:16px 18px;min-height:56px}
+      .btn{font-size:18px;padding:16px 18px;min-height:56px}
       #gameTimer { margin-bottom: 6px; }
       .goal-text{margin-bottom:10px;}
       .stats-grid { gap: 10px; margin-bottom: 12px; }
@@ -501,7 +325,7 @@
   <div class="wrap">
     <div class="card">
       <div id="gameTimer">20:00</div>
-      <!-- <div class="goal-text">Goal: Finish the 20:00 timer with as much <strong>Money</strong> as you can. Use the slider to shape your economy, then risk it on the slot.</div> --> <!-- REMOVED -->
+      <div class="goal-text">Goal: Finish the 20:00 timer with as much <strong>Money</strong> as you can. Use the slider to shape your economy, then risk it on the slot.</div>
 
       <div class="stats-grid">
         <div class="stat money"><div class="label">Money</div><div class="value" id="val1">$0.00</div></div>
@@ -518,7 +342,7 @@
           <div class="ticks ticks-bottom" id="ticksBottom"></div>
         </div>
       </div>
-      <!-- <p class="helper-text" id="growthHelper">Top numbers: <strong>Rate 2</strong> growth · Bottom numbers: <strong>Rate 1</strong> growth. Move the slider to favor one rate or the other.</p> --> <!-- REMOVED -->
+      <p class="helper-text" id="growthHelper">Top numbers: <strong>Rate 2</strong> growth · Bottom numbers: <strong>Rate 1</strong> growth. Move the slider to favor one rate or the other.</p>
 
       <div class="controls">
         <button class="ctrl ctrl-fixed" id="swapBtn">Swap</button>
@@ -528,7 +352,7 @@
 
       <section class="slot" aria-label="3-reel slot machine">
         <h2>3‑Reel Slot</h2>
-        <!-- <p class="helper-text helper-slot">Spins cost <strong>Money</strong> and <strong>Rate 1</strong>. 💎 symbols act as wildcards you buy with Credit and Rate 2.</p> --> <!-- REMOVED -->
+        <p class="helper-text helper-slot">Spins cost <strong>Money</strong> and <strong>Rate 1</strong>. 💎 symbols act as wildcards you buy with Credit and Rate 2.</p>
         <div class="reels">
           <div class="reel" id="reel1">🍒</div>
           <div class="reel" id="reel2">🍋</div>
@@ -689,8 +513,7 @@
     confettiCanvas.style.display = 'block';
     confettiParticles = [];
     const particleCount = 200;
-    // Arcade color palette
-    const colors = ['#ff00ff', '#00ffff', '#00ff00', '#ffff00', '#ff0066', '#00aaff', '#fff'];
+    const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50', '#8bc34a', '#cddc39', '#ffeb3b', '#ffc107', '#ff9800', '#ff5722'];
 
     confettiCanvas.width = window.innerWidth;
     confettiCanvas.height = window.innerHeight;
@@ -699,7 +522,7 @@
       confettiParticles.push({
         x: Math.random() * confettiCanvas.width,
         y: Math.random() * confettiCanvas.height - confettiCanvas.height,
-        size: Math.random() * 5 + 2, // Keep small for pixel feel
+        size: Math.random() * 5 + 2,
         color: colors[Math.floor(Math.random() * colors.length)],
         vx: Math.random() * 6 - 3,
         vy: Math.random() * 5 + 3,
@@ -722,8 +545,7 @@
       } else {
         confettiCtx.globalAlpha = p.opacity;
         confettiCtx.fillStyle = p.color;
-        // Use fillRect for a pixel/square look
-        confettiCtx.fillRect(p.x, p.y, p.size, p.size);
+        confettiCtx.fillRect(p.x, p.y, p.size, p.size * 2);
         confettiCtx.globalAlpha = 1;
       }
     });
@@ -1003,7 +825,7 @@
   async function spinOnce(){
     if(!spinBtn || spinBtn.disabled || modalOpen) return;
     if(value1 < spinDollarCost || rate1 < spinRateCost){
-      spinBtn.animate([{transform:'translateX(0) translateY(0)'},{transform:'translateX(-4px) translateY(-4px)'},{transform:'translateX(4px) translateY(4px)'},{transform:'translateX(0) translateY(0)'}],{duration:180});
+      spinBtn.animate([{transform:'translateX(0)'},{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:180});
       return;
     }
 
@@ -1030,7 +852,7 @@
     const nonWild=finalSyms.filter(s=>s!=='💎');
     let win=false;
     if(nonWild.length<=1) win=true;
-    else if(nonWild.length===2) win=(nonWild[0]===nonWebkitBackgroundClip);
+    else if(nonWild.length===2) win=(nonWild[0]===nonWild[1]);
     else win=(finalSyms[0]===finalSyms[1] && finalSyms[1]===finalSyms[2]);
 
     if(win){
@@ -1106,7 +928,7 @@
         updateReadout();
       } else {
         if(value2<buyDiamondCost || rate2<buyDiamondRateCost){
-          buyBtn.animate([{transform:'translateX(0) translateY(0)'},{transform:'translateX(-4px) translateY(-4px)'},{transform:'translateX(4px) translateY(4px)'},{transform:'translateX(0) translateY(0)'}],{duration:180});
+          buyBtn.animate([{transform:'translateX(0)'},{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:180});
         }
       }
     });
@@ -1123,7 +945,7 @@
     buyResetSpinCostBtn.addEventListener('click', () => {
       if (isSpinCostResetPurchased) return;
       if (value1 < 5000 || rate1 < 10) {
-        buyResetSpinCostBtn.animate([{transform:'translateX(0) translateY(0)'},{transform:'translateX(-4px) translateY(-4px)'},{transform:'translateX(4px) translateY(4px)'},{transform:'translateX(0) translateY(0)'}],{duration:180});
+        buyResetSpinCostBtn.animate([{transform:'translateX(0)'},{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:180});
         return;
       }
       value1 -= 5000;
@@ -1138,7 +960,7 @@
       if (doubleUpgradeLevel >= 4) return;
 
       if (value2 < 15000 || rate2 < 15) {
-        buyDoubleSliderBtn.animate([{transform:'translateX(0) translateY(0)'},{transform:'translateX(-4px) translateY(-4px)'},{transform:'translateX(4px) translateY(4px)'},{transform:'translateX(0) translateY(0)'}],{duration:180});
+        buyDoubleSliderBtn.animate([{transform:'translateX(0)'},{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:180});
         return;
       }
 
