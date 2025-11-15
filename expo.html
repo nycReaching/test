@@ -15,7 +15,19 @@
       --credit-text: oklch(90% .1 345);
       --tap:48px;
     }
-    *{box-sizing:border-box}
+    *{
+      box-sizing:border-box;
+      /* NEW: Disable default tap highlight */
+      -webkit-tap-highlight-color: transparent;
+      outline: none; /* Disable default focus outline */
+    }
+    
+    /* NEW: Accessibility-friendly focus rings, only for keyboard nav */
+    button:focus-visible, .thumb:focus-visible {
+      box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px oklch(70% .2 250);
+      z-index: 10;
+    }
+
     html,body{height:100%}
 
     body{
@@ -136,7 +148,26 @@
       color: var(--rate1-accent);
     }
 
-    .thumb{position:absolute;top:50%;transform:translate(-50%,-50%);width:var(--thumb-size);height:var(--thumb-size);border-radius:6px;cursor:grab;box-shadow:0 2px 0 rgba(0,0,0,.35),inset 0 0 0 1px rgba(255,255,255,.12);background:linear-gradient(180deg,#c5d2df 0%,#9fb0c3 100%)}
+    .thumb{
+      position:absolute;
+      top:50%;
+      transform:translate(-50%,-50%);
+      width:var(--thumb-size);
+      height:var(--thumb-size);
+      border-radius:6px;
+      cursor:grab;
+      box-shadow:0 2px 0 rgba(0,0,0,.35),inset 0 0 0 1px rgba(255,255,255,.12);
+      background:linear-gradient(180deg,#c5d2df 0%,#9fb0c3 100%);
+      /* NEW: Transition for press effect */
+      transition: transform 0.1s ease-out, background 0.1s ease-out;
+    }
+    /* NEW: Active/focus state for slider thumb */
+    .thumb:active, .thumb:focus {
+      transform: translate(-50%, -50%) scale(1.25);
+      background: linear-gradient(180deg, #e0e8f0 0%, #b8c8d9 100%);
+      cursor: grabbing;
+    }
+
 
     .helper-text{
       font-size:12px;
@@ -149,13 +180,32 @@
     }
 
     .controls{margin-top:14px;display:flex;gap:10px; justify-content: center;}
-    button.ctrl{background:#0b1117;color:var(--text);border:var(--brd-width) solid #2a3a4d;border-radius:12px;padding:10px 12px;font-weight:800;font-size:14px;cursor:pointer;min-height:var(--tap)}
+    button.ctrl{
+      background:#0b1117;
+      color:var(--text);
+      border:var(--brd-width) solid #2a3a4d;
+      border-radius:12px;
+      padding:10px 12px;
+      font-weight:800;
+      font-size:14px;
+      cursor:pointer;
+      min-height:var(--tap);
+      /* NEW: Transition for press effect */
+      transition: transform 0.05s ease-out, filter 0.05s ease-out;
+    }
     .ctrl-fixed{width:96px;padding:10px 12px;font-size:13px; flex-shrink: 0;}
+
+    /* NEW: Active state for control buttons */
+    button.ctrl:not(:disabled):active {
+      transform: scale(0.96);
+      filter: brightness(0.85);
+    }
+
 
     #swapBtn {
       background: linear-gradient(90deg, var(--credit-bg) 0%, var(--credit-bg) 50%, var(--money-bg) 50%, var(--money-bg) 100%);
       border-color: var(--brd-strong);
-      transition: background 0.2s, opacity 0.2s;
+      transition: background 0.2s, opacity 0.2s, transform 0.05s ease-out, filter 0.05s ease-out; /* Merged transition */
     }
     #swapBtn:disabled {
       cursor: not-allowed;
@@ -229,13 +279,44 @@
     /* REMOVED: .summary, .summary h2, .summary-grid, .summary-label, .summary-value styles */
 
     .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:1001;backdrop-filter:blur(4px)}
+    
+    /* NEW: Modal backdrop variant without blur */
+    .modal-backdrop-noblur{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:1001;}
+    
     .modal{background:#0f141a;border:var(--brd-width) solid #2a3a4d;border-radius:14px;width:min(420px,92vw);padding:18px;box-shadow:0 14px 36px rgba(0,0,0,.55)}
     .modal h3{margin:0 0 8px 0;font-size:18px; text-align: center;}
     .modal p{margin:0 0 12px 0;color:var(--muted);font-size:14px}
     .modal .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .btn{appearance:none;border:2px solid transparent;border-radius:12px;padding:14px 16px;font-weight:900;font-size:16px;cursor:pointer;min-height:48px}
+    
+    .btn{
+      appearance:none;
+      border:2px solid transparent;
+      border-radius:12px;
+      padding:14px 16px;
+      font-weight:900;
+      font-size:16px;
+      cursor:pointer;
+      min-height:48px;
+      /* NEW: Transition for press effect */
+      transition: transform 0.05s ease-out, filter 0.05s ease-out, background 0.1s ease-out, border-color 0.1s ease-out;
+    }
     .btn.primary{background:oklch(48% .13 160);border-color:oklch(62% .14 160);color:#fff}
     .btn.secondary{background:#0b1117;border-color:#2a3a4d;color:#e9f1fa}
+
+    /* NEW: Active states for modal buttons */
+    .btn:not(:disabled):active {
+      transform: scale(0.97);
+      filter: brightness(0.9);
+    }
+    .btn.primary:not(:disabled):active {
+      background: oklch(42% .13 160);
+      border-color: oklch(55% .14 160);
+    }
+    .btn.secondary:not(:disabled):active {
+      background: #070c10;
+      border-color: #405a74;
+    }
+
 
     .modal .upgrade-option p {
       margin: 0 0 12px 0;
@@ -338,7 +419,7 @@
   <div class="wrap">
     <div class="card">
       <div id="gameTimer">20:00</div>
-      <div class="goal-text">Goal: Finish the 20:00 timer with as much <strong>Money</strong> as you can. Use the slider to shape your economy, then risk it on the slot.</div>
+      <div class="goal-text">If you can earn <strong>ONE MILLION DOLLARS</strong> before the clock runs out, you get to keep it. Any less, you win nothing.</div>
 
       <div class="stats-grid">
         <div class="stat money"><div class="label">Money</div><div class="value" id="val1">$0.00</div></div>
@@ -420,6 +501,17 @@
     </div>
   </div>
 
+  <!-- NEW: Final Win Modal -->
+  <div class="modal-backdrop-noblur" id="finalWinModalBackdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="finalWinTitle">
+      <h3 id="finalWinTitle" style="text-align: center; font-size: 24px; color: var(--money-text);">Congratulations!</h3>
+      <p style="text-align: center; font-size: 18px; line-height: 1.6; color: var(--text); margin: 20px 0;">
+        You've succeeded in earning ONE MILLION DOLLARS!<br>Your check is in the mail! ✉️ 🏆 🥳
+      </p>
+    </div>
+  </div>
+
+
   <canvas id="confettiCanvas"></canvas>
 
   <script>
@@ -429,6 +521,7 @@
   const BUY_DIAMOND_COST = 500;
   const BUY_DIAMOND_RATE_COST = 1.0;
   const GAME_DURATION_SECONDS = 20 * 60; // 20 minutes
+  const WIN_AMOUNT = 1000000; // NEW: Win amount constant
 
   // Slider growth steps (bottom = Rate 1 growth, top = Rate 2 growth)
   let growStepsBottom = [12, 10, 8, 6, 4, 2];
@@ -490,6 +583,8 @@
   const closeUpgradeModalBtn = document.getElementById('closeUpgradeModal');
   const buyResetSpinCostBtn = document.getElementById('buyResetSpinCost');
   const buyDoubleSliderBtn = document.getElementById('buyDoubleSlider');
+
+  const finalWinModalBackdrop = document.getElementById('finalWinModalBackdrop'); // NEW
 
   const confettiCanvas = document.getElementById('confettiCanvas');
   const confettiCtx = confettiCanvas.getContext('2d');
@@ -714,7 +809,7 @@
       if (isBonus) {
         winDescEl.innerHTML = `A <strong style="color:var(--money-text)">2x Bonus</strong> hit! Choose your reward to continue.`;
       }
-      
+
       // CHANGE: Add visual indicator for 2x win
       // MODIFICATION: Set button text to the final payout
       if (isBonus) {
@@ -797,6 +892,16 @@
     upgradeModalBackdrop.setAttribute('aria-hidden', 'true');
   }
 
+  // NEW: Function to show the final win modal
+  function showFinalWinModal() {
+    modalOpen = true; // Prevents other interactions
+    finalWinModalBackdrop.style.display = 'flex';
+    finalWinModalBackdrop.setAttribute('aria-hidden', 'false');
+    startConfetti();
+    // No buttons to focus, it's just a message
+  }
+
+
   // ===== SLOT / SPIN =====
   const visualSymbol=()=>symbols[Math.floor(Math.random()*symbols.length)];
 
@@ -836,20 +941,22 @@
     });
   }
 
-  function randomSymbol(){
-    let s=symbols[Math.floor(Math.random()*symbols.length)];
-    if(s==='💎'){
-      if(diamondCount>0){
-        diamondCount--;
-        updateBuyBtnUI();
-        if(diamondCount===0) symbols=symbols.filter(x=>x!=='💎');
+  // REFACTORED: This function *only* decides the symbol, it does not
+  // change the diamondCount state.
+  function _getReelSymbol() {
+    let s = symbols[Math.floor(Math.random() * symbols.length)];
+    if (s === '💎') {
+      if (diamondCount > 0) {
+        // We *will* use a diamond, but don't decrement state yet
         return '💎';
       } else {
-        return baseSymbols[Math.floor(Math.random()*baseSymbols.length)];
+        // No diamonds left, pick a base symbol
+        return baseSymbols[Math.floor(Math.random() * baseSymbols.length)];
       }
     }
     return s;
   }
+
 
   async function spinOnce(){
     if(!spinBtn || spinBtn.disabled || modalOpen) return;
@@ -875,12 +982,23 @@
 
     // MODIFIED: Changed durations and call for sequential reveal
     const durationPerReel = 330; // ~1000ms total
-    const finalSyms = [randomSymbol(), randomSymbol(), randomSymbol()];
+    
+    // REFACTORED: Call the new symbol function that doesn't change state
+    const finalSyms = [_getReelSymbol(), _getReelSymbol(), _getReelSymbol()];
 
     await animateReel(reelEls[0], finalSyms[0], durationPerReel);
     await animateReel(reelEls[1], finalSyms[1], durationPerReel);
     await animateReel(reelEls[2], finalSyms[2], durationPerReel);
     // END MODIFICATION
+
+    // --- NEW: Update diamond count *after* reels land ---
+    const diamondsLanded = finalSyms.filter(s => s === '💎').length;
+    if (diamondsLanded > 0) {
+      diamondCount = Math.max(0, diamondCount - diamondsLanded);
+      updateBuyBtnUI(); // Update UI now
+      if (diamondCount === 0) symbols = symbols.filter(x => x !== '💎');
+    }
+    // --- END NEW BLOCK ---
 
     const nonWild=finalSyms.filter(s=>s!=='💎');
     let win=false;
@@ -927,7 +1045,10 @@
     if (running) {
       pauseBtn.disabled=false;
       swapBtn.disabled = (swapUses <= 0);
-      buyBtn.disabled=false;
+      // REFACTORED: updateBuyBtnUI() was moved, so we need to
+      // re-check the disabled state of buyBtn here.
+      updateBuyBtnUI();
+      // buyBtn.disabled=false; // Old line
       upgradeBtn.disabled=false;
     }
     spinBtn.disabled=false;
@@ -1072,6 +1193,26 @@
       rate1=Math.min(MAX_RATE, rate1 + gps1*dt);
       rate2=Math.min(MAX_RATE, rate2 + gps2*dt);
 
+      // --- NEW WIN CONDITION CHECK ---
+      if (value1 >= WIN_AMOUNT) {
+        value1 = WIN_AMOUNT; // Cap at win amount
+        running = false;
+        gameTimeSeconds = Math.max(0, gameTimeSeconds); // Stop timer
+        pauseBtn.disabled = true;
+        spinBtn.disabled = true;
+        buyBtn.disabled = true;
+        if (swapBtn) swapBtn.disabled = true;
+        if (upgradeBtn) upgradeBtn.disabled = true;
+        pauseBtn.textContent = "You Won!";
+        
+        // Call function to show the final win modal
+        showFinalWinModal();
+        
+        updateReadout(); // Do one last update
+        return; // Exit the tick function
+      }
+      // --- END NEW WIN CONDITION ---
+
       if (gameTimeSeconds <= 0) {
         gameTimeSeconds = 0;
         running = false;
@@ -1087,7 +1228,8 @@
 
     updateReadout();
 
-    if (gameTimeSeconds > 0 || (gameTimeSeconds <= 0 && running)) {
+    // Modified condition to stop loop if running is false
+    if (running && gameTimeSeconds > 0) {
       requestAnimationFrame(tick);
     } else if (gameTimeSeconds <= 0 && !running) {
       gameTimerEl.textContent = "GAME OVER";
