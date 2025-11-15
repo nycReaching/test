@@ -52,18 +52,24 @@
 
     #gameTimer{
       text-align:center;
-      font-size:16px;
+      /* MODIFIED: Bold font, larger size */
+      font-size: 20px;
+      font-weight: 800;
+      line-height: 1.1;
       margin-bottom:8px;
       letter-spacing:1.5px;
       opacity:.95;
       background: var(--panel-2);
       border: var(--brd-width) solid var(--brd);
-      padding: 8px 14px;
+      /* MODIFIED: Adjust padding for new size */
+      padding: 10px 16px;
       border-radius: 12px;
       width: fit-content;
       margin-left: auto;
       margin-right: auto;
       box-shadow: var(--shadow-1);
+      /* NEW: Added transition for color change */
+      transition: color 0.3s, background 0.3s, border-color 0.3s;
     }
 
     .goal-text{
@@ -358,6 +364,23 @@
       background-color: var(--credit-bg);
       color: var(--credit-text);
       border: 1px solid oklch(from var(--credit-brd) l c h / 0.5);
+    }
+
+    /* NEW: Timer warning animation */
+    @keyframes flashRed {
+      0%, 100% {
+        color: oklch(85% .2 25);
+        background: oklch(30% .1 25);
+        border-color: oklch(50% .2 25);
+      }
+      50% {
+        color: var(--text);
+        background: var(--panel-2);
+        border-color: var(--brd);
+      }
+    }
+    .timer-warning {
+      animation: flashRed 1.2s infinite steps(1);
     }
 
     @keyframes winPulse {
@@ -1187,6 +1210,20 @@
     if(running && dt>0){
       gameTimeSeconds -= dt;
 
+      // --- NEW: Timer warning logic ---
+      // User requested >3:00, but flashing red usually means *less* than 3:00.
+      // Implementing as a "running out of time" warning.
+      if (gameTimeSeconds <= 180) { // 3 minutes = 180 seconds
+        if (!gameTimerEl.classList.contains('timer-warning')) {
+          gameTimerEl.classList.add('timer-warning');
+        }
+      } else {
+        if (gameTimerEl.classList.contains('timer-warning')) {
+          gameTimerEl.classList.remove('timer-warning');
+        }
+      }
+      // --- END: Timer warning logic ---
+
       value1 += rate1 * dt;
       value2 += rate2 * dt;
       const gps1=(grow1/60), gps2=(grow2/60);
@@ -1205,6 +1242,8 @@
         if (upgradeBtn) upgradeBtn.disabled = true;
         pauseBtn.textContent = "You Won!";
         
+        gameTimerEl.classList.remove('timer-warning'); // NEW: Remove warning on win
+
         // Call function to show the final win modal
         showFinalWinModal();
         
@@ -1222,6 +1261,7 @@
         if (swapBtn) swapBtn.disabled = true;
         if (upgradeBtn) upgradeBtn.disabled = true;
         pauseBtn.textContent = "Over";
+        gameTimerEl.classList.remove('timer-warning'); // NEW: Remove warning on game over
         // REMOVED: showSummary();
       }
     }
@@ -1233,6 +1273,7 @@
       requestAnimationFrame(tick);
     } else if (gameTimeSeconds <= 0 && !running) {
       gameTimerEl.textContent = "GAME OVER";
+      gameTimerEl.classList.remove('timer-warning'); // NEW: Ensure class is removed
     }
   }
 
