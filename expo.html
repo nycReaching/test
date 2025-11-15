@@ -434,7 +434,8 @@
       </div>
       <hr style="border:0; border-top: 1px solid var(--brd); margin: 20px 0;">
       <div class="upgrade-option">
-        <p>Double a specific slider value.<br><small>(4 purchases total, follows a set sequence)</small></p>
+        <!-- MODIFICATION: Updated upgrade text -->
+        <p>Double all slider values.<br><small>(One-time purchase)</small></p>
         <button class="btn primary" id="buyDoubleSlider">
           <span class="badge badge-credit">15,000 C</span> + <span class="badge badge-rate2">15 Rate 2</span>
         </button>
@@ -479,8 +480,9 @@
   let running=true, modalOpen=false;
 
   let isSpinCostResetPurchased = false;
-  let doubleUpgradeLevel = 0;
-  let nextDiamondPurchaseFreeRate2 = false; // MODIFICATION: Added state for new reward
+  // MODIFICATION: Changed from level to boolean
+  let isSliderDoubledPurchased = false; 
+  let nextDiamondPurchaseFreeRate2 = false;
 
   let totalSpins = 0;
   let totalWins = 0;
@@ -741,10 +743,18 @@
   }
 
   // ===== MODALS =====
-  function openWinChoice(){
+  function openWinChoice(payout, isBonus){
+    // MODIFICATION: Added payout and isBonus params
     return new Promise((resolve)=>{
       modalOpen=true;
-      takeMoneyBtn.textContent=`Take $${winMoneyReward}`;
+      
+      // MODIFICATION: Check for bonus and update description
+      const winDescEl = document.getElementById('winDesc');
+      if (isBonus) {
+        winDescEl.innerHTML = `A <strong style="color:var(--money-text)">2x Bonus</strong> hit! Choose your reward to continue.`;
+      }
+      // MODIFICATION: Set button text to the final payout
+      takeMoneyBtn.textContent=`Take $${payout}`;
 
       let focusables;
       if (spinRateCost <= 0) {
@@ -775,9 +785,9 @@
         modalOpen=false;
         reduceBtn.style.display = 'block';
         reduceRate2Btn.style.display = 'none';
-        // MODIFICATION: Reset text on cleanup
+        // MODIFICATION: Reset win description text
+        winDescEl.innerHTML = 'Choose your reward to continue.';
         reduceRate2Btn.textContent = 'Lower Buy cost by 1.0 Rate 2 Point';
-        // MODIFICATION: Reset disabled state
         reduceRate2Btn.disabled = false;
       }
 
@@ -799,10 +809,11 @@
       buyResetSpinCostBtn.innerHTML = `<span class="badge badge-money">$5,000</span> + <span class="badge badge-rate1">10 Rate 1</span>`;
     }
 
-    let remaining = doubleUpgradeLevel < 4;
+    // MODIFICATION: Check boolean flag instead of level
+    let remaining = !isSliderDoubledPurchased; 
     buyDoubleSliderBtn.disabled = !remaining;
     if (!remaining) {
-      buyDoubleSliderBtn.textContent = "Maxed Out";
+      buyDoubleSliderBtn.textContent = "Purchased";
     } else {
       buyDoubleSliderBtn.innerHTML = `<span class="badge badge-credit">15,000 C</span> + <span class="badge badge-rate2">15 Rate 2</span>`;
     }
@@ -919,24 +930,28 @@
       await new Promise(resolve => setTimeout(resolve, 1000));
       reelEls.forEach(el => el.classList.remove('reel-win'));
 
+      // MODIFICATION: Calculate payout before opening modal
+      let isBonus = Math.random() < 0.5;
+      const currentWinPayout = isBonus ? winMoneyReward * 2 : winMoneyReward;
+
       startConfetti();
-      const choice=await openWinChoice();
+      // MODIFICATION: Pass payout and bonus flag to modal
+      const choice = await openWinChoice(currentWinPayout, isBonus);
       stopConfetti();
 
-      const rewardThisWin=winMoneyReward;
-
+      // MODIFICATION: Use the calculated payout
       if(choice==='money'){
-        value1 += rewardThisWin;
+        value1 += currentWinPayout;
       } else if (choice === 'reduce') {
         spinRateCost = Math.max(0, +(spinRateCost - 0.1).toFixed(1));
         updateCostMsg();
       } else if (choice === 'reduceRate2') {
         // MODIFICATION: Change reward logic
         nextDiamondPurchaseFreeRate2 = true;
-        // END MODIFICATION
       }
 
-      winMoneyReward = rewardThisWin + 600;
+      // MODIFICATION: Base reward increases normally
+      winMoneyReward = winMoneyReward + 600;
     }
 
     if (running) {
@@ -1040,7 +1055,8 @@
     });
 
     buyDoubleSliderBtn.addEventListener('click', () => {
-      if (doubleUpgradeLevel >= 4) return;
+      // MODIFICATION: Check boolean flag
+      if (isSliderDoubledPurchased) return;
 
       if (value2 < 15000 || rate2 < 15) {
         if (typeof buyDoubleSliderBtn.animate === 'function') {
@@ -1052,33 +1068,19 @@
       value2 -= 15000;
       rate2 -= 15;
 
-      // MODIFICATION: Changed upgrade sequence
-      switch (doubleUpgradeLevel) {
-        case 0:
-          growStepsBottom[1] *= 2; // bottom 10
-          break;
-        case 1:
-          growStepsTop[4] *= 2; // top 10
-          break;
-        case 2:
-          growStepsBottom[0] *= 2; // bottom 12
-          break;
-        case 3:
-          growStepsTop[5] *= 2; // top 12
-          break;
-      }
+      // MODIFICATION: Double all values in the arrays
+      growStepsBottom = growStepsBottom.map(val => val * 2);
+      growStepsTop = growStepsTop.map(val => val * 2);
+      isSliderDoubledPurchased = true;
       // END MODIFICATION
-
-      doubleUpgradeLevel++;
 
       buildTicks();
       setGrowthByIndex(currentIndex());
       updateReadout();
 
-      if (doubleUpgradeLevel >= 4) {
-        buyDoubleSliderBtn.disabled = true;
-        buyDoubleSliderBtn.textContent = "Maxed Out";
-      }
+      // MODIFICATION: Update button state
+      buyDoubleSliderBtn.disabled = true;
+      buyDoubleSliderBtn.textContent = "Purchased";
     });
   }
 
