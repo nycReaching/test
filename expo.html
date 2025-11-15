@@ -6,13 +6,32 @@
   <title>Slot Game — Upgrades + Onboarding</title>
   <style>
     :root{
-      --bg:#07090d;--panel:#0d1218;--panel-2:#0a0f14;--text:#fff;--muted:#9eb0c3;--track:#1b2532;--track-h:12px;--thumb-size:22px;--brd:#2e4053;--brd-strong:#49627f;--brd-width:2px;--shadow-1:0 2px 6px rgba(0,0,0,.45);--shadow-2:0 18px 36px rgba(0,0,0,.55);
-      --money-bg: oklch(22% .08 150); --money-brd: oklch(38% .10 150);
-      --credit-bg: oklch(24% .10 315); --credit-brd: oklch(42% .12 315);
-      --rate1-bg: oklch(26% .10 250); --rate1-accent: oklch(82% .18 28);
-      --rate2-bg: oklch(26% .10 210); --rate2-accent: oklch(86% .14 170);
-      --money-text: oklch(92% .15 100);
-      --credit-text: oklch(90% .1 345);
+      /* MODIFIED: High Contrast Colors */
+      --bg:#000;
+      --panel:#0a0a0a;
+      --panel-2:#111;
+      --text:#fff;
+      --muted:#a0a0a0;
+      --track:#1f2b3a;
+      --track-h:12px;
+      --thumb-size:22px;
+      --brd:#555;
+      --brd-strong:#888;
+      --brd-width:2px;
+      --shadow-1:0 2px 6px rgba(0,0,0,.45);
+      --shadow-2:0 18px 36px rgba(0,0,0,.55);
+      
+      /* MODIFIED: Brighter/Higher Contrast Theme Colors */
+      --money-bg: oklch(25% .1 150);
+      --money-brd: oklch(45% .12 150);
+      --credit-bg: oklch(28% .12 315);
+      --credit-brd: oklch(50% .15 315);
+      --rate1-bg: oklch(30% .12 250);
+      --rate1-accent: oklch(85% .22 28);
+      --rate2-bg: oklch(30% .12 210);
+      --rate2-accent: oklch(88% .18 170);
+      --money-text: oklch(95% .18 100);
+      --credit-text: oklch(92% .15 345);
       --tap:48px;
     }
     *{
@@ -42,7 +61,8 @@
     .card{
       background: linear-gradient(180deg, #1a0404, #000);
       border:var(--brd-width) solid var(--brd-strong);
-      border-radius:18px;
+      /* MODIFIED: Sharper corners */
+      border-radius:8px;
       padding:20px clamp(14px,4vw,28px);
       box-shadow:var(--shadow-2);
       position:relative;
@@ -63,7 +83,8 @@
       border: var(--brd-width) solid var(--brd);
       /* MODIFIED: Adjust padding for new size */
       padding: 10px 16px;
-      border-radius: 12px;
+      /* MODIFIED: Sharper corners */
+      border-radius: 6px;
       width: fit-content;
       margin-left: auto;
       margin-right: auto;
@@ -83,7 +104,8 @@
     }
 
     .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px clamp(12px,3vw,24px);margin-bottom:18px}
-    .stat{background:#0b1117;border:var(--brd-width) solid var(--brd);border-radius:14px;padding:14px 16px;box-shadow:var(--shadow-1)}
+    /* MODIFIED: Sharper corners */
+    .stat{background:#0b1117;border:var(--brd-width) solid var(--brd);border-radius:6px;padding:14px 16px;box-shadow:var(--shadow-1)}
     .label{font-size:12px;color:var(--muted);letter-spacing:.25px}
     .value{font-size:clamp(20px,5vw,30px);font-weight:800;line-height:1.1;margin-top:8px}
     .growth{margin-top:6px;font-size:12px;color:var(--muted)}
@@ -155,12 +177,12 @@
     }
 
     .thumb{
-      position:absolute;
-      top:50%;
+      /* MODIFIED: Sharper corners */
       transform:translate(-50%,-50%);
       width:var(--thumb-size);
       height:var(--thumb-size);
-      border-radius:6px;
+      /* MODIFIED: Sharper corners */
+      border-radius:3px;
       cursor:grab;
       box-shadow:0 2px 0 rgba(0,0,0,.35),inset 0 0 0 1px rgba(255,255,255,.12);
       background:linear-gradient(180deg,#c5d2df 0%,#9fb0c3 100%);
@@ -190,7 +212,8 @@
       background:#0b1117;
       color:var(--text);
       border:var(--brd-width) solid #2a3a4d;
-      border-radius:12px;
+      /* MODIFIED: Sharper corners */
+      border-radius:6px;
       padding:10px 12px;
       font-weight:800;
       font-size:14px;
@@ -272,7 +295,8 @@
     .slot{margin-top:20px;padding-top:16px;border-top:var(--brd-width) solid var(--brd)}
     .slot h2{margin:0 0 6px 0;font-size:clamp(16px,2.6vw,22px);font-weight:900}
     .reels{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:12px 0}
-    .reel{background:linear-gradient(180deg,#0d131a,#0b1016);border:var(--brd-width) solid var(--brd);border-radius:14px;height:96px;display:grid;place-items:center;font-size:clamp(40px,6vw,56px);box-shadow:var(--shadow-1),inset 0 1px 0 rgba(255,255,255,.06)}
+    /* MODIFIED: Sharper corners */
+    .reel{background:linear-gradient(180deg,#0d131a,#0b1016);border:var(--brd-width) solid var(--brd);border-radius:6px;height:96px;display:grid;place-items:center;font-size:clamp(40px,6vw,56px);box-shadow:var(--shadow-1),inset 0 1px 0 rgba(255,255,255,.06)}
 
     .slot-actions {
       display: grid;
@@ -289,7 +313,8 @@
     /* NEW: Modal backdrop variant without blur */
     .modal-backdrop-noblur{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:1001;}
     
-    .modal{background:#0f141a;border:var(--brd-width) solid #2a3a4d;border-radius:14px;width:min(420px,92vw);padding:18px;box-shadow:0 14px 36px rgba(0,0,0,.55)}
+    /* MODIFIED: Sharper corners */
+    .modal{background:#0f141a;border:var(--brd-width) solid #2a3a4d;border-radius:8px;width:min(420px,92vw);padding:18px;box-shadow:0 14px 36px rgba(0,0,0,.55)}
     .modal h3{margin:0 0 8px 0;font-size:18px; text-align: center;}
     .modal p{margin:0 0 12px 0;color:var(--muted);font-size:14px}
     .modal .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -297,7 +322,8 @@
     .btn{
       appearance:none;
       border:2px solid transparent;
-      border-radius:12px;
+      /* MODIFIED: Sharper corners */
+      border-radius:6px;
       padding:14px 16px;
       font-weight:900;
       font-size:16px;
@@ -833,10 +859,10 @@
         winDescEl.innerHTML = `A <strong style="color:var(--money-text)">2x Bonus</strong> hit! Choose your reward to continue.`;
       }
 
-      // CHANGE: Add visual indicator for 2x win
-      // MODIFICATION: Set button text to the final payout
+      /* MODIFICATION: Set button text to the final payout */
       if (isBonus) {
-          takeMoneyBtn.innerHTML = `Take $${payout} <span style="color: var(--money-text); font-weight: 800; background: var(--money-bg); border-radius: 6px; padding: 2px 6px; font-size: 0.8em; margin-left: 4px; border: 1px solid var(--money-brd);">(2x)</span>`;
+          /* MODIFIED: Sharper corners */
+          takeMoneyBtn.innerHTML = `Take $${payout} <span style="color: var(--money-text); font-weight: 800; background: var(--money-bg); border-radius: 4px; padding: 2px 6px; font-size: 0.8em; margin-left: 4px; border: 1px solid var(--money-brd);">(2x)</span>`;
       } else {
           takeMoneyBtn.textContent = `Take $${payout}`;
       }
