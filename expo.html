@@ -226,25 +226,7 @@
     }
     /* Removed .action, .cost, .buy-cost-text styles as they are no longer used */
 
-    .summary{
-      margin-top:18px;
-      padding-top:12px;
-      border-top:var(--brd-width) dashed var(--brd);
-      font-size:13px;
-      color:var(--muted);
-    }
-    .summary h2{
-      font-size:15px;
-      margin:0 0 6px 0;
-      text-align:center;
-    }
-    .summary-grid{
-      display:grid;
-      grid-template-columns:repeat(2,minmax(0,1fr));
-      gap:6px 16px;
-    }
-    .summary-label{color:var(--muted);}
-    .summary-value{color:var(--text);font-weight:600;}
+    /* REMOVED: .summary, .summary h2, .summary-grid, .summary-label, .summary-value styles */
 
     .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:1001;backdrop-filter:blur(4px)}
     .modal{background:#0f141a;border:var(--brd-width) solid #2a3a4d;border-radius:14px;width:min(420px,92vw);padding:18px;box-shadow:0 14px 36px rgba(0,0,0,.55)}
@@ -393,21 +375,13 @@
         <div class="slot-actions">
           <!-- Removed .action wrappers and span elements -->
           <button class="ctrl" id="spin">Spin</button>
-          <button class="ctrl ctrl-buy" id="buyBtn">Buy 6x 💎</button>
+          <!-- CHANGE: Updated text to 7x -->
+          <button class="ctrl ctrl-buy" id="buyBtn">Buy 7x 💎</button>
         </div>
       </section>
 
-      <section class="summary" id="runSummary" aria-live="polite" hidden>
-        <h2>Run summary</h2>
-        <div class="summary-grid">
-          <div class="summary-label">Final Money</div><div class="summary-value" id="sumMoney">$0.00</div>
-          <div class="summary-label">Final Credit</div><div class="summary-value" id="sumCredit">0.00</div>
-          <div class="summary-label">Rate 1</div><div class="summary-value" id="sumRate1">0.00</div>
-          <div class="summary-label">Rate 2</div><div class="summary-value" id="sumRate2">0.00</div>
-          <div class="summary-label">Total Spins</div><div class="summary-value" id="sumSpins">0</div>
-          <div class="summary-label">Wins</div><div class="summary-value" id="sumWins">0</div>
-        </div>
-      </section>
+      <!-- REMOVED: section.summary#runSummary -->
+
     </div>
   </div>
 
@@ -481,7 +455,7 @@
 
   let isSpinCostResetPurchased = false;
   // MODIFICATION: Changed from level to boolean
-  let isSliderDoubledPurchased = false; 
+  let isSliderDoubledPurchased = false;
   let nextDiamondPurchaseFreeRate2 = false;
 
   let totalSpins = 0;
@@ -522,13 +496,7 @@
   let confettiParticles = [];
   let confettiAnimationId;
 
-  const summaryEl = document.getElementById('runSummary');
-  const sumMoneyEl = document.getElementById('sumMoney');
-  const sumCreditEl = document.getElementById('sumCredit');
-  const sumRate1El = document.getElementById('sumRate1');
-  const sumRate2El = document.getElementById('sumRate2');
-  const sumSpinsEl = document.getElementById('sumSpins');
-  const sumWinsEl = document.getElementById('sumWins');
+  // REMOVED: const summaryEl, sumMoneyEl, sumCreditEl, sumRate1El, sumRate2El, sumSpinsEl, sumWinsEl
 
   const reelEls=[document.getElementById('reel1'),document.getElementById('reel2'),document.getElementById('reel3')];
 
@@ -622,9 +590,11 @@
     } else {
       // MODIFICATION: Check for free rate buff
       if (nextDiamondPurchaseFreeRate2) {
-        buyBtn.innerHTML = `Buy 6x 💎<br><small><span class="badge badge-credit">${buyDiamondCost}c</span></small>`;
+        // CHANGE: Updated text to 7x
+        buyBtn.innerHTML = `Buy 7x 💎<br><small><span class="badge badge-credit">${buyDiamondCost}c</span></small>`;
       } else {
-        buyBtn.innerHTML = `Buy 6x 💎<br><small><span class="badge badge-credit">${buyDiamondCost}c</span> + <span class="badge badge-rate2">${buyDiamondRateCost.toFixed(1)} Rate 2</span></small>`;
+        // CHANGE: Updated text to 7x
+        buyBtn.innerHTML = `Buy 7x 💎<br><small><span class="badge badge-credit">${buyDiamondCost}c</span> + <span class="badge badge-rate2">${buyDiamondRateCost.toFixed(1)} Rate 2</span></small>`;
       }
       // END MODIFICATION
       buyBtn.disabled=false;
@@ -641,16 +611,7 @@
     rate2El.textContent=fmt(rate2);
   }
 
-  function showSummary(){
-    if(!summaryEl) return;
-    sumMoneyEl.textContent = `$${fmt(value1)}`;
-    sumCreditEl.textContent = fmt(value2);
-    sumRate1El.textContent = fmt(rate1);
-    sumRate2El.textContent = fmt(rate2);
-    sumSpinsEl.textContent = String(totalSpins);
-    sumWinsEl.textContent = String(totalWins);
-    summaryEl.hidden = false;
-  }
+  // REMOVED: function showSummary()
 
   // ===== SLIDER =====
   function buildTicks(){
@@ -747,24 +708,31 @@
     // MODIFICATION: Added payout and isBonus params
     return new Promise((resolve)=>{
       modalOpen=true;
-      
+
       // MODIFICATION: Check for bonus and update description
       const winDescEl = document.getElementById('winDesc');
       if (isBonus) {
         winDescEl.innerHTML = `A <strong style="color:var(--money-text)">2x Bonus</strong> hit! Choose your reward to continue.`;
       }
+      
+      // CHANGE: Add visual indicator for 2x win
       // MODIFICATION: Set button text to the final payout
-      takeMoneyBtn.textContent=`Take $${payout}`;
+      if (isBonus) {
+          takeMoneyBtn.innerHTML = `Take $${payout} <span style="color: var(--money-text); font-weight: 800; background: var(--money-bg); border-radius: 6px; padding: 2px 6px; font-size: 0.8em; margin-left: 4px; border: 1px solid var(--money-brd);">(2x)</span>`;
+      } else {
+          takeMoneyBtn.textContent = `Take $${payout}`;
+      }
 
       let focusables;
+      // CHANGE: Remove "diamond purchases cost 0 rate 2" option
       if (spinRateCost <= 0) {
         reduceBtn.style.display = 'none';
-        reduceRate2Btn.style.display = 'block';
+        reduceRate2Btn.style.display = 'none'; // CHANGED
         // MODIFICATION: Change text for new reward
         reduceRate2Btn.textContent = 'Next 💎 buy costs 0 Rate 2';
         // MODIFICATION: Disable if buff is already active
         reduceRate2Btn.disabled = nextDiamondPurchaseFreeRate2;
-        focusables = [reduceRate2Btn, takeMoneyBtn];
+        focusables = [takeMoneyBtn]; // CHANGED
       } else {
         reduceBtn.style.display = 'block';
         reduceRate2Btn.style.display = 'none';
@@ -789,6 +757,8 @@
         winDescEl.innerHTML = 'Choose your reward to continue.';
         reduceRate2Btn.textContent = 'Lower Buy cost by 1.0 Rate 2 Point';
         reduceRate2Btn.disabled = false;
+        // CHANGE: Reset take money button text/html
+        takeMoneyBtn.innerHTML = '';
       }
 
       reduceBtn.onclick=()=>{ cleanup(); resolve('reduce'); };
@@ -810,7 +780,7 @@
     }
 
     // MODIFICATION: Check boolean flag instead of level
-    let remaining = !isSliderDoubledPurchased; 
+    let remaining = !isSliderDoubledPurchased;
     buyDoubleSliderBtn.disabled = !remaining;
     if (!remaining) {
       buyDoubleSliderBtn.textContent = "Purchased";
@@ -992,7 +962,8 @@
           value2 -= buyDiamondCost;
           // rate2 is NOT consumed
           rate2 = Math.max(0, rate2); // Ensure it's not negative, just in case
-          diamondCount = 6;
+          // CHANGE: Updated from 6 to 7
+          diamondCount = 7;
           if (!symbols.includes('💎')) symbols.push('💎');
           buyDiamondCost += 500;
           buyDiamondRateCost += 1; // The *next* cost still increases
@@ -1013,7 +984,8 @@
       if(value2>=buyDiamondCost && rate2>=buyDiamondRateCost && diamondCount===0){
         value2-=buyDiamondCost;
         rate2=Math.max(0, rate2-buyDiamondRateCost);
-        diamondCount=6;
+        // CHANGE: Updated from 6 to 7
+        diamondCount = 7;
         if(!symbols.includes('💎')) symbols.push('💎');
         buyDiamondCost+=500;
         buyDiamondRateCost+=1;
@@ -1109,7 +1081,7 @@
         if (swapBtn) swapBtn.disabled = true;
         if (upgradeBtn) upgradeBtn.disabled = true;
         pauseBtn.textContent = "Over";
-        showSummary();
+        // REMOVED: showSummary();
       }
     }
 
