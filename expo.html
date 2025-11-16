@@ -1,168 +1,231 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minimal RPG UI</title>
-    <!-- Load Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Use the Inter font */
-        body {
-            font-family: "Inter", sans-serif;
-        }
-        /* Ensure no scrollbars on the main body */
-        html, body {
-            overflow: hidden;
-            height: 100%;
-        }
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Slider } from "@/components/ui/slider";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { 
+  Play,
+  Settings2,
+  Grid3X3,
+  Layers,
+  Sparkles,
+  Save,
+  ChevronUp,
+  ChevronDown,
+  Cpu
+} from "lucide-react";
 
-        /* CRT filter for the main game area */
-        main::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            /* Faint scanlines - now thicker and more spaced */
-            background-image: repeating-linear-gradient(
-                rgba(0, 0, 0, 0.4) 0px, /* Thicker line (2px) */
-                rgba(0, 0, 0, 0.4) 2px,
-                transparent 2px,
-                transparent 5px         /* More space (3px) */
-              ),
-              /* Vignette effect */
-              radial-gradient(
-                ellipse at center,
-                transparent 20%,
-                rgba(0, 0, 0, 0.5) 100% /* Made vignette stronger */
-              );
-            opacity: 0.8; /* Increased opacity */
-            z-index: 5; /* Above SVG background, below player */
-            pointer-events: none; /* Don't block clicks */
-        }
-    </style>
-</head>
-<!-- Body background is darker -->
-<body class="bg-black flex items-center justify-center min-h-screen">
+export default function GameBuilderShell() {
+  return (
+    <main className="min-h-screen w-full bg-slate-950 flex items-center justify-center px-4 py-6">
+      {/* Device frame */}
+      <div className="w-full max-w-sm h-[720px] rounded-[2.5rem] border border-slate-800 bg-slate-950 shadow-[0_0_60px_rgba(15,23,42,0.9)] overflow-hidden relative flex flex-col">
+        {/* Status hint (fake notch area) */}
+        <div className="pointer-events-none absolute inset-x-20 top-2 h-5 rounded-full bg-slate-900/80 border border-slate-700/60" />
 
-    <!-- Mobile-first container, constrained to a portrait aspect. Darker bg. -->
-    <div class="w-full max-w-md h-screen bg-gray-900 text-white flex flex-col shadow-2xl overflow-hidden">
-
-        <!-- 1. Larger Top Section -->
-        <header class="bg-black bg-opacity-50 p-4 shadow-lg z-10"> <!-- Increased padding and opacity -->
-            <div class="flex justify-between items-center text-base px-2"> <!-- Increased text size -->
-                <div>
-                    <span class="font-bold text-green-400">HP:</span>
-                    <span class="font-semibold">100/100</span>
-                </div>
-                <div>
-                    <span class="font-bold text-yellow-400">GOLD:</span>
-                    <span class="font-semibold">50</span>
-                </div>
-                <div>
-                    <span class="font-bold text-blue-400">LVL:</span>
-                    <span class="font-semibold">1</span>
-                </div>
+        {/* TOP BAR */}
+        <header className="relative z-10 h-14 px-4 flex items-center justify-between border-b border-slate-800/80 bg-slate-950/80 backdrop-blur">
+          <div className="flex flex-col gap-0.5">
+            <span className="text-[10px] uppercase tracking-[0.2em] text-slate-500">
+              Game Workspace
+            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-slate-100">
+                Untitled World
+              </span>
+              <span className="inline-flex items-center rounded-full border border-emerald-500/40 bg-emerald-500/5 px-2 py-0.5 text-[10px] font-medium text-emerald-300">
+                Live layout
+              </span>
             </div>
+          </div>
+
+          <div className="flex items-center gap-3 text-[11px] text-slate-300">
+            {/* Simple stat chips */}
+            <div className="flex items-center gap-1">
+              <Grid3X3 className="h-3.5 w-3.5 text-sky-400" />
+              <span className="tabular-nums">12</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Cpu className="h-3.5 w-3.5 text-violet-400" />
+              <span className="tabular-nums">60 fps</span>
+            </div>
+          </div>
         </header>
 
-        <!-- 2. Large Middle Section (Game World) -->
-        <main class="flex-grow relative">
+        {/* CONTENT AREA */}
+        <section className="flex-1 flex flex-col bg-gradient-to-b from-slate-950 via-slate-950 to-slate-900">
+          {/* Mode tabs */}
+          <div className="px-4 pt-3 pb-2 flex items-center justify-between">
+            <Tabs defaultValue="build" className="w-auto">
+              <TabsList className="bg-slate-900/80 border border-slate-800/80 h-8 rounded-full px-1">
+                <TabsTrigger
+                  value="build"
+                  className="data-[state=active]:bg-slate-800 data-[state=active]:text-slate-50 rounded-full h-6 px-3 text-[11px]"
+                >
+                  Build
+                </TabsTrigger>
+                <TabsTrigger
+                  value="play"
+                  className="data-[state=active]:bg-slate-800 data-[state=active]:text-slate-50 rounded-full h-6 px-3 text-[11px]"
+                >
+                  Play
+                </TabsTrigger>
+                <TabsTrigger
+                  value="tune"
+                  className="data-[state=active]:bg-slate-800 data-[state=active]:text-slate-50 rounded-full h-6 px-3 text-[11px]"
+                >
+                  Systems
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <Button
+              size="icon"
+              variant="outline"
+              className="h-8 w-8 rounded-full border-slate-800 bg-slate-900/80"
+            >
+              <Settings2 className="h-4 w-4 text-slate-300" />
+            </Button>
+          </div>
 
-            <!-- SVG Background Image -->
-            <div class="absolute inset-0 w-full h-full overflow-hidden">
-                <svg
-                    class="w-full h-full"
-                    viewBox="0 0 100 200"
-                    preserveAspectRatio="xMidYMid slice"
-                    aria-label="Simple RPG terrain background">
+          {/* Main game environment */}
+          <div className="flex-1 px-4 pb-2 flex flex-col gap-3">
+            <Card className="flex-1 bg-slate-950/80 border-slate-800/80 rounded-2xl overflow-hidden relative">
+              <CardContent className="h-full p-0">
+                {/* Subtle grid background */}
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_0_0,rgba(56,189,248,0.2),transparent_55%),radial-gradient(circle_at_100%_0,rgba(129,140,248,0.18),transparent_55%)] opacity-70" />
+                <div className="absolute inset-0 [background-image:linear-gradient(to_right,rgba(148,163,184,0.12)_1px,transparent_1px),linear-gradient(to_bottom,rgba(148,163,184,0.10)_1px,transparent_1px)] bg-[size:20px_20px] opacity-40" />
 
-                    <!--
-                      Define tile patterns.
-                      Each tile is 10x10 units.
-                      viewBox is 100x200, so this creates a 10x20 grid.
-                    -->
-                    <defs>
-                        <!-- Dark Grass Tile Pattern -->
-                        <pattern id="grass" patternUnits="userSpaceOnUse" width="10" height="10">
-                            <rect width="10" height="10" fill="#2A362A" /> <!-- Dark olive green -->
-                            <rect x="0" y="0" width="5" height="5" fill="#1B221B" opacity="0.3" />
-                            <rect x="5" y="5" width="5" height="5" fill="#1B221B" opacity="0.3" />
-                        </pattern>
+                {/* Safe zone frame */}
+                <div className="relative h-full w-full p-3 flex flex-col">
+                  <div className="flex items-center justify-between text-[10px] text-slate-400 mb-2">
+                    <span className="uppercase tracking-[0.16em]">Environment</span>
+                    <span className="flex items-center gap-2">
+                      <span>Grid: 20px</span>
+                      <span className="inline-flex items-center gap-1 rounded-full bg-slate-900/80 border border-slate-700/80 px-2 py-0.5">
+                        <Layers className="h-3 w-3" />
+                        <span>3 layers</span>
+                      </span>
+                    </span>
+                  </div>
 
-                        <!-- Dark Mountain Tile Pattern -->
-                        <pattern id="mountain" patternUnits="userSpaceOnUse" width="10" height="10">
-                            <rect width="10" height="10" fill="#3E3E4A" /> <!-- Dark slate gray -->
-                            <polygon points="0,10 5,2 10,10" fill="#2A2A33" /> <!-- Darker gray -->
-                        </pattern>
+                  <div className="flex-1 rounded-2xl border border-dashed border-slate-600/60 bg-slate-950/70 backdrop-blur-sm overflow-hidden relative">
+                    {/* Placeholder tiles / entities */}
+                    <div className="absolute inset-2 grid grid-cols-4 gap-1.5">
+                      {Array.from({ length: 12 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className="rounded-xl border border-slate-700/70 bg-slate-900/80 shadow-sm flex flex-col justify-between px-2 py-1"
+                        >
+                          <div className="flex items-center justify-between text-[9px] text-slate-300">
+                            <span className="truncate">Block {i + 1}</span>
+                            <span className="text-[8px] text-slate-500">OBJ</span>
+                          </div>
+                          <div className="h-3 mt-1 rounded-lg bg-slate-800/90" />
+                        </div>
+                      ))}
+                    </div>
 
-                        <!-- Murky Water Tile Pattern -->
-                        <pattern id="water" patternUnits="userSpaceOnUse" width="10" height="10">
-                            <rect width="10" height="10" fill="#2F3A4F" /> <!-- Dark slate blue -->
-                            <path d="M 0 5 Q 2.5 2, 5 5 T 10 5" stroke="#1D2430" fill="none" stroke-width="1" />
-                        </pattern>
+                    {/* Vertical alignment rail */}
+                    <div className="absolute left-2 top-2 bottom-2 w-px bg-gradient-to-b from-sky-400/0 via-sky-400/80 to-sky-400/0 opacity-70" />
+                    {/* Horizontal alignment rail */}
+                    <div className="absolute left-2 right-2 top-1/2 h-px bg-gradient-to-r from-violet-400/0 via-violet-400/80 to-violet-400/0 opacity-70" />
 
-                        <!-- Dark Forest Tile Pattern -->
-                        <pattern id="forest" patternUnits="userSpaceOnUse" width="10" height="10">
-                            <rect width="10" height="10" fill="#2A362A" /> <!-- Dark grass base -->
-                            <rect x="4" y="6" width="2" height="4" fill="#4D2E20" /> <!-- Dark trunk -->
-                            <!-- Pointy leaves (pine tree) -->
-                            <polygon points="5,1 2,7 8,7" fill="#1A431F" /> <!-- Dark green leaves -->
-                        </pattern>
-                    </defs>
+                    {/* Hint tag */}
+                    <div className="absolute right-2 bottom-2 flex items-center gap-1 rounded-full bg-slate-900/90 border border-slate-700/80 px-2 py-0.5 text-[9px] text-slate-300">
+                      <Sparkles className="h-3 w-3 text-emerald-400" />
+                      <span>Tap any block to define behavior</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-                    <!-- Draw the terrain using the patterns -->
+            {/* Right-side compact controls row */}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex-1 flex items-center gap-2">
+                <div className="flex-1 rounded-2xl border border-slate-800 bg-slate-900/80 px-3 py-2 flex flex-col gap-1">
+                  <div className="flex items-center justify-between text-[10px] text-slate-400">
+                    <span>World Scale</span>
+                    <span className="tabular-nums text-slate-200">1.0x</span>
+                  </div>
+                  <Slider defaultValue={[60]} max={100} step={1} className="w-full" />
+                </div>
+              </div>
 
-                    <!-- Base layer: Dark Grass -->
-                    <rect width="100" height="200" fill="url(#grass)" />
+              <div className="flex flex-col gap-1.5">
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="h-8 w-8 rounded-2xl border-slate-800 bg-slate-900/80"
+                >
+                  <ChevronUp className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="h-8 w-8 rounded-2xl border-slate-800 bg-slate-900/80"
+                >
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
 
-                    <!-- Mountain Range (Top) - Height increased -->
-                    <rect width="100" height="50" fill="url(#mountain)" />
+        {/* BOTTOM BAR */}
+        <footer className="h-24 border-t border-slate-800/80 bg-slate-950/95 backdrop-blur flex flex-col px-4 py-3 gap-2">
+          {/* Compact metadata + save */}
+          <div className="flex items-center justify-between text-[10px] text-slate-400">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1 rounded-full bg-slate-900/80 border border-slate-700/80 px-2 py-0.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.7)]" />
+                Draft
+              </span>
+              <span>Auto-sync in 0:12</span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-[10px] gap-1 text-slate-200"
+            >
+              <Save className="h-3.5 w-3.5" />
+              Snapshot
+            </Button>
+          </div>
 
-                    <!-- A patch of dark forest -->
-                    <rect x="10" y="70" width="30" height="50" fill="url(#forest)" />
-
-                    <!-- A small, murky lake -->
-                    <rect x="60" y="120" width="30" height="40" fill="url(#water)" />
-
-                </svg>
+          {/* Primary controls row */}
+          <div className="flex items-center gap-2">
+            {/* Left: palette & layers */}
+            <div className="flex items-center gap-1.5 flex-1">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 h-10 rounded-2xl border-slate-800 bg-slate-900/90 justify-start px-3 text-[11px] gap-2"
+              >
+                <Layers className="h-4 w-4 text-sky-300" />
+                <span className="flex flex-col items-start leading-tight">
+                  <span className="text-slate-100">Layers</span>
+                  <span className="text-[9px] text-slate-400">Terrain, entities, UI</span>
+                </span>
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-10 w-10 rounded-2xl border-slate-800 bg-slate-900/90"
+              >
+                <Grid3X3 className="h-4 w-4 text-sky-300" />
+              </Button>
             </div>
 
-            <!-- Player Icon (Example) -->
-            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-                <div class="w-6 h-6 bg-blue-500 rounded-full border-2 border-white shadow-lg flex items-center justify-center">
-                    <!-- You could put a smaller icon or initial here -->
-                    <span class="text-xs font-bold">P</span>
-                </div>
-            </div>
-
-        </main>
-
-        <!-- 3. Bottom Section (New Button Layout) -->
-        <footer class="bg-black bg-opacity-50 p-4 shadow-inner z-10 rounded-t-lg"> <!-- Increased opacity -->
-            <div class="flex justify-between items-center gap-4">
-                
-                <!-- Left: Stack of 2 buttons -->
-                <div class="flex flex-col gap-3 w-1/2">
-                    <button class="p-3 bg-green-700 text-white rounded-lg font-bold shadow-md active:bg-green-800 transition-colors border border-green-500">
-                        Items
-                    </button>
-                    <button class="p-3 bg-blue-700 text-white rounded-lg font-bold shadow-md active:bg-blue-800 transition-colors border border-blue-500">
-                        Magic
-                    </button>
-                </div>
-
-                <!-- Right: Big round button -->
-                <div class="w-1/2 flex justify-center items-center">
-                    <button class="w-24 h-24 bg-red-700 text-white rounded-full font-bold shadow-lg active:bg-red-800 transition-colors flex items-center justify-center text-lg border-2 border-red-400">
-                        Attack
-                    </button>
-                </div>
-            </div>
+            {/* Primary action: play */}
+            <Button className="h-11 px-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-medium text-[12px] gap-2 shadow-[0_18px_45px_rgba(16,185,129,0.45)]">
+              <Play className="h-4 w-4" />
+              Test Run
+            </Button>
+          </div>
         </footer>
-
-    </div>
-
-</body>
-</html>
+      </div>
+    </main>
+  );
+}
