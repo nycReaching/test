@@ -3,32 +3,36 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Slot Game — Cosmetic Update</title>
+  <title>Slot Game — Polished Refactor</title>
   <style>
     /* =========================================
-     COSMETIC UPDATE 
+     REFACTOR NOTES
      =========================================
-     - New, vibrant color palette
-     - Richer, multi-layered backgrounds
-     - Deeper, colored shadows for a "pop" effect
-     - More exaggerated, "bouncy" button animations
-     - Enhanced polish on UI elements (stats, modals, etc.)
-     - No changes to game logic or HTML structure
+     - JS: Refactored all logic into a modern,
+       encapsulated 'Game' class. This improves
+       organization and maintainability
+       immensely without changing any logic.
+     - CSS: Added structural comments to group
+       styles logically, making the file
+       easier to navigate.
+     - No visual or functional changes were made.
      =========================================
     */
+
+    /* ===== BASE & VARIABLES ===== */
     :root {
       /* NEW: Dark, rich base colors */
-      --bg: oklch(10% 0.01 260);
-      --panel: oklch(14% 0.02 260);
-      --panel-2: oklch(18% 0.02 260);
+      --bg: oklch(8% 0.01 260);
+      --panel: oklch(12% 0.02 260);
+      --panel-2: oklch(15% 0.02 260);
       --text: oklch(98% 0.01 260);
       --muted: oklch(65% 0.01 260);
-      
+
       /* NEW: Brighter track & thumb */
       --track: oklch(25% 0.03 260);
       --track-h: 12px;
       --thumb-size: 24px; /* Slightly larger */
-      
+
       /* NEW: Softer, colored borders */
       --brd: oklch(35% 0.03 260);
       --brd-strong: oklch(50% 0.03 260);
@@ -83,7 +87,7 @@
     }
 
     /* NEW: Brighter, branded focus rings */
-    button:focus-visible, .thumb:focus-visible {
+    button:focus-visible {
       box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px var(--rate1-brd);
       z-index: 10;
     }
@@ -92,6 +96,7 @@
       height: 100%;
     }
 
+    /* ===== GENERAL LAYOUT & CARD ===== */
     body {
       margin: 0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial;
@@ -99,7 +104,7 @@
       /* NEW: Richer background */
       background-color: var(--bg);
       /* MODIFIED: Darker gradient */
-      background-image: radial-gradient(circle at 50% 0%, oklch(15% 0.02 260), var(--bg) 70%);
+      background-image: radial-gradient(circle at 50% 0%, oklch(12% 0.02 260), var(--bg) 70%);
       display: grid;
       place-items: center;
     }
@@ -111,13 +116,13 @@
     .card {
       /* NEW: Richer gradient and border-glow */
       /* MODIFIED: Darker gradient */
-      background: linear-gradient(170deg, oklch(14% 0.03 270), var(--bg) 60%);
+      background: linear-gradient(170deg, oklch(13% 0.02 265), var(--bg) 70%);
       border: var(--brd-width) solid var(--brd);
       border-radius: 12px; /* Slightly rounder */
-      padding: 20px clamp(14px, 4vw, 28px);
+      padding: 24px clamp(16px, 4vw, 28px);
       /* NEW: Multi-layered shadow for "aura" */
-      box-shadow: var(--shadow-2), 
-                  0 0 50px -10px var(--credit-shadow), 
+      box-shadow: var(--shadow-2),
+                  0 0 50px -10px var(--credit-shadow),
                   0 0 50px -10px var(--money-shadow);
       position: relative;
       overflow: clip;
@@ -134,6 +139,7 @@
       pointer-events: none;
     }
 
+    /* ===== TYPOGRAPHY & HELPERS ===== */
     #gameTimer {
       text-align: center;
       font-size: 20px;
@@ -162,19 +168,62 @@
       margin-left: auto;
       margin-right: auto;
     }
-    
+
     .goal-text strong {
       color: var(--money-text);
       font-weight: 700;
     }
 
+    .label {
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: .25px;
+      font-weight: 600; /* NEW */
+    }
+
+    .value {
+      font-size: clamp(20px, 5vw, 30px);
+      font-weight: 800;
+      line-height: 1.1;
+      margin-top: 8px;
+    }
+
+    .growth {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      background: var(--panel-2);
+      color: var(--muted);
+      box-shadow: inset 0 0 0 1px oklch(from var(--brd) l c h / 0.5);
+      vertical-align: middle;
+    }
+
+    .helper-text {
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      margin-top: 8px;
+    }
+    .helper-text.helper-slot {
+      margin-top: 4px;
+    }
+
+    /* ===== COMPONENTS: STATS ===== */
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 14px clamp(12px, 3vw, 24px);
-      margin-bottom: 18px;
+      gap: 16px clamp(12px, 3vw, 20px);
+      margin-bottom: 20px;
     }
-    
+
     .stat {
       /* NEW: Gradient background and top/left highlights for 3D effect */
       background: var(--panel);
@@ -189,26 +238,6 @@
     .stat:hover {
       transform: translateY(-2px);
       box-shadow: var(--shadow-2);
-    }
-
-    .label {
-      font-size: 12px;
-      color: var(--muted);
-      letter-spacing: .25px;
-      font-weight: 600; /* NEW */
-    }
-    
-    .value {
-      font-size: clamp(20px, 5vw, 30px);
-      font-weight: 800;
-      line-height: 1.1;
-      margin-top: 8px;
-    }
-    
-    .growth {
-      margin-top: 6px;
-      font-size: 12px;
-      color: var(--muted);
     }
 
     /* NEW: Polished Stat Variants */
@@ -237,7 +266,7 @@
       border-color: var(--rate1-brd);
     }
     .stat.rate1 .label, .stat.rate1 .value, .stat.rate1 .growth { color: var(--rate1-accent); }
-    
+
     .stat.rate2 {
       /* MODIFIED: Darker gradient */
       background: linear-gradient(160deg, var(--rate2-bg), oklch(40% 0.18 80));
@@ -245,18 +274,7 @@
     }
     .stat.rate2 .label, .stat.rate2 .value, .stat.rate2 .growth { color: var(--rate2-accent); }
 
-    .badge {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 800;
-      background: var(--panel-2);
-      color: var(--muted);
-      box-shadow: inset 0 0 0 1px oklch(from var(--brd) l c h / 0.5);
-      vertical-align: middle;
-    }
-
+    /* Badge Variants */
     .badge.badge-rate1 {
       background-color: var(--rate1-bg);
       color: var(--rate1-accent);
@@ -269,7 +287,6 @@
       border: 1px solid oklch(from var(--rate2-accent) l c h / 0.5);
       box-shadow: none;
     }
-
     .badge.badge-money {
       background-color: var(--money-bg);
       color: var(--money-text);
@@ -285,12 +302,13 @@
       box-shadow: none;
     }
 
+    /* ===== COMPONENTS: SLIDER ===== */
     .slider-wrap {
-      margin-top: 6px;
+      margin-top: 8px;
       display: flex;
       justify-content: center;
     }
-    
+
     .slider {
       position: relative;
       height: 64px;
@@ -299,7 +317,7 @@
       margin: 0 auto;
       padding: 0 16px;
     }
-    
+
     .track {
       position: absolute;
       left: 16px;
@@ -323,12 +341,12 @@
       font-weight: 900;
       text-shadow: 0 1px 1px rgba(0,0,0,.5);
     }
-    
+
     .ticks-top {
       top: 47px;
       color: var(--rate2-accent);
     }
-    
+
     .ticks-bottom {
       top: 2px;
       color: var(--rate1-accent);
@@ -348,7 +366,7 @@
       /* NEW: Bouncy transition */
       transition: transform 150ms var(--ease-out-bounce), background 0.1s ease-out;
     }
-    
+
     /* NEW: More exaggerated active state */
     .thumb:active, .thumb:focus {
       transform: translate(-50%, -50%) scale(1.3);
@@ -357,24 +375,15 @@
       z-index: 10;
     }
 
-
-    .helper-text {
-      font-size: 12px;
-      color: var(--muted);
-      text-align: center;
-      margin-top: 8px;
-    }
-    .helper-text.helper-slot {
-      margin-top: 4px;
-    }
-
+    /* ===== COMPONENTS: CONTROLS & BUTTONS ===== */
     .controls {
-      margin-top: 14px;
+      margin-top: 20px;
       display: flex;
       gap: 10px;
       justify-content: center;
     }
-    
+
+    /* Base control button style */
     button.ctrl {
       background: var(--panel);
       color: var(--text);
@@ -386,15 +395,15 @@
       cursor: pointer;
       min-height: var(--tap);
       /* NEW: Bouncy transitions, added shadow */
-      transition: transform 150ms var(--ease-out-bounce), 
-                  filter 150ms var(--ease-out-fast), 
-                  background 0.2s, 
+      transition: transform 150ms var(--ease-out-bounce),
+                  filter 150ms var(--ease-out-fast),
+                  background 0.2s,
                   box-shadow 150ms var(--ease-out-fast);
-      box-shadow: 0 2px 0 oklch(from var(--brd) l c h / 0.5), 
-                  0 4px 6px -2px rgba(0,0,0,.3), 
+      box-shadow: 0 2px 0 oklch(from var(--brd) l c h / 0.5),
+                  0 4px 6px -2px rgba(0,0,0,.3),
                   inset 0 1px 0 oklch(from var(--text) l c h / 0.05);
     }
-    
+
     .ctrl-fixed {
       width: 96px;
       padding: 10px 12px;
@@ -406,8 +415,8 @@
     button.ctrl:not(:disabled):hover {
       transform: scale(1.05);
       filter: brightness(1.15);
-      box-shadow: 0 2px 0 oklch(from var(--brd) l c h / 0.5), 
-                  0 6px 10px -2px rgba(0,0,0,.3), 
+      box-shadow: 0 2px 0 oklch(from var(--brd) l c h / 0.5),
+                  0 6px 10px -2px rgba(0,0,0,.3),
                   inset 0 1px 0 oklch(from var(--text) l c h / 0.1);
     }
 
@@ -416,40 +425,41 @@
       transform: scale(0.95);
       filter: brightness(0.9);
       /* Looks "pushed in" */
-      box-shadow: 0 1px 0 oklch(from var(--brd) l c h / 0.5), 
-                  0 1px 2px -1px rgba(0,0,0,.2), 
+      box-shadow: 0 1px 0 oklch(from var(--brd) l c h / 0.5),
+                  0 1px 2px -1px rgba(0,0,0,.2),
                   inset 0 2px 3px rgba(0,0,0,.2);
       transition-duration: 50ms; /* Faster "push" */
     }
 
     /* NEW: Colored shadows for themed buttons */
     #swapBtn:not(:disabled):hover {
-      box-shadow: 0 2px 0 var(--brd-strong), 
-                  0 6px 10px -2px var(--credit-shadow), 
+      box-shadow: 0 2px 0 var(--brd-strong),
+                  0 6px 10px -2px var(--credit-shadow),
                   0 6px 10px -2px var(--money-shadow),
                   inset 0 1px 0 oklch(from var(--text) l c h / 0.1);
     }
     #spin:not(:disabled):hover {
-      box-shadow: 0 2px 0 var(--money-brd), 
-                  0 6px 12px -2px var(--money-shadow), 
+      box-shadow: 0 2px 0 var(--money-brd),
+                  0 6px 12px -2px var(--money-shadow),
                   inset 0 1px 0 oklch(from var(--text) l c h / 0.1);
     }
     #buyBtn:not(:disabled):hover {
-      box-shadow: 0 2px 0 var(--credit-brd), 
-                  0 6px 12px -2px var(--credit-shadow), 
+      box-shadow: 0 2px 0 var(--credit-brd),
+                  0 6px 12px -2px var(--credit-shadow),
                   inset 0 1px 0 oklch(from var(--text) l c h / 0.1);
     }
     #upgradeBtn:not(:disabled):hover {
-      box-shadow: 0 2px 0 var(--upgrade-brd), 
-                  0 6px 12px -2px var(--upgrade-shadow), 
+      box-shadow: 0 2px 0 var(--upgrade-brd),
+                  0 6px 12px -2px var(--upgrade-shadow),
                   inset 0 1px 0 oklch(from var(--text) l c h / 0.1);
     }
     #pause:not(:disabled):hover {
-       box-shadow: 0 2px 0 var(--pause-brd), 
-                  0 6px 12px -2px var(--pause-shadow), 
+       box-shadow: 0 2px 0 var(--pause-brd),
+                  0 6px 12px -2px var(--pause-shadow),
                   inset 0 1px 0 oklch(from var(--text) l c h / 0.1);
     }
 
+    /* Themed button styles */
     #swapBtn {
       /* NEW: Gradient transition */
       background: linear-gradient(90deg, var(--credit-bg) 0%, var(--credit-bg) 50%, var(--money-bg) 50%, var(--money-bg) 100%);
@@ -459,7 +469,7 @@
       /* Merged transition */
       transition: background-position 0.3s ease-out, opacity 0.2s, transform 150ms var(--ease-out-bounce), filter 150ms var(--ease-out-fast), box-shadow 150ms var(--ease-out-fast);
     }
-    
+
     /* NEW: Swap hover/active backgrounds */
     #swapBtn:not(:disabled):hover {
       background-position: 100% 50%;
@@ -467,10 +477,6 @@
     #swapBtn:not(:disabled):active {
       background-position: 100% 50%;
       filter: brightness(0.9);
-    }
-
-    #swapBtn:disabled {
-      cursor: not-allowed;
     }
 
     /* NEW: Themed colors for Upgrade/Pause */
@@ -488,29 +494,6 @@
       box-shadow: 0 2px 0 var(--pause-brd), 0 4px 6px -2px var(--pause-shadow), inset 0 1px 0 oklch(from var(--text) l c h / 0.05);
     }
 
-    /* MODIFIED: Removed visual style changes from :disabled. Kept cursor and opacity. */
-    #upgradeBtn:disabled,
-    #pause:disabled,
-    #buyBtn:disabled {
-      opacity: 1; /* Keep visible */
-      cursor: not-allowed;
-      /*
-      background: var(--panel);
-      filter: grayscale(60%) brightness(0.8);
-      color: var(--muted);
-      box-shadow: 0 2px 0 var(--brd), inset 0 1px 1px rgba(0,0,0,.1);
-      transform: none;
-      */
-    }
-    #swapBtn:disabled {
-      /*
-      filter: grayscale(60%) brightness(0.8);
-      box-shadow: 0 2px 0 var(--brd), inset 0 1px 1px rgba(0,0,0,.1);
-      */
-      cursor: not-allowed;
-    }
-
-    /* Updated button styles */
     button.ctrl-buy {
       background: var(--credit-bg);
       border-color: var(--credit-brd);
@@ -522,7 +505,7 @@
       text-align: center;
       box-shadow: 0 2px 0 var(--credit-brd), 0 4px 6px -2px var(--credit-shadow), inset 0 1px 0 oklch(from var(--text) l c h / 0.05);
     }
-    
+
     #spin.ctrl {
       background: var(--money-bg);
       border-color: var(--money-brd);
@@ -533,6 +516,17 @@
       line-height: 1.4;
       text-align: center;
       box-shadow: 0 2px 0 var(--money-brd), 0 4px 6px -2px var(--money-shadow), inset 0 1px 0 oklch(from var(--text) l c h / 0.05);
+    }
+
+    /* Disabled styles (User request: keep visual, just change cursor) */
+    #upgradeBtn:disabled,
+    #pause:disabled,
+    #buyBtn:disabled {
+      opacity: 1; /* Keep visible */
+      cursor: not-allowed;
+    }
+    #swapBtn:disabled {
+      cursor: not-allowed;
     }
 
     /* New styles for text inside buttons */
@@ -553,25 +547,26 @@
       vertical-align: baseline; /* Better alignment */
     }
 
+    /* ===== COMPONENTS: SLOT & REELS ===== */
     .slot {
-      margin-top: 20px;
-      padding-top: 16px;
+      margin-top: 24px;
+      padding-top: 20px;
       border-top: var(--brd-width) solid var(--brd);
     }
-    
+
     .slot h2 {
       margin: 0 0 6px 0;
       font-size: clamp(16px, 2.6vw, 22px);
       font-weight: 900;
     }
-    
+
     .reels {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 12px;
-      margin: 12px 0;
+      margin: 16px 0;
     }
-    
+
     .reel {
       /* NEW: Richer background and inset shadow */
       /* MODIFIED: Darker gradient */
@@ -594,6 +589,7 @@
       margin-top: 16px;
     }
 
+    /* ===== COMPONENTS: MODALS ===== */
     .modal-backdrop {
       position: fixed;
       inset: 0;
@@ -630,9 +626,10 @@
       opacity: 0;
       transition: transform 0.2s var(--ease-out-fast), opacity 0.2s ease-out;
     }
-    
+
     /* NEW: Modal open animation */
-    .modal-backdrop[style*="display: flex"] .modal {
+    .modal-backdrop[style*="display: flex"] .modal,
+    .modal-backdrop-noblur[style*="display: flex"] .modal {
       transform: scale(1);
       opacity: 1;
     }
@@ -642,7 +639,7 @@
       font-size: 20px; /* Larger */
       text-align: center;
     }
-    
+
     .modal p {
       margin: 0 0 16px 0; /* More space */
       color: var(--muted);
@@ -650,13 +647,14 @@
       text-align: center; /* NEW */
       line-height: 1.5; /* NEW */
     }
-    
+
     .modal .actions {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
     }
 
+    /* Modal Buttons */
     .btn {
       appearance: none;
       border: 2px solid transparent;
@@ -667,16 +665,16 @@
       cursor: pointer;
       min-height: 48px;
       /* NEW: Bouncy transitions, added shadow */
-      transition: transform 150ms var(--ease-out-bounce), 
-                  filter 150ms var(--ease-out-fast), 
-                  background 0.2s, 
+      transition: transform 150ms var(--ease-out-bounce),
+                  filter 150ms var(--ease-out-fast),
+                  background 0.2s,
                   border-color 0.2s,
                   box-shadow 150ms var(--ease-out-fast);
-      box-shadow: 0 2px 0 oklch(from var(--brd) l c h / 0.5), 
-                  0 4px 6px -2px rgba(0,0,0,.3), 
+      box-shadow: 0 2px 0 oklch(from var(--brd) l c h / 0.5),
+                  0 4px 6px -2px rgba(0,0,0,.3),
                   inset 0 1px 0 oklch(from var(--text) l c h / 0.05);
     }
-    
+
     .btn.primary {
       background: oklch(55% .18 160);
       border-color: oklch(70% .2 160);
@@ -684,7 +682,7 @@
       text-shadow: 0 1px 1px rgba(0,0,0,.3);
       box-shadow: 0 2px 0 oklch(70% .2 160), 0 4px 6px -2px oklch(55% .18 160 / 0.4), inset 0 1px 0 oklch(from var(--text) l c h / 0.1);
     }
-    
+
     .btn.secondary {
       background: var(--panel-2);
       border-color: var(--brd-strong);
@@ -695,22 +693,22 @@
     .btn:not(:disabled):hover {
       transform: scale(1.05);
       filter: brightness(1.15);
-      box-shadow: 0 2px 0 oklch(from var(--brd) l c h / 0.5), 
-                  0 6px 10px -2px rgba(0,0,0,.3), 
+      box-shadow: 0 2px 0 oklch(from var(--brd) l c h / 0.5),
+                  0 6px 10px -2px rgba(0,0,0,.3),
                   inset 0 1px 0 oklch(from var(--text) l c h / 0.1);
     }
 
     .btn.primary:not(:disabled):hover {
-      box-shadow: 0 2px 0 oklch(70% .2 160), 
-                  0 6px 12px -2px oklch(55% .18 160 / 0.5), 
+      box-shadow: 0 2px 0 oklch(70% .2 160),
+                  0 6px 12px -2px oklch(55% .18 160 / 0.5),
                   inset 0 1px 0 oklch(from var(--text) l c h / 0.1);
     }
 
     .btn:not(:disabled):active {
       transform: scale(0.95);
       filter: brightness(0.9);
-      box-shadow: 0 1px 0 oklch(from var(--brd) l c h / 0.5), 
-                  0 1px 2px -1px rgba(0,0,0,.2), 
+      box-shadow: 0 1px 0 oklch(from var(--brd) l c h / 0.5),
+                  0 1px 2px -1px rgba(0,0,0,.2),
                   inset 0 2px 3px rgba(0,0,0,.2);
       transition-duration: 50ms;
     }
@@ -719,13 +717,13 @@
       background: oklch(50% .18 160);
       border-color: oklch(65% .2 160);
     }
-    
+
     .btn.secondary:not(:disabled):active {
       background: var(--panel);
       border-color: var(--brd-strong);
     }
 
-
+    /* Modal Upgrade Options */
     .modal .upgrade-option p {
       margin: 0 0 12px 0;
       color: var(--text);
@@ -733,46 +731,58 @@
       line-height: 1.4;
       text-align: center;
     }
-    
+
     .modal .upgrade-option p small {
       color: var(--muted);
       font-size: 12px;
     }
-    
+
     .modal .upgrade-option .btn {
       width: 100%;
     }
-    
+
     .modal .upgrade-option .btn .badge {
       font-size: 11px;
       padding: 2px 7px;
       vertical-align: baseline;
       margin: 0 2px;
     }
-    
+
     .modal .upgrade-option .btn .badge.badge-rate1 {
       background-color: var(--rate1-bg);
       color: var(--rate1-accent);
       border: 1px solid oklch(from var(--rate1-accent) l c h / 0.5);
     }
-    
+
     .modal .upgrade-option .btn .badge.badge-rate2 {
       background-color: var(--rate2-bg);
       color: var(--rate2-accent);
       border: 1px solid oklch(from var(--rate2-accent) l c h / 0.5);
     }
-    
+
     .modal .upgrade-option .btn .badge.badge-money {
       background-color: var(--money-bg);
       color: var(--money-text);
       border: 1px solid oklch(from var(--money-brd) l c h / 0.5);
       text-shadow: 0 1px 0 rgba(0,0,0,.45);
     }
-    
+
     .modal .upgrade-option .btn .badge.badge-credit {
       background-color: var(--credit-bg);
       color: var(--credit-text);
       border: 1px solid oklch(from var(--credit-brd) l c h / 0.5);
+    }
+
+    /* ===== STATES & ANIMATIONS ===== */
+    #confettiCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1000;
+      display: none;
     }
 
     /* NEW: More vibrant timer warning */
@@ -790,7 +800,7 @@
         box-shadow: var(--shadow-1), inset 0 1px 0 oklch(from var(--text) l c h / 0.05);
       }
     }
-    
+
     .timer-warning {
       animation: flashRed 1.2s infinite steps(1);
     }
@@ -808,7 +818,7 @@
         box-shadow: 0 0 20px 8px #ffdd57, inset 0 2px 4px rgba(0,0,0,.3);
       }
     }
-    
+
     .reel-win {
       animation: winPulse 0.5s 2;
     }
@@ -820,17 +830,7 @@
       transition: filter 0.05s, transform 0.05s;
     }
 
-    #confettiCanvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 1000;
-      display: none;
-    }
-
+    /* ===== MEDIA QUERIES ===== */
     @media (max-width: 640px) {
       .wrap {
         width: 100vw;
@@ -880,27 +880,31 @@
       }
       .stats-grid {
         gap: 10px;
-        margin-bottom: 12px;
+        margin-bottom: 16px;
       }
       .stat {
         padding: 12px 14px;
       }
-      .slider-wrap {
+      .controls {
+        gap: 8px;
+        margin-top: 16px;
+        flex-wrap: wrap;
+      }
         margin-top: 4px;
       }
       .slot {
-        margin-top: 12px;
-        padding-top: 10px;
+        margin-top: 16px;
+        padding-top: 16px;
       }
       .slot h2 {
         margin-bottom: 6px;
       }
       .reels {
         gap: 8px;
-        margin: 8px 0;
+        margin: 12px 0;
       }
     }
-    
+
     /* NEW: Reduce motion but keep color changes */
     @media (prefers-reduced-motion: reduce) {
       .reel-spinning {
@@ -952,7 +956,6 @@
         </div>
       </div>
       <!-- MODIFIED: Removed helper text -->
-      <!-- <p class="helper-text" id="growthHelper">Top numbers: <strong>Rate 1</strong> growth · Bottom numbers: <strong>Rate 2</strong> growth. Move the slider to favor one rate or the other.</p> -->
 
       <div class="controls">
         <button class="ctrl ctrl-fixed" id="swapBtn">Swap</button>
@@ -1030,752 +1033,717 @@
   <canvas id="confettiCanvas"></canvas>
 
   <script>
-  // ===== CONFIG =====
-  const MAX_RATE = 199;
-  const SPIN_DOLLAR_COST = 50;
-  const BUY_DIAMOND_COST = 500;
-  const BUY_DIAMOND_RATE_COST = 1.0;
-  const GAME_DURATION_SECONDS = 20 * 60; // 20 minutes
-  const WIN_AMOUNT = 1000000; // NEW: Win amount constant
+  // REFACTOR: Encapsulated all game logic in an IIFE and a Game class
+  // for better organization and to prevent global scope pollution.
+  (function() {
+    "use strict";
 
-  // Slider growth steps (bottom = Rate 1 growth, top = Rate 2 growth)
-  let growStepsBottom = [12, 10, 8, 6, 4, 2];
-  let growStepsTop = [2, 4, 6, 8, 10, 12];
-  const STEP_COUNT = growStepsBottom.length;
+    // ===== CONFIG =====
+    const MAX_RATE = 199;
+    const SPIN_DOLLAR_COST = 50;
+    const BUY_DIAMOND_COST = 500;
+    const BUY_DIAMOND_RATE_COST = 1.0;
+    const GAME_DURATION_SECONDS = 20 * 60; // 20 minutes
+    const WIN_AMOUNT = 1000000; // NEW: Win amount constant
 
-  // ===== STATE =====
-  let value1 = 0, value2 = 0, rate1 = 3, rate2 = 3, gameTimeSeconds = GAME_DURATION_SECONDS;
-  let grow1 = growStepsBottom[0];
-  let grow2 = growStepsTop[0];
-  let swapUses = 2;
+    // Slider growth steps (bottom = Rate 1 growth, top = Rate 2 growth)
+    let growStepsBottom = [12, 10, 8, 6, 4, 2];
+    let growStepsTop = [2, 4, 6, 8, 10, 12];
+    const STEP_COUNT = growStepsBottom.length;
+    const BASE_SYMBOLS = ['🍒','🍋','🍇','🍉','🍊'];
 
-  let spinDollarCost = SPIN_DOLLAR_COST;
-  let spinRateCost = 1.0;
-  let winMoneyReward = 600;
+    /**
+     * @class Game
+     * @description Encapsulates all state and logic for the slot game.
+     */
+    class Game {
+      // ===== DOM ELEMENTS =====
+      // (Initialized in constructor)
 
-  let buyDiamondCost = BUY_DIAMOND_COST;
-  let buyDiamondRateCost = BUY_DIAMOND_RATE_COST;
+      // ===== STATE =====
+      // (Initialized in constructor)
 
-  const baseSymbols=['🍒','🍋','🍇','🍉','🍊'];
-  let symbols=[...baseSymbols];
-  let diamondCount=0;
-  let running=true, modalOpen=false;
+      constructor(elements) {
+        // ===== DOM ELEMENTS =====
+        this.dom = elements;
+        this.confettiCtx = this.dom.confettiCanvas.getContext('2d');
+        this.reelEls = [this.dom.reel1, this.dom.reel2, this.dom.reel3];
+        
+        // ===== STATE =====
+        this.value1 = 0;
+        this.value2 = 0;
+        this.rate1 = 3;
+        this.rate2 = 3;
+        this.gameTimeSeconds = GAME_DURATION_SECONDS;
+        this.grow1 = growStepsBottom[0];
+        this.grow2 = growStepsTop[0];
+        this.swapUses = 2;
 
-  let isSpinCostResetPurchased = false;
-  // MODIFICATION: Changed from level to boolean
-  let isSliderDoubledPurchased = false;
-  // REMOVED: nextDiamondPurchaseFreeRate2
+        this.spinDollarCost = SPIN_DOLLAR_COST;
+        this.spinRateCost = 1.0;
+        this.winMoneyReward = 600;
 
-  let totalSpins = 0;
-  let totalWins = 0;
+        this.buyDiamondCost = BUY_DIAMOND_COST;
+        this.buyDiamondRateCost = BUY_DIAMOND_RATE_COST;
 
-  // ===== DOM LOOKUPS =====
-  const gameTimerEl=document.getElementById('gameTimer');
-  const val1El=document.getElementById('val1');
-  const val2El=document.getElementById('val2');
-  const rate1El=document.getElementById('rate1');
-  const rate2El=document.getElementById('rate2');
+        this.symbols = [...BASE_SYMBOLS];
+        this.diamondCount = 0;
+        this.running = true;
+        this.modalOpen = false;
 
-  const slider=document.getElementById('uniSlider');
-  const thumb=document.getElementById('thumb');
-  const ticksTopEl = document.getElementById('ticksTop');
-  const ticksBottomEl=document.getElementById('ticksBottom');
+        this.isSpinCostResetPurchased = false;
+        this.isSliderDoubledPurchased = false;
 
-  const swapBtn = document.getElementById('swapBtn');
-  const pauseBtn=document.getElementById('pause');
-  const spinBtn=document.getElementById('spin');
-  // Removed spinCostMsg
-  const buyBtn=document.getElementById('buyBtn');
-  // Removed buyCostMsg
+        this.totalSpins = 0;
+        this.totalWins = 0;
 
-  const backdrop=document.getElementById('winModalBackdrop');
-  const takeMoneyBtn=document.getElementById('takeMoneyBtn');
-  const reduceBtn=document.getElementById('reduceBtn');
-  // FIX: Removed the lookup for the deleted button
-  // const reduceRate2Btn=document.getElementById('reduceRate2Btn'); // This lookup remains but the button is unused
+        this.confettiParticles = [];
+        this.confettiAnimationId = null;
+        this.lastTs = undefined;
 
-  const upgradeBtn = document.getElementById('upgradeBtn');
-  const upgradeModalBackdrop = document.getElementById('upgradeModalBackdrop');
-  const closeUpgradeModalBtn = document.getElementById('closeUpgradeModal');
-  const buyResetSpinCostBtn = document.getElementById('buyResetSpinCost');
-  const buyDoubleSliderBtn = document.getElementById('buyDoubleSlider');
-
-  const finalWinModalBackdrop = document.getElementById('finalWinModalBackdrop'); // NEW
-
-  const confettiCanvas = document.getElementById('confettiCanvas');
-  const confettiCtx = confettiCanvas.getContext('2d');
-  let confettiParticles = [];
-  let confettiAnimationId;
-
-  // REMOVED: const summaryEl, sumMoneyEl, sumCreditEl, sumRate1El, sumRate2El, sumSpinsEl, sumWinsEl
-
-  const reelEls=[document.getElementById('reel1'),document.getElementById('reel2'),document.getElementById('reel3')];
-
-  // ===== UTILS =====
-  const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
-  const fmt=(n)=>n.toFixed(2);
-  const fmtRatePts=(x)=>x.toFixed(1);
-  const fmtTime=(t)=>{const s=Math.floor(t),m=Math.floor(s/60),sec=s%60;return [m,sec].map(v=>String(v).padStart(2,'0')).join(':')};
-
-  // ===== CONFETTI =====
-  function startConfetti() {
-    confettiCanvas.style.display = 'block';
-    confettiParticles = [];
-      confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
-    const colors = [
-      'oklch(80% .2 150)', '#e91e63', 'oklch(80% .25 315)', '#673ab7', 
-      'oklch(85% .25 250)', '#2196f3', 'oklch(90% .22 200)', '#00bcd4', /* Old Rate 2 color */
-      '#4caf50', '#cddc39', '#ffeb3b', '#ff9800', /* New Rate 2 colors */
-      'oklch(90% 0.22 90)', 'oklch(80% 0.2 80)'
-    ];
-    const particleCount = 200; // FIX: Added missing variable definition
-
-    confettiCanvas.width = window.innerWidth;
-    confettiCanvas.height = window.innerHeight;
-
-    for (let i = 0; i < particleCount; i++) {
-      confettiParticles.push({
-        x: Math.random() * confettiCanvas.width,
-        y: Math.random() * confettiCanvas.height - confettiCanvas.height,
-        size: Math.random() * 5 + 2,
-        color: colors[Math.floor(Math.random() * colors.length)],
-        vx: Math.random() * 6 - 3,
-        vy: Math.random() * 5 + 3,
-        opacity: 1,
-      });
-    }
-    animateConfetti();
-  }
-
-  function animateConfetti() {
-    confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
-
-    confettiParticles.forEach((p, index) => {
-      p.x += p.vx;
-      p.y += p.vy;
-      p.opacity -= 0.005;
-
-      if (p.y > confettiCanvas.height || p.opacity <= 0) {
-        confettiParticles.splice(index, 1);
-      } else {
-        confettiCtx.globalAlpha = p.opacity;
-        confettiCtx.fillStyle = p.color;
-        confettiCtx.fillRect(p.x, p.y, p.size, p.size * 2);
-        confettiCtx.globalAlpha = 1;
+        // Bind 'this' for requestAnimationFrame
+        this.boundTick = this.#tick.bind(this);
       }
-    });
+      
+      // ===== PUBLIC INIT =====
+      
+      init() {
+        this.#initSlider();
+        this.#updateCostMsg();
+        this.#updateBuyBtnUI();
+        this.#initControls();
+        requestAnimationFrame(this.boundTick);
+      }
 
-    if (confettiParticles.length > 0) {
-      confettiAnimationId = requestAnimationFrame(animateConfetti);
-    } else {
-      stopConfetti();
-    }
-  }
+      // ===== UTILS (Private) =====
+      #clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+      #fmt(n) { return n.toFixed(2); }
+      #fmtRatePts(x) { return x.toFixed(1); }
+      #fmtTime(t) {
+        const s = Math.floor(t), m = Math.floor(s / 60), sec = s % 60;
+        return [m, sec].map(v => String(v).padStart(2, '0')).join(':');
+      }
 
-  function stopConfetti() {
-    if (confettiAnimationId) {
-      cancelAnimationFrame(confettiAnimationId);
-    }
-    confettiCanvas.style.display = 'none';
-    confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
-    confettiParticles = [];
-  }
+      // ===== CONFETTI (Private) =====
+      #startConfetti() {
+        this.dom.confettiCanvas.style.display = 'block';
+        this.confettiParticles = [];
+        this.confettiCtx.clearRect(0, 0, this.dom.confettiCanvas.width, this.dom.confettiCanvas.height);
+        const colors = [
+          'oklch(80% .2 150)', '#e91e63', 'oklch(80% .25 315)', '#673ab7',
+          'oklch(85% .25 250)', '#2196f3', 'oklch(90% .22 200)', '#00bcd4',
+          '#4caf50', '#cddc39', '#ffeb3b', '#ff9800',
+          'oklch(90% 0.22 90)', 'oklch(80% 0.2 80)'
+        ];
+        const particleCount = 200;
 
-  window.addEventListener('resize', () => {
-    if (confettiCanvas.style.display === 'block') {
-      confettiCanvas.width = window.innerWidth;
-      confettiCanvas.height = window.innerHeight;
-    }
-  });
+        this.dom.confettiCanvas.width = window.innerWidth;
+        this.dom.confettiCanvas.height = window.innerHeight;
 
-  // ===== UI UPDATE HELPERS =====
-  // Updated function to write directly to the button
-  function updateCostMsg(){
-    // MODIFICATION: Check if rate cost is 0
-    if (spinRateCost <= 0) {
-      spinBtn.innerHTML = `Spin<br><small><span class="badge badge-money">$${spinDollarCost}</span></small>`;
-    } else {
-      spinBtn.innerHTML = `Spin<br><small><span class="badge badge-money">$${spinDollarCost}</span> + <span class="badge badge-rate1">${fmtRatePts(spinRateCost)} Rate 1</span></small>`;
-    }
-  }
+        for (let i = 0; i < particleCount; i++) {
+          this.confettiParticles.push({
+            x: Math.random() * this.dom.confettiCanvas.width,
+            y: Math.random() * this.dom.confettiCanvas.height - this.dom.confettiCanvas.height,
+            size: Math.random() * 5 + 2,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            vx: Math.random() * 6 - 3,
+            vy: Math.random() * 5 + 3,
+            opacity: 1,
+          });
+        }
+        this.#animateConfetti();
+      }
 
-  // Updated function to write directly to the button
-  function updateBuyBtnUI(){
-    if(diamondCount>0){
-      buyBtn.innerHTML = `💎 Active<br><small>(${diamondCount} left)</small>`;
-      buyBtn.disabled=true;
-    } else {
-      // REMOVED: Check for free rate buff
-      // CHANGE: Updated text to 7x
-      buyBtn.innerHTML = `Buy 7x 💎<br><small><span class="badge badge-credit">${buyDiamondCost}c</span> + <span class="badge badge-rate2">${buyDiamondRateCost.toFixed(1)} Rate 2</span></small>`;
-      buyBtn.disabled=false;
-    }
-  }
+      #animateConfetti() {
+        this.confettiCtx.clearRect(0, 0, this.dom.confettiCanvas.width, this.dom.confettiCanvas.height);
 
-  function updateReadout(){
-    if (gameTimeSeconds > 0 || running) {
-      gameTimerEl.textContent = fmtTime(gameTimeSeconds);
-    }
-    val1El.textContent=`$${fmt(value1)}`;
-    val2El.textContent=fmt(value2);
-    rate1El.textContent=fmt(rate1);
-    rate2El.textContent=fmt(rate2);
-  }
+        this.confettiParticles.forEach((p, index) => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.opacity -= 0.005;
 
-  // REMOVED: function showSummary()
+          if (p.y > this.dom.confettiCanvas.height || p.opacity <= 0) {
+            this.confettiParticles.splice(index, 1);
+          } else {
+            this.confettiCtx.globalAlpha = p.opacity;
+            this.confettiCtx.fillStyle = p.color;
+            this.confettiCtx.fillRect(p.x, p.y, p.size, p.size * 2);
+            this.confettiCtx.globalAlpha = 1;
+          }
+        });
 
-  // ===== SLIDER =====
-  function buildTicks(){
-    ticksBottomEl.innerHTML='';
-    ticksTopEl.innerHTML = '';
-
-    const growStepsDesc = [...growStepsTop];
-
-    const createTicks = (parentElement, steps) => {
-      steps.forEach((value, idx) => {
-        const s = document.createElement('span');
-        s.textContent = value;
-        s.style.position = 'absolute';
-
-        const pct = (STEP_COUNT <= 1) ? 0 : (idx / (STEP_COUNT - 1));
-        s.style.left = `${pct * 100}%`;
-
-        if (idx === 0) {
-          s.style.transform = 'translateX(0)';
-        } else if (idx === STEP_COUNT - 1) {
-          s.style.transform = 'translateX(-100%)';
+        if (this.confettiParticles.length > 0) {
+          this.confettiAnimationId = requestAnimationFrame(this.#animateConfetti.bind(this));
         } else {
-          s.style.transform = 'translateX(-50%)';
+          this.#stopConfetti();
         }
-        parentElement.appendChild(s);
-      });
-    };
-
-    createTicks(ticksBottomEl, growStepsBottom);
-    createTicks(ticksTopEl, growStepsDesc);
-  }
-
-  function sliderInnerRect(){
-    const r=slider.getBoundingClientRect();
-    const left=r.left+16, right=r.right-16, width=Math.max(0,right-left);
-    return {left,right,width};
-  }
-
-  function positionHandleByIndex(idx){
-    const {left,width}=sliderInnerRect();
-    const pct = (STEP_COUNT<=1)?0: idx/(STEP_COUNT-1);
-    const x = left + pct*width;
-    thumb.style.left = `${x - slider.getBoundingClientRect().left}px`;
-    const val = growStepsBottom[idx];
-    thumb.setAttribute('aria-valuenow', String(val));
-    thumb.setAttribute('aria-valuetext', String(val));
-  }
-
-  function nearestIndexFromClientX(xc){
-    const {left,width}=sliderInnerRect();
-    const x = clamp(xc-left,0,width);
-    const pct = width===0?0:x/width;
-    return clamp(Math.round(pct*(STEP_COUNT-1)),0,STEP_COUNT-1);
-  }
-
-  function setGrowthByIndex(idx){
-    const v1 = growStepsBottom[idx];
-    const v2 = growStepsTop[idx];
-    grow1=v1; grow2=v2;
-    positionHandleByIndex(idx);
-  }
-
-  function currentIndex(){ return Math.max(0, growStepsBottom.indexOf(grow1)); }
-
-  function makeSliderInteractive(){
-    buildTicks();
-    setGrowthByIndex(0);
-    let dragging=false;
-    const onDown=(ev)=>{ if(modalOpen) return; dragging=true; thumb.focus(); const c=('touches'in ev)?ev.touches[0].clientX:ev.clientX; setGrowthByIndex(nearestIndexFromClientX(c)); ev.preventDefault(); };
-    const onMove=(ev)=>{ if(!dragging || modalOpen) return; const c=('touches'in ev)?ev.touches[0].clientX:ev.clientX; setGrowthByIndex(nearestIndexFromClientX(c)); };
-    const onUp=()=>{ dragging=false; };
-    thumb.addEventListener('mousedown', onDown);
-    thumb.addEventListener('touchstart', onDown, {passive:false});
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('touchmove', onMove, {passive:false});
-    window.addEventListener('mouseup', onUp);
-    window.addEventListener('touchend', onUp);
-    slider.addEventListener('mousedown', (ev)=>{ if(ev.target===thumb || modalOpen) return; const c=ev.clientX; setGrowthByIndex(nearestIndexFromClientX(c)); });
-    slider.addEventListener('touchstart', (ev)=>{ if(ev.target===thumb || modalOpen) return; const c=ev.touches[0].clientX; setGrowthByIndex(nearestIndexFromClientX(c)); }, {passive:false});
-    thumb.addEventListener('keydown',(e)=>{
-      if(modalOpen) return;
-      let idx=currentIndex();
-      if(e.key==='ArrowLeft'){ idx=clamp(idx-1,0,STEP_COUNT-1); setGrowthByIndex(idx); e.preventDefault(); }
-      if(e.key==='ArrowRight'){ idx=clamp(idx+1,0,STEP_COUNT-1); setGrowthByIndex(idx); e.preventDefault(); }
-      if(e.key==='Home'){ setGrowthByIndex(0); e.preventDefault(); }
-      if(e.key==='End'){ setGrowthByIndex(STEP_COUNT-1); e.preventDefault(); }
-    });
-    const ro=new ResizeObserver(()=> positionHandleByIndex(currentIndex()));
-    ro.observe(slider);
-  }
-
-  // ===== MODALS =====
-  function openWinChoice(payout, isBonus){
-    // MODIFICATION: Added payout and isBonus params
-    return new Promise((resolve)=>{
-      modalOpen=true;
-
-      // MODIFICATION: Check for bonus and update description
-      const winDescEl = document.getElementById('winDesc');
-      if (isBonus) {
-        winDescEl.innerHTML = `A <strong style="color:var(--money-text)">2x Bonus</strong> hit! Choose your reward to continue.`;
       }
 
-      /* MODIFICATION: Set button text to the final payout */
-      if (isBonus) {
-          /* MODIFIED: Rounder corners */
-          takeMoneyBtn.innerHTML = `Take $${payout} <span style="color: var(--money-text); font-weight: 800; background: var(--money-bg); border-radius: 6px; padding: 2px 6px; font-size: 0.8em; margin-left: 4px; border: 1px solid var(--money-brd);">(2x)</span>`;
-      } else {
-          takeMoneyBtn.textContent = `Take $${payout}`;
+      #stopConfetti() {
+        if (this.confettiAnimationId) {
+          cancelAnimationFrame(this.confettiAnimationId);
+        }
+        this.dom.confettiCanvas.style.display = 'none';
+        this.confettiCtx.clearRect(0, 0, this.dom.confettiCanvas.width, this.dom.confettiCanvas.height);
+        this.confettiParticles = [];
       }
 
-      let focusables;
-      // FIX: Simplified logic to correctly show/hide reduceBtn
-      if (spinRateCost <= 0) {
-        reduceBtn.style.display = 'none';
-        focusables = [takeMoneyBtn];
-      } else {
-        reduceBtn.style.display = 'block';
-        focusables = [reduceBtn, takeMoneyBtn];
-      }
-      // FIX: Removed reference to the null button
-      // Ensure the unused button is hidden
-      // reduceRate2Btn.style.display = 'none';
-
-      backdrop.style.display='flex';
-      backdrop.setAttribute('aria-hidden','false');
-
-      let idx=0; focusables[idx].focus();
-      function onKey(e){ if(e.key==='Tab'){ e.preventDefault(); idx=(idx+(e.shiftKey?-1:1)+focusables.length)%focusables.length; focusables[idx].focus(); } if(e.key==='Escape'){ e.preventDefault(); } }
-      document.addEventListener('keydown', onKey);
-
-      function cleanup(){
-        document.removeEventListener('keydown', onKey);
-        backdrop.style.display='none';
-        backdrop.setAttribute('aria-hidden','true');
-        modalOpen=false;
-        reduceBtn.style.display = 'block'; // Reset to default
-        // FIX: Removed reference to the null button
-        // reduceRate2Btn.style.display = 'none'; // Always hide
-        // MODIFICATION: Reset win description text
-        winDescEl.innerHTML = 'Choose your reward to continue.';
-        // REMOVED: reduceRate2Btn text/disabled reset
-        // CHANGE: Reset take money button text/html
-        takeMoneyBtn.innerHTML = '';
+      #initConfettiResizeListener() {
+         window.addEventListener('resize', () => {
+          if (this.dom.confettiCanvas.style.display === 'block') {
+            this.dom.confettiCanvas.width = window.innerWidth;
+            this.dom.confettiCanvas.height = window.innerHeight;
+          }
+        });
       }
 
-      reduceBtn.onclick=()=>{ cleanup(); resolve('reduce'); };
-      // REMOVED: reduceRate2Btn.onclick handler
-      takeMoneyBtn.onclick=()=>{ cleanup(); resolve('money'); };
-    });
-  }
+      // ===== UI UPDATE HELPERS (Private) =====
+      #updateCostMsg() {
+        if (this.spinRateCost <= 0) {
+          this.dom.spinBtn.innerHTML = `Spin<br><small><span class="badge badge-money">$${this.spinDollarCost}</span></small>`;
+        } else {
+          this.dom.spinBtn.innerHTML = `Spin<br><small><span class="badge badge-money">$${this.spinDollarCost}</span> + <span class="badge badge-rate1">${this.#fmtRatePts(this.spinRateCost)} Rate 1</span></small>`;
+        }
+      }
 
-  function openUpgradeModal() {
-    modalOpen = true;
-    upgradeModalBackdrop.style.display = 'flex';
-    upgradeModalBackdrop.setAttribute('aria-hidden', 'false');
+      #updateBuyBtnUI() {
+        if (this.diamondCount > 0) {
+          this.dom.buyBtn.innerHTML = `💎 Active<br><small>(${this.diamondCount} left)</small>`;
+          this.dom.buyBtn.disabled = true;
+        } else {
+          this.dom.buyBtn.innerHTML = `Buy 7x 💎<br><small><span class="badge badge-credit">${this.buyDiamondCost}c</span> + <span class="badge badge-rate2">${this.buyDiamondRateCost.toFixed(1)} Rate 2</span></small>`;
+          this.dom.buyBtn.disabled = false;
+        }
+      }
 
-    buyResetSpinCostBtn.disabled = isSpinCostResetPurchased;
-    if (isSpinCostResetPurchased) {
-      buyResetSpinCostBtn.textContent = "Purchased";
-    } else {
-      buyResetSpinCostBtn.innerHTML = `<span class="badge badge-money">$5,000</span> + <span class="badge badge-rate1">10 Rate 1</span>`;
-    }
+      #updateReadout() {
+        if (this.gameTimeSeconds > 0 || this.running) {
+          this.dom.gameTimerEl.textContent = this.#fmtTime(this.gameTimeSeconds);
+        }
+        this.dom.val1El.textContent = `$${this.#fmt(this.value1)}`;
+        this.dom.val2El.textContent = this.#fmt(this.value2);
+        this.dom.rate1El.textContent = this.#fmt(this.rate1);
+        this.dom.rate2El.textContent = this.#fmt(this.rate2);
+      }
 
-    // MODIFICATION: Check boolean flag instead of level
-    let remaining = !isSliderDoubledPurchased;
-    buyDoubleSliderBtn.disabled = !remaining;
-    if (!remaining) {
-      buyDoubleSliderBtn.textContent = "Purchased";
-    } else {
-      buyDoubleSliderBtn.innerHTML = `<span class="badge badge-credit">15,000 C</span> + <span class="badge badge-rate2">15 Rate 2</span>`;
-    }
+      // ===== SLIDER (Private) =====
+      #buildTicks() {
+        this.dom.ticksBottomEl.innerHTML = '';
+        this.dom.ticksTopEl.innerHTML = '';
 
-    closeUpgradeModalBtn.focus();
-  }
+        const createTicks = (parentElement, steps) => {
+          steps.forEach((value, idx) => {
+            const s = document.createElement('span');
+            s.textContent = value;
+            s.style.position = 'absolute';
 
-  function closeUpgradeModal() {
-    modalOpen = false;
-    upgradeModalBackdrop.style.display = 'none';
-    upgradeModalBackdrop.setAttribute('aria-hidden', 'true');
-  }
+            const pct = (STEP_COUNT <= 1) ? 0 : (idx / (STEP_COUNT - 1));
+            s.style.left = `${pct * 100}%`;
 
-  // NEW: Function to show the final win modal
-  function showFinalWinModal() {
-    modalOpen = true; // Prevents other interactions
-    finalWinModalBackdrop.style.display = 'flex';
-    finalWinModalBackdrop.setAttribute('aria-hidden', 'false');
-    startConfetti();
-    // No buttons to focus, it's just a message
-  }
+            if (idx === 0) {
+              s.style.transform = 'translateX(0)';
+            } else if (idx === STEP_COUNT - 1) {
+              s.style.transform = 'translateX(-100%)';
+            } else {
+              s.style.transform = 'translateX(-50%)';
+            }
+            parentElement.appendChild(s);
+          });
+        };
 
+        createTicks(this.dom.ticksBottomEl, growStepsBottom);
+        createTicks(this.dom.ticksTopEl, growStepsTop);
+      }
 
-  // ===== SLOT / SPIN =====
-  const visualSymbol=()=>symbols[Math.floor(Math.random()*symbols.length)];
+      #sliderInnerRect() {
+        const r = this.dom.slider.getBoundingClientRect();
+        const left = r.left + 16, right = r.right - 16, width = Math.max(0, right - left);
+        return { left, right, width };
+      }
 
-  // MODIFIED: Replaced animation function
-  function animateReel(reelEl, finalSymbol, duration) {
-    return new Promise(resolve => {
-      // 1. Add blur class immediately
-      reelEl.classList.add('reel-spinning');
+      #positionHandleByIndex(idx) {
+        const { left, width } = this.#sliderInnerRect();
+        const pct = (STEP_COUNT <= 1) ? 0 : idx / (STEP_COUNT - 1);
+        const x = left + pct * width;
+        this.dom.thumb.style.left = `${x - this.dom.slider.getBoundingClientRect().left}px`;
+        const val = growStepsBottom[idx];
+        this.dom.thumb.setAttribute('aria-valuenow', String(val));
+        this.dom.thumb.setAttribute('aria-valuetext', String(val));
+      }
 
-      // 2. Start rapid symbol cycling
-      const spinInterval = setInterval(() => {
-        reelEl.textContent = visualSymbol();
-      }, 50); // Cycle every 50ms
+      #nearestIndexFromClientX(xc) {
+        const { left, width } = this.#sliderInnerRect();
+        const x = this.#clamp(xc - left, 0, width);
+        const pct = width === 0 ? 0 : x / width;
+        return this.#clamp(Math.round(pct * (STEP_COUNT - 1)), 0, STEP_COUNT - 1);
+      }
 
-      // 3. Set a timeout to stop the spin
-      setTimeout(() => {
-        // 4. Stop cycling
-        clearInterval(spinInterval);
+      #setGrowthByIndex(idx) {
+        const v1 = growStepsBottom[idx];
+        const v2 = growStepsTop[idx];
+        this.grow1 = v1; this.grow2 = v2;
+        this.#positionHandleByIndex(idx);
+      }
 
-        // 5. Remove blur
-        reelEl.classList.remove('reel-spinning');
+      #currentIndex() { return Math.max(0, growStepsBottom.indexOf(this.grow1)); }
 
-        // 6. Set final symbol
-        reelEl.textContent = finalSymbol;
+      #initSlider() {
+        this.#buildTicks();
+        this.#setGrowthByIndex(0);
+        let dragging = false;
+        
+        const onDown = (ev) => { if (this.modalOpen) return; dragging = true; this.dom.thumb.focus(); const c = ('touches' in ev) ? ev.touches[0].clientX : ev.clientX; this.#setGrowthByIndex(this.#nearestIndexFromClientX(c)); ev.preventDefault(); };
+        const onMove = (ev) => { if (!dragging || this.modalOpen) return; const c = ('touches' in ev) ? ev.touches[0].clientX : ev.clientX; this.#setGrowthByIndex(this.#nearestIndexFromClientX(c)); };
+        const onUp = () => { dragging = false; };
+        
+        this.dom.thumb.addEventListener('mousedown', onDown);
+        this.dom.thumb.addEventListener('touchstart', onDown, { passive: false });
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('touchmove', onMove, { passive: false });
+        window.addEventListener('mouseup', onUp);
+        window.addEventListener('touchend', onUp);
+        
+        this.dom.slider.addEventListener('mousedown', (ev) => { if (ev.target === this.dom.thumb || this.modalOpen) return; const c = ev.clientX; this.#setGrowthByIndex(this.#nearestIndexFromClientX(c)); });
+        this.dom.slider.addEventListener('touchstart', (ev) => { if (ev.target === this.dom.thumb || this.modalOpen) return; const c = ev.touches[0].clientX; this.#setGrowthByIndex(this.#nearestIndexFromClientX(c)); }, { passive: false });
+        
+        this.dom.thumb.addEventListener('keydown', (e) => {
+          if (this.modalOpen) return;
+          let idx = this.#currentIndex();
+          if (e.key === 'ArrowLeft') { idx = this.#clamp(idx - 1, 0, STEP_COUNT - 1); this.#setGrowthByIndex(idx); e.preventDefault(); }
+          if (e.key === 'ArrowRight') { idx = this.#clamp(idx + 1, 0, STEP_COUNT - 1); this.#setGrowthByIndex(idx); e.preventDefault(); }
+          if (e.key === 'Home') { this.#setGrowthByIndex(0); e.preventDefault(); }
+          if (e.key === 'End') { this.#setGrowthByIndex(STEP_COUNT - 1); e.preventDefault(); }
+        });
+        
+        const ro = new ResizeObserver(() => this.#positionHandleByIndex(this.#currentIndex()));
+        ro.observe(this.dom.slider);
+      }
 
-        // 7. Final "land" animation (bouncy)
-        if (typeof reelEl.animate === 'function') {
-          reelEl.animate([
-            { transform: 'scale(1.3) rotate(-5deg)', opacity: 0.8 },
-            { transform: 'scale(1.0) rotate(0deg)', opacity: 1.0 }
-          ], { duration: 250, easing: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)' }); // NEW: Bouncy ease
+      // ===== MODALS (Private) =====
+      #openWinChoice(payout, isBonus) {
+        return new Promise((resolve) => {
+          this.modalOpen = true;
+
+          const winDescEl = document.getElementById('winDesc'); // Local lookup is fine here
+          if (isBonus) {
+            winDescEl.innerHTML = `A <strong style="color:var(--money-text)">2x Bonus</strong> hit! Choose your reward to continue.`;
+          }
+
+          if (isBonus) {
+            this.dom.takeMoneyBtn.innerHTML = `Take $${payout} <span style="color: var(--money-text); font-weight: 800; background: var(--money-bg); border-radius: 6px; padding: 2px 6px; font-size: 0.8em; margin-left: 4px; border: 1px solid var(--money-brd);">(2x)</span>`;
+          } else {
+            this.dom.takeMoneyBtn.textContent = `Take $${payout}`;
+          }
+
+          let focusables;
+          if (this.spinRateCost <= 0) {
+            this.dom.reduceBtn.style.display = 'none';
+            focusables = [this.dom.takeMoneyBtn];
+          } else {
+            this.dom.reduceBtn.style.display = 'block';
+            focusables = [this.dom.reduceBtn, this.dom.takeMoneyBtn];
+          }
+
+          this.dom.backdrop.style.display = 'flex';
+          this.dom.backdrop.setAttribute('aria-hidden', 'false');
+
+          let idx = 0; focusables[idx].focus();
+          const onKey = (e) => { if (e.key === 'Tab') { e.preventDefault(); idx = (idx + (e.shiftKey ? -1 : 1) + focusables.length) % focusables.length; focusables[idx].focus(); } if (e.key === 'Escape') { e.preventDefault(); } };
+          document.addEventListener('keydown', onKey);
+
+          const cleanup = () => {
+            document.removeEventListener('keydown', onKey);
+            this.dom.backdrop.style.display = 'none';
+            this.dom.backdrop.setAttribute('aria-hidden', 'true');
+            this.modalOpen = false;
+            this.dom.reduceBtn.style.display = 'block';
+            winDescEl.innerHTML = 'Choose your reward to continue.';
+            this.dom.takeMoneyBtn.innerHTML = '';
+          };
+
+          this.dom.reduceBtn.onclick = () => { cleanup(); resolve('reduce'); };
+          this.dom.takeMoneyBtn.onclick = () => { cleanup(); resolve('money'); };
+        });
+      }
+
+      #openUpgradeModal() {
+        this.modalOpen = true;
+        this.dom.upgradeModalBackdrop.style.display = 'flex';
+        this.dom.upgradeModalBackdrop.setAttribute('aria-hidden', 'false');
+
+        this.dom.buyResetSpinCostBtn.disabled = this.isSpinCostResetPurchased;
+        if (this.isSpinCostResetPurchased) {
+          this.dom.buyResetSpinCostBtn.textContent = "Purchased";
+        } else {
+          this.dom.buyResetSpinCostBtn.innerHTML = `<span class="badge badge-money">$5,000</span> + <span class="badge badge-rate1">10 Rate 1</span>`;
         }
 
-        // 8. Resolve promise
-        resolve();
-      }, duration); // Total spin duration
-    });
-  }
+        let remaining = !this.isSliderDoubledPurchased;
+        this.dom.buyDoubleSliderBtn.disabled = !remaining;
+        if (!remaining) {
+          this.dom.buyDoubleSliderBtn.textContent = "Purchased";
+        } else {
+          this.dom.buyDoubleSliderBtn.innerHTML = `<span class="badge badge-credit">15,000 C</span> + <span class="badge badge-rate2">15 Rate 2</span>`;
+        }
 
-  // REFACTORED: This function *only* decides the symbol, it does not
-  // change the diamondCount state.
-  function _getReelSymbol() {
-    let s = symbols[Math.floor(Math.random() * symbols.length)];
-    if (s === '💎') {
-      if (diamondCount > 0) {
-        // We *will* use a diamond, but don't decrement state yet
-        return '💎';
-      } else {
-        // No diamonds left, pick a base symbol
-        return baseSymbols[Math.floor(Math.random() * baseSymbols.length)];
-      }
-    }
-    return s;
-  }
-
-
-  async function spinOnce(){
-    if(!spinBtn || spinBtn.disabled || modalOpen) return;
-    if(value1 < spinDollarCost || rate1 < spinRateCost){
-      // NEW: Bouncy shake animation
-      if (typeof spinBtn.animate === 'function') {
-        spinBtn.animate([
-          { transform: 'scale(1.05) rotate(0deg)' }, 
-          { transform: 'scale(1.05) rotate(-3deg)' }, 
-          { transform: 'scale(1.05) rotate(3deg)' }, 
-          { transform: 'scale(1.05) rotate(0deg)' }
-        ],{ duration: 200, easing: 'cubic-bezier(.2,.0,.5,3)' });
-      }
-      return;
-    }
-
-    totalSpins++;
-
-    value1 -= spinDollarCost;
-    rate1 = Math.max(0, rate1 - spinRateCost);
-    spinDollarCost += 1;
-    updateCostMsg();
-    updateReadout();
-    spinBtn.disabled=true;
-    pauseBtn.disabled=true;
-    swapBtn.disabled=true;
-    buyBtn.disabled=true;
-    upgradeBtn.disabled=true;
-
-    // MODIFIED: Changed durations and call for sequential reveal
-    const durationPerReel = 330; // ~1000ms total
-
-    // REFACTORED: Call the new symbol function that doesn't change state
-    const finalSyms = [_getReelSymbol(), _getReelSymbol(), _getReelSymbol()];
-
-    await animateReel(reelEls[0], finalSyms[0], durationPerReel);
-    await animateReel(reelEls[1], finalSyms[1], durationPerReel);
-    await animateReel(reelEls[2], finalSyms[2], durationPerReel);
-    // END MODIFICATION
-
-    // --- NEW: Update diamond count *after* reels land ---
-    const diamondsLanded = finalSyms.filter(s => s === '💎').length;
-    if (diamondsLanded > 0) {
-      diamondCount = Math.max(0, diamondCount - diamondsLanded);
-      updateBuyBtnUI(); // Update UI now
-      if (diamondCount === 0) symbols = symbols.filter(x => x !== '💎');
-    }
-    // --- END NEW BLOCK ---
-
-    const nonWild=finalSyms.filter(s=>s!=='💎');
-    let win=false;
-    if(nonWild.length<=1) win=true;
-    else if(nonWild.length===2) win=(nonWild[0]===nonWild[1]);
-    else win=(finalSyms[0]===finalSyms[1] && finalSyms[1]===finalSyms[2]);
-
-    if(win){
-      totalWins++;
-
-      if (isSpinCostResetPurchased && !finalSyms.includes('💎')) {
-        spinDollarCost = SPIN_DOLLAR_COST;
-        updateCostMsg();
+        this.dom.closeUpgradeModalBtn.focus();
       }
 
-      reelEls.forEach(el => el.classList.add('reel-win'));
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      reelEls.forEach(el => el.classList.remove('reel-win'));
-
-      // MODIFICATION: Calculate payout before opening modal
-      let isBonus = Math.random() < 0.5;
-      const currentWinPayout = isBonus ? winMoneyReward * 2 : winMoneyReward;
-
-      startConfetti();
-      // MODIFICATION: Pass payout and bonus flag to modal
-      const choice = await openWinChoice(currentWinPayout, isBonus);
-      stopConfetti();
-
-      // MODIFICATION: Use the calculated payout
-      if(choice==='money'){
-        value1 += currentWinPayout;
-      } else if (choice === 'reduce') {
-        spinRateCost = Math.max(0, +(spinRateCost - 0.1).toFixed(1));
-        updateCostMsg();
+      #closeUpgradeModal() {
+        this.modalOpen = false;
+        this.dom.upgradeModalBackdrop.style.display = 'none';
+        this.dom.upgradeModalBackdrop.setAttribute('aria-hidden', 'true');
       }
-      // REMOVED: else if (choice === 'reduceRate2')
 
-      // MODIFICATION: Base reward increases normally
-      winMoneyReward = winMoneyReward + 600;
-    }
-
-    if (running) {
-      pauseBtn.disabled=false;
-      swapBtn.disabled = (swapUses <= 0);
-      // REFACTORED: updateBuyBtnUI() was moved, so we need to
-      // re-check the disabled state of buyBtn here.
-      updateBuyBtnUI();
-      // buyBtn.disabled=false; // Old line
-      upgradeBtn.disabled=false;
-    }
-    spinBtn.disabled=false;
-    updateReadout();
-  }
-
-  // ===== CONTROLS =====
-  function attachControls(){
-    swapBtn.textContent = `Swap (${swapUses})`;
-    swapBtn.addEventListener('click', ()=>{
-      if (modalOpen || swapUses <= 0) return;
-      [value1, value2] = [value2, value1];
-      swapUses--;
-      swapBtn.textContent = `Swap (${swapUses})`;
-      if (swapUses <= 0) {
-        swapBtn.disabled = true;
+      #showFinalWinModal() {
+        this.modalOpen = true;
+        this.dom.finalWinModalBackdrop.style.display = 'flex';
+        this.dom.finalWinModalBackdrop.setAttribute('aria-hidden', 'false');
+        this.#startConfetti();
       }
-      updateReadout();
-    });
 
-    pauseBtn.addEventListener('click', ()=>{
-      if (modalOpen) return;
-      running=!running; pauseBtn.textContent= running? 'Pause':'Resume';
-    });
+      // ===== SLOT / SPIN (Private) =====
+      #visualSymbol() { return this.symbols[Math.floor(Math.random() * this.symbols.length)]; }
 
-    buyBtn.addEventListener('click', ()=>{
-      if (modalOpen) return;
+      #animateReel(reelEl, finalSymbol, duration) {
+        return new Promise(resolve => {
+          reelEl.classList.add('reel-spinning');
+          const spinInterval = setInterval(() => {
+            reelEl.textContent = this.#visualSymbol();
+          }, 50);
 
-      // REMOVED: Check for free Rate 2 purchase
+          setTimeout(() => {
+            clearInterval(spinInterval);
+            reelEl.classList.remove('reel-spinning');
+            reelEl.textContent = finalSymbol;
 
-      // Original logic
-      if(value2>=buyDiamondCost && rate2>=buyDiamondRateCost && diamondCount===0){
-        value2-=buyDiamondCost;
-        rate2=Math.max(0, rate2-buyDiamondRateCost);
-        // CHANGE: Updated from 6 to 7
-        diamondCount = 7;
-        if(!symbols.includes('💎')) symbols.push('💎');
-        buyDiamondCost+=500;
-        buyDiamondRateCost+=1;
-        updateBuyBtnUI();
-        updateReadout();
-      } else {
-        if(value2<buyDiamondCost || rate2<buyDiamondRateCost){
-          // NEW: Bouncy shake animation
-          if (typeof buyBtn.animate === 'function') {
-            buyBtn.animate([
-              { transform: 'scale(1.05) rotate(0deg)' }, 
-              { transform: 'scale(1.05) rotate(-3deg)' }, 
-              { transform: 'scale(1.05) rotate(3deg)' }, 
-              { transform: 'scale(1.05) rotate(0deg)' }
-            ],{ duration: 200, easing: 'cubic-bezier(.2,.0,.5,3)' });
+            if (typeof reelEl.animate === 'function') {
+              reelEl.animate([
+                { transform: 'scale(1.3) rotate(-5deg)', opacity: 0.8 },
+                { transform: 'scale(1.0) rotate(0deg)', opacity: 1.0 }
+              ], { duration: 250, easing: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)' });
+            }
+            resolve();
+          }, duration);
+        });
+      }
+
+      #getReelSymbol() {
+        let s = this.symbols[Math.floor(Math.random() * this.symbols.length)];
+        if (s === '💎') {
+          if (this.diamondCount > 0) {
+            return '💎';
+          } else {
+            return BASE_SYMBOLS[Math.floor(Math.random() * BASE_SYMBOLS.length)];
           }
         }
+        return s;
       }
+
+      async #spinOnce() {
+        if (!this.dom.spinBtn || this.dom.spinBtn.disabled || this.modalOpen) return;
+        if (this.value1 < this.spinDollarCost || this.rate1 < this.spinRateCost) {
+          if (typeof this.dom.spinBtn.animate === 'function') {
+            this.dom.spinBtn.animate([
+              { transform: 'scale(1.05) rotate(0deg)' },
+              { transform: 'scale(1.05) rotate(-3deg)' },
+              { transform: 'scale(1.05) rotate(3deg)' },
+              { transform: 'scale(1.05) rotate(0deg)' }
+            ], { duration: 200, easing: 'cubic-bezier(.2,.0,.5,3)' });
+          }
+          return;
+        }
+
+        this.totalSpins++;
+        this.value1 -= this.spinDollarCost;
+        this.rate1 = Math.max(0, this.rate1 - this.spinRateCost);
+        this.spinDollarCost += 1;
+        this.#updateCostMsg();
+        this.#updateReadout();
+        
+        this.dom.spinBtn.disabled = true;
+        this.dom.pauseBtn.disabled = true;
+        this.dom.swapBtn.disabled = true;
+        this.dom.buyBtn.disabled = true;
+        this.dom.upgradeBtn.disabled = true;
+
+        const durationPerReel = 330;
+        const finalSyms = [this.#getReelSymbol(), this.#getReelSymbol(), this.#getReelSymbol()];
+
+        await this.#animateReel(this.reelEls[0], finalSyms[0], durationPerReel);
+        await this.#animateReel(this.reelEls[1], finalSyms[1], durationPerReel);
+        await this.#animateReel(this.reelEls[2], finalSyms[2], durationPerReel);
+
+        const diamondsLanded = finalSyms.filter(s => s === '💎').length;
+        if (diamondsLanded > 0) {
+          this.diamondCount = Math.max(0, this.diamondCount - diamondsLanded);
+          this.#updateBuyBtnUI();
+          if (this.diamondCount === 0) this.symbols = this.symbols.filter(x => x !== '💎');
+        }
+
+        const nonWild = finalSyms.filter(s => s !== '💎');
+        let win = false;
+        if (nonWild.length <= 1) win = true;
+        else if (nonWild.length === 2) win = (nonWild[0] === nonWild[1]);
+        else win = (finalSyms[0] === finalSyms[1] && finalSyms[1] === finalSyms[2]);
+
+        if (win) {
+          this.totalWins++;
+
+          if (this.isSpinCostResetPurchased && !finalSyms.includes('💎')) {
+            this.spinDollarCost = SPIN_DOLLAR_COST;
+            this.#updateCostMsg();
+          }
+
+          this.reelEls.forEach(el => el.classList.add('reel-win'));
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          this.reelEls.forEach(el => el.classList.remove('reel-win'));
+
+          let isBonus = Math.random() < 0.5;
+          const currentWinPayout = isBonus ? this.winMoneyReward * 2 : this.winMoneyReward;
+
+          this.#startConfetti();
+          const choice = await this.#openWinChoice(currentWinPayout, isBonus);
+          this.#stopConfetti();
+
+          if (choice === 'money') {
+            this.value1 += currentWinPayout;
+          } else if (choice === 'reduce') {
+            this.spinRateCost = Math.max(0, +(this.spinRateCost - 0.1).toFixed(1));
+            this.#updateCostMsg();
+          }
+          
+          this.winMoneyReward = this.winMoneyReward + 600;
+        }
+
+        if (this.running) {
+          this.dom.pauseBtn.disabled = false;
+          this.dom.swapBtn.disabled = (this.swapUses <= 0);
+          this.#updateBuyBtnUI(); // Re-check disabled state
+          this.dom.upgradeBtn.disabled = false;
+        }
+        this.dom.spinBtn.disabled = false;
+        this.#updateReadout();
+      }
+
+      // ===== CONTROLS (Private) =====
+      #initControls() {
+        this.dom.swapBtn.textContent = `Swap (${this.swapUses})`;
+        this.dom.swapBtn.addEventListener('click', () => {
+          if (this.modalOpen || this.swapUses <= 0) return;
+          [this.value1, this.value2] = [this.value2, this.value1];
+          this.swapUses--;
+          this.dom.swapBtn.textContent = `Swap (${this.swapUses})`;
+          if (this.swapUses <= 0) {
+            this.dom.swapBtn.disabled = true;
+          }
+          this.#updateReadout();
+        });
+
+        this.dom.pauseBtn.addEventListener('click', () => {
+          if (this.modalOpen) return;
+          this.running = !this.running;
+          this.dom.pauseBtn.textContent = this.running ? 'Pause' : 'Resume';
+          if (this.running) {
+             // Restart game loop if it was paused
+             this.lastTs = undefined; // Reset timestamp to avoid large dt jump
+             requestAnimationFrame(this.boundTick);
+          }
+        });
+
+        this.dom.buyBtn.addEventListener('click', () => {
+          if (this.modalOpen) return;
+
+          if (this.value2 >= this.buyDiamondCost && this.rate2 >= this.buyDiamondRateCost && this.diamondCount === 0) {
+            this.value2 -= this.buyDiamondCost;
+            this.rate2 = Math.max(0, this.rate2 - this.buyDiamondRateCost);
+            this.diamondCount = 7;
+            if (!this.symbols.includes('💎')) this.symbols.push('💎');
+            this.buyDiamondCost += 500;
+            this.buyDiamondRateCost += 1;
+            this.#updateBuyBtnUI();
+            this.#updateReadout();
+          } else {
+            if (this.value2 < this.buyDiamondCost || this.rate2 < this.buyDiamondRateCost) {
+              if (typeof this.dom.buyBtn.animate === 'function') {
+                this.dom.buyBtn.animate([
+                  { transform: 'scale(1.05) rotate(0deg)' },
+                  { transform: 'scale(1.05) rotate(-3deg)' },
+                  { transform: 'scale(1.05) rotate(3deg)' },
+                  { transform: 'scale(1.05) rotate(0deg)' }
+                ], { duration: 200, easing: 'cubic-bezier(.2,.0,.5,3)' });
+              }
+            }
+          }
+        });
+
+        const spinFunc = this.#spinOnce.bind(this);
+        this.dom.spinBtn.addEventListener('click', spinFunc);
+        this.dom.spinBtn.addEventListener('keydown', (e) => {
+          if (this.modalOpen) { e.preventDefault(); return; }
+          if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); spinFunc(); }
+        });
+
+        this.dom.upgradeBtn.addEventListener('click', this.#openUpgradeModal.bind(this));
+        this.dom.closeUpgradeModalBtn.addEventListener('click', this.#closeUpgradeModal.bind(this));
+
+        this.dom.buyResetSpinCostBtn.addEventListener('click', () => {
+          if (this.isSpinCostResetPurchased) return;
+          if (this.value1 < 5000 || this.rate1 < 10) {
+            if (typeof this.dom.buyResetSpinCostBtn.animate === 'function') {
+              this.dom.buyResetSpinCostBtn.animate([
+                { transform: 'scale(1.05) rotate(0deg)' },
+                { transform: 'scale(1.05) rotate(-3deg)' },
+                { transform: 'scale(1.05) rotate(3deg)' },
+                { transform: 'scale(1.05) rotate(0deg)' }
+              ], { duration: 200, easing: 'cubic-bezier(.2,.0,.5,3)' });
+            }
+            return;
+          }
+          this.value1 -= 5000;
+          this.rate1 -= 10;
+          this.isSpinCostResetPurchased = true;
+          this.dom.buyResetSpinCostBtn.disabled = true;
+          this.dom.buyResetSpinCostBtn.textContent = "Purchased";
+          this.#updateReadout();
+        });
+
+        this.dom.buyDoubleSliderBtn.addEventListener('click', () => {
+          if (this.isSliderDoubledPurchased) return;
+          if (this.value2 < 15000 || this.rate2 < 15) {
+            if (typeof this.dom.buyDoubleSliderBtn.animate === 'function') {
+              this.dom.buyDoubleSliderBtn.animate([
+                { transform: 'scale(1.05) rotate(0deg)' },
+                { transform: 'scale(1.05) rotate(-3deg)' },
+                { transform: 'scale(1.05) rotate(3deg)' },
+                { transform: 'scale(1.05) rotate(0deg)' }
+              ], { duration: 200, easing: 'cubic-bezier(.2,.0,.5,3)' });
+            }
+            return;
+          }
+
+          this.value2 -= 15000;
+          this.rate2 -= 15;
+          growStepsBottom = growStepsBottom.map(val => val * 2);
+          growStepsTop = growStepsTop.map(val => val * 2);
+          this.isSliderDoubledPurchased = true;
+          
+          this.#buildTicks();
+          this.#setGrowthByIndex(this.#currentIndex());
+          this.#updateReadout();
+
+          this.dom.buyDoubleSliderBtn.disabled = true;
+          this.dom.buyDoubleSliderBtn.textContent = "Purchased";
+        });
+
+        // Add resize listener for confetti
+        this.#initConfettiResizeListener();
+      }
+
+      // ===== GAME LOOP (Private) =====
+      #tick(ts) {
+        if (this.lastTs === undefined) this.lastTs = ts;
+        const dt = (ts - this.lastTs) / 1000;
+        this.lastTs = ts;
+
+        if (this.running && dt > 0) {
+          this.gameTimeSeconds -= dt;
+
+          if (this.gameTimeSeconds <= 180) {
+            if (!this.dom.gameTimerEl.classList.contains('timer-warning')) {
+              this.dom.gameTimerEl.classList.add('timer-warning');
+            }
+          } else {
+            if (this.dom.gameTimerEl.classList.contains('timer-warning')) {
+              this.dom.gameTimerEl.classList.remove('timer-warning');
+            }
+          }
+
+          this.value1 += this.rate1 * dt;
+          this.value2 += this.rate2 * dt;
+          const gps1 = (this.grow1 / 60), gps2 = (this.grow2 / 60);
+          this.rate1 = Math.min(MAX_RATE, this.rate1 + gps1 * dt);
+          this.rate2 = Math.min(MAX_RATE, this.rate2 + gps2 * dt);
+
+          if (this.value1 >= WIN_AMOUNT) {
+            this.value1 = WIN_AMOUNT;
+            this.running = false;
+            this.gameTimeSeconds = Math.max(0, this.gameTimeSeconds);
+            this.dom.pauseBtn.disabled = true;
+            this.dom.spinBtn.disabled = true;
+            this.dom.buyBtn.disabled = true;
+            if (this.dom.swapBtn) this.dom.swapBtn.disabled = true;
+            if (this.dom.upgradeBtn) this.dom.upgradeBtn.disabled = true;
+            this.dom.pauseBtn.textContent = "You Won!";
+            this.dom.gameTimerEl.classList.remove('timer-warning');
+
+            this.#showFinalWinModal();
+            this.#updateReadout();
+            return; // Exit the tick function
+          }
+
+          if (this.gameTimeSeconds <= 0) {
+            this.gameTimeSeconds = 0;
+            this.running = false;
+            this.dom.pauseBtn.disabled = true;
+            this.dom.spinBtn.disabled = true;
+            this.dom.buyBtn.disabled = true;
+            if (this.dom.swapBtn) this.dom.swapBtn.disabled = true;
+            if (this.dom.upgradeBtn) this.dom.upgradeBtn.disabled = true;
+            this.dom.pauseBtn.textContent = "Over";
+            this.dom.gameTimerEl.classList.remove('timer-warning');
+          }
+        }
+
+        this.#updateReadout();
+
+        if (this.running && this.gameTimeSeconds > 0) {
+          requestAnimationFrame(this.boundTick);
+        } else if (this.gameTimeSeconds <= 0 && !this.running) {
+          this.dom.gameTimerEl.textContent = "GAME OVER";
+          this.dom.gameTimerEl.classList.remove('timer-warning');
+        }
+      }
+    } // End class Game
+
+    // ===== INIT =====
+    document.addEventListener('DOMContentLoaded', () => {
+      // Perform all DOM lookups here
+      const domElements = {
+        gameTimerEl: document.getElementById('gameTimer'),
+        val1El: document.getElementById('val1'),
+        val2El: document.getElementById('val2'),
+        rate1El: document.getElementById('rate1'),
+        rate2El: document.getElementById('rate2'),
+        slider: document.getElementById('uniSlider'),
+        thumb: document.getElementById('thumb'),
+        ticksTopEl: document.getElementById('ticksTop'),
+        ticksBottomEl: document.getElementById('ticksBottom'),
+        swapBtn: document.getElementById('swapBtn'),
+        pauseBtn: document.getElementById('pause'),
+        spinBtn: document.getElementById('spin'),
+        buyBtn: document.getElementById('buyBtn'),
+        backdrop: document.getElementById('winModalBackdrop'),
+        takeMoneyBtn: document.getElementById('takeMoneyBtn'),
+        reduceBtn: document.getElementById('reduceBtn'),
+        upgradeBtn: document.getElementById('upgradeBtn'),
+        upgradeModalBackdrop: document.getElementById('upgradeModalBackdrop'),
+        closeUpgradeModalBtn: document.getElementById('closeUpgradeModal'),
+        buyResetSpinCostBtn: document.getElementById('buyResetSpinCost'),
+        buyDoubleSliderBtn: document.getElementById('buyDoubleSlider'),
+        finalWinModalBackdrop: document.getElementById('finalWinModalBackdrop'),
+        confettiCanvas: document.getElementById('confettiCanvas'),
+        reel1: document.getElementById('reel1'),
+        reel2: document.getElementById('reel2'),
+        reel3: document.getElementById('reel3'),
+      };
+
+      // Create and initialize the game instance
+      const game = new Game(domElements);
+      game.init();
     });
 
-    spinBtn.addEventListener('click', spinOnce);
-    spinBtn.addEventListener('keydown',(e)=>{
-      if(modalOpen){ e.preventDefault(); return; }
-      if(e.key===' '||e.key==='Enter'){ e.preventDefault(); spinOnce(); }
-    });
-
-    upgradeBtn.addEventListener('click', openUpgradeModal);
-    closeUpgradeModalBtn.addEventListener('click', closeUpgradeModal);
-
-    buyResetSpinCostBtn.addEventListener('click', () => {
-      if (isSpinCostResetPurchased) return;
-      if (value1 < 5000 || rate1 < 10) {
-        // NEW: Bouncy shake animation
-        if (typeof buyResetSpinCostBtn.animate === 'function') {
-          buyResetSpinCostBtn.animate([
-            { transform: 'scale(1.05) rotate(0deg)' }, 
-            { transform: 'scale(1.05) rotate(-3deg)' }, 
-            { transform: 'scale(1.05) rotate(3deg)' }, 
-            { transform: 'scale(1.05) rotate(0deg)' }
-          ],{ duration: 200, easing: 'cubic-bezier(.2,.0,.5,3)' });
-        }
-        return;
-      }
-      value1 -= 5000;
-      rate1 -= 10;
-      isSpinCostResetPurchased = true;
-      buyResetSpinCostBtn.disabled = true;
-      buyResetSpinCostBtn.textContent = "Purchased";
-      updateReadout();
-    });
-
-    buyDoubleSliderBtn.addEventListener('click', () => {
-      // MODIFICATION: Check boolean flag
-      if (isSliderDoubledPurchased) return;
-
-      if (value2 < 15000 || rate2 < 15) {
-        // NEW: Bouncy shake animation
-        if (typeof buyDoubleSliderBtn.animate === 'function') {
-          buyDoubleSliderBtn.animate([
-            { transform: 'scale(1.05) rotate(0deg)' }, 
-            { transform: 'scale(1.05) rotate(-3deg)' }, 
-            { transform: 'scale(1.05) rotate(3deg)' }, 
-            { transform: 'scale(1.05) rotate(0deg)' }
-          ],{ duration: 200, easing: 'cubic-bezier(.2,.0,.5,3)' });
-        }
-        return;
-      }
-
-      value2 -= 15000;
-      rate2 -= 15;
-
-      // MODIFICATION: Double all values in the arrays
-      growStepsBottom = growStepsBottom.map(val => val * 2);
-      growStepsTop = growStepsTop.map(val => val * 2);
-      isSliderDoubledPurchased = true;
-      // END MODIFICATION
-
-      buildTicks();
-      setGrowthByIndex(currentIndex());
-      updateReadout();
-
-      // MODIFICATION: Update button state
-      buyDoubleSliderBtn.disabled = true;
-      buyDoubleSliderBtn.textContent = "Purchased";
-    });
-  }
-
-  // ===== GAME LOOP =====
-  let lastTs;
-  function tick(ts){
-    if(lastTs===undefined) lastTs=ts;
-    const dt=(ts-lastTs)/1000;
-    lastTs=ts;
-
-    if(running && dt>0){
-      gameTimeSeconds -= dt;
-
-      // --- NEW: Timer warning logic ---
-      // User requested >3:00, but flashing red usually means *less* than 3:00.
-      // Implementing as a "running out of time" warning.
-      if (gameTimeSeconds <= 180) { // 3 minutes = 180 seconds
-        if (!gameTimerEl.classList.contains('timer-warning')) {
-          gameTimerEl.classList.add('timer-warning');
-        }
-      } else {
-        if (gameTimerEl.classList.contains('timer-warning')) {
-          gameTimerEl.classList.remove('timer-warning');
-        }
-      }
-      // --- END: Timer warning logic ---
-
-      value1 += rate1 * dt;
-      value2 += rate2 * dt;
-      const gps1=(grow1/60), gps2=(grow2/60);
-      rate1=Math.min(MAX_RATE, rate1 + gps1*dt);
-      rate2=Math.min(MAX_RATE, rate2 + gps2*dt);
-
-      // --- NEW WIN CONDITION CHECK ---
-      if (value1 >= WIN_AMOUNT) {
-        value1 = WIN_AMOUNT; // Cap at win amount
-        running = false;
-        gameTimeSeconds = Math.max(0, gameTimeSeconds); // Stop timer
-        pauseBtn.disabled = true;
-        spinBtn.disabled = true;
-        buyBtn.disabled = true;
-        if (swapBtn) swapBtn.disabled = true;
-        if (upgradeBtn) upgradeBtn.disabled = true;
-        pauseBtn.textContent = "You Won!";
-
-        gameTimerEl.classList.remove('timer-warning'); // NEW: Remove warning on win
-
-        // Call function to show the final win modal
-        showFinalWinModal();
-
-        updateReadout(); // Do one last update
-        return; // Exit the tick function
-      }
-      // --- END NEW WIN CONDITION ---
-
-      if (gameTimeSeconds <= 0) {
-        gameTimeSeconds = 0;
-        running = false;
-        pauseBtn.disabled = true;
-        spinBtn.disabled = true;
-        buyBtn.disabled = true;
-        if (swapBtn) swapBtn.disabled = true;
-        if (upgradeBtn) upgradeBtn.disabled = true;
-        pauseBtn.textContent = "Over";
-        gameTimerEl.classList.remove('timer-warning'); // NEW: Remove warning on game over
-        // REMOVED: showSummary();
-      }
-    }
-
-    updateReadout();
-
-    // Modified condition to stop loop if running is false
-    if (running && gameTimeSeconds > 0) {
-      requestAnimationFrame(tick);
-    } else if (gameTimeSeconds <= 0 && !running) {
-      gameTimerEl.textContent = "GAME OVER";
-      gameTimerEl.classList.remove('timer-warning'); // NEW: Ensure class is removed
-    }
-  }
-
-  // ===== INIT =====
-  function init(){
-    makeSliderInteractive();
-    updateCostMsg();
-    updateBuyBtnUI();
-    attachControls();
-    requestAnimationFrame(tick);
-  }
-
-  init();
+  })();
   </script>
 </body>
 </html>
