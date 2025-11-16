@@ -12,7 +12,6 @@
             font-family: "Inter", sans-serif;
         }
         /* Ensure no scrollbars on the main body */
-/* ... existing code ... -->
         html, body {
             overflow: hidden;
             height: 100%;
@@ -25,32 +24,34 @@
             inset: 0;
             width: 100%;
             height: 100%;
-            /* Faint scanlines */
+            /* Faint scanlines - now thicker and more spaced */
             background-image: repeating-linear-gradient(
-                transparent 0,
-                rgba(0, 0, 0, 0.3) 1px, /* Made scanlines darker */
-                transparent 2px
+                rgba(0, 0, 0, 0.4) 0px, /* Thicker line (2px) */
+                rgba(0, 0, 0, 0.4) 2px,
+                transparent 2px,
+                transparent 5px         /* More space (3px) */
               ),
               /* Vignette effect */
               radial-gradient(
                 ellipse at center,
-                transparent 0%,
-                rgba(0, 0, 0, 0.3) 100%
+                transparent 20%,
+                rgba(0, 0, 0, 0.5) 100% /* Made vignette stronger */
               );
-            opacity: 0.7; /* Increased opacity */
+            opacity: 0.8; /* Increased opacity */
             z-index: 5; /* Above SVG background, below player */
             pointer-events: none; /* Don't block clicks */
         }
     </style>
 </head>
-<body class="bg-gray-900 flex items-center justify-center min-h-screen">
+<!-- Body background is darker -->
+<body class="bg-black flex items-center justify-center min-h-screen">
 
-    <!-- Mobile-first container, constrained to a portrait aspect -->
-    <div class="w-full max-w-md h-screen bg-gray-800 text-white flex flex-col shadow-2xl overflow-hidden">
+    <!-- Mobile-first container, constrained to a portrait aspect. Darker bg. -->
+    <div class="w-full max-w-md h-screen bg-gray-900 text-white flex flex-col shadow-2xl overflow-hidden">
 
-        <!-- 1. Slim Top Section -->
-        <header class="bg-black bg-opacity-30 p-2 shadow-md z-10">
-            <div class="flex justify-between items-center text-sm px-2">
+        <!-- 1. Larger Top Section -->
+        <header class="bg-black bg-opacity-50 p-4 shadow-lg z-10"> <!-- Increased padding and opacity -->
+            <div class="flex justify-between items-center text-base px-2"> <!-- Increased text size -->
                 <div>
                     <span class="font-bold text-green-400">HP:</span>
                     <span class="font-semibold">100/100</span>
@@ -68,61 +69,61 @@
 
         <!-- 2. Large Middle Section (Game World) -->
         <main class="flex-grow relative">
-            
+
             <!-- SVG Background Image -->
             <div class="absolute inset-0 w-full h-full overflow-hidden">
-                <svg 
-                    class="w-full h-full" 
-                    viewBox="0 0 100 200" 
-                    preserveAspectRatio="xMidYMid slice" 
+                <svg
+                    class="w-full h-full"
+                    viewBox="0 0 100 200"
+                    preserveAspectRatio="xMidYMid slice"
                     aria-label="Simple RPG terrain background">
-                    
-                    <!-- 
-                      Define tile patterns. 
-                      Each tile is 10x10 units. 
+
+                    <!--
+                      Define tile patterns.
+                      Each tile is 10x10 units.
                       viewBox is 100x200, so this creates a 10x20 grid.
                     -->
                     <defs>
-                        <!-- Grass Tile Pattern -->
+                        <!-- Dark Grass Tile Pattern -->
                         <pattern id="grass" patternUnits="userSpaceOnUse" width="10" height="10">
-                            <rect width="10" height="10" fill="#7CFC00" />
-                            <rect x="0" y="0" width="5" height="5" fill="#32CD32" opacity="0.3" />
-                            <rect x="5" y="5" width="5" height="5" fill="#32CD32" opacity="0.3" />
+                            <rect width="10" height="10" fill="#2A362A" /> <!-- Dark olive green -->
+                            <rect x="0" y="0" width="5" height="5" fill="#1B221B" opacity="0.3" />
+                            <rect x="5" y="5" width="5" height="5" fill="#1B221B" opacity="0.3" />
                         </pattern>
 
-                        <!-- Mountain Tile Pattern -->
+                        <!-- Dark Mountain Tile Pattern -->
                         <pattern id="mountain" patternUnits="userSpaceOnUse" width="10" height="10">
-                            <rect width="10" height="10" fill="#A9A9A9" />
-                            <polygon points="0,10 5,2 10,10" fill="#696969" />
-                        </pattern>
-                        
-                        <!-- Water Tile Pattern -->
-                        <pattern id="water" patternUnits="userSpaceOnUse" width="10" height="10">
-                            <rect width="10" height="10" fill="#00BFFF" />
-                            <path d="M 0 5 Q 2.5 2, 5 5 T 10 5" stroke="#1E90FF" fill="none" stroke-width="1" />
+                            <rect width="10" height="10" fill="#3E3E4A" /> <!-- Dark slate gray -->
+                            <polygon points="0,10 5,2 10,10" fill="#2A2A33" /> <!-- Darker gray -->
                         </pattern>
 
-                        <!-- Tree/Forest Tile Pattern -->
+                        <!-- Murky Water Tile Pattern -->
+                        <pattern id="water" patternUnits="userSpaceOnUse" width="10" height="10">
+                            <rect width="10" height="10" fill="#2F3A4F" /> <!-- Dark slate blue -->
+                            <path d="M 0 5 Q 2.5 2, 5 5 T 10 5" stroke="#1D2430" fill="none" stroke-width="1" />
+                        </pattern>
+
+                        <!-- Dark Forest Tile Pattern -->
                         <pattern id="forest" patternUnits="userSpaceOnUse" width="10" height="10">
-                            <rect width="10" height="10" fill="#7CFC00" /> <!-- grass base -->
-                            <rect x="4" y="6" width="2" height="4" fill="#8B4513" /> <!-- trunk -->
+                            <rect width="10" height="10" fill="#2A362A" /> <!-- Dark grass base -->
+                            <rect x="4" y="6" width="2" height="4" fill="#4D2E20" /> <!-- Dark trunk -->
                             <!-- Pointy leaves (pine tree) -->
-                            <polygon points="5,1 2,7 8,7" fill="#2E8B57" />
+                            <polygon points="5,1 2,7 8,7" fill="#1A431F" /> <!-- Dark green leaves -->
                         </pattern>
                     </defs>
 
                     <!-- Draw the terrain using the patterns -->
 
-                    <!-- Base layer: Grass -->
+                    <!-- Base layer: Dark Grass -->
                     <rect width="100" height="200" fill="url(#grass)" />
 
-                    <!-- Mountain Range (Top) - Doubled height -->
-                    <rect width="100" height="80" fill="url(#mountain)" />
-                    
-                    <!-- A patch of forest -->
+                    <!-- Mountain Range (Top) - Height increased -->
+                    <rect width="100" height="50" fill="url(#mountain)" />
+
+                    <!-- A patch of dark forest -->
                     <rect x="10" y="70" width="30" height="50" fill="url(#forest)" />
 
-                    <!-- A small lake -->
+                    <!-- A small, murky lake -->
                     <rect x="60" y="120" width="30" height="40" fill="url(#water)" />
 
                 </svg>
@@ -138,21 +139,26 @@
 
         </main>
 
-        <!-- 3. Bottom Section (Buttons) -->
-        <footer class="bg-black bg-opacity-30 p-4 shadow-inner z-10 rounded-t-lg">
-            <div class="grid grid-cols-2 gap-4">
-                <button class="p-4 bg-red-600 text-white rounded-lg font-bold shadow-md active:bg-red-700 transition-colors">
-                    Attack
-                </button>
-                <button class="p-4 bg-green-600 text-white rounded-lg font-bold shadow-md active:bg-green-700 transition-colors">
-                    Items
-                </button>
-                <button class="p-4 bg-blue-600 text-white rounded-lg font-bold shadow-md active:bg-blue-700 transition-colors">
-                    Magic
-                </button>
-                <button class="p-4 bg-yellow-600 text-white rounded-lg font-bold shadow-md active:bg-yellow-700 transition-colors">
-                    Map
-                </button>
+        <!-- 3. Bottom Section (New Button Layout) -->
+        <footer class="bg-black bg-opacity-50 p-4 shadow-inner z-10 rounded-t-lg"> <!-- Increased opacity -->
+            <div class="flex justify-between items-center gap-4">
+                
+                <!-- Left: Stack of 2 buttons -->
+                <div class="flex flex-col gap-3 w-1/2">
+                    <button class="p-3 bg-green-700 text-white rounded-lg font-bold shadow-md active:bg-green-800 transition-colors border border-green-500">
+                        Items
+                    </button>
+                    <button class="p-3 bg-blue-700 text-white rounded-lg font-bold shadow-md active:bg-blue-800 transition-colors border border-blue-500">
+                        Magic
+                    </button>
+                </div>
+
+                <!-- Right: Big round button -->
+                <div class="w-1/2 flex justify-center items-center">
+                    <button class="w-24 h-24 bg-red-700 text-white rounded-full font-bold shadow-lg active:bg-red-800 transition-colors flex items-center justify-center text-lg border-2 border-red-400">
+                        Attack
+                    </button>
+                </div>
             </div>
         </footer>
 
