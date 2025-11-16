@@ -1342,7 +1342,7 @@
       // CHANGE: Remove "diamond purchases cost 0 rate 2" option
       if (spinRateCost <= 0) {
         reduceBtn.style.display = 'none';
-        reduceRate2Btn.style.display = 'none'; // CHANGED
+        reduceRate2Btn.style.display = 'block'; // CHANGED (was 'none')
         // MODIFICATION: Change text for new reward
         reduceRate2Btn.textContent = 'Next 💎 buy costs 0 Rate 2';
         // MODIFICATION: Disable if buff is already active
