@@ -1,546 +1,1062 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game UI Foundation</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.2/pixi.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
-    <link href="https://unpkg.com/splitting@1.0.6/dist/splitting.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>SlotClimb: Neon Edition</title>
+  <style>
+    /* =========================================
+       THEME & VARIABLES
+       ========================================= */
+    :root {
+      /* Core Palette - Neon Casino Theme */
+      --bg-dark: #0a0a12;
+      --bg-panel: #141420;
+      --bg-panel-lighter: #1e1e2e;
+      
+      --primary: #ff2a6d;    /* Hot Pink - Money */
+      --primary-dim: #b01d4b;
+      --secondary: #05d9e8;  /* Cyan - Credits */
+      --secondary-dim: #0396a1;
+      --accent: #d1f7ff;     /* White-blue - Text */
+      --gold: #ffd700;       /* Gold - Wins */
+      
+      --glass: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.1);
+      
+      --shadow-sm: 0 2px 4px rgba(0,0,0,0.3);
+      --shadow-lg: 0 10px 30px rgba(0,0,0,0.5);
+      
+      --font-main: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      --ease-elastic: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
-            color: #ffffff;
-            overflow-x: hidden;
-            height: 100vh;
-            position: relative;
-        }
+    html, body {
+      height: 100%;
+      overflow: hidden; /* Prevent scroll bounce on mobile */
+    }
 
-        /* Background Effects */
-        .bg-effects {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            opacity: 0.3;
-        }
+    body {
+      margin: 0;
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 50% 0%, #2d2d44 0%, transparent 60%),
+        linear-gradient(0deg, rgba(0,0,0,0.2) 0%, transparent 1px);
+      background-size: 100% 100%, 100% 4px;
+      font-family: var(--font-main);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-        /* Top Bar */
-        .top-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 60px;
-            background: rgba(26, 26, 46, 0.8);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            z-index: 1000;
-        }
+    /* Animation for background pulsing */
+    @keyframes bgPulse {
+      0% { background-color: var(--bg-dark); }
+      50% { background-color: #0f0f1a; }
+      100% { background-color: var(--bg-dark); }
+    }
 
-        .logo {
-            font-size: 18px;
-            font-weight: 700;
-            color: #00d4ff;
-            letter-spacing: 1px;
-        }
+    /* =========================================
+       LAYOUT & CONTAINERS
+       ========================================= */
+    .game-container {
+      width: min(500px, 94vw);
+      height: min(800px, 96vh);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      gap: 16px;
+    }
 
-        .stats-container {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-        }
+    /* Header Section */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-panel);
+      padding: 12px 16px;
+      border-radius: 16px;
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--shadow-sm);
+    }
 
-        .stat-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 8px 12px;
-            border-radius: 20px;
-            border: 1px solid rgba(0, 212, 255, 0.3);
-        }
+    .timer-box {
+      font-variant-numeric: tabular-nums;
+      font-weight: 800;
+      font-size: 1.2rem;
+      letter-spacing: 1px;
+      color: var(--accent);
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    }
 
-        .stat-icon {
-            width: 16px;
-            height: 16px;
-            background: #00d4ff;
-            border-radius: 50%;
-        }
+    .timer-box.warning {
+      color: var(--primary);
+      animation: pulseRed 1s infinite;
+    }
 
-        .stat-value {
-            font-weight: 600;
-            font-size: 14px;
-            min-width: 30px;
-        }
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
 
-        .settings-btn {
-            width: 40px;
-            height: 40px;
-            background: rgba(0, 212, 255, 0.1);
-            border: 1px solid rgba(0, 212, 255, 0.3);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
+    .stat-card {
+      background: var(--bg-panel);
+      border-radius: 12px;
+      padding: 12px;
+      border: 1px solid var(--glass-border);
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.1s;
+    }
+    
+    .stat-card:active { transform: scale(0.98); }
 
-        .settings-btn:hover {
-            background: rgba(0, 212, 255, 0.2);
-            transform: rotate(90deg);
-        }
+    .stat-card.money { border-bottom: 3px solid var(--primary); }
+    .stat-card.credit { border-bottom: 3px solid var(--secondary); }
 
-        /* Main Game Environment */
-        .game-container {
-            margin-top: 60px;
-            margin-bottom: 80px;
-            height: calc(100vh - 140px);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
+    .stat-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      opacity: 0.7;
+      margin-bottom: 4px;
+    }
 
-        .game-environment {
-            flex: 1;
-            background: rgba(255, 255, 255, 0.05);
-            margin: 20px;
-            border-radius: 20px;
-            border: 1px solid rgba(0, 212, 255, 0.2);
-            backdrop-filter: blur(10px);
-            position: relative;
-            overflow: hidden;
-        }
+    .stat-value {
+      font-size: 1.4rem;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      line-height: 1.1;
+    }
+    
+    .stat-rate {
+      font-size: 0.8rem;
+      margin-top: 4px;
+      opacity: 0.8;
+      font-variant-numeric: tabular-nums;
+    }
 
-        .game-grid {
-            display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            grid-template-rows: repeat(12, 1fr);
-            height: 100%;
-            gap: 2px;
-            padding: 10px;
-        }
+    /* Color Theme Classes */
+    .text-money, .text-rate1 { color: var(--primary); text-shadow: 0 0 10px rgba(255, 42, 109, 0.3); }
+    .text-credit, .text-rate2 { color: var(--secondary); text-shadow: 0 0 10px rgba(5, 217, 232, 0.3); }
+    .text-gold { color: var(--gold); }
 
-        .grid-cell {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            border: 1px solid rgba(0, 212, 255, 0.1);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
-        }
+    /* Slider Section */
+    .slider-section {
+      background: var(--bg-panel);
+      padding: 20px 16px;
+      border-radius: 16px;
+      border: 1px solid var(--glass-border);
+      box-shadow: inset 0 2px 10px rgba(0,0,0,0.2);
+    }
 
-        .grid-cell:hover {
-            background: rgba(0, 212, 255, 0.2);
-            transform: scale(1.05);
-        }
+    .slider-label-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      margin-bottom: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
 
-        .grid-cell.active {
-            background: rgba(0, 212, 255, 0.3);
-            border-color: #00d4ff;
-        }
+    /* Custom Range Slider Styling */
+    .range-wrap {
+      position: relative;
+      height: 30px;
+      display: flex;
+      align-items: center;
+    }
 
-        /* Side Panels */
-        .side-panel {
-            position: absolute;
-            width: 80px;
-            background: rgba(26, 26, 46, 0.9);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(0, 212, 255, 0.2);
-            border-radius: 15px;
-            padding: 15px 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            z-index: 100;
-        }
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      background: transparent;
+      margin: 0;
+      z-index: 2;
+      cursor: pointer;
+    }
 
-        .left-panel {
-            left: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-        }
+    input[type=range]:focus { outline: none; }
 
-        .right-panel {
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-        }
+    /* Track */
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 8px;
+      background: linear-gradient(90deg, var(--primary-dim), #2a2a35, var(--secondary-dim));
+      border-radius: 4px;
+      border: 1px solid rgba(0,0,0,0.5);
+    }
 
-        .panel-item {
-            width: 50px;
-            height: 50px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(0, 212, 255, 0.3);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-        }
+    /* Thumb */
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 24px;
+      width: 24px;
+      border-radius: 50%;
+      background: #fff;
+      margin-top: -9px; /* center on track */
+      box-shadow: 0 0 10px rgba(255,255,255,0.5);
+      border: 2px solid var(--bg-panel);
+      transition: transform 0.1s var(--ease-elastic);
+    }
 
-        .panel-item:hover {
-            background: rgba(0, 212, 255, 0.2);
-            transform: scale(1.1);
-        }
+    input[type=range]:active::-webkit-slider-thumb {
+      transform: scale(1.3);
+      background: var(--gold);
+    }
 
-        /* Bottom Bar */
-        .bottom-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 80px;
-            background: rgba(26, 26, 46, 0.9);
-            backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(0, 212, 255, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: space-around;
-            padding: 0 20px;
-            z-index: 1000;
-        }
+    /* Ticks visualization */
+    .ticks {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      pointer-events: none;
+      transform: translateY(-50%);
+      padding: 0 10px; /* inset slightly */
+      box-sizing: border-box;
+      z-index: 1;
+    }
+    .tick {
+      width: 2px;
+      height: 4px;
+      background: rgba(255,255,255,0.2);
+    }
 
-        .bottom-btn {
-            width: 50px;
-            height: 50px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(0, 212, 255, 0.3);
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-        }
+    /* Slot Machine */
+    .slot-machine {
+      flex: 1;
+      background: linear-gradient(180deg, var(--bg-panel) 0%, #000 100%);
+      border-radius: 16px;
+      border: 2px solid var(--bg-panel-lighter);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+    }
+    
+    /* Decorative Top Light */
+    .slot-machine::before {
+      content: '';
+      position: absolute;
+      top: -1px; left: 20%; right: 20%;
+      height: 2px;
+      background: var(--gold);
+      box-shadow: 0 0 15px var(--gold);
+      border-radius: 2px;
+      opacity: 0.5;
+    }
 
-        .bottom-btn:hover {
-            background: rgba(0, 212, 255, 0.2);
-            transform: translateY(-3px);
-        }
+    .reels-container {
+      display: flex;
+      gap: 8px;
+      background: #000;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #333;
+      box-shadow: inset 0 0 20px #000;
+      margin-bottom: 16px;
+      height: 100px; /* Fixed height */
+    }
 
-        .bottom-btn.primary {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #00d4ff, #0099cc);
-            border: none;
-            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
-        }
+    .reel {
+      flex: 1;
+      background: #1a1a24;
+      border-radius: 4px;
+      display: grid;
+      place-items: center;
+      font-size: 3rem;
+      position: relative;
+      overflow: hidden;
+    }
 
-        .bottom-btn.primary:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 25px rgba(0, 212, 255, 0.4);
-        }
+    /* SVG Icon Styles */
+    .reel svg {
+      width: 60px;
+      height: 60px;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+    }
 
-        /* Slide Panels */
-        .slide-panel {
-            position: fixed;
-            background: rgba(26, 26, 46, 0.95);
-            backdrop-filter: blur(25px);
-            border: 1px solid rgba(0, 212, 255, 0.3);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 2000;
-            overflow: hidden;
-        }
+    .reel.spinning svg {
+      filter: blur(4px);
+      animation: spinBlur 0.1s infinite;
+    }
 
-        .settings-panel {
-            top: 60px;
-            left: 0;
-            right: 0;
-            height: 0;
-        }
+    .reel.win {
+      background: #2d2d44;
+      box-shadow: inset 0 0 20px var(--gold);
+      animation: flashWin 0.5s infinite;
+    }
 
-        .settings-panel.open {
-            height: 300px;
-        }
+    /* Controls */
+    .controls-row {
+      display: flex;
+      gap: 10px;
+    }
 
-        .inventory-panel {
-            top: 60px;
-            left: -300px;
-            width: 300px;
-            bottom: 80px;
-        }
+    .btn {
+      background: var(--bg-panel-lighter);
+      border: 1px solid var(--glass-border);
+      color: var(--accent);
+      padding: 14px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.1s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      line-height: 1.2;
+      position: relative;
+      overflow: hidden;
+      user-select: none;
+    }
 
-        .inventory-panel.open {
-            left: 0;
-        }
+    .btn:active:not(:disabled) {
+      transform: translateY(2px);
+      filter: brightness(0.9);
+    }
 
-        .achievements-panel {
-            top: 60px;
-            right: -300px;
-            width: 300px;
-            bottom: 80px;
-        }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      filter: grayscale(1);
+    }
 
-        .achievements-panel.open {
-            right: 0;
-        }
+    .btn-spin {
+      flex: 2;
+      background: linear-gradient(135deg, var(--primary-dim), var(--primary));
+      border: none;
+      box-shadow: 0 4px 0 #8a0e35, 0 8px 15px rgba(255, 42, 109, 0.3);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+      font-size: 1.2rem;
+    }
+    
+    .btn-spin:active:not(:disabled) {
+      box-shadow: 0 0 0 #8a0e35, inset 0 2px 5px rgba(0,0,0,0.3);
+      transform: translateY(4px);
+    }
 
-        .panel-content {
-            padding: 20px;
-            height: 100%;
-            overflow-y: auto;
-        }
+    .btn-buy {
+      flex: 1;
+      background: linear-gradient(135deg, var(--secondary-dim), var(--secondary));
+      border: none;
+      box-shadow: 0 4px 0 #026f78, 0 8px 15px rgba(5, 217, 232, 0.3);
+      color: #000;
+    }
+    
+    .btn-buy:active:not(:disabled) {
+      box-shadow: 0 0 0 #026f78, inset 0 2px 5px rgba(0,0,0,0.3);
+      transform: translateY(4px);
+    }
 
-        .panel-header {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: #00d4ff;
-        }
+    .btn-sm {
+      flex: 1;
+      font-size: 0.8rem;
+      height: 44px;
+    }
 
-        /* Particle Canvas */
-        .particle-canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 500;
-        }
+    .cost-badge {
+      font-size: 0.7rem;
+      opacity: 0.9;
+      margin-top: 4px;
+      background: rgba(0,0,0,0.4);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
 
-        /* Notification */
-        .notification {
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            background: rgba(0, 212, 255, 0.9);
-            color: white;
-            padding: 15px 20px;
-            border-radius: 10px;
-            transform: translateX(400px);
-            transition: all 0.3s ease;
-            z-index: 3000;
-        }
+    /* Modals */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(5px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
 
-        .notification.show {
-            transform: translateX(0);
-        }
+    .modal-backdrop.open {
+      display: flex;
+      opacity: 1;
+    }
 
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .stats-container {
-                gap: 10px;
-            }
-            
-            .stat-item {
-                padding: 6px 10px;
-            }
-            
-            .side-panel {
-                width: 60px;
-            }
-            
-            .panel-item {
-                width: 40px;
-                height: 40px;
-            }
-        }
+    .modal {
+      background: var(--bg-panel);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      padding: 24px;
+      width: min(360px, 90%);
+      text-align: center;
+      box-shadow: var(--shadow-lg), 0 0 0 1px var(--accent);
+      transform: scale(0.9);
+      transition: transform 0.3s var(--ease-elastic);
+    }
+    .modal-backdrop.open .modal { transform: scale(1); }
 
-        /* Animations */
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
+    .modal h2 { margin-top: 0; color: var(--gold); }
+    .modal p { color: #ccc; line-height: 1.5; margin-bottom: 20px; }
 
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
+    .modal-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
 
-        .pulse-animation {
-            animation: pulse 2s infinite;
-        }
+    /* Floating Text System */
+    .floater {
+      position: absolute;
+      pointer-events: none;
+      font-weight: 800;
+      font-size: 1.2rem;
+      animation: floatUp 1s forwards;
+      z-index: 50;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
 
-        .bounce-animation {
-            animation: bounce 1s ease-in-out;
-        }
+    @keyframes floatUp {
+      0% { transform: translateY(0) scale(1); opacity: 1; }
+      100% { transform: translateY(-40px) scale(1.2); opacity: 0; }
+    }
 
-        /* Loading State */
-        .loading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(0, 212, 255, 0.3);
-            border-top: 3px solid #00d4ff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
+    @keyframes pulseRed { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    @keyframes flashWin { 0%, 100% { background: #1a1a24; } 50% { background: #3d3d24; } }
+    @keyframes spinBlur { 0% { transform: translateY(0); } 100% { transform: translateY(10px); } }
 
-        @keyframes spin {
-            0% { transform: translate(-50%, -50%) rotate(0deg); }
-            100% { transform: translate(-50%, -50%) rotate(360deg); }
-        }
-    </style>
+    /* Helper Utilities */
+    .hidden { display: none !important; }
+    
+  </style>
 </head>
 <body>
-    <!-- Background Effects -->
-    <div class="bg-effects" id="bgEffects"></div>
 
-    <!-- Top Bar -->
-    <div class="top-bar">
-        <div class="logo">GAME UI</div>
-        <div class="stats-container">
-            <div class="stat-item">
-                <div class="stat-icon"></div>
-                <div class="stat-value" id="score">0</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-icon"></div>
-                <div class="stat-value" id="level">1</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-icon"></div>
-                <div class="stat-value" id="coins">100</div>
-            </div>
-        </div>
-        <div class="settings-btn" onclick="toggleSettings()">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="3"></circle>
-                <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"></path>
-            </svg>
-        </div>
+  <div class="game-container">
+    
+    <!-- Header -->
+    <div class="header">
+      <div class="timer-box" id="timer">20:00</div>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-sm" id="btnSwap" title="Swap Money & Credit">Swap (2)</button>
+        <button class="btn btn-sm" id="btnPause">Pause</button>
+        <button class="btn btn-sm" id="btnUpgrade">Upgrades</button>
+      </div>
     </div>
 
-    <!-- Main Game Container -->
-    <div class="game-container">
-        <!-- Side Panels -->
-        <div class="side-panel left-panel">
-            <div class="panel-item" onclick="showNotification('Inventory opened!')">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M20 7h-4V6a4 4 0 0 0-8 0v1H4a1 1 0 0 0-1 1v11a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3V8a1 1 0 0 0-1-1z"></path>
-                </svg>
-            </div>
-            <div class="panel-item" onclick="showNotification('Tools selected!')">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-8.94 8.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 8.94-8.94l-3.76 3.76z"></path>
-                </svg>
-            </div>
-            <div class="panel-item" onclick="showNotification('Map opened!')">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M9 11l3 3L22 4"></path>
-                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-                </svg>
-            </div>
-        </div>
-
-        <div class="side-panel right-panel">
-            <div class="panel-item" onclick="showNotification('Achievements!')">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M6 9l6 6 6-6"></path>
-                </svg>
-            </div>
-            <div class="panel-item" onclick="showNotification('Leaderboard!')">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M8 21V10l-6 6v-5h12v5l-6-6v11"></path>
-                </svg>
-            </div>
-            <div class="panel-item" onclick="showNotification('Social!')">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="9" cy="7" r="4"></circle>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                </svg>
-            </div>
-        </div>
-
-        <!-- Game Environment -->
-        <div class="game-environment">
-            <div class="game-grid" id="gameGrid"></div>
-            <canvas class="particle-canvas" id="particleCanvas"></canvas>
-        </div>
+    <!-- Main Stats -->
+    <div class="stats-grid">
+      <div class="stat-card money" id="cardMoney">
+        <div class="stat-label">Money (Goal: $1M)</div>
+        <div class="stat-value text-money" id="dispMoney">$0</div>
+        <div class="stat-rate"><span class="text-rate1">Rate 1</span>: +<span id="dispRate1" class="text-rate1">0.0</span>/s</div>
+      </div>
+      <div class="stat-card credit" id="cardCredit">
+        <div class="stat-label">Credit</div>
+        <div class="stat-value text-credit" id="dispCredit">0</div>
+        <div class="stat-rate"><span class="text-rate2">Rate 2</span>: +<span id="dispRate2" class="text-rate2">0.0</span>/s</div>
+      </div>
     </div>
 
-    <!-- Bottom Bar -->
-    <div class="bottom-bar">
-        <div class="bottom-btn" onclick="showNotification('Home menu!')">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-            </svg>
+    <!-- Slider -->
+    <div class="slider-section">
+      <div class="slider-label-row">
+        <span class="text-rate1">Grow Rate 1</span>
+        <span class="text-rate2">Grow Rate 2</span>
+      </div>
+      <div class="range-wrap">
+        <!-- 6 steps: 0 to 5 -->
+        <input type="range" id="slider" min="0" max="5" step="1" value="0">
+        <div class="ticks">
+          <div class="tick"></div><div class="tick"></div><div class="tick"></div>
+          <div class="tick"></div><div class="tick"></div><div class="tick"></div>
         </div>
-        <div class="bottom-btn" onclick="showNotification('Profile!')">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-        </div>
-        <div class="bottom-btn primary" onclick="triggerPrimaryAction()">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polygon points="5 3 19 12 5 21 5 3"></polygon>
-            </svg>
-        </div>
-        <div class="bottom-btn" onclick="showNotification('Settings!')">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="3"></circle>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-            </svg>
-        </div>
-        <div class="bottom-btn" onclick="showNotification('More options!')">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="1"></circle>
-                <circle cx="12" cy="5" r="1"></circle>
-                <circle cx="12" cy="19" r="1"></circle>
-            </svg>
-        </div>
+      </div>
+      <div class="slider-label-row" style="margin-top:8px; opacity: 0.8; font-size: 0.75rem;">
+        <span id="growLeft" class="text-rate1">+12 Rate/m</span>
+        <span id="growRight" class="text-rate2">+2 Rate/m</span>
+      </div>
     </div>
 
-    <!-- Slide Panels -->
-    <div class="slide-panel settings-panel" id="settingsPanel">
-        <div class="panel-content">
-            <div class="panel-header">Settings</div>
-            <div style="color: #ccc;">Game settings and preferences will appear here</div>
-        </div>
+    <!-- Slot Machine -->
+    <div class="slot-machine">
+      <div style="display:flex; justify-content:space-between; margin-bottom:8px; align-items:center;">
+        <span style="font-weight:700; text-transform:uppercase; font-size:0.8rem; color:#666;">Machine Mk.I</span>
+        <span id="diamondStatus" style="font-size:0.8rem; color:var(--accent); display:none;">💎 7 Spins Left</span>
+      </div>
+
+      <div class="reels-container">
+        <div class="reel" id="reel1"></div>
+        <div class="reel" id="reel2"></div>
+        <div class="reel" id="reel3"></div>
+      </div>
+
+      <div class="controls-row">
+        <button class="btn btn-spin" id="btnSpin">
+          SPIN
+          <span class="cost-badge" id="spinCostBadge">$50 + <span class="text-rate1">1.0 Rate</span></span>
+        </button>
+        <button class="btn btn-buy" id="btnBuyDiamond">
+          BUY 7x 💎
+          <span class="cost-badge">500 C + <span class="text-rate2">1.0 R2</span></span>
+        </button>
+      </div>
     </div>
 
-    <div class="slide-panel inventory-panel" id="inventoryPanel">
-        <div class="panel-content">
-            <div class="panel-header">Inventory</div>
-            <div style="color: #ccc;">Your items and equipment will appear here</div>
-        </div>
-    </div>
+  </div>
 
-    <div class="slide-panel achievements-panel" id="achievementsPanel">
-        <div class="panel-content">
-            <div class="panel-header">Achievements</div>
-            <div style="color: #ccc;">Your achievements and progress will appear here</div>
-        </div>
+  <!-- Modals -->
+  <div class="modal-backdrop" id="modalWin">
+    <div class="modal">
+      <h2>WINNER!</h2>
+      <p id="winDesc">You matched 3 symbols!</p>
+      <div class="modal-actions">
+        <button class="btn" id="btnWinMoney" style="background:var(--primary); color:white; border:none;">Take Money</button>
+        <button class="btn" id="btnWinReduce">Reduce Spin Cost (-0.1 <span class="text-rate1">Rate 1</span>)</button>
+      </div>
     </div>
+  </div>
 
-    <!-- Notification -->
-    <div class="notification" id="notification">
-        <span id="notificationText">Notification message</span>
+  <div class="modal-backdrop" id="modalUpgrades">
+    <div class="modal">
+      <h2>Store</h2>
+      <p>Spend resources to improve your chances.</p>
+      <div class="modal-actions">
+        <button class="btn" id="btnUpgReset">
+          <div>Stabilizer Module</div>
+          <div class="cost-badge">$5,000 + <span class="text-rate1">10 R1</span></div>
+          <div style="font-size:0.7rem; opacity:0.7; margin-top:4px;">Resets spin cost to $50 on wins</div>
+        </button>
+        <button class="btn" id="btnUpgDouble">
+          <div>Overclock Kit</div>
+          <div class="cost-badge">15,000 C + <span class="text-rate2">15 R2</span></div>
+          <div style="font-size:0.7rem; opacity:0.7; margin-top:4px;">Doubles all growth slider values</div>
+        </button>
+        <button class="btn" id="btnCloseUpgrades" style="margin-top:12px;">Close</button>
+      </div>
     </div>
+  </div>
 
-    <script src="main.js"></script>
+  <div class="modal-backdrop" id="modalGameOver">
+    <div class="modal">
+      <h2 id="goTitle">GAME OVER</h2>
+      <p id="goDesc">Time ran out.</p>
+      <button class="btn" onclick="location.reload()">Try Again</button>
+    </div>
+  </div>
+
+  <canvas id="fxCanvas" style="position:fixed; inset:0; pointer-events:none; z-index:200;"></canvas>
+
+<script>
+/**
+ * SlotClimb: Refactored & Polished
+ * Focus: Pro-level feedback, cleaner code, better UI/UX
+ */
+
+// --- ICONS (Redrawn for absolute clarity) ---
+const ICONS = {
+  // Clear Red Cherry with Green Stem
+  cherry: `<svg viewBox="0 0 100 100">
+    <path d="M50 20 Q 50 5 30 20 L 35 60" stroke="#4caf50" stroke-width="6" fill="none"/>
+    <path d="M50 20 Q 50 5 70 20 L 65 60" stroke="#4caf50" stroke-width="6" fill="none"/>
+    <circle cx="35" cy="70" r="18" fill="#ff2a6d" />
+    <circle cx="65" cy="70" r="18" fill="#ff2a6d" />
+    <circle cx="40" cy="65" r="4" fill="rgba(255,255,255,0.5)" />
+    <circle cx="70" cy="65" r="4" fill="rgba(255,255,255,0.5)" />
+  </svg>`,
+  
+  // Bright Yellow Lemon (Football shape)
+  lemon: `<svg viewBox="0 0 100 100">
+    <ellipse cx="50" cy="50" rx="40" ry="25" fill="#f0e130" transform="rotate(-45, 50, 50)" />
+    <path d="M 25 25 L 30 30" stroke="#c9bc20" stroke-width="3" />
+    <path d="M 75 75 L 70 70" stroke="#c9bc20" stroke-width="3" />
+  </svg>`,
+  
+  // Purple Grape Cluster
+  grape: `<svg viewBox="0 0 100 100">
+    <circle cx="50" cy="80" r="10" fill="#a45ee5" />
+    <circle cx="40" cy="65" r="10" fill="#a45ee5" />
+    <circle cx="60" cy="65" r="10" fill="#a45ee5" />
+    <circle cx="30" cy="50" r="10" fill="#a45ee5" />
+    <circle cx="50" cy="50" r="10" fill="#a45ee5" />
+    <circle cx="70" cy="50" r="10" fill="#a45ee5" />
+    <path d="M50 45 L 50 20" stroke="#4caf50" stroke-width="4" />
+    <path d="M50 20 L 60 25" stroke="#4caf50" stroke-width="4" />
+  </svg>`,
+  
+  // Bold Red Seven
+  seven: `<svg viewBox="0 0 100 100">
+    <text x="50" y="85" font-family="Arial, sans-serif" font-weight="900" font-size="80" fill="#ff2a6d" text-anchor="middle" stroke="#fff" stroke-width="2">7</text>
+  </svg>`,
+  
+  // Cyan Geometric Diamond
+  diamond: `<svg viewBox="0 0 100 100">
+    <path d="M20 40 L 50 85 L 80 40 L 70 20 L 30 20 Z" fill="#05d9e8" stroke="#fff" stroke-width="2" />
+    <path d="M20 40 L 80 40" stroke="#0396a1" stroke-width="2" />
+    <path d="M30 20 L 50 85 L 70 20" stroke="#0396a1" stroke-width="2" fill="none" />
+  </svg>`
+};
+
+// Map logical symbols to visual SVG
+const SYMBOLS_MAP = {
+  '🍒': ICONS.cherry,
+  '🍋': ICONS.lemon,
+  '🍇': ICONS.grape,
+  '7': ICONS.seven,
+  '💎': ICONS.diamond
+};
+
+// --- CONFIG ---
+const CFG = {
+  maxRate: 199,
+  startMoney: 0,
+  startCredit: 0,
+  startRate1: 3.0,
+  startRate2: 3.0,
+  duration: 20 * 60,
+  goal: 1000000,
+  baseSpinCost: 50,
+  winReward: 600,
+  growStepsL: [12, 10, 8, 6, 4, 2],
+  growStepsR: [2, 4, 6, 8, 10, 12],
+  baseSymbols: ['🍒', '🍋', '🍇', '7']
+};
+
+class Game {
+  constructor() {
+    // State
+    this.money = CFG.startMoney;
+    this.credit = CFG.startCredit;
+    this.rate1 = CFG.startRate1;
+    this.rate2 = CFG.startRate2;
+    this.time = CFG.duration;
+    this.isRunning = true;
+    
+    this.spinCostMoney = CFG.baseSpinCost;
+    this.spinCostRate = 1.0;
+    this.winAmount = CFG.winReward;
+    
+    this.buyDiamondCost = 500;
+    this.buyDiamondRateCost = 1.0;
+    this.diamondSpins = 0;
+    
+    this.swapsLeft = 2;
+    this.hasResetUpgrade = false;
+    this.hasDoubleUpgrade = false;
+    
+    this.sliderIdx = 0; // 0-5
+
+    // Display State (for smooth interpolation)
+    this.dispMoney = 0;
+    this.dispCredit = 0;
+    
+    this.initDOM();
+    this.initEvents();
+    this.renderLoop = this.renderLoop.bind(this);
+    requestAnimationFrame(this.renderLoop);
+    
+    this.lastTick = performance.now();
+  }
+
+  initDOM() {
+    this.dom = {
+      timer: document.getElementById('timer'),
+      money: document.getElementById('dispMoney'),
+      credit: document.getElementById('dispCredit'),
+      rate1: document.getElementById('dispRate1'),
+      rate2: document.getElementById('dispRate2'),
+      slider: document.getElementById('slider'),
+      growLeft: document.getElementById('growLeft'),
+      growRight: document.getElementById('growRight'),
+      spinBtn: document.getElementById('btnSpin'),
+      spinBadge: document.getElementById('spinCostBadge'),
+      buyBtn: document.getElementById('btnBuyDiamond'),
+      reels: [document.getElementById('reel1'), document.getElementById('reel2'), document.getElementById('reel3')],
+      modals: {
+        win: document.getElementById('modalWin'),
+        upg: document.getElementById('modalUpgrades'),
+        go: document.getElementById('modalGameOver')
+      },
+      btnSwap: document.getElementById('btnSwap'),
+      btnPause: document.getElementById('btnPause'),
+      diamondStatus: document.getElementById('diamondStatus'),
+      cardMoney: document.getElementById('cardMoney')
+    };
+
+    // Set initial reels
+    this.dom.reels.forEach(r => r.innerHTML = ICONS.seven);
+  }
+
+  initEvents() {
+    // Slider Logic
+    this.dom.slider.addEventListener('input', (e) => {
+      this.sliderIdx = parseInt(e.target.value);
+      this.updateGrowthLabels();
+    });
+
+    // Buttons
+    this.dom.spinBtn.addEventListener('click', () => this.spin());
+    this.dom.btnPause.addEventListener('click', () => this.togglePause());
+    
+    this.dom.btnSwap.addEventListener('click', () => {
+      if(this.swapsLeft > 0) {
+        // Swap logic
+        [this.money, this.credit] = [this.credit, this.money];
+        this.swapsLeft--;
+        this.dom.btnSwap.textContent = `Swap (${this.swapsLeft})`;
+        if(this.swapsLeft === 0) this.dom.btnSwap.disabled = true;
+        this.spawnFloater(this.dom.btnSwap, "Swapped!", "#fff");
+      }
+    });
+
+    this.dom.buyBtn.addEventListener('click', () => {
+      if (this.credit >= this.buyDiamondCost && this.rate2 >= this.buyDiamondRateCost) {
+        this.credit -= this.buyDiamondCost;
+        this.rate2 = Math.max(0, this.rate2 - this.buyDiamondRateCost);
+        this.diamondSpins = 7;
+        
+        // Escalate cost
+        this.buyDiamondCost += 500;
+        this.buyDiamondRateCost += 1.0;
+        
+        this.updateBuyButton();
+        this.spawnFloater(this.dom.buyBtn, "Diamonds Active!", "#05d9e8");
+      } else {
+        this.shake(this.dom.buyBtn);
+      }
+    });
+
+    // Upgrades Modal
+    document.getElementById('btnUpgrade').addEventListener('click', () => {
+      this.dom.modals.upg.classList.add('open');
+    });
+    document.getElementById('btnCloseUpgrades').addEventListener('click', () => {
+      this.dom.modals.upg.classList.remove('open');
+    });
+
+    // Upgrade: Reset
+    document.getElementById('btnUpgReset').addEventListener('click', (e) => {
+      if(!this.hasResetUpgrade && this.money >= 5000 && this.rate1 >= 10) {
+        this.money -= 5000;
+        this.rate1 -= 10;
+        this.hasResetUpgrade = true;
+        e.currentTarget.disabled = true;
+        e.currentTarget.innerHTML = "PURCHASED";
+      } else if (!this.hasResetUpgrade) {
+        this.shake(e.currentTarget);
+      }
+    });
+
+    // Upgrade: Double
+    document.getElementById('btnUpgDouble').addEventListener('click', (e) => {
+      if(!this.hasDoubleUpgrade && this.credit >= 15000 && this.rate2 >= 15) {
+        this.credit -= 15000;
+        this.rate2 -= 15;
+        this.hasDoubleUpgrade = true;
+        
+        // Apply double
+        CFG.growStepsL = CFG.growStepsL.map(x => x * 2);
+        CFG.growStepsR = CFG.growStepsR.map(x => x * 2);
+        this.updateGrowthLabels();
+        
+        e.currentTarget.disabled = true;
+        e.currentTarget.innerHTML = "PURCHASED";
+      } else if (!this.hasDoubleUpgrade) {
+        this.shake(e.currentTarget);
+      }
+    });
+
+    // Win Modal Choices
+    document.getElementById('btnWinMoney').addEventListener('click', () => {
+      this.money += this.pendingWinAmount;
+      this.spawnFloater(this.dom.cardMoney, `+$${this.pendingWinAmount}`, "var(--gold)");
+      this.closeWinModal();
+    });
+
+    document.getElementById('btnWinReduce').addEventListener('click', () => {
+      this.spinCostRate = Math.max(0, (this.spinCostRate - 0.1).toFixed(1));
+      this.updateSpinButton();
+      this.closeWinModal();
+    });
+  }
+
+  updateGrowthLabels() {
+    const l = CFG.growStepsL[this.sliderIdx];
+    const r = CFG.growStepsR[this.sliderIdx];
+    this.dom.growLeft.textContent = `+${l} Rate/m`;
+    this.dom.growRight.textContent = `+${r} Rate/m`;
+  }
+
+  updateSpinButton() {
+    // We manually construct the HTML to keep the color span
+    this.dom.spinBadge.innerHTML = `$${this.spinCostMoney} + <span class="text-rate1">${parseFloat(this.spinCostRate).toFixed(1)} Rate</span>`;
+  }
+
+  updateBuyButton() {
+    if(this.diamondSpins > 0) {
+      this.dom.buyBtn.innerHTML = `DIAMONDS ACTIVE<span class="cost-badge">${this.diamondSpins} left</span>`;
+      this.dom.buyBtn.disabled = true;
+      this.dom.diamondStatus.style.display = "block";
+      this.dom.diamondStatus.textContent = `💎 ${this.diamondSpins} Spins Left`;
+    } else {
+      this.dom.buyBtn.innerHTML = `BUY 7x 💎<span class="cost-badge">${this.buyDiamondCost} C + <span class="text-rate2">${this.buyDiamondRateCost.toFixed(1)} R2</span></span>`;
+      this.dom.buyBtn.disabled = false;
+      this.dom.diamondStatus.style.display = "none";
+    }
+  }
+
+  togglePause() {
+    this.isRunning = !this.isRunning;
+    this.dom.btnPause.textContent = this.isRunning ? "Pause" : "Resume";
+    if(this.isRunning) {
+      this.lastTick = performance.now();
+    }
+  }
+
+  // --- GAME LOOP ---
+  renderLoop(now) {
+    const dt = (now - this.lastTick) / 1000;
+    this.lastTick = now;
+
+    if (this.isRunning && dt > 0 && dt < 1) { // dt < 1 prevents huge jumps after tab switch
+      // Timer
+      this.time -= dt;
+      if (this.time <= 0) this.gameOver(false);
+      if (this.time <= 60) this.dom.timer.classList.add('warning');
+
+      // Growth
+      const growthL = CFG.growStepsL[this.sliderIdx] / 60;
+      const growthR = CFG.growStepsR[this.sliderIdx] / 60;
+      
+      this.rate1 = Math.min(CFG.maxRate, this.rate1 + growthL * dt);
+      this.rate2 = Math.min(CFG.maxRate, this.rate2 + growthR * dt);
+
+      // Production
+      this.money += this.rate1 * dt;
+      this.credit += this.rate2 * dt;
+
+      // Win Condition
+      if (this.money >= CFG.goal) this.gameOver(true);
+    }
+
+    // Visual Interpolation (Lerp)
+    this.dispMoney += (this.money - this.dispMoney) * 0.2;
+    this.dispCredit += (this.credit - this.dispCredit) * 0.2;
+
+    // DOM Updates
+    this.dom.timer.textContent = this.formatTime(Math.max(0, this.time));
+    this.dom.money.textContent = '$' + Math.floor(this.dispMoney).toLocaleString();
+    this.dom.credit.textContent = Math.floor(this.dispCredit).toLocaleString();
+    this.dom.rate1.textContent = this.rate1.toFixed(2);
+    this.dom.rate2.textContent = this.rate2.toFixed(2);
+
+    requestAnimationFrame(this.renderLoop);
+  }
+
+  // --- LOGIC ---
+  async spin() {
+    if (!this.isRunning) return;
+    
+    // Cost Check
+    if (this.money < this.spinCostMoney || this.rate1 < this.spinCostRate) {
+      this.shake(this.dom.spinBtn);
+      return;
+    }
+
+    // Pay
+    this.money -= this.spinCostMoney;
+    this.rate1 = Math.max(0, this.rate1 - this.spinCostRate);
+    
+    // Escalate Money Cost
+    this.spinCostMoney += 10;
+    this.updateSpinButton();
+    this.spawnFloater(this.dom.spinBtn, `-$${this.spinCostMoney - 10}`, "#ff2a6d");
+
+    // Disable UI
+    this.dom.spinBtn.disabled = true;
+
+    // Determine Result
+    const reels = [this.getRandomSymbol(), this.getRandomSymbol(), this.getRandomSymbol()];
+    
+    // Visual Spin
+    await this.animateReels(reels);
+
+    // Check Win
+    const diamondCount = reels.filter(s => s === '💎').length;
+    if(diamondCount > 0) {
+      this.diamondSpins = Math.max(0, this.diamondSpins - diamondCount);
+      this.updateBuyButton();
+    }
+
+    const unique = new Set(reels.filter(s => s !== '💎')); // Diamonds match anything
+    let isWin = false;
+    
+    if (unique.size <= 1) {
+       // WIN!
+       isWin = true;
+       if (this.hasResetUpgrade && diamondCount === 0) {
+         this.spinCostMoney = 50;
+         this.updateSpinButton();
+       }
+       
+       this.dom.reels.forEach(r => r.classList.add('win'));
+       
+       // Bonus?
+       const isBonus = Math.random() < 0.5;
+       this.pendingWinAmount = isBonus ? this.winAmount * 2 : this.winAmount;
+       this.winAmount += 600; // Increase next jackpot
+       
+       setTimeout(() => {
+         this.openWinModal(this.pendingWinAmount, isBonus);
+         this.dom.reels.forEach(r => r.classList.remove('win'));
+       }, 1000);
+    }
+
+    this.dom.spinBtn.disabled = false;
+  }
+
+  getRandomSymbol() {
+    if (this.diamondSpins > 0) {
+      // High chance of diamond? Or just allowed to appear?
+      // Let's make it simple: 10% chance of diamond if active
+      if (Math.random() < 0.15) return '💎';
+    }
+    const i = Math.floor(Math.random() * CFG.baseSymbols.length);
+    return CFG.baseSymbols[i];
+  }
+
+  animateReels(finalSymbols) {
+    return new Promise(resolve => {
+      this.dom.reels.forEach((el, i) => {
+        el.classList.add('spinning');
+        // Staggered stops
+        setTimeout(() => {
+          el.classList.remove('spinning');
+          el.innerHTML = SYMBOLS_MAP[finalSymbols[i]];
+          // Bounce anim
+          el.animate([
+            { transform: 'translateY(-20px)' },
+            { transform: 'translateY(0)' }
+          ], { duration: 200, easing: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)' });
+          
+          if (i === 2) resolve();
+        }, 500 + (i * 300));
+      });
+    });
+  }
+
+  openWinModal(amount, isBonus) {
+    const desc = document.getElementById('winDesc');
+    desc.innerHTML = isBonus 
+      ? `<span style="color:var(--gold)">CRITICAL HIT! (2x)</span><br>Choose reward.`
+      : `Payout: $${amount.toLocaleString()}`;
+    
+    document.getElementById('btnWinMoney').textContent = `Take $${amount.toLocaleString()}`;
+    
+    if (this.spinCostRate <= 0.5) {
+       document.getElementById('btnWinReduce').style.display = 'none';
+    } else {
+       document.getElementById('btnWinReduce').style.display = 'block';
+    }
+
+    this.dom.modals.win.classList.add('open');
+  }
+
+  closeWinModal() {
+    this.dom.modals.win.classList.remove('open');
+  }
+
+  gameOver(win) {
+    this.isRunning = false;
+    const title = document.getElementById('goTitle');
+    const desc = document.getElementById('goDesc');
+    
+    if (win) {
+      title.textContent = "MISSION COMPLETE";
+      title.style.color = "var(--gold)";
+      desc.textContent = "You secured the $1,000,000.";
+      this.startConfetti();
+    } else {
+      title.textContent = "FAILURE";
+      title.style.color = "var(--primary)";
+      desc.textContent = `You ended with $${Math.floor(this.money).toLocaleString()}.`;
+    }
+    this.dom.modals.go.classList.add('open');
+  }
+
+  // --- UTILS ---
+  formatTime(sec) {
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  }
+
+  shake(el) {
+    el.animate([
+      { transform: 'translateX(0)' },
+      { transform: 'translateX(-5px)' },
+      { transform: 'translateX(5px)' },
+      { transform: 'translateX(0)' }
+    ], { duration: 200 });
+  }
+
+  spawnFloater(targetEl, text, color) {
+    const rect = targetEl.getBoundingClientRect();
+    const el = document.createElement('div');
+    el.classList.add('floater');
+    el.textContent = text;
+    el.style.left = (rect.left + rect.width/2 - 20) + 'px';
+    el.style.top = rect.top + 'px';
+    el.style.color = color;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 1000);
+  }
+  
+  startConfetti() {
+    const canvas = document.getElementById('fxCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    
+    const particles = [];
+    for(let i=0; i<100; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height - canvas.height,
+        vx: Math.random() * 4 - 2,
+        vy: Math.random() * 5 + 2,
+        c: `hsl(${Math.random()*360}, 100%, 50%)`
+      });
+    }
+
+    const loop = () => {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      particles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        ctx.fillStyle = p.c;
+        ctx.fillRect(p.x, p.y, 6, 6);
+        if(p.y > canvas.height) p.y = -10;
+      });
+      requestAnimationFrame(loop);
+    };
+    loop();
+  }
+}
+
+// Boot
+window.onload = () => new Game();
+
+</script>
 </body>
 </html>
