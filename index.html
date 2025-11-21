@@ -1,460 +1,424 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Heart, Zap, Shield, Sparkles, Sword, Backpack, Skull, RefreshCw, ChevronRight, Trophy } from 'lucide-react';
-
-// --- DATA & CONFIG ---
-
-const STATS = {
-  GRIT: { icon: '💪', color: 'text-orange-400', label: 'Grit', desc: 'Raw physical power' },
-  VIBE: { icon: '✨', color: 'text-purple-400', label: 'Vibe', desc: 'Magical potential & synergy' },
-  SPICE: { icon: '🌶️', color: 'text-red-500', label: 'Spice', desc: 'Crit chance & explosions' },
-  LUCK: { icon: '🍀', color: 'text-green-400', label: 'Luck', desc: 'Dodge & loot quality' },
-};
-
-const ITEM_TYPES = {
-  WEAPON: 'weapon',
-  OFFHAND: 'offhand',
-  HEAD: 'head',
-  ACC: 'accessory',
-};
-
-const ITEMS = [
-  { id: 'sword1', name: 'Rusty Pin', emoji: '📍', type: ITEM_TYPES.WEAPON, stats: { GRIT: 2 }, tags: ['metal'] },
-  { id: 'sword2', name: 'Baguette', emoji: '🥖', type: ITEM_TYPES.WEAPON, stats: { GRIT: 3, VIBE: 1 }, tags: ['food'] },
-  { id: 'shield1', name: 'Trash Lid', emoji: '🗑️', type: ITEM_TYPES.OFFHAND, stats: { GRIT: 1, LUCK: 2 }, tags: ['metal', 'urban'] },
-  { id: 'hat1', name: 'Cool Shades', emoji: '🕶️', type: ITEM_TYPES.HEAD, stats: { VIBE: 5 }, tags: ['cool'] },
-  { id: 'acc1', name: 'Lucky Die', emoji: '🎲', type: ITEM_TYPES.ACC, stats: { LUCK: 5, SPICE: 2 }, tags: ['game'] },
-  { id: 'food1', name: 'Spicy Taco', emoji: '🌮', type: ITEM_TYPES.ACC, stats: { SPICE: 4, GRIT: 1 }, tags: ['food', 'spicy'] },
-  { id: 'tech1', name: 'Old Phone', emoji: '📱', type: ITEM_TYPES.OFFHAND, stats: { VIBE: 3, LUCK: -1 }, tags: ['tech'] },
-  { id: 'rare1', name: 'Ghost Chili', emoji: '👻', type: ITEM_TYPES.WEAPON, stats: { SPICE: 8, VIBE: 3 }, tags: ['spicy', 'spooky'] },
-];
-
-const ENEMIES = [
-  { name: 'Angry Blob', emoji: '💧', hp: 20, dmg: 3 },
-  { name: 'Rat King', emoji: '🐀', hp: 35, dmg: 5 },
-  { name: 'Wifi Demon', emoji: '📶', hp: 50, dmg: 8 },
-  { name: 'Bureaucrat', emoji: '👔', hp: 80, dmg: 12 },
-];
-
-// --- COMPONENTS ---
-
-const StatBadge = ({ statKey, value }) => (
-  <div className={`flex items-center gap-1 px-2 py-1 rounded-full bg-slate-800 border border-slate-700 ${STATS[statKey].color} text-xs font-bold`}>
-    <span>{STATS[statKey].icon}</span>
-    <span>{value}</span>
-  </div>
-);
-
-const ItemCard = ({ item, isEquipped, onClick, isSelected }) => {
-  if (!item) return <div className="w-full h-16 bg-slate-800/50 rounded-lg border border-slate-700 border-dashed flex items-center justify-center text-slate-600">Empty</div>;
-
-  return (
-    <button 
-      onClick={() => onClick(item)}
-      className={`w-full relative flex items-center gap-3 p-2 rounded-lg border transition-all active:scale-95
-        ${isSelected 
-          ? 'bg-blue-900/30 border-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]' 
-          : 'bg-slate-800 border-slate-700 hover:border-slate-600'}`}
-    >
-      <div className="w-10 h-10 flex items-center justify-center text-2xl bg-slate-900 rounded-md border border-slate-700">
-        {item.emoji}
-      </div>
-      <div className="flex-1 text-left">
-        <div className="text-sm font-bold text-slate-200">{item.name}</div>
-        <div className="flex gap-2 mt-1 flex-wrap">
-          {Object.entries(item.stats).map(([key, val]) => (
-            <span key={key} className={`text-[10px] ${STATS[key].color}`}>{STATS[key].icon} +{val}</span>
-          ))}
-        </div>
-      </div>
-      {isEquipped && <div className="absolute top-1 right-1 w-2 h-2 bg-green-500 rounded-full shadow-lg shadow-green-500/50"></div>}
-    </button>
-  );
-};
-
-export default function App() {
-  // --- STATE ---
-  const [view, setView] = useState('HOME'); // HOME, COMBAT, INVENTORY, GAMEOVER
-  const [turn, setTurn] = useState(0);
-  const [logs, setLogs] = useState(['Welcome to the Dungeon. Check your gear!']);
-  
-  // Player State
-  const [hp, setHp] = useState(50);
-  const [maxHp, setMaxHp] = useState(50);
-  const [xp, setXp] = useState(0);
-  const [level, setLevel] = useState(1);
-  
-  // Inventory & Equipment
-  const [inventory, setInventory] = useState([ITEMS[0], ITEMS[2], ITEMS[5]]); // Starting items
-  const [equipped, setEquipped] = useState({
-    [ITEM_TYPES.WEAPON]: null,
-    [ITEM_TYPES.OFFHAND]: null,
-    [ITEM_TYPES.HEAD]: null,
-    [ITEM_TYPES.ACC]: null,
-  });
-  const [selectedItem, setSelectedItem] = useState(null);
-
-  // Combat State
-  const [currentEnemy, setCurrentEnemy] = useState(null);
-  const [combatState, setCombatState] = useState('idle'); // idle, player_turn, enemy_turn
-
-  // --- DERIVED STATS & SYNERGIES ---
-  const totalStats = useMemo(() => {
-    const base = { GRIT: 1, VIBE: 1, SPICE: 1, LUCK: 1 };
-    Object.values(equipped).forEach(item => {
-      if (item) {
-        Object.entries(item.stats).forEach(([key, val]) => {
-          base[key] = (base[key] || 0) + val;
-        });
-      }
-    });
-    return base;
-  }, [equipped]);
-
-  const activeSynergies = useMemo(() => {
-    const synergies = [];
-    const allTags = Object.values(equipped).filter(i => i).flatMap(i => i.tags);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Emoji Dungeon: Vibe Check</title>
     
-    if (allTags.filter(t => t === 'food').length >= 2) {
-      synergies.push({ name: 'Combo Meal', desc: 'Heal 2 HP per turn', id: 'food' });
-    }
-    if (allTags.includes('cool') && allTags.includes('tech')) {
-      synergies.push({ name: 'Cyberpunk', desc: '+5 Vibe, Neon Aesthetics', id: 'cyber' });
-    }
-    if (allTags.includes('spicy') && allTags.includes('metal')) {
-      synergies.push({ name: 'Hot Iron', desc: 'Attacks burn enemies', id: 'hotiron' });
-    }
+    <!-- Tailwind CSS for Styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
     
-    // Apply synergy stats
-    if (synergies.find(s => s.id === 'cyber')) totalStats.VIBE += 5;
-
-    return synergies;
-  }, [equipped, totalStats]);
-
-  // --- HELPERS ---
-  const addLog = (msg) => setLogs(prev => [msg, ...prev].slice(0, 20));
-
-  const equipItem = (item) => {
-    if (!item) return;
-    const currentEquipped = equipped[item.type];
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     
-    // Swap logic
-    setEquipped(prev => ({ ...prev, [item.type]: item }));
-    
-    // Remove from inventory, add previously equipped back
-    let newInv = inventory.filter(i => i !== item);
-    if (currentEquipped) newInv.push(currentEquipped);
-    
-    setInventory(newInv);
-    setSelectedItem(null);
-    addLog(`Equipped ${item.name} ${item.emoji}`);
-  };
+    <!-- Babel to translate JSX in the browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-  const unequipItem = (type) => {
-    const item = equipped[type];
-    if (!item) return;
-    
-    setEquipped(prev => ({ ...prev, [type]: null }));
-    setInventory(prev => [...prev, item]);
-    addLog(`Unequipped ${item.name}`);
-  };
+    <style>
+        /* Disable double-tap zoom on mobile */
+        body { touch-action: manipulation; }
+        /* Custom scrollbar for logs */
+        .log-scroll::-webkit-scrollbar { width: 4px; }
+        .log-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-200">
+    <div id="root"></div>
 
-  // --- COMBAT LOGIC ---
-  const startCombat = () => {
-    const enemyTemplate = ENEMIES[Math.floor(Math.random() * ENEMIES.length)];
-    // Scale enemy with level
-    const enemy = { 
-      ...enemyTemplate, 
-      hp: enemyTemplate.hp + (level * 10),
-      maxHp: enemyTemplate.hp + (level * 10),
-      dmg: enemyTemplate.dmg + level 
-    };
-    setCurrentEnemy(enemy);
-    setView('COMBAT');
-    setCombatState('player_turn');
-    addLog(`Wild ${enemy.name} appeared!`);
-  };
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
 
-  const handleAttack = () => {
-    if (combatState !== 'player_turn' || !currentEnemy) return;
+        // --- DATA & CONFIG ---
 
-    // Damage Calc
-    const baseDmg = totalStats.GRIT * 2;
-    const critChance = totalStats.SPICE * 5; // 5% per spice
-    const isCrit = Math.random() * 100 < critChance;
-    const finalDmg = isCrit ? Math.floor(baseDmg * 2) : baseDmg;
+        const STATS = {
+            GRIT: { icon: '💪', color: 'text-orange-400', label: 'Grit' },
+            VIBE: { icon: '✨', color: 'text-purple-400', label: 'Vibe' },
+            SPICE: { icon: '🌶️', color: 'text-red-500', label: 'Spice' },
+            LUCK: { icon: '🍀', color: 'text-green-400', label: 'Luck' },
+        };
 
-    // Apply Damage
-    const newEnemyHp = currentEnemy.hp - finalDmg;
-    
-    if (isCrit) addLog(`CRITICAL! You smashed ${currentEnemy.emoji} for ${finalDmg} dmg!`);
-    else addLog(`You hit ${currentEnemy.emoji} for ${finalDmg} dmg.`);
+        const ITEM_TYPES = {
+            WEAPON: 'weapon',
+            OFFHAND: 'offhand',
+            HEAD: 'head',
+            ACC: 'accessory',
+        };
 
-    if (newEnemyHp <= 0) {
-      // Victory
-      setCurrentEnemy(null);
-      const xpGain = 20 + (totalStats.LUCK * 2);
-      setXp(prev => prev + xpGain);
-      
-      // Loot Drop Chance
-      if (Math.random() < 0.5 + (totalStats.LUCK * 0.05)) {
-        const loot = ITEMS[Math.floor(Math.random() * ITEMS.length)];
-        setInventory(prev => [...prev, { ...loot, id: Date.now() }]); // Unique ID for dupes
-        addLog(`Found loot: ${loot.name} ${loot.emoji}`);
-      }
-      
-      addLog(`Victory! Gained ${xpGain} XP.`);
-      setView('HOME');
-    } else {
-      setCurrentEnemy(prev => ({ ...prev, hp: newEnemyHp }));
-      setCombatState('enemy_turn');
-      setTimeout(enemyAttack, 1000);
-    }
-  };
+        const ITEMS = [
+            { id: 'sword1', name: 'Rusty Pin', emoji: '📍', type: ITEM_TYPES.WEAPON, stats: { GRIT: 2 }, tags: ['metal'] },
+            { id: 'sword2', name: 'Baguette', emoji: '🥖', type: ITEM_TYPES.WEAPON, stats: { GRIT: 3, VIBE: 1 }, tags: ['food'] },
+            { id: 'shield1', name: 'Trash Lid', emoji: '🗑️', type: ITEM_TYPES.OFFHAND, stats: { GRIT: 1, LUCK: 2 }, tags: ['metal', 'urban'] },
+            { id: 'hat1', name: 'Cool Shades', emoji: '🕶️', type: ITEM_TYPES.HEAD, stats: { VIBE: 5 }, tags: ['cool'] },
+            { id: 'acc1', name: 'Lucky Die', emoji: '🎲', type: ITEM_TYPES.ACC, stats: { LUCK: 5, SPICE: 2 }, tags: ['game'] },
+            { id: 'food1', name: 'Spicy Taco', emoji: '🌮', type: ITEM_TYPES.ACC, stats: { SPICE: 4, GRIT: 1 }, tags: ['food', 'spicy'] },
+            { id: 'tech1', name: 'Old Phone', emoji: '📱', type: ITEM_TYPES.OFFHAND, stats: { VIBE: 3, LUCK: -1 }, tags: ['tech'] },
+            { id: 'rare1', name: 'Ghost Chili', emoji: '👻', type: ITEM_TYPES.WEAPON, stats: { SPICE: 8, VIBE: 3 }, tags: ['spicy', 'spooky'] },
+        ];
 
-  const enemyAttack = () => {
-    if (!currentEnemy) return;
-    
-    // Dodge Chance
-    const dodgeChance = totalStats.LUCK * 2; // 2% per luck
-    if (Math.random() * 100 < dodgeChance) {
-      addLog(`You dodged the ${currentEnemy.name}'s attack!`);
-    } else {
-      const dmg = currentEnemy.dmg; // Simplified defense
-      setHp(prev => Math.max(0, prev - dmg));
-      addLog(`${currentEnemy.emoji} hit you for ${dmg} damage.`);
-    }
-    
-    // Synergy: Combo Meal Heal
-    if (activeSynergies.find(s => s.id === 'food')) {
-        setHp(prev => Math.min(maxHp, prev + 2));
-    }
+        const ENEMIES = [
+            { name: 'Angry Blob', emoji: '💧', hp: 20, dmg: 3 },
+            { name: 'Rat King', emoji: '🐀', hp: 35, dmg: 5 },
+            { name: 'Wifi Demon', emoji: '📶', hp: 50, dmg: 8 },
+            { name: 'Bureaucrat', emoji: '👔', hp: 80, dmg: 12 },
+        ];
 
-    setCombatState('player_turn');
-  };
+        // --- COMPONENTS ---
 
-  useEffect(() => {
-    if (hp <= 0 && view !== 'GAMEOVER') {
-      setView('GAMEOVER');
-      addLog("You have perished...");
-    }
-  }, [hp]);
+        const ItemCard = ({ item, isEquipped, onClick, isSelected }) => {
+            if (!item) return <div className="w-full h-16 bg-slate-800/50 rounded-lg border border-slate-700 border-dashed flex items-center justify-center text-slate-600">Empty</div>;
 
-  // --- RENDER VIEWS ---
+            return (
+                <button 
+                onClick={() => onClick(item)}
+                className={`w-full relative flex items-center gap-3 p-2 rounded-lg border transition-all active:scale-95
+                    ${isSelected 
+                    ? 'bg-blue-900/30 border-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]' 
+                    : 'bg-slate-800 border-slate-700 hover:border-slate-600'}`}
+                >
+                <div className="w-10 h-10 flex items-center justify-center text-2xl bg-slate-900 rounded-md border border-slate-700">
+                    {item.emoji}
+                </div>
+                <div className="flex-1 text-left">
+                    <div className="text-sm font-bold text-slate-200">{item.name}</div>
+                    <div className="flex gap-2 mt-1 flex-wrap">
+                    {Object.entries(item.stats).map(([key, val]) => (
+                        <span key={key} className={`text-[10px] ${STATS[key].color}`}>{STATS[key].icon} {val > 0 ? '+' : ''}{val}</span>
+                    ))}
+                    </div>
+                </div>
+                {isEquipped && <div className="absolute top-1 right-1 w-2 h-2 bg-green-500 rounded-full shadow-lg shadow-green-500/50"></div>}
+                </button>
+            );
+        };
 
-  const Header = () => (
-    <div className="bg-slate-900 p-4 border-b border-slate-800 sticky top-0 z-20 shadow-md">
-      <div className="flex justify-between items-end mb-2">
-        <div>
-            <h1 className="font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 text-xl italic">
-                EMOJI QUEST
-            </h1>
-            <div className="text-xs text-slate-400">Lvl {level} Vagabond</div>
-        </div>
-        <div className="flex gap-3 text-sm font-bold">
-           <div className="flex items-center text-red-400"><Heart size={16} className="mr-1 fill-current"/> {hp}/{maxHp}</div>
-           <div className="flex items-center text-yellow-400"><Trophy size={16} className="mr-1"/> {xp}</div>
-        </div>
-      </div>
-      
-      {/* Mini Stat Bar */}
-      <div className="flex justify-between bg-slate-800 rounded-lg p-2">
-        {Object.keys(STATS).map(key => (
-           <div key={key} className="flex flex-col items-center w-1/4 border-r border-slate-700 last:border-0">
-                <span className="text-lg leading-none mb-1">{STATS[key].icon}</span>
-                <span className={`text-[10px] font-bold ${STATS[key].color}`}>{totalStats[key]}</span>
-           </div>
-        ))}
-      </div>
-    </div>
-  );
+        function App() {
+            // --- STATE ---
+            const [view, setView] = useState('HOME'); // HOME, COMBAT, INVENTORY, GAMEOVER
+            const [logs, setLogs] = useState(['Welcome to the Dungeon. Check your gear!']);
+            
+            // Player State
+            const [hp, setHp] = useState(50);
+            const [maxHp, setMaxHp] = useState(50);
+            const [xp, setXp] = useState(0);
+            const [level, setLevel] = useState(1);
+            
+            // Inventory & Equipment
+            const [inventory, setInventory] = useState([ITEMS[0], ITEMS[2], ITEMS[5]]); 
+            const [equipped, setEquipped] = useState({
+                [ITEM_TYPES.WEAPON]: null,
+                [ITEM_TYPES.OFFHAND]: null,
+                [ITEM_TYPES.HEAD]: null,
+                [ITEM_TYPES.ACC]: null,
+            });
+            const [selectedItem, setSelectedItem] = useState(null);
 
-  const InventoryView = () => (
-    <div className="p-4 pb-24 animate-in fade-in duration-300">
-      <h2 className="text-slate-400 font-bold text-xs uppercase tracking-widest mb-4">Currently Equipped</h2>
-      
-      <div className="grid grid-cols-2 gap-3 mb-6">
-        {[ITEM_TYPES.HEAD, ITEM_TYPES.WEAPON, ITEM_TYPES.OFFHAND, ITEM_TYPES.ACC].map(type => (
-           <div key={type} className="relative">
-               <div className="absolute -top-2 -left-2 z-10 bg-slate-950 text-xs px-2 py-0.5 rounded border border-slate-700 text-slate-500 uppercase font-bold scale-75 origin-top-left">
-                   {type}
-               </div>
-               {equipped[type] ? (
-                   <ItemCard item={equipped[type]} isEquipped={true} onClick={() => unequipItem(type)} />
-               ) : (
-                   <div className="h-16 border border-slate-800 bg-slate-900/50 rounded-lg flex items-center justify-center text-slate-700 text-2xl">
-                       {type === ITEM_TYPES.WEAPON ? '⚔️' : type === ITEM_TYPES.HEAD ? '🧢' : type === ITEM_TYPES.OFFHAND ? '🛡️' : '💍'}
-                   </div>
-               )}
-           </div>
-        ))}
-      </div>
+            // Combat State
+            const [currentEnemy, setCurrentEnemy] = useState(null);
+            const [combatState, setCombatState] = useState('idle'); // idle, player_turn, enemy_turn
 
-      {activeSynergies.length > 0 && (
-          <div className="mb-6 bg-purple-900/20 border border-purple-500/30 rounded-lg p-3">
-              <h3 className="text-purple-300 text-xs font-bold uppercase mb-2 flex items-center gap-2">
-                  <Sparkles size={14} /> Active Synergies
-              </h3>
-              <div className="space-y-2">
-                  {activeSynergies.map(s => (
-                      <div key={s.id} className="text-sm">
-                          <span className="font-bold text-purple-200">{s.name}:</span> <span className="text-purple-300/80">{s.desc}</span>
-                      </div>
-                  ))}
-              </div>
-          </div>
-      )}
+            // --- DERIVED STATS ---
+            const totalStats = useMemo(() => {
+                const base = { GRIT: 1, VIBE: 1, SPICE: 1, LUCK: 1 };
+                Object.values(equipped).forEach(item => {
+                    if (item) {
+                        Object.entries(item.stats).forEach(([key, val]) => {
+                            base[key] = (base[key] || 0) + val;
+                        });
+                    }
+                });
+                return base;
+            }, [equipped]);
 
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-slate-400 font-bold text-xs uppercase tracking-widest">Backpack ({inventory.length})</h2>
-      </div>
+            const activeSynergies = useMemo(() => {
+                const synergies = [];
+                const allTags = Object.values(equipped).filter(i => i).flatMap(i => i.tags);
+                
+                if (allTags.filter(t => t === 'food').length >= 2) {
+                    synergies.push({ name: 'Combo Meal', desc: 'Heal 2 HP per turn', id: 'food' });
+                }
+                if (allTags.includes('cool') && allTags.includes('tech')) {
+                    synergies.push({ name: 'Cyberpunk', desc: '+5 Vibe, Neon Aesthetics', id: 'cyber' });
+                }
+                if (allTags.includes('spicy') && allTags.includes('metal')) {
+                    synergies.push({ name: 'Hot Iron', desc: 'Attacks burn enemies', id: 'hotiron' });
+                }
+                
+                if (synergies.find(s => s.id === 'cyber')) totalStats.VIBE += 5;
 
-      <div className="space-y-2">
-        {inventory.map((item, idx) => (
-            <div key={idx} className={selectedItem === item ? 'ring-2 ring-blue-500 rounded-lg' : ''}>
-                <ItemCard 
-                    item={item} 
-                    onClick={(i) => setSelectedItem(selectedItem === i ? null : i)} 
-                    isSelected={selectedItem === item}
-                />
-                {selectedItem === item && (
+                return synergies;
+            }, [equipped, totalStats]);
+
+            // --- ACTIONS ---
+            const addLog = (msg) => setLogs(prev => [msg, ...prev].slice(0, 20));
+
+            const equipItem = (item) => {
+                if (!item) return;
+                const currentEquipped = equipped[item.type];
+                setEquipped(prev => ({ ...prev, [item.type]: item }));
+                let newInv = inventory.filter(i => i !== item);
+                if (currentEquipped) newInv.push(currentEquipped);
+                setInventory(newInv);
+                setSelectedItem(null);
+                addLog(`Equipped ${item.name} ${item.emoji}`);
+            };
+
+            const unequipItem = (type) => {
+                const item = equipped[type];
+                if (!item) return;
+                setEquipped(prev => ({ ...prev, [type]: null }));
+                setInventory(prev => [...prev, item]);
+                addLog(`Unequipped ${item.name}`);
+            };
+
+            const startCombat = () => {
+                const enemyTemplate = ENEMIES[Math.floor(Math.random() * ENEMIES.length)];
+                const enemy = { 
+                    ...enemyTemplate, 
+                    hp: enemyTemplate.hp + (level * 10),
+                    maxHp: enemyTemplate.hp + (level * 10),
+                    dmg: enemyTemplate.dmg + level 
+                };
+                setCurrentEnemy(enemy);
+                setView('COMBAT');
+                setCombatState('player_turn');
+                addLog(`Wild ${enemy.name} appeared!`);
+            };
+
+            const handleAttack = () => {
+                if (combatState !== 'player_turn' || !currentEnemy) return;
+
+                const baseDmg = totalStats.GRIT * 2;
+                const critChance = totalStats.SPICE * 5; 
+                const isCrit = Math.random() * 100 < critChance;
+                const finalDmg = isCrit ? Math.floor(baseDmg * 2) : baseDmg;
+
+                const newEnemyHp = currentEnemy.hp - finalDmg;
+                
+                if (isCrit) addLog(`CRITICAL! You smashed ${currentEnemy.emoji} for ${finalDmg} dmg!`);
+                else addLog(`You hit ${currentEnemy.emoji} for ${finalDmg} dmg.`);
+
+                if (newEnemyHp <= 0) {
+                    setCurrentEnemy(null);
+                    const xpGain = 20 + (totalStats.LUCK * 2);
+                    setXp(prev => prev + xpGain);
+                    if (xp + xpGain >= level * 100) setLevel(l => l + 1); // Simple level up
+
+                    if (Math.random() < 0.5 + (totalStats.LUCK * 0.05)) {
+                        const loot = ITEMS[Math.floor(Math.random() * ITEMS.length)];
+                        setInventory(prev => [...prev, { ...loot, id: Date.now() }]); 
+                        addLog(`Found loot: ${loot.name} ${loot.emoji}`);
+                    }
+                    addLog(`Victory! Gained ${xpGain} XP.`);
+                    setView('HOME');
+                } else {
+                    setCurrentEnemy(prev => ({ ...prev, hp: newEnemyHp }));
+                    setCombatState('enemy_turn');
+                    setTimeout(enemyAttack, 1000);
+                }
+            };
+
+            const enemyAttack = () => {
+                if (!currentEnemy) return;
+                const dodgeChance = totalStats.LUCK * 2; 
+                
+                if (Math.random() * 100 < dodgeChance) {
+                    addLog(`You dodged the ${currentEnemy.name}'s attack!`);
+                } else {
+                    const dmg = currentEnemy.dmg;
+                    setHp(prev => Math.max(0, prev - dmg));
+                    addLog(`${currentEnemy.emoji} hit you for ${dmg} damage.`);
+                }
+                
+                if (activeSynergies.find(s => s.id === 'food')) {
+                    setHp(prev => Math.min(maxHp, prev + 2));
+                }
+                setCombatState('player_turn');
+            };
+
+            useEffect(() => {
+                if (hp <= 0 && view !== 'GAMEOVER') {
+                    setView('GAMEOVER');
+                    addLog("You have perished...");
+                }
+            }, [hp]);
+
+            // --- VIEWS ---
+            const Header = () => (
+                <div className="bg-slate-900 p-4 border-b border-slate-800 sticky top-0 z-20 shadow-md">
+                    <div className="flex justify-between items-end mb-2">
+                        <div>
+                            <h1 className="font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 text-xl italic">
+                                EMOJI QUEST
+                            </h1>
+                            <div className="text-xs text-slate-400">Lvl {level} Vagabond</div>
+                        </div>
+                        <div className="flex gap-3 text-sm font-bold">
+                        <div className="flex items-center text-red-400">❤️ {hp}/{maxHp}</div>
+                        <div className="flex items-center text-yellow-400">🏆 {xp}</div>
+                        </div>
+                    </div>
+                    <div className="flex justify-between bg-slate-800 rounded-lg p-2">
+                        {Object.keys(STATS).map(key => (
+                        <div key={key} className="flex flex-col items-center w-1/4 border-r border-slate-700 last:border-0">
+                                <span className="text-lg leading-none mb-1">{STATS[key].icon}</span>
+                                <span className={`text-[10px] font-bold ${STATS[key].color}`}>{totalStats[key]}</span>
+                        </div>
+                        ))}
+                    </div>
+                </div>
+            );
+
+            const InventoryView = () => (
+                <div className="p-4 pb-24 animate-fade-in">
+                    <h2 className="text-slate-400 font-bold text-xs uppercase tracking-widest mb-4">Currently Equipped</h2>
+                    <div className="grid grid-cols-2 gap-3 mb-6">
+                        {[ITEM_TYPES.HEAD, ITEM_TYPES.WEAPON, ITEM_TYPES.OFFHAND, ITEM_TYPES.ACC].map(type => (
+                        <div key={type} className="relative">
+                            <div className="absolute -top-2 -left-2 z-10 bg-slate-950 text-xs px-2 py-0.5 rounded border border-slate-700 text-slate-500 uppercase font-bold scale-75 origin-top-left">
+                                {type}
+                            </div>
+                            {equipped[type] ? (
+                                <ItemCard item={equipped[type]} isEquipped={true} onClick={() => unequipItem(type)} />
+                            ) : (
+                                <div className="h-16 border border-slate-800 bg-slate-900/50 rounded-lg flex items-center justify-center text-slate-700 text-2xl">
+                                    {type === ITEM_TYPES.WEAPON ? '⚔️' : type === ITEM_TYPES.HEAD ? '🧢' : type === ITEM_TYPES.OFFHAND ? '🛡️' : '💍'}
+                                </div>
+                            )}
+                        </div>
+                        ))}
+                    </div>
+
+                    {activeSynergies.length > 0 && (
+                        <div className="mb-6 bg-purple-900/20 border border-purple-500/30 rounded-lg p-3">
+                            <h3 className="text-purple-300 text-xs font-bold uppercase mb-2 flex items-center gap-2">
+                                ✨ Active Synergies
+                            </h3>
+                            <div className="space-y-2">
+                                {activeSynergies.map(s => (
+                                    <div key={s.id} className="text-sm">
+                                        <span className="font-bold text-purple-200">{s.name}:</span> <span className="text-purple-300/80">{s.desc}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    <h2 className="text-slate-400 font-bold text-xs uppercase tracking-widest mb-4">Backpack ({inventory.length})</h2>
+                    <div className="space-y-2">
+                        {inventory.map((item, idx) => (
+                            <div key={idx} className={selectedItem === item ? 'ring-2 ring-blue-500 rounded-lg' : ''}>
+                                <ItemCard 
+                                    item={item} 
+                                    onClick={(i) => setSelectedItem(selectedItem === i ? null : i)} 
+                                    isSelected={selectedItem === item}
+                                />
+                                {selectedItem === item && (
+                                    <button 
+                                        onClick={() => equipItem(item)}
+                                        className="w-full mt-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-b-lg text-sm flex items-center justify-center gap-2"
+                                    >
+                                        Equip to {item.type.toUpperCase()}
+                                    </button>
+                                )}
+                            </div>
+                        ))}
+                        {inventory.length === 0 && <div className="text-center text-slate-600 py-8 italic">Your bag is empty. Go fight stuff!</div>}
+                    </div>
+                </div>
+            );
+
+            const CombatView = () => (
+                <div className="h-full flex flex-col p-4 pb-24">
+                    <div className="flex-1 flex flex-col items-center justify-center relative">
+                        <div className="text-6xl animate-bounce filter drop-shadow-lg mb-4">{currentEnemy?.emoji}</div>
+                        <div className="text-2xl font-bold text-white mb-1">{currentEnemy?.name}</div>
+                        <div className="w-48 h-4 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
+                            <div className="h-full bg-red-500 transition-all duration-500 ease-out" style={{ width: `${(currentEnemy.hp / currentEnemy.maxHp) * 100}%` }} />
+                        </div>
+                        <div className="mt-1 text-xs text-slate-400">{currentEnemy.hp} / {currentEnemy.maxHp} HP</div>
+                        {combatState === 'enemy_turn' && (
+                            <div className="absolute top-0 bg-red-500 text-white px-3 py-1 rounded-full font-bold animate-pulse">Enemy Attacking!</div>
+                        )}
+                    </div>
+                    <div className="mt-auto bg-slate-800 rounded-xl p-4 border border-slate-700">
+                        <div className="grid grid-cols-2 gap-3">
+                            <button 
+                                onClick={handleAttack}
+                                disabled={combatState !== 'player_turn'}
+                                className="bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed text-white p-4 rounded-lg font-bold text-lg flex flex-col items-center gap-1 active:scale-95 transition-transform"
+                            >
+                                ⚔️ Attack
+                            </button>
+                            <button className="bg-slate-700 text-slate-400 p-4 rounded-lg font-bold flex flex-col items-center gap-1 opacity-50 cursor-not-allowed">
+                                🎒 Item
+                            </button>
+                        </div>
+                        <div className="mt-3 text-center text-xs text-slate-500 font-mono">
+                            Your Vibe: {totalStats.VIBE} • Crit Chance: {totalStats.SPICE * 5}%
+                        </div>
+                    </div>
+                </div>
+            );
+
+            const HomeView = () => (
+                <div className="flex flex-col items-center justify-center h-[60vh] p-6 text-center">
+                    <div className="w-24 h-24 bg-slate-800 rounded-full flex items-center justify-center text-5xl border-4 border-slate-700 mb-6 shadow-xl shadow-purple-900/20">
+                        🧐
+                    </div>
+                    <h2 className="text-2xl font-bold text-white mb-2">Ready to Explore?</h2>
+                    <p className="text-slate-400 mb-8 max-w-xs">
+                        The dungeon is full of weird loot and bad vibes. Adjust your gear before you head out.
+                    </p>
                     <button 
-                        onClick={() => equipItem(item)}
-                        className="w-full mt-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-b-lg text-sm flex items-center justify-center gap-2 animate-in slide-in-from-top-2"
+                        onClick={startCombat}
+                        className="w-full max-w-xs bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold py-4 px-8 rounded-xl shadow-lg shadow-purple-900/40 flex items-center justify-center gap-3 text-lg transition-all hover:scale-105 active:scale-95"
                     >
-                        Equip to {item.type.toUpperCase()} <ChevronRight size={16} />
+                        💀 Enter Room
                     </button>
-                )}
-            </div>
-        ))}
-        {inventory.length === 0 && <div className="text-center text-slate-600 py-8 italic">Your bag is empty. Go fight stuff!</div>}
-      </div>
-    </div>
-  );
+                </div>
+            );
 
-  const CombatView = () => (
-    <div className="h-full flex flex-col p-4 pb-24 animate-in zoom-in-95 duration-300">
-       {/* Enemy Area */}
-       <div className="flex-1 flex flex-col items-center justify-center relative">
-          <div className="text-6xl animate-bounce filter drop-shadow-lg mb-4">
-             {currentEnemy?.emoji}
-          </div>
-          <div className="text-2xl font-bold text-white mb-1">{currentEnemy?.name}</div>
-          
-          {/* HP Bar */}
-          <div className="w-48 h-4 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
-              <div 
-                className="h-full bg-red-500 transition-all duration-500 ease-out"
-                style={{ width: `${(currentEnemy.hp / currentEnemy.maxHp) * 100}%` }}
-              />
-          </div>
-          <div className="mt-1 text-xs text-slate-400">{currentEnemy.hp} / {currentEnemy.maxHp} HP</div>
+            return (
+                <div className="bg-slate-950 text-slate-200 min-h-screen font-sans max-w-md mx-auto relative overflow-hidden shadow-2xl flex flex-col">
+                    <Header />
+                    <div className="log-scroll bg-slate-900/50 p-2 border-b border-slate-800 h-24 overflow-y-auto text-xs font-mono text-slate-400 flex flex-col-reverse">
+                        {logs.map((log, i) => <div key={i} className="mb-1 border-l-2 border-slate-700 pl-2 opacity-80 hover:opacity-100">{log}</div>)}
+                    </div>
+                    <main className="flex-1 overflow-y-auto">
+                        {view === 'HOME' && <HomeView />}
+                        {view === 'INVENTORY' && <InventoryView />}
+                        {view === 'COMBAT' && <CombatView />}
+                        {view === 'GAMEOVER' && (
+                            <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+                                <div className="text-6xl mb-4">💀</div>
+                                <h2 className="text-3xl font-bold text-red-500 mb-2">GAME OVER</h2>
+                                <button onClick={() => window.location.reload()} className="bg-white text-black px-6 py-3 rounded-full font-bold flex items-center gap-2">
+                                    🔄 Restart
+                                </button>
+                            </div>
+                        )}
+                    </main>
+                    <nav className="bg-slate-900 border-t border-slate-800 flex justify-around p-2 pb-6 md:pb-2 sticky bottom-0 z-50">
+                        <button onClick={() => view !== 'COMBAT' && setView('HOME')} className={`flex flex-col items-center p-2 rounded-lg min-w-[64px] transition-colors ${view === 'HOME' ? 'text-blue-400 bg-slate-800' : 'text-slate-500'} ${view === 'COMBAT' ? 'opacity-25' : ''}`} disabled={view === 'COMBAT'}>
+                            <span className="text-2xl">💀</span>
+                            <span className="text-[10px] font-bold mt-1">Explore</span>
+                        </button>
+                        <div className="w-px bg-slate-800 mx-2"></div>
+                        <button onClick={() => view !== 'COMBAT' && setView('INVENTORY')} className={`flex flex-col items-center p-2 rounded-lg min-w-[64px] transition-colors ${view === 'INVENTORY' ? 'text-purple-400 bg-slate-800' : 'text-slate-500'} ${view === 'COMBAT' ? 'opacity-25' : ''}`} disabled={view === 'COMBAT'}>
+                            <div className="relative">
+                                <span className="text-2xl">🎒</span>
+                                {inventory.length > 0 && <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-slate-900"></div>}
+                            </div>
+                            <span className="text-[10px] font-bold mt-1">Bag</span>
+                        </button>
+                    </nav>
+                </div>
+            );
+        }
 
-          {combatState === 'enemy_turn' && (
-              <div className="absolute top-0 bg-red-500 text-white px-3 py-1 rounded-full font-bold animate-pulse">
-                  Enemy Attacking!
-              </div>
-          )}
-       </div>
-
-       {/* Actions */}
-       <div className="mt-auto bg-slate-800 rounded-xl p-4 border border-slate-700">
-           <div className="grid grid-cols-2 gap-3">
-               <button 
-                 onClick={handleAttack}
-                 disabled={combatState !== 'player_turn'}
-                 className="bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed text-white p-4 rounded-lg font-bold text-lg flex flex-col items-center gap-1 active:scale-95 transition-transform"
-               >
-                   <Sword size={24} />
-                   Attack
-               </button>
-               <button className="bg-slate-700 text-slate-400 p-4 rounded-lg font-bold flex flex-col items-center gap-1 opacity-50 cursor-not-allowed">
-                   <Backpack size={24} />
-                   Item
-               </button>
-           </div>
-           <div className="mt-3 text-center text-xs text-slate-500 font-mono">
-               Your Vibe: {totalStats.VIBE} • Crit Chance: {totalStats.SPICE * 5}%
-           </div>
-       </div>
-    </div>
-  );
-
-  const HomeView = () => (
-    <div className="flex flex-col items-center justify-center h-[60vh] p-6 text-center animate-in fade-in">
-        <div className="w-24 h-24 bg-slate-800 rounded-full flex items-center justify-center text-5xl border-4 border-slate-700 mb-6 shadow-xl shadow-purple-900/20">
-            🧐
-        </div>
-        <h2 className="text-2xl font-bold text-white mb-2">Ready to Explore?</h2>
-        <p className="text-slate-400 mb-8 max-w-xs">
-            The dungeon is full of weird loot and bad vibes. Adjust your gear before you head out.
-        </p>
-        <button 
-            onClick={startCombat}
-            className="w-full max-w-xs bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold py-4 px-8 rounded-xl shadow-lg shadow-purple-900/40 flex items-center justify-center gap-3 text-lg transition-all hover:scale-105 active:scale-95"
-        >
-            <Skull size={24} />
-            Enter Room
-        </button>
-    </div>
-  );
-
-  // --- MAIN LAYOUT ---
-
-  return (
-    <div className="bg-slate-950 text-slate-200 min-h-screen font-sans max-w-md mx-auto relative overflow-hidden shadow-2xl flex flex-col">
-      <Header />
-
-      {/* LOG SCROLL */}
-      <div className="bg-slate-900/50 p-2 border-b border-slate-800 h-24 overflow-y-auto text-xs font-mono text-slate-400 flex flex-col-reverse">
-         {logs.map((log, i) => (
-             <div key={i} className="mb-1 border-l-2 border-slate-700 pl-2 opacity-80 hover:opacity-100">
-                 {log}
-             </div>
-         ))}
-      </div>
-
-      {/* MAIN CONTENT AREA */}
-      <main className="flex-1 overflow-y-auto">
-          {view === 'HOME' && <HomeView />}
-          {view === 'INVENTORY' && <InventoryView />}
-          {view === 'COMBAT' && <CombatView />}
-          {view === 'GAMEOVER' && (
-              <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-                  <div className="text-6xl mb-4">💀</div>
-                  <h2 className="text-3xl font-bold text-red-500 mb-2">GAME OVER</h2>
-                  <p className="mb-8 text-slate-400">The vibes were too strong for you.</p>
-                  <button onClick={() => window.location.reload()} className="bg-white text-black px-6 py-3 rounded-full font-bold flex items-center gap-2">
-                      <RefreshCw size={18} /> Restart
-                  </button>
-              </div>
-          )}
-      </main>
-
-      {/* BOTTOM NAV */}
-      <nav className="bg-slate-900 border-t border-slate-800 flex justify-around p-2 pb-6 md:pb-2 sticky bottom-0 z-50">
-        <button 
-            onClick={() => view !== 'COMBAT' && setView('HOME')} 
-            className={`flex flex-col items-center p-2 rounded-lg min-w-[64px] transition-colors ${view === 'HOME' ? 'text-blue-400 bg-slate-800' : 'text-slate-500'} ${view === 'COMBAT' ? 'opacity-25' : ''}`}
-            disabled={view === 'COMBAT'}
-        >
-            <Skull size={24} className={view === 'HOME' ? 'fill-current' : ''} />
-            <span className="text-[10px] font-bold mt-1">Explore</span>
-        </button>
-        
-        <div className="w-px bg-slate-800 mx-2"></div>
-
-        <button 
-            onClick={() => view !== 'COMBAT' && setView('INVENTORY')} 
-            className={`flex flex-col items-center p-2 rounded-lg min-w-[64px] transition-colors ${view === 'INVENTORY' ? 'text-purple-400 bg-slate-800' : 'text-slate-500'} ${view === 'COMBAT' ? 'opacity-25' : ''}`}
-            disabled={view === 'COMBAT'}
-        >
-            <div className="relative">
-                <Backpack size={24} className={view === 'INVENTORY' ? 'fill-current' : ''} />
-                {inventory.length > 0 && <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-slate-900"></div>}
-            </div>
-            <span className="text-[10px] font-bold mt-1">Bag</span>
-        </button>
-      </nav>
-    </div>
-  );
-}
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
