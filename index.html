@@ -1,1062 +1,803 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-  <title>SlotClimb: Neon Edition</title>
+  <title>Mobile Portrait Game UI — Ocean Theme</title>
+  <meta name="theme-color" content="#0b1f3b" />
   <style>
-    /* =========================================
-       THEME & VARIABLES
-       ========================================= */
+    /*
+      Ocean Template UI — Polished Waves + Unified HUD
+      - Darker deep-sea gradient background
+      - Two-layer animated waves with gentle bobbing
+      - Unified top HUD for brand, stats, and quick actions
+    */
+
     :root {
-      /* Core Palette - Neon Casino Theme */
-      --bg-dark: #0a0a12;
-      --bg-panel: #141420;
-      --bg-panel-lighter: #1e1e2e;
-      
-      --primary: #ff2a6d;    /* Hot Pink - Money */
-      --primary-dim: #b01d4b;
-      --secondary: #05d9e8;  /* Cyan - Credits */
-      --secondary-dim: #0396a1;
-      --accent: #d1f7ff;     /* White-blue - Text */
-      --gold: #ffd700;       /* Gold - Wins */
-      
-      --glass: rgba(255, 255, 255, 0.05);
-      --glass-border: rgba(255, 255, 255, 0.1);
-      
-      --shadow-sm: 0 2px 4px rgba(0,0,0,0.3);
-      --shadow-lg: 0 10px 30px rgba(0,0,0,0.5);
-      
-      --font-main: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      --ease-elastic: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      /* Darker ocean palette */
+      --bg-light: #1b2b4a;         /* Upper ocean */
+      --bg-dark: #070f28;          /* Deep water */
+      --bg-deep: #020617;          /* Abyss */
+
+      --surface: #ffffff;
+      --surface-2: #eaf8ff;
+      --muted: #e0f4ff;
+      --line: #6f8fb4;
+      --line-dark: #325987;
+      --line-light: rgba(255,255,255,0.7);
+
+      --text: #e6f2ff;
+      --subtle-text: #a5c4f5;
+
+      --primary: #1f9cf0;
+      --primary-press: #0c79c3;
+
+      --shadow-elev: 0 10px 18px rgba(0, 16, 40, 0.5), 0 4px 8px rgba(0, 16, 40, 0.45);
+      --shadow-soft: 0 5px 10px rgba(0, 16, 40, 0.4);
+
+      --radius-lg: 18px;
+      --radius-md: 16px;
+      --gap: 14px;
+      --strip-height: clamp(40px, 5.5vmin, 56px);
     }
+
+    * { box-sizing: border-box; }
+
+    html, body { height: 100%; }
 
     html, body {
-      height: 100%;
-      overflow: hidden; /* Prevent scroll bounce on mobile */
-    }
-
-    body {
       margin: 0;
-      background-color: var(--bg-dark);
-      background-image: 
-        radial-gradient(circle at 50% 0%, #2d2d44 0%, transparent 60%),
-        linear-gradient(0deg, rgba(0,0,0,0.2) 0%, transparent 1px);
-      background-size: 100% 100%, 100% 4px;
-      font-family: var(--font-main);
-      color: var(--accent);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    /* Animation for background pulsing */
-    @keyframes bgPulse {
-      0% { background-color: var(--bg-dark); }
-      50% { background-color: #0f0f1a; }
-      100% { background-color: var(--bg-dark); }
-    }
-
-    /* =========================================
-       LAYOUT & CONTAINERS
-       ========================================= */
-    .game-container {
-      width: min(500px, 94vw);
-      height: min(800px, 96vh);
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      gap: 16px;
-    }
-
-    /* Header Section */
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: var(--bg-panel);
-      padding: 12px 16px;
-      border-radius: 16px;
-      border: 1px solid var(--glass-border);
-      box-shadow: var(--shadow-sm);
-    }
-
-    .timer-box {
-      font-variant-numeric: tabular-nums;
-      font-weight: 800;
-      font-size: 1.2rem;
-      letter-spacing: 1px;
-      color: var(--accent);
-      text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-    }
-
-    .timer-box.warning {
-      color: var(--primary);
-      animation: pulseRed 1s infinite;
-    }
-
-    /* Stats Grid */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-
-    .stat-card {
-      background: var(--bg-panel);
-      border-radius: 12px;
-      padding: 12px;
-      border: 1px solid var(--glass-border);
-      position: relative;
-      overflow: hidden;
-      transition: transform 0.1s;
-    }
-    
-    .stat-card:active { transform: scale(0.98); }
-
-    .stat-card.money { border-bottom: 3px solid var(--primary); }
-    .stat-card.credit { border-bottom: 3px solid var(--secondary); }
-
-    .stat-label {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      opacity: 0.7;
-      margin-bottom: 4px;
-    }
-
-    .stat-value {
-      font-size: 1.4rem;
-      font-weight: 800;
-      font-variant-numeric: tabular-nums;
-      line-height: 1.1;
-    }
-    
-    .stat-rate {
-      font-size: 0.8rem;
-      margin-top: 4px;
-      opacity: 0.8;
-      font-variant-numeric: tabular-nums;
-    }
-
-    /* Color Theme Classes */
-    .text-money, .text-rate1 { color: var(--primary); text-shadow: 0 0 10px rgba(255, 42, 109, 0.3); }
-    .text-credit, .text-rate2 { color: var(--secondary); text-shadow: 0 0 10px rgba(5, 217, 232, 0.3); }
-    .text-gold { color: var(--gold); }
-
-    /* Slider Section */
-    .slider-section {
-      background: var(--bg-panel);
-      padding: 20px 16px;
-      border-radius: 16px;
-      border: 1px solid var(--glass-border);
-      box-shadow: inset 0 2px 10px rgba(0,0,0,0.2);
-    }
-
-    .slider-label-row {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.75rem;
-      margin-bottom: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-    }
-
-    /* Custom Range Slider Styling */
-    .range-wrap {
-      position: relative;
-      height: 30px;
-      display: flex;
-      align-items: center;
-    }
-
-    input[type=range] {
-      -webkit-appearance: none;
-      width: 100%;
-      background: transparent;
-      margin: 0;
-      z-index: 2;
-      cursor: pointer;
-    }
-
-    input[type=range]:focus { outline: none; }
-
-    /* Track */
-    input[type=range]::-webkit-slider-runnable-track {
-      width: 100%;
-      height: 8px;
-      background: linear-gradient(90deg, var(--primary-dim), #2a2a35, var(--secondary-dim));
-      border-radius: 4px;
-      border: 1px solid rgba(0,0,0,0.5);
-    }
-
-    /* Thumb */
-    input[type=range]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      height: 24px;
-      width: 24px;
-      border-radius: 50%;
-      background: #fff;
-      margin-top: -9px; /* center on track */
-      box-shadow: 0 0 10px rgba(255,255,255,0.5);
-      border: 2px solid var(--bg-panel);
-      transition: transform 0.1s var(--ease-elastic);
-    }
-
-    input[type=range]:active::-webkit-slider-thumb {
-      transform: scale(1.3);
-      background: var(--gold);
-    }
-
-    /* Ticks visualization */
-    .ticks {
-      position: absolute;
-      top: 50%;
-      left: 0;
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      pointer-events: none;
-      transform: translateY(-50%);
-      padding: 0 10px; /* inset slightly */
-      box-sizing: border-box;
-      z-index: 1;
-    }
-    .tick {
-      width: 2px;
-      height: 4px;
-      background: rgba(255,255,255,0.2);
-    }
-
-    /* Slot Machine */
-    .slot-machine {
-      flex: 1;
-      background: linear-gradient(180deg, var(--bg-panel) 0%, #000 100%);
-      border-radius: 16px;
-      border: 2px solid var(--bg-panel-lighter);
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      box-shadow: var(--shadow-lg);
-      position: relative;
-    }
-    
-    /* Decorative Top Light */
-    .slot-machine::before {
-      content: '';
-      position: absolute;
-      top: -1px; left: 20%; right: 20%;
-      height: 2px;
-      background: var(--gold);
-      box-shadow: 0 0 15px var(--gold);
-      border-radius: 2px;
-      opacity: 0.5;
-    }
-
-    .reels-container {
-      display: flex;
-      gap: 8px;
-      background: #000;
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid #333;
-      box-shadow: inset 0 0 20px #000;
-      margin-bottom: 16px;
-      height: 100px; /* Fixed height */
-    }
-
-    .reel {
-      flex: 1;
-      background: #1a1a24;
-      border-radius: 4px;
+      font-family: Arial, "Helvetica Neue", Helvetica, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Ubuntu, Cantarell, "Apple Color Emoji", "Segoe UI Emoji";
+      color: var(--text);
+      /* Deep ocean gradient with slow drift */
+      background:
+        radial-gradient(circle at 20% 0%, rgba(56, 189, 248, 0.35), transparent 55%),
+        radial-gradient(circle at 80% 100%, rgba(59, 130, 246, 0.28), transparent 55%),
+        linear-gradient(170deg, var(--bg-light) 0%, var(--bg-dark) 50%, var(--bg-deep) 100%);
+      background-size: 140% 180%;
+      animation: wave-bg-anim 20s ease-in-out infinite alternate;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      min-height: 100dvh;
       display: grid;
       place-items: center;
-      font-size: 3rem;
+      padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+    }
+
+    /* Subtle vertical drift of the background */
+    @keyframes wave-bg-anim {
+      0%   { background-position: 0% 0%; }
+      50%  { background-position: 20% 40%; }
+      100% { background-position: 0% 80%; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html, body { animation: none; }
+    }
+
+    /* Root app layout */
+    .app {
+      width: min(100vw, 56.25vh);
+      aspect-ratio: 9 / 16;
+      display: grid;
+      grid-template-rows: auto 1fr minmax(120px, 20vh); /* HUD can grow */
+      gap: 10px;
+      padding: 10px 14px;
+      margin: 0 auto;
       position: relative;
       overflow: hidden;
     }
 
-    /* SVG Icon Styles */
-    .reel svg {
-      width: 60px;
-      height: 60px;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+    /* Two-layer decorative waves */
+    .decorative-waves {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 160px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23ffffff' fill-opacity='0.12' d='M0,160L48,181.3C96,203,192,245,288,261.3C384,277,480,267,576,234.7C672,203,768,149,864,138.7C960,128,1056,160,1152,165.3C1248,171,1344,149,1392,138.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+      background-repeat: repeat-x;
+      background-size: cover;
+      pointer-events: none;
+      filter: drop-shadow(0 -6px 12px rgba(0,0,0,0.4));
+      z-index: 1;
     }
 
-    .reel.spinning svg {
-      filter: blur(4px);
-      animation: spinBlur 0.1s infinite;
+    .decorative-waves--back {
+      bottom: -8px;
+      opacity: 0.45;
+      animation: wave-move-back 22s linear infinite;
     }
 
-    .reel.win {
-      background: #2d2d44;
-      box-shadow: inset 0 0 20px var(--gold);
-      animation: flashWin 0.5s infinite;
+    .decorative-waves--front {
+      bottom: -2px;
+      opacity: 0.9;
+      animation: wave-move-front 14s linear infinite;
     }
 
-    /* Controls */
-    .controls-row {
+    @keyframes wave-move-back {
+      0%   { background-position-x: 0px;   transform: translateY(0px); }
+      50%  { background-position-x: -360px; transform: translateY(-6px); }
+      100% { background-position-x: -720px; transform: translateY(0px); }
+    }
+
+    @keyframes wave-move-front {
+      0%   { background-position-x: 0px;   transform: translateY(0px); }
+      50%  { background-position-x: -960px; transform: translateY(-10px); }
+      100% { background-position-x: -1440px; transform: translateY(0px); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .decorative-waves { animation: none; }
+    }
+
+    /* Ensure all app content is above the waves */
+    .top, .middle, .bottom {
+      position: relative;
+      z-index: 2;
+    }
+
+    /* === Unified Top HUD === */
+    .top {
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.78) 0%, rgba(15, 23, 42, 0.9) 100%);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--line-light);
+      border-left: 1px solid var(--line-light);
+      border-bottom: 1px solid rgba(15, 23, 42, 0.9);
+      border-right: 1px solid rgba(15, 23, 42, 0.9);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft), inset 0 1px 1px rgba(255, 255, 255, 0.12);
       display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 8px;
+      padding: 8px 14px 10px;
+    }
+
+    .top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
       gap: 10px;
     }
 
-    .btn {
-      background: var(--bg-panel-lighter);
-      border: 1px solid var(--glass-border);
-      color: var(--accent);
-      padding: 14px;
-      border-radius: 10px;
+    .top-row--secondary {
+      font-size: 13px;
+    }
+
+    .brand {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      letter-spacing: 0.2px;
       font-weight: 700;
-      font-family: inherit;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.7);
+    }
+
+    .brand .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 50% 30%, #a0f0ff 0%, var(--primary) 100%);
+      border: 1px solid var(--line-dark);
+      box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.8);
+    }
+
+    .top-primary-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .stats {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      color: var(--subtle-text);
+      font-size: 13px;
+    }
+
+    .pill {
+      background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(148, 163, 184, 0.08) 100%);
+      backdrop-filter: blur(6px);
+      border-top: 1px solid var(--line-light);
+      border-left: 1px solid var(--line-light);
+      border-bottom: 1px solid var(--line-dark);
+      border-right: 1px solid var(--line-dark);
+      border-radius: 999px;
+      padding: 6px 10px;
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      box-shadow: inset 0 1px 1px rgba(255,255,255,0.25), 0 2px 4px rgba(15,23,42,0.55);
+      color: var(--subtle-text);
+    }
+
+    .pill strong { color: #e5f3ff; }
+
+    .top-controls {
+      display: flex;
+      gap: 6px;
+    }
+
+    .mini-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .top-row--stats {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .chip {
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(6px);
+      border-top: 1px solid var(--line-light);
+      border-left: 1px solid var(--line-light);
+      border-bottom: 1px solid var(--line-dark);
+      border-right: 1px solid var(--line-dark);
+      border-radius: 999px;
+      padding: 5px 11px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      box-shadow: var(--shadow-soft), inset 0 1px 1px rgba(255,255,255,0.25);
+      color: var(--subtle-text);
+      white-space: nowrap;
+    }
+
+    .chip strong { color: #e5f3ff; }
+
+    .chip .chip-icon {
+      font-size: 15px;
+      line-height: 1;
+    }
+
+    .mini-cta {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 11px;
+      border-radius: 999px;
+      border: 1px solid var(--line-dark);
+      background: linear-gradient(180deg, rgba(248, 250, 252, 0.9), rgba(148, 163, 184, 0.2));
+      color: #0f172a;
+      box-shadow: 0 4px 6px rgba(15, 23, 42, 0.5);
       cursor: pointer;
-      transition: all 0.1s;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 80ms ease, box-shadow 120ms ease;
+    }
+
+    .mini-cta:active {
+      transform: translateY(1px);
+      box-shadow: 0 2px 3px rgba(15, 23, 42, 0.6);
+    }
+
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+      font-size: 15px;
+      border-radius: 50%;
+      border: 2px solid var(--line-dark);
+      display: grid;
+      place-items: center;
+      background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(15,23,42,0.4) 100%);
+      backdrop-filter: blur(6px);
+      box-shadow: inset 0 1px 2px rgba(255,255,255,0.15), var(--shadow-soft);
+      cursor: pointer;
+      transition: all 100ms ease;
+      color: #e5f3ff;
+    }
+
+    .icon-btn:active {
+      transform: translateY(1px) scale(0.96);
+      background: linear-gradient(180deg, rgba(148,163,184,0.2) 0%, rgba(15,23,42,0.8) 100%);
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.4), 0 2px 3px rgba(15,23,42,0.7);
+    }
+
+    /* MIDDLE: big area with centered 3x3 board */
+    .middle {
+      display: grid;
+      place-items: center;
+    }
+
+    /* Stack around the board — top strip removed, only board + bottom strip */
+    .board-stack {
+      width: 100%;
+      display: grid;
+      grid-template-rows: 1fr var(--strip-height);
+      gap: 10px;
+    }
+
+    .strip {
+      background: linear-gradient(180deg, rgba(15,23,42,0.9) 0%, rgba(15,23,42,0.98) 100%);
+      backdrop-filter: blur(8px);
+      border-top: 1px solid var(--line-light);
+      border-left: 1px solid var(--line-light);
+      border-bottom: 1px solid var(--line-dark);
+      border-right: 1px solid var(--line-dark);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-soft), inset 0 1px 1px rgba(255,255,255,0.18);
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+    }
+
+    .mini-bar {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .board {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .cell {
+      position: relative;
+      background: none;
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+      padding: 0;
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 80ms ease, box-shadow 240ms ease;
+      overflow: visible;
+      perspective: 1000px;
+    }
+
+    .cell:active {
+      transform: scale(0.985);
+      box-shadow: var(--shadow-elev);
+    }
+
+    .cell__flipper {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.4s ease;
+      transform-style: preserve-3d;
+    }
+
+    .cell.is-flipped .cell__flipper {
+      transform: rotateY(180deg);
+    }
+
+    .cell__face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      overflow: hidden;
+      border-radius: var(--radius-md);
+      border-top: 1px solid var(--line-light);
+      border-left: 1px solid var(--line-light);
+      border-bottom: 1px solid var(--line-dark);
+      border-right: 1px solid var(--line-dark);
+      box-shadow: var(--shadow-elev), inset 0 2px 2px rgba(255, 255, 255, 0.35);
+      background: linear-gradient(180deg, rgba(15,23,42,0.85) 0%, rgba(15,23,42,0.98) 100%);
+      backdrop-filter: blur(6px);
+    }
+
+    .cell__face--front {
+      display: grid;
+      place-items: center;
+    }
+
+    .cell__face--back {
+      transform: rotateY(180deg);
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      line-height: 1.2;
+      padding: 10px;
+      color: var(--subtle-text);
+      text-align: left;
+    }
+
+    .info-content {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .info-emoji {
+      font-size: 24px;
+      line-height: 1;
+      align-self: flex-start;
+    }
+
+    .info-divider {
+      width: 100%;
+      height: 1px;
+      background: var(--line);
+      margin: 6px 0;
+    }
+
+    .info-text {
+      font-size: 11px;
+      line-height: 1.4;
+      margin: 0;
+      font-weight: 500;
+    }
+
+    /* Emoji appearance (soft animation) */
+    .emoji {
+      font-size: clamp(32px, 10vmin, 64px);
+      opacity: 0;
+      transform: translateY(8px) scale(0.9);
+      animation: emoji-in 420ms cubic-bezier(.2,.8,.2,1) forwards;
+      will-change: transform, opacity;
+      text-shadow: 0 4px 8px rgba(0,0,0,0.7);
+    }
+
+    @keyframes emoji-in {
+      0%   { opacity: 0; transform: translateY(8px) scale(0.9); }
+      60%  { opacity: 1; transform: translateY(-2px) scale(1.04); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .emoji { animation: none; opacity: 1; transform: none; }
+    }
+
+    /* BOTTOM: compact bar with a large round primary button */
+    .bottom {
+      display: grid;
+      place-items: center;
+      padding: 0;
+    }
+
+    .action-wrap { display: grid; place-items: center; }
+
+    .action-btn {
+      --size: clamp(96px, 14vmin, 132px);
+      width: var(--size);
+      height: var(--size);
+      border-radius: 50%;
+      border: 2px solid var(--line-dark);
+      background:
+        radial-gradient(circle at 50% 35%, #38bdf8 0%, var(--primary) 70%),
+        var(--primary);
+      box-shadow:
+        inset 0 2px 4px rgba(255, 255, 255, 0.6),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.35),
+        var(--shadow-elev);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      color: #0b1220;
+      cursor: pointer;
       position: relative;
       overflow: hidden;
-      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      transition: all 100ms ease;
     }
 
-    .btn:active:not(:disabled) {
-      transform: translateY(2px);
-      filter: brightness(0.9);
+    .action-btn:active {
+      transform: translateY(2px) scale(0.98);
+      background:
+        radial-gradient(circle at 50% 40%, #0ea5e9 0%, var(--primary-press) 70%),
+        var(--primary-press);
+      box-shadow:
+        inset 0 2px 4px rgba(0, 0, 0, 0.3),
+        0 4px 8px rgba(0, 0, 0, 0.7);
     }
 
-    .btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      filter: grayscale(1);
+    .action-btn:focus-visible {
+      outline: 4px solid rgba(248, 250, 252, 0.9);
+      outline-offset: 3px;
     }
 
-    .btn-spin {
-      flex: 2;
-      background: linear-gradient(135deg, var(--primary-dim), var(--primary));
-      border: none;
-      box-shadow: 0 4px 0 #8a0e35, 0 8px 15px rgba(255, 42, 109, 0.3);
-      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-      font-size: 1.2rem;
-    }
-    
-    .btn-spin:active:not(:disabled) {
-      box-shadow: 0 0 0 #8a0e35, inset 0 2px 5px rgba(0,0,0,0.3);
-      transform: translateY(4px);
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      transform: scale(0);
+      background: rgba(248, 250, 252, 0.65);
+      animation: ripple 550ms ease-out;
+      pointer-events: none;
     }
 
-    .btn-buy {
-      flex: 1;
-      background: linear-gradient(135deg, var(--secondary-dim), var(--secondary));
-      border: none;
-      box-shadow: 0 4px 0 #026f78, 0 8px 15px rgba(5, 217, 232, 0.3);
-      color: #000;
-    }
-    
-    .btn-buy:active:not(:disabled) {
-      box-shadow: 0 0 0 #026f78, inset 0 2px 5px rgba(0,0,0,0.3);
-      transform: translateY(4px);
+    @keyframes ripple {
+      to { transform: scale(3.2); opacity: 0; }
     }
 
-    .btn-sm {
-      flex: 1;
-      font-size: 0.8rem;
-      height: 44px;
-    }
-
-    .cost-badge {
-      font-size: 0.7rem;
-      opacity: 0.9;
-      margin-top: 4px;
-      background: rgba(0,0,0,0.4);
-      padding: 2px 6px;
-      border-radius: 4px;
-    }
-
-    /* Modals */
-    .modal-backdrop {
+    /* Orientation guard */
+    .rotate-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.8);
-      backdrop-filter: blur(5px);
       display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 100;
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-
-    .modal-backdrop.open {
-      display: flex;
-      opacity: 1;
-    }
-
-    .modal {
-      background: var(--bg-panel);
-      border: 1px solid var(--glass-border);
-      border-radius: 16px;
-      padding: 24px;
-      width: min(360px, 90%);
-      text-align: center;
-      box-shadow: var(--shadow-lg), 0 0 0 1px var(--accent);
-      transform: scale(0.9);
-      transition: transform 0.3s var(--ease-elastic);
-    }
-    .modal-backdrop.open .modal { transform: scale(1); }
-
-    .modal h2 { margin-top: 0; color: var(--gold); }
-    .modal p { color: #ccc; line-height: 1.5; margin-bottom: 20px; }
-
-    .modal-actions {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    /* Floating Text System */
-    .floater {
-      position: absolute;
-      pointer-events: none;
-      font-weight: 800;
-      font-size: 1.2rem;
-      animation: floatUp 1s forwards;
+      background: rgba(15,23,42,0.96);
+      backdrop-filter: blur(6px);
       z-index: 50;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      color: #e5f3ff;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 32px;
     }
 
-    @keyframes floatUp {
-      0% { transform: translateY(0) scale(1); opacity: 1; }
-      100% { transform: translateY(-40px) scale(1.2); opacity: 0; }
+    @media (orientation: landscape) and (max-width: 768px) {
+      .rotate-overlay { display: flex; }
     }
 
-    @keyframes pulseRed { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-    @keyframes flashWin { 0%, 100% { background: #1a1a24; } 50% { background: #3d3d24; } }
-    @keyframes spinBlur { 0% { transform: translateY(0); } 100% { transform: translateY(10px); } }
+    .icon { width: 16px; height: 16px; }
 
-    /* Helper Utilities */
-    .hidden { display: none !important; }
-    
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    button {
+      border: 0;
+      background: none;
+    }
   </style>
 </head>
 <body>
+  <div class="app" role="application" aria-label="Mobile Portrait Game UI">
+    <!-- Two-layer decorative waves -->
+    <div class="decorative-waves decorative-waves--back" aria-hidden="true"></div>
+    <div class="decorative-waves decorative-waves--front" aria-hidden="true"></div>
 
-  <div class="game-container">
-    
-    <!-- Header -->
-    <div class="header">
-      <div class="timer-box" id="timer">20:00</div>
-      <div style="display:flex; gap:8px;">
-        <button class="btn btn-sm" id="btnSwap" title="Swap Money & Credit">Swap (2)</button>
-        <button class="btn btn-sm" id="btnPause">Pause</button>
-        <button class="btn btn-sm" id="btnUpgrade">Upgrades</button>
-      </div>
-    </div>
-
-    <!-- Main Stats -->
-    <div class="stats-grid">
-      <div class="stat-card money" id="cardMoney">
-        <div class="stat-label">Money (Goal: $1M)</div>
-        <div class="stat-value text-money" id="dispMoney">$0</div>
-        <div class="stat-rate"><span class="text-rate1">Rate 1</span>: +<span id="dispRate1" class="text-rate1">0.0</span>/s</div>
-      </div>
-      <div class="stat-card credit" id="cardCredit">
-        <div class="stat-label">Credit</div>
-        <div class="stat-value text-credit" id="dispCredit">0</div>
-        <div class="stat-rate"><span class="text-rate2">Rate 2</span>: +<span id="dispRate2" class="text-rate2">0.0</span>/s</div>
-      </div>
-    </div>
-
-    <!-- Slider -->
-    <div class="slider-section">
-      <div class="slider-label-row">
-        <span class="text-rate1">Grow Rate 1</span>
-        <span class="text-rate2">Grow Rate 2</span>
-      </div>
-      <div class="range-wrap">
-        <!-- 6 steps: 0 to 5 -->
-        <input type="range" id="slider" min="0" max="5" step="1" value="0">
-        <div class="ticks">
-          <div class="tick"></div><div class="tick"></div><div class="tick"></div>
-          <div class="tick"></div><div class="tick"></div><div class="tick"></div>
+    <!-- Unified HUD: brand + stats + quick actions -->
+    <header class="top" aria-label="Game header and stats">
+      <div class="top-row top-row--primary">
+        <div class="brand" aria-label="Brand">
+          <span class="dot" aria-hidden="true"></span>
+          <span>Nova Grid</span>
+        </div>
+        <div class="top-primary-group" aria-label="Primary stats and controls">
+          <div class="stats" aria-label="Core stats">
+            <span class="pill" title="Level">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M5 12h14M5 12a7 7 0 0 1 7-7v0a7 7 0 0 1 7 7M5 12a7 7 0 0 0 7 7v0a7 7 0 0 0 7-7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              <strong>Lv 3</strong>
+            </span>
+            <span class="pill" title="Score">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M12 6v12m6-6H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              1,250
+            </span>
+          </div>
+          <div class="top-controls" aria-label="Game controls">
+            <button class="icon-btn" aria-label="Pause game">
+              <span aria-hidden="true">⏸</span>
+            </button>
+            <button class="icon-btn" aria-label="Open menu">
+              <span aria-hidden="true">☰</span>
+            </button>
+          </div>
         </div>
       </div>
-      <div class="slider-label-row" style="margin-top:8px; opacity: 0.8; font-size: 0.75rem;">
-        <span id="growLeft" class="text-rate1">+12 Rate/m</span>
-        <span id="growRight" class="text-rate2">+2 Rate/m</span>
-      </div>
-    </div>
 
-    <!-- Slot Machine -->
-    <div class="slot-machine">
-      <div style="display:flex; justify-content:space-between; margin-bottom:8px; align-items:center;">
-        <span style="font-weight:700; text-transform:uppercase; font-size:0.8rem; color:#666;">Machine Mk.I</span>
-        <span id="diamondStatus" style="font-size:0.8rem; color:var(--accent); display:none;">💎 7 Spins Left</span>
+      <div class="top-row top-row--secondary" aria-label="Session resources">
+        <div class="mini-group top-row--stats">
+          <span class="chip" aria-label="Lives">
+            <span class="chip-icon">❤️</span><strong id="lives">3</strong>
+          </span>
+          <span class="chip" aria-label="Gems">
+            <span class="chip-icon">💎</span><strong id="gems">12</strong>
+          </span>
+          <span class="chip" aria-label="Energy">
+            <span class="chip-icon">⚡</span><strong id="energy">84%</strong>
+          </span>
+          <span class="chip" aria-label="Timer">
+            <span class="chip-icon">⏱</span><strong id="timer">01:23</strong>
+          </span>
+        </div>
+        <div class="mini-group top-row--actions" aria-label="Quick actions">
+          <button class="mini-cta" aria-label="View quests">Quests</button>
+          <button class="mini-cta" aria-label="Open boosts menu">Boosts</button>
+        </div>
       </div>
+    </header>
 
-      <div class="reels-container">
-        <div class="reel" id="reel1"></div>
-        <div class="reel" id="reel2"></div>
-        <div class="reel" id="reel3"></div>
+    <!-- Middle: centered 3x3 grid board -->
+    <main class="middle" aria-label="Game board">
+      <div class="board-stack" aria-label="Board stack">
+        <!-- Only the board + bottom strip now -->
+        <section class="board" aria-label="3 by 3 grid">
+          <button class="cell" aria-label="Cell 1" aria-pressed="false">
+            <div class="cell__flipper">
+              <div class="cell__face cell__face--front"></div>
+              <div class="cell__face cell__face--back"></div>
+            </div>
+          </button>
+          <button class="cell" aria-label="Cell 2" aria-pressed="false">
+            <div class="cell__flipper">
+              <div class="cell__face cell__face--front"></div>
+              <div class="cell__face cell__face--back"></div>
+            </div>
+          </button>
+          <button class="cell" aria-label="Cell 3" aria-pressed="false">
+            <div class="cell__flipper">
+              <div class="cell__face cell__face--front"></div>
+              <div class="cell__face cell__face--back"></div>
+            </div>
+          </button>
+          <button class="cell" aria-label="Cell 4" aria-pressed="false">
+            <div class="cell__flipper">
+              <div class="cell__face cell__face--front"></div>
+              <div class="cell__face cell__face--back"></div>
+            </div>
+          </button>
+          <button class="cell" aria-label="Cell 5" aria-pressed="false">
+            <div class="cell__flipper">
+              <div class="cell__face cell__face--front"></div>
+              <div class="cell__face cell__face--back"></div>
+            </div>
+          </button>
+          <button class="cell" aria-label="Cell 6" aria-pressed="false">
+            <div class="cell__flipper">
+              <div class="cell__face cell__face--front"></div>
+              <div class="cell__face cell__face--back"></div>
+            </div>
+          </button>
+          <button class="cell" aria-label="Cell 7" aria-pressed="false">
+            <div class="cell__flipper">
+              <div class="cell__face cell__face--front"></div>
+              <div class="cell__face cell__face--back"></div>
+            </div>
+          </button>
+          <button class="cell" aria-label="Cell 8" aria-pressed="false">
+            <div class="cell__flipper">
+              <div class="cell__face cell__face--front"></div>
+              <div class="cell__face cell__face--back"></div>
+            </div>
+          </button>
+          <button class="cell" aria-label="Cell 9" aria-pressed="false">
+            <div class="cell__flipper">
+              <div class="cell__face cell__face--front"></div>
+              <div class="cell__face cell__face--back"></div>
+            </div>
+          </button>
+        </section>
+
+        <div class="strip strip--bottom" aria-label="Bottom strip">
+          <div class="mini-bar">
+            <div class="mini-group" aria-label="Bottom counters">
+              <span class="chip" aria-label="Streak">
+                <span class="chip-icon">🔥</span><strong id="streak">x2</strong>
+              </span>
+              <span class="chip" aria-label="Stars">
+                <span class="chip-icon">⭐️</span><strong id="stars">5</strong>
+              </span>
+            </div>
+            <div class="mini-group" aria-label="Bottom icons">
+              <button class="icon-btn" aria-label="Help">
+                <span aria-hidden="true">❔</span>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
+    </main>
 
-      <div class="controls-row">
-        <button class="btn btn-spin" id="btnSpin">
-          SPIN
-          <span class="cost-badge" id="spinCostBadge">$50 + <span class="text-rate1">1.0 Rate</span></span>
+    <!-- Bottom: centered prominent round button -->
+    <footer class="bottom" aria-label="Actions">
+      <div class="action-wrap">
+        <button class="action-btn" id="primaryAction" aria-label="Primary action">
+          <span class="sr-only">Primary Action</span>
         </button>
-        <button class="btn btn-buy" id="btnBuyDiamond">
-          BUY 7x 💎
-          <span class="cost-badge">500 C + <span class="text-rate2">1.0 R2</span></span>
-        </button>
       </div>
-    </div>
-
+    </footer>
   </div>
 
-  <!-- Modals -->
-  <div class="modal-backdrop" id="modalWin">
-    <div class="modal">
-      <h2>WINNER!</h2>
-      <p id="winDesc">You matched 3 symbols!</p>
-      <div class="modal-actions">
-        <button class="btn" id="btnWinMoney" style="background:var(--primary); color:white; border:none;">Take Money</button>
-        <button class="btn" id="btnWinReduce">Reduce Spin Cost (-0.1 <span class="text-rate1">Rate 1</span>)</button>
-      </div>
+  <!-- Landscape orientation overlay -->
+  <div class="rotate-overlay" aria-live="polite">
+    <div>
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M7 7h10a2 2 0 0 1 2 2v6m-2 2H7a2 2 0 0 1-2-2V9m10-5 4 4m0-4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <div style="margin-top:12px; font-weight:600">Please rotate your device</div>
+      <div style="margin-top:6px; color:#cbd5f5">This game is best in portrait.</div>
     </div>
   </div>
 
-  <div class="modal-backdrop" id="modalUpgrades">
-    <div class="modal">
-      <h2>Store</h2>
-      <p>Spend resources to improve your chances.</p>
-      <div class="modal-actions">
-        <button class="btn" id="btnUpgReset">
-          <div>Stabilizer Module</div>
-          <div class="cost-badge">$5,000 + <span class="text-rate1">10 R1</span></div>
-          <div style="font-size:0.7rem; opacity:0.7; margin-top:4px;">Resets spin cost to $50 on wins</div>
-        </button>
-        <button class="btn" id="btnUpgDouble">
-          <div>Overclock Kit</div>
-          <div class="cost-badge">15,000 C + <span class="text-rate2">15 R2</span></div>
-          <div style="font-size:0.7rem; opacity:0.7; margin-top:4px;">Doubles all growth slider values</div>
-        </button>
-        <button class="btn" id="btnCloseUpgrades" style="margin-top:12px;">Close</button>
-      </div>
-    </div>
-  </div>
+  <script>
+    const cells = Array.from(document.querySelectorAll('.cell'));
+    cells.forEach((c) => {
+      c.addEventListener('click', () => {
+        c.classList.toggle('is-flipped');
+        c.setAttribute('aria-pressed', c.classList.contains('is-flipped') ? 'true' : 'false');
+      });
+    });
 
-  <div class="modal-backdrop" id="modalGameOver">
-    <div class="modal">
-      <h2 id="goTitle">GAME OVER</h2>
-      <p id="goDesc">Time ran out.</p>
-      <button class="btn" onclick="location.reload()">Try Again</button>
-    </div>
-  </div>
+    const actionBtn = document.getElementById('primaryAction');
 
-  <canvas id="fxCanvas" style="position:fixed; inset:0; pointer-events:none; z-index:200;"></canvas>
+    const EMOJIS = ['🐙', '🦑', '🦐', '🦞', '🦀', '🐡', '🐠', '🐟', '🐬', '🐳', '🐋', '🦈', '🐚', '🪸'];
 
-<script>
-/**
- * SlotClimb: Refactored & Polished
- * Focus: Pro-level feedback, cleaner code, better UI/UX
- */
-
-// --- ICONS (Redrawn for absolute clarity) ---
-const ICONS = {
-  // Clear Red Cherry with Green Stem
-  cherry: `<svg viewBox="0 0 100 100">
-    <path d="M50 20 Q 50 5 30 20 L 35 60" stroke="#4caf50" stroke-width="6" fill="none"/>
-    <path d="M50 20 Q 50 5 70 20 L 65 60" stroke="#4caf50" stroke-width="6" fill="none"/>
-    <circle cx="35" cy="70" r="18" fill="#ff2a6d" />
-    <circle cx="65" cy="70" r="18" fill="#ff2a6d" />
-    <circle cx="40" cy="65" r="4" fill="rgba(255,255,255,0.5)" />
-    <circle cx="70" cy="65" r="4" fill="rgba(255,255,255,0.5)" />
-  </svg>`,
-  
-  // Bright Yellow Lemon (Football shape)
-  lemon: `<svg viewBox="0 0 100 100">
-    <ellipse cx="50" cy="50" rx="40" ry="25" fill="#f0e130" transform="rotate(-45, 50, 50)" />
-    <path d="M 25 25 L 30 30" stroke="#c9bc20" stroke-width="3" />
-    <path d="M 75 75 L 70 70" stroke="#c9bc20" stroke-width="3" />
-  </svg>`,
-  
-  // Purple Grape Cluster
-  grape: `<svg viewBox="0 0 100 100">
-    <circle cx="50" cy="80" r="10" fill="#a45ee5" />
-    <circle cx="40" cy="65" r="10" fill="#a45ee5" />
-    <circle cx="60" cy="65" r="10" fill="#a45ee5" />
-    <circle cx="30" cy="50" r="10" fill="#a45ee5" />
-    <circle cx="50" cy="50" r="10" fill="#a45ee5" />
-    <circle cx="70" cy="50" r="10" fill="#a45ee5" />
-    <path d="M50 45 L 50 20" stroke="#4caf50" stroke-width="4" />
-    <path d="M50 20 L 60 25" stroke="#4caf50" stroke-width="4" />
-  </svg>`,
-  
-  // Bold Red Seven
-  seven: `<svg viewBox="0 0 100 100">
-    <text x="50" y="85" font-family="Arial, sans-serif" font-weight="900" font-size="80" fill="#ff2a6d" text-anchor="middle" stroke="#fff" stroke-width="2">7</text>
-  </svg>`,
-  
-  // Cyan Geometric Diamond
-  diamond: `<svg viewBox="0 0 100 100">
-    <path d="M20 40 L 50 85 L 80 40 L 70 20 L 30 20 Z" fill="#05d9e8" stroke="#fff" stroke-width="2" />
-    <path d="M20 40 L 80 40" stroke="#0396a1" stroke-width="2" />
-    <path d="M30 20 L 50 85 L 70 20" stroke="#0396a1" stroke-width="2" fill="none" />
-  </svg>`
-};
-
-// Map logical symbols to visual SVG
-const SYMBOLS_MAP = {
-  '🍒': ICONS.cherry,
-  '🍋': ICONS.lemon,
-  '🍇': ICONS.grape,
-  '7': ICONS.seven,
-  '💎': ICONS.diamond
-};
-
-// --- CONFIG ---
-const CFG = {
-  maxRate: 199,
-  startMoney: 0,
-  startCredit: 0,
-  startRate1: 3.0,
-  startRate2: 3.0,
-  duration: 20 * 60,
-  goal: 1000000,
-  baseSpinCost: 50,
-  winReward: 600,
-  growStepsL: [12, 10, 8, 6, 4, 2],
-  growStepsR: [2, 4, 6, 8, 10, 12],
-  baseSymbols: ['🍒', '🍋', '🍇', '7']
-};
-
-class Game {
-  constructor() {
-    // State
-    this.money = CFG.startMoney;
-    this.credit = CFG.startCredit;
-    this.rate1 = CFG.startRate1;
-    this.rate2 = CFG.startRate2;
-    this.time = CFG.duration;
-    this.isRunning = true;
-    
-    this.spinCostMoney = CFG.baseSpinCost;
-    this.spinCostRate = 1.0;
-    this.winAmount = CFG.winReward;
-    
-    this.buyDiamondCost = 500;
-    this.buyDiamondRateCost = 1.0;
-    this.diamondSpins = 0;
-    
-    this.swapsLeft = 2;
-    this.hasResetUpgrade = false;
-    this.hasDoubleUpgrade = false;
-    
-    this.sliderIdx = 0; // 0-5
-
-    // Display State (for smooth interpolation)
-    this.dispMoney = 0;
-    this.dispCredit = 0;
-    
-    this.initDOM();
-    this.initEvents();
-    this.renderLoop = this.renderLoop.bind(this);
-    requestAnimationFrame(this.renderLoop);
-    
-    this.lastTick = performance.now();
-  }
-
-  initDOM() {
-    this.dom = {
-      timer: document.getElementById('timer'),
-      money: document.getElementById('dispMoney'),
-      credit: document.getElementById('dispCredit'),
-      rate1: document.getElementById('dispRate1'),
-      rate2: document.getElementById('dispRate2'),
-      slider: document.getElementById('slider'),
-      growLeft: document.getElementById('growLeft'),
-      growRight: document.getElementById('growRight'),
-      spinBtn: document.getElementById('btnSpin'),
-      spinBadge: document.getElementById('spinCostBadge'),
-      buyBtn: document.getElementById('btnBuyDiamond'),
-      reels: [document.getElementById('reel1'), document.getElementById('reel2'), document.getElementById('reel3')],
-      modals: {
-        win: document.getElementById('modalWin'),
-        upg: document.getElementById('modalUpgrades'),
-        go: document.getElementById('modalGameOver')
-      },
-      btnSwap: document.getElementById('btnSwap'),
-      btnPause: document.getElementById('btnPause'),
-      diamondStatus: document.getElementById('diamondStatus'),
-      cardMoney: document.getElementById('cardMoney')
+    const EMOJI_INFO = {
+      '🐙': 'An octopus with eight arms. Very smart!',
+      '🦑': 'A squid, related to the octopus. Swims fast!',
+      '🦐': 'A small shrimp. A tasty seafood.',
+      '🦞': 'A lobster with big claws. A delicacy!',
+      '🦀': 'A crab that walks sideways. Watch out for its pinchers!',
+      '🐡': 'A pufferfish. Puffs up when scared!',
+      '🐠': 'A colorful tropical fish. Lives in coral reefs.',
+      '🐟': 'A fish, just swimming along. Glub glub!',
+      '🐬': 'A playful dolphin. Known for its high jumps.',
+      '🐳': 'A spouting whale. A gentle giant of the sea.',
+      '🐋': 'A blue whale, the largest animal on Earth!',
+      '🦈': 'A shark, the apex predator of the ocean.',
+      '🐚': 'A beautiful seashell. Listen for the ocean!',
+      '🪸': 'A piece of coral. Home to many fish!'
     };
 
-    // Set initial reels
-    this.dom.reels.forEach(r => r.innerHTML = ICONS.seven);
-  }
+    function populateEmojisSoft() {
+      cells.forEach((c, i) => {
+        const frontFace = c.querySelector('.cell__face--front');
+        const backFace = c.querySelector('.cell__face--back');
 
-  initEvents() {
-    // Slider Logic
-    this.dom.slider.addEventListener('input', (e) => {
-      this.sliderIdx = parseInt(e.target.value);
-      this.updateGrowthLabels();
-    });
+        c.classList.remove('is-flipped');
+        c.setAttribute('aria-pressed', 'false');
 
-    // Buttons
-    this.dom.spinBtn.addEventListener('click', () => this.spin());
-    this.dom.btnPause.addEventListener('click', () => this.togglePause());
-    
-    this.dom.btnSwap.addEventListener('click', () => {
-      if(this.swapsLeft > 0) {
-        // Swap logic
-        [this.money, this.credit] = [this.credit, this.money];
-        this.swapsLeft--;
-        this.dom.btnSwap.textContent = `Swap (${this.swapsLeft})`;
-        if(this.swapsLeft === 0) this.dom.btnSwap.disabled = true;
-        this.spawnFloater(this.dom.btnSwap, "Swapped!", "#fff");
-      }
-    });
+        if (frontFace) frontFace.innerHTML = '';
+        if (backFace) backFace.innerHTML = '';
 
-    this.dom.buyBtn.addEventListener('click', () => {
-      if (this.credit >= this.buyDiamondCost && this.rate2 >= this.buyDiamondRateCost) {
-        this.credit -= this.buyDiamondCost;
-        this.rate2 = Math.max(0, this.rate2 - this.buyDiamondRateCost);
-        this.diamondSpins = 7;
-        
-        // Escalate cost
-        this.buyDiamondCost += 500;
-        this.buyDiamondRateCost += 1.0;
-        
-        this.updateBuyButton();
-        this.spawnFloater(this.dom.buyBtn, "Diamonds Active!", "#05d9e8");
-      } else {
-        this.shake(this.dom.buyBtn);
-      }
-    });
+        const emoji = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+        const description = EMOJI_INFO[emoji] || 'No info available.';
 
-    // Upgrades Modal
-    document.getElementById('btnUpgrade').addEventListener('click', () => {
-      this.dom.modals.upg.classList.add('open');
-    });
-    document.getElementById('btnCloseUpgrades').addEventListener('click', () => {
-      this.dom.modals.upg.classList.remove('open');
-    });
+        const span = document.createElement('span');
+        span.className = 'emoji';
+        span.textContent = emoji;
+        span.style.animationDelay = (i * 30) + 'ms';
+        if (frontFace) frontFace.appendChild(span);
 
-    // Upgrade: Reset
-    document.getElementById('btnUpgReset').addEventListener('click', (e) => {
-      if(!this.hasResetUpgrade && this.money >= 5000 && this.rate1 >= 10) {
-        this.money -= 5000;
-        this.rate1 -= 10;
-        this.hasResetUpgrade = true;
-        e.currentTarget.disabled = true;
-        e.currentTarget.innerHTML = "PURCHASED";
-      } else if (!this.hasResetUpgrade) {
-        this.shake(e.currentTarget);
-      }
-    });
+        const infoContainer = document.createElement('div');
+        infoContainer.className = 'info-content';
+        infoContainer.innerHTML = `
+          <span class="info-emoji" aria-hidden="true">${emoji}</span>
+          <div class="info-divider"></div>
+          <p class="info-text">${description}</p>
+        `;
+        if (backFace) backFace.appendChild(infoContainer);
 
-    // Upgrade: Double
-    document.getElementById('btnUpgDouble').addEventListener('click', (e) => {
-      if(!this.hasDoubleUpgrade && this.credit >= 15000 && this.rate2 >= 15) {
-        this.credit -= 15000;
-        this.rate2 -= 15;
-        this.hasDoubleUpgrade = true;
-        
-        // Apply double
-        CFG.growStepsL = CFG.growStepsL.map(x => x * 2);
-        CFG.growStepsR = CFG.growStepsR.map(x => x * 2);
-        this.updateGrowthLabels();
-        
-        e.currentTarget.disabled = true;
-        e.currentTarget.innerHTML = "PURCHASED";
-      } else if (!this.hasDoubleUpgrade) {
-        this.shake(e.currentTarget);
-      }
-    });
-
-    // Win Modal Choices
-    document.getElementById('btnWinMoney').addEventListener('click', () => {
-      this.money += this.pendingWinAmount;
-      this.spawnFloater(this.dom.cardMoney, `+$${this.pendingWinAmount}`, "var(--gold)");
-      this.closeWinModal();
-    });
-
-    document.getElementById('btnWinReduce').addEventListener('click', () => {
-      this.spinCostRate = Math.max(0, (this.spinCostRate - 0.1).toFixed(1));
-      this.updateSpinButton();
-      this.closeWinModal();
-    });
-  }
-
-  updateGrowthLabels() {
-    const l = CFG.growStepsL[this.sliderIdx];
-    const r = CFG.growStepsR[this.sliderIdx];
-    this.dom.growLeft.textContent = `+${l} Rate/m`;
-    this.dom.growRight.textContent = `+${r} Rate/m`;
-  }
-
-  updateSpinButton() {
-    // We manually construct the HTML to keep the color span
-    this.dom.spinBadge.innerHTML = `$${this.spinCostMoney} + <span class="text-rate1">${parseFloat(this.spinCostRate).toFixed(1)} Rate</span>`;
-  }
-
-  updateBuyButton() {
-    if(this.diamondSpins > 0) {
-      this.dom.buyBtn.innerHTML = `DIAMONDS ACTIVE<span class="cost-badge">${this.diamondSpins} left</span>`;
-      this.dom.buyBtn.disabled = true;
-      this.dom.diamondStatus.style.display = "block";
-      this.dom.diamondStatus.textContent = `💎 ${this.diamondSpins} Spins Left`;
-    } else {
-      this.dom.buyBtn.innerHTML = `BUY 7x 💎<span class="cost-badge">${this.buyDiamondCost} C + <span class="text-rate2">${this.buyDiamondRateCost.toFixed(1)} R2</span></span>`;
-      this.dom.buyBtn.disabled = false;
-      this.dom.diamondStatus.style.display = "none";
-    }
-  }
-
-  togglePause() {
-    this.isRunning = !this.isRunning;
-    this.dom.btnPause.textContent = this.isRunning ? "Pause" : "Resume";
-    if(this.isRunning) {
-      this.lastTick = performance.now();
-    }
-  }
-
-  // --- GAME LOOP ---
-  renderLoop(now) {
-    const dt = (now - this.lastTick) / 1000;
-    this.lastTick = now;
-
-    if (this.isRunning && dt > 0 && dt < 1) { // dt < 1 prevents huge jumps after tab switch
-      // Timer
-      this.time -= dt;
-      if (this.time <= 0) this.gameOver(false);
-      if (this.time <= 60) this.dom.timer.classList.add('warning');
-
-      // Growth
-      const growthL = CFG.growStepsL[this.sliderIdx] / 60;
-      const growthR = CFG.growStepsR[this.sliderIdx] / 60;
-      
-      this.rate1 = Math.min(CFG.maxRate, this.rate1 + growthL * dt);
-      this.rate2 = Math.min(CFG.maxRate, this.rate2 + growthR * dt);
-
-      // Production
-      this.money += this.rate1 * dt;
-      this.credit += this.rate2 * dt;
-
-      // Win Condition
-      if (this.money >= CFG.goal) this.gameOver(true);
-    }
-
-    // Visual Interpolation (Lerp)
-    this.dispMoney += (this.money - this.dispMoney) * 0.2;
-    this.dispCredit += (this.credit - this.dispCredit) * 0.2;
-
-    // DOM Updates
-    this.dom.timer.textContent = this.formatTime(Math.max(0, this.time));
-    this.dom.money.textContent = '$' + Math.floor(this.dispMoney).toLocaleString();
-    this.dom.credit.textContent = Math.floor(this.dispCredit).toLocaleString();
-    this.dom.rate1.textContent = this.rate1.toFixed(2);
-    this.dom.rate2.textContent = this.rate2.toFixed(2);
-
-    requestAnimationFrame(this.renderLoop);
-  }
-
-  // --- LOGIC ---
-  async spin() {
-    if (!this.isRunning) return;
-    
-    // Cost Check
-    if (this.money < this.spinCostMoney || this.rate1 < this.spinCostRate) {
-      this.shake(this.dom.spinBtn);
-      return;
-    }
-
-    // Pay
-    this.money -= this.spinCostMoney;
-    this.rate1 = Math.max(0, this.rate1 - this.spinCostRate);
-    
-    // Escalate Money Cost
-    this.spinCostMoney += 10;
-    this.updateSpinButton();
-    this.spawnFloater(this.dom.spinBtn, `-$${this.spinCostMoney - 10}`, "#ff2a6d");
-
-    // Disable UI
-    this.dom.spinBtn.disabled = true;
-
-    // Determine Result
-    const reels = [this.getRandomSymbol(), this.getRandomSymbol(), this.getRandomSymbol()];
-    
-    // Visual Spin
-    await this.animateReels(reels);
-
-    // Check Win
-    const diamondCount = reels.filter(s => s === '💎').length;
-    if(diamondCount > 0) {
-      this.diamondSpins = Math.max(0, this.diamondSpins - diamondCount);
-      this.updateBuyButton();
-    }
-
-    const unique = new Set(reels.filter(s => s !== '💎')); // Diamonds match anything
-    let isWin = false;
-    
-    if (unique.size <= 1) {
-       // WIN!
-       isWin = true;
-       if (this.hasResetUpgrade && diamondCount === 0) {
-         this.spinCostMoney = 50;
-         this.updateSpinButton();
-       }
-       
-       this.dom.reels.forEach(r => r.classList.add('win'));
-       
-       // Bonus?
-       const isBonus = Math.random() < 0.5;
-       this.pendingWinAmount = isBonus ? this.winAmount * 2 : this.winAmount;
-       this.winAmount += 600; // Increase next jackpot
-       
-       setTimeout(() => {
-         this.openWinModal(this.pendingWinAmount, isBonus);
-         this.dom.reels.forEach(r => r.classList.remove('win'));
-       }, 1000);
-    }
-
-    this.dom.spinBtn.disabled = false;
-  }
-
-  getRandomSymbol() {
-    if (this.diamondSpins > 0) {
-      // High chance of diamond? Or just allowed to appear?
-      // Let's make it simple: 10% chance of diamond if active
-      if (Math.random() < 0.15) return '💎';
-    }
-    const i = Math.floor(Math.random() * CFG.baseSymbols.length);
-    return CFG.baseSymbols[i];
-  }
-
-  animateReels(finalSymbols) {
-    return new Promise(resolve => {
-      this.dom.reels.forEach((el, i) => {
-        el.classList.add('spinning');
-        // Staggered stops
-        setTimeout(() => {
-          el.classList.remove('spinning');
-          el.innerHTML = SYMBOLS_MAP[finalSymbols[i]];
-          // Bounce anim
-          el.animate([
-            { transform: 'translateY(-20px)' },
-            { transform: 'translateY(0)' }
-          ], { duration: 200, easing: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)' });
-          
-          if (i === 2) resolve();
-        }, 500 + (i * 300));
-      });
-    });
-  }
-
-  openWinModal(amount, isBonus) {
-    const desc = document.getElementById('winDesc');
-    desc.innerHTML = isBonus 
-      ? `<span style="color:var(--gold)">CRITICAL HIT! (2x)</span><br>Choose reward.`
-      : `Payout: $${amount.toLocaleString()}`;
-    
-    document.getElementById('btnWinMoney').textContent = `Take $${amount.toLocaleString()}`;
-    
-    if (this.spinCostRate <= 0.5) {
-       document.getElementById('btnWinReduce').style.display = 'none';
-    } else {
-       document.getElementById('btnWinReduce').style.display = 'block';
-    }
-
-    this.dom.modals.win.classList.add('open');
-  }
-
-  closeWinModal() {
-    this.dom.modals.win.classList.remove('open');
-  }
-
-  gameOver(win) {
-    this.isRunning = false;
-    const title = document.getElementById('goTitle');
-    const desc = document.getElementById('goDesc');
-    
-    if (win) {
-      title.textContent = "MISSION COMPLETE";
-      title.style.color = "var(--gold)";
-      desc.textContent = "You secured the $1,000,000.";
-      this.startConfetti();
-    } else {
-      title.textContent = "FAILURE";
-      title.style.color = "var(--primary)";
-      desc.textContent = `You ended with $${Math.floor(this.money).toLocaleString()}.`;
-    }
-    this.dom.modals.go.classList.add('open');
-  }
-
-  // --- UTILS ---
-  formatTime(sec) {
-    const m = Math.floor(sec / 60);
-    const s = Math.floor(sec % 60);
-    return `${m}:${s.toString().padStart(2, '0')}`;
-  }
-
-  shake(el) {
-    el.animate([
-      { transform: 'translateX(0)' },
-      { transform: 'translateX(-5px)' },
-      { transform: 'translateX(5px)' },
-      { transform: 'translateX(0)' }
-    ], { duration: 200 });
-  }
-
-  spawnFloater(targetEl, text, color) {
-    const rect = targetEl.getBoundingClientRect();
-    const el = document.createElement('div');
-    el.classList.add('floater');
-    el.textContent = text;
-    el.style.left = (rect.left + rect.width/2 - 20) + 'px';
-    el.style.top = rect.top + 'px';
-    el.style.color = color;
-    document.body.appendChild(el);
-    setTimeout(() => el.remove(), 1000);
-  }
-  
-  startConfetti() {
-    const canvas = document.getElementById('fxCanvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    
-    const particles = [];
-    for(let i=0; i<100; i++) {
-      particles.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height - canvas.height,
-        vx: Math.random() * 4 - 2,
-        vy: Math.random() * 5 + 2,
-        c: `hsl(${Math.random()*360}, 100%, 50%)`
+        c.setAttribute('aria-label', `Cell ${i + 1}, ${emoji}, tap to see info`);
       });
     }
 
-    const loop = () => {
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      particles.forEach(p => {
-        p.x += p.vx;
-        p.y += p.vy;
-        ctx.fillStyle = p.c;
-        ctx.fillRect(p.x, p.y, 6, 6);
-        if(p.y > canvas.height) p.y = -10;
-      });
-      requestAnimationFrame(loop);
-    };
-    loop();
-  }
-}
+    actionBtn.addEventListener('click', (e) => {
+      const rect = actionBtn.getBoundingClientRect();
+      const size = Math.max(rect.width, rect.height);
+      const ripple = document.createElement('span');
+      ripple.className = 'ripple';
+      ripple.style.width = ripple.style.height = size + 'px';
+      const x = e.clientX - rect.left - size / 2;
+      const y = e.clientY - rect.top - size / 2;
+      ripple.style.left = x + 'px';
+      ripple.style.top = y + 'px';
+      actionBtn.appendChild(ripple);
+      ripple.addEventListener('animationend', () => ripple.remove());
 
-// Boot
-window.onload = () => new Game();
+      populateEmojisSoft();
+    });
 
-</script>
+    window.addEventListener('load', () => {
+      populateEmojisSoft();
+    });
+  </script>
 </body>
 </html>
