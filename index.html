@@ -1,950 +1,460 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-  <title>Nova Grid — Frutiger Aero Ocean (Optimized)</title>
-  <meta name="theme-color" content="#021427" />
-  <style>
-    :root {
-      --bg-light: #163b73;
-      --bg-mid: #041936;
-      --bg-dark: #010814;
-
-      --surface-glass: rgba(10, 25, 56, 0.86);
-      --surface-edge: rgba(148, 190, 255, 0.65);
-      --surface-glow: #78f0ff;
-
-      --line: #6fb2ff;
-      --line-dark: #1e3b70;
-      --line-light: rgba(214, 231, 255, 0.9);
-
-      --text: #e9f5ff;
-      --subtle-text: #a8c9ff;
-
-      --primary: #21b2ff;
-      --primary-soft: #a8f3ff;
-      --primary-press: #0b7ed1;
-
-      --shadow-elev: 0 10px 22px rgba(0, 9, 24, 0.75);
-      --shadow-soft: 0 6px 16px rgba(0, 16, 40, 0.65);
-
-      --radius-lg: 20px;
-      --radius-md: 16px;
-      --strip-height: clamp(40px, 5.5vmin, 56px);
-    }
-
-    * { box-sizing: border-box; }
-    html, body { height: 100%; }
-
-    html, body {
-      margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: var(--text);
-      background:
-        radial-gradient(circle at 15% 10%, rgba(120, 243, 255, 0.45), transparent 50%),
-        radial-gradient(circle at 80% 90%, rgba(56, 189, 248, 0.5), transparent 50%),
-        linear-gradient(165deg, var(--bg-light) 0%, var(--bg-mid) 40%, var(--bg-dark) 100%);
-      background-size: 140% 180%;
-      animation: bg-drift 22s ease-in-out infinite alternate;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      min-height: 100dvh;
-      display: flex;
-      justify-content: center;
-      align-items: stretch;
-      padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
-      overflow: hidden;
-    }
-
-    @keyframes bg-drift {
-      0% { background-position: 0% 0%; }
-      50% { background-position: 18% 30%; }
-      100% { background-position: 0% 70%; }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      html, body { animation: none; }
-    }
-
-    .blob-layer {
-      position: fixed;
-      inset: -15%;
-      pointer-events: none;
-      z-index: 0;
-      background:
-        radial-gradient(circle at 10% 80%, rgba(59, 130, 246, 0.35), transparent 55%),
-        radial-gradient(circle at 85% 20%, rgba(6, 182, 212, 0.4), transparent 55%);
-      mix-blend-mode: screen;
-      opacity: 0.6;
-    }
-
-    .app {
-      position: relative;
-      z-index: 1;
-      width: 100%;
-      max-width: 480px;
-      height: 100dvh;
-      padding: 8px 10px 12px;
-      display: grid;
-      grid-template-rows: auto 1fr auto;
-      gap: 8px;
-      overflow: hidden;
-    }
-
-    .decorative-waves {
-      position: fixed;
-      left: 0;
-      right: 0;
-      height: 150px;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' x2='0' y1='0' y2='1'%3E%3Cstop offset='0' stop-color='%23e0f7ff' stop-opacity='0.9'/%3E%3Cstop offset='0.6' stop-color='%23a5e4ff' stop-opacity='0.45'/%3E%3Cstop offset='1' stop-color='%23152445' stop-opacity='0.0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23g)' d='M0,224L30,229.3C60,235,120,245,180,250.7C240,256,300,256,360,240C420,224,480,192,540,181.3C600,171,660,181,720,197.3C780,213,840,235,900,245.3C960,256,1020,256,1080,250.7C1140,245,1200,235,1260,234.7C1320,235,1380,245,1410,250.7L1440,256L1440,320L1410,320C1380,320,1320,320,1260,320C1200,320,1140,320,1080,320C1020,320,960,320,900,320C840,320,780,320,720,320C660,320,600,320,540,320C480,320,420,320,360,320C300,320,240,320,180,320C120,320,60,320,30,320L0,320Z'/%3E%3C/svg%3E");
-      background-repeat: repeat-x;
-      background-size: cover;
-      pointer-events: none;
-      z-index: 1;
-    }
-
-    .decorative-waves--back {
-      bottom: -20px;
-      opacity: 0.45;
-      animation: wave-move-back 24s linear infinite;
-    }
-
-    .decorative-waves--front {
-      bottom: -8px;
-      opacity: 0.96;
-      animation: wave-move-front 14s linear infinite;
-    }
-
-    @keyframes wave-move-back {
-      0%   { background-position-x: 0;   transform: translateY(0); }
-      50%  { background-position-x: -420px; transform: translateY(-6px); }
-      100% { background-position-x: -840px; transform: translateY(0); }
-    }
-
-    @keyframes wave-move-front {
-      0%   { background-position-x: 0;   transform: translateY(0); }
-      50%  { background-position-x: -980px; transform: translateY(-10px); }
-      100% { background-position-x: -1960px; transform: translateY(0); }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .decorative-waves { animation: none; }
-    }
-
-    .bubble-field {
-      position: fixed;
-      inset: 45% 0 0;
-      pointer-events: none;
-      z-index: 1;
-      overflow: hidden;
-      opacity: 0.85;
-    }
-
-    .bubble {
-      position: absolute;
-      bottom: -40px;
-      width: 6px;
-      height: 6px;
-      border-radius: 999px;
-      background: radial-gradient(circle at 30% 30%, #ffffff 0%, #dbeafe 45%, rgba(148, 163, 184, 0) 70%);
-      box-shadow: 0 0 10px rgba(191, 219, 254, 0.65);
-      animation: bubble-rise 9s linear infinite;
-      opacity: 0.7;
-    }
-
-    .bubble:nth-child(1) { left: 18%; animation-duration: 10s; animation-delay: -3s; transform: scale(1.1); }
-    .bubble:nth-child(2) { left: 38%; animation-duration: 12s; animation-delay: -5s; transform: scale(0.9); }
-    .bubble:nth-child(3) { left: 56%; animation-duration: 11s; animation-delay: -2s; transform: scale(1.3); }
-    .bubble:nth-child(4) { left: 74%; animation-duration: 13s; animation-delay: -7s; transform: scale(1.0); }
-
-    @keyframes bubble-rise {
-      0% { transform: translateY(0) scale(1); opacity: 0; }
-      10% { opacity: 0.7; }
-      80% { opacity: 0.8; }
-      100% { transform: translateY(-240px) scale(1.1); opacity: 0; }
-    }
-
-    .top, .middle, .bottom { position: relative; z-index: 2; }
-
-    /* Top HUD */
-    .top {
-      background: radial-gradient(circle at 0% 0%, rgba(248, 250, 252, 0.32), transparent 50%),
-                  radial-gradient(circle at 100% 0%, rgba(191, 219, 254, 0.25), transparent 55%),
-                  var(--surface-glass);
-      backdrop-filter: blur(12px) saturate(135%);
-      border-radius: var(--radius-lg);
-      border: 1px solid rgba(148, 163, 184, 0.78);
-      box-shadow:
-        0 0 0 1px rgba(15, 23, 42, 0.7),
-        var(--shadow-soft),
-        inset 0 1px 0 rgba(255, 255, 255, 0.55);
-      padding: 9px 11px 11px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      overflow: hidden;
-    }
-
-    .top-inner {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .top-inner::before {
-      content: "";
-      position: absolute;
-      top: -40%;
-      left: -8%;
-      right: -8%;
-      height: 55%;
-      background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.08) 60%, transparent 70%);
-      opacity: 0.32;
-      pointer-events: none;
-    }
-
-    .top-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-      gap: 8px;
-    }
-
-    .brand-block {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      min-width: 0;
-    }
-
-    .brand-line {
-      display: flex;
-      align-items: center;
-      gap: 9px;
-      font-weight: 700;
-      letter-spacing: 0.22px;
-      text-shadow:
-        0 0 6px rgba(15, 23, 42, 0.85),
-        0 1px 3px rgba(0, 0, 0, 0.85);
-      font-size: 14px;
-    }
-
-    .brand-dot {
-      width: 11px;
-      height: 11px;
-      border-radius: 999px;
-      background:
-        radial-gradient(circle at 30% 20%, #ffffff 0%, #e0f9ff 35%, transparent 70%),
-        radial-gradient(circle at 70% 80%, #0ea5e9 0%, #0369a1 70%);
-      border: 1px solid #7dd3fc;
-      box-shadow:
-        0 0 0 3px rgba(15, 23, 42, 0.9),
-        0 0 14px rgba(34, 211, 238, 0.9);
-      flex-shrink: 0;
-    }
-
-    .brand-sub {
-      font-size: 11px;
-      color: var(--subtle-text);
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .top-main-stats {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-wrap: nowrap;
-    }
-
-    .pill {
-      position: relative;
-      background:
-        radial-gradient(circle at 0% 0%, rgba(255, 255, 255, 0.7), transparent 60%),
-        linear-gradient(180deg, rgba(148, 163, 184, 0.2) 0%, rgba(15, 23, 42, 0.95) 100%);
-      border-radius: 999px;
-      border: 1px solid rgba(191, 219, 254, 0.9);
-      padding: 5px 10px;
-      display: inline-flex;
-      gap: 6px;
-      align-items: center;
-      font-size: 12px;
-      color: var(--subtle-text);
-      box-shadow:
-        0 0 0 1px rgba(15, 23, 42, 0.9),
-        0 4px 8px rgba(15, 23, 42, 0.85),
-        inset 0 1px 0 rgba(255, 255, 255, 0.78);
-      overflow: hidden;
-    }
-
-    .pill::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.7) 0%, transparent 50%);
-      opacity: 0.3;
-      pointer-events: none;
-    }
-
-    .pill strong { color: #f9fdff; text-shadow: 0 0 6px rgba(96, 165, 250, 0.9); }
-
-    .pill .icon {
-      width: 15px;
-      height: 15px;
-      flex-shrink: 0;
-      filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.8));
-    }
-
-    .top-row-secondary {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-      gap: 8px;
-    }
-
-    .chip-row {
-      display: flex;
-      gap: 5px;
-      flex-wrap: nowrap;
-      overflow: hidden;
-    }
-
-    .chip {
-      position: relative;
-      background:
-        radial-gradient(circle at 0% 0%, rgba(255, 255, 255, 0.6), transparent 55%),
-        linear-gradient(180deg, rgba(15, 23, 42, 0.5) 0%, rgba(15, 23, 42, 0.96) 100%);
-      border-radius: 999px;
-      border: 1px solid rgba(191, 219, 254, 0.8);
-      padding: 4px 8px;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 11px;
-      color: var(--subtle-text);
-      box-shadow:
-        0 0 0 1px rgba(15, 23, 42, 0.9),
-        0 3px 6px rgba(15, 23, 42, 0.85),
-        inset 0 1px 0 rgba(255, 255, 255, 0.7);
-      white-space: nowrap;
-      overflow: hidden;
-    }
-
-    .chip::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 12%;
-      right: 12%;
-      height: 55%;
-      background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.9) 0%, transparent 60%);
-      opacity: 0.35;
-      pointer-events: none;
-    }
-
-    .chip strong { color: #f9fdff; text-shadow: 0 0 4px rgba(96, 165, 250, 0.9); }
-    .chip-icon { font-size: 13px; text-shadow: 0 0 6px rgba(129, 230, 217, 0.9); }
-
-    .mini-cta-row {
-      display: flex;
-      gap: 6px;
-      flex-shrink: 0;
-    }
-
-    .mini-cta {
-      position: relative;
-      font-size: 11px;
-      font-weight: 600;
-      padding: 5px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(191, 219, 254, 0.95);
-      background:
-        linear-gradient(145deg, #f9fdff 0%, #dbeafe 40%, #7dd3fc 100%);
-      color: #082f49;
-      box-shadow:
-        0 0 0 1px rgba(15, 23, 42, 0.7),
-        0 6px 10px rgba(15, 23, 42, 0.9),
-        inset 0 1px 0 rgba(255, 255, 255, 0.95);
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-      transition: transform 80ms ease, box-shadow 120ms ease, filter 120ms ease;
-      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
-    }
-
-    .mini-cta::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, transparent 55%);
-      opacity: 0.65;
-      pointer-events: none;
-    }
-
-    .mini-cta:active {
-      transform: translateY(1px) scale(0.98);
-      box-shadow:
-        0 2px 4px rgba(15, 23, 42, 0.9),
-        inset 0 1px 2px rgba(148, 163, 184, 0.85);
-      filter: brightness(0.96);
-    }
-
-    .middle {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 4px 0;
-    }
-
-    .board-stack {
-      width: 100%;
-      max-width: 430px;
-      display: grid;
-      grid-template-rows: minmax(0, 1fr) auto;
-      gap: 8px;
-    }
-
-    .board {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      max-height: min(60vh, 420px);
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      grid-template-rows: repeat(3, 1fr);
-      gap: 10px;
-    }
-
-    /* Slim panel now uses the old tile gradient */
-    .strip {
-      position: relative;
-      background:
-        radial-gradient(circle at 0% 0%, rgba(255, 255, 255, 0.85), transparent 60%),
-        radial-gradient(circle at 100% 100%, rgba(56, 189, 248, 0.7), transparent 60%),
-        linear-gradient(180deg, rgba(15, 23, 42, 0.7) 0%, rgba(15, 23, 42, 0.98) 100%);
-      border-radius: var(--radius-md);
-      border: 1px solid rgba(191, 219, 254, 0.85);
-      box-shadow:
-        0 0 0 1px rgba(15, 23, 42, 0.9),
-        var(--shadow-soft),
-        inset 0 1px 0 rgba(255, 255, 255, 0.85);
-      padding: 6px 8px;
-      display: flex;
-      align-items: center;
-      overflow: hidden;
-    }
-
-    .strip::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 8%;
-      right: 8%;
-      height: 55%;
-      background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.9) 0%, transparent 65%);
-      opacity: 0.3;
-      pointer-events: none;
-    }
-
-    .mini-bar {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 6px;
-      font-size: 11px;
-      position: relative;
-    }
-
-    .mini-bar .mini-group {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      flex-wrap: nowrap;
-      overflow: hidden;
-    }
-
-    .mini-bar .chip { padding-inline: 7px; }
-
-    .depth-label {
-      font-size: 11px;
-      color: var(--subtle-text);
-      text-shadow: 0 0 4px rgba(15, 23, 42, 0.9);
-    }
-
-    .depth-label strong { color: var(--primary-soft); }
-
-    .cell {
-      position: relative;
-      border: none;
-      padding: 0;
-      background: none;
-      border-radius: 0;
-      font-size: 20px;
-      font-weight: 600;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-      overflow: visible;
-      perspective: 1200px;
-    }
-
-    .cell__flipper {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      transition: transform 0.45s cubic-bezier(0.19, 1, 0.22, 1);
-      transform-style: preserve-3d;
-    }
-
-    .cell.is-flipped .cell__flipper {
-      transform: rotateY(180deg);
-    }
-
-    /* New more aquatic tile background */
-    .cell__face {
-      position: absolute;
-      inset: 0;
-      border-radius: var(--radius-md);
-      backface-visibility: hidden;
-      overflow: hidden;
-      border: 1px solid rgba(191, 219, 254, 0.95);
-      box-shadow:
-        0 0 0 1px rgba(15, 23, 42, 0.85),
-        0 8px 16px rgba(15, 23, 42, 0.9),
-        inset 0 1px 0 rgba(248, 250, 252, 0.9);
-      background:
-        radial-gradient(circle at 50% 0%, rgba(224, 252, 255, 0.9) 0%, transparent 55%),
-        radial-gradient(circle at 50% 115%, rgba(56, 189, 248, 0.85) 0%, transparent 60%),
-        radial-gradient(circle at 0% 50%, rgba(45, 212, 191, 0.6) 0%, transparent 55%),
-        linear-gradient(180deg, #022c3a 0%, #020617 100%);
-    }
-
-    .cell__face::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(circle at 20% 0%, rgba(255, 255, 255, 0.85) 0%, transparent 60%),
-        radial-gradient(circle at 80% 120%, rgba(56, 189, 248, 0.7) 0%, transparent 65%);
-      opacity: 0.4;
-      pointer-events: none;
-    }
-
-    .cell__face--front { display: grid; place-items: center; }
-
-    .cell__face--back {
-      transform: rotateY(180deg);
-      display: flex;
-      flex-direction: column;
-      padding: 10px;
-      color: var(--subtle-text);
-      text-align: left;
-    }
-
-    .info-content {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-    }
-
-    .info-emoji {
-      font-size: 26px;
-      line-height: 1;
-      text-shadow: 0 0 10px rgba(56, 189, 248, 0.9);
-    }
-
-    .info-divider {
-      width: 100%;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--line), transparent);
-      margin: 6px 0;
-    }
-
-    .info-text {
-      font-size: 11px;
-      line-height: 1.4;
-      margin: 0;
-      font-weight: 500;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
-    }
-
-    .emoji {
-      font-size: clamp(42px, 14vmin, 80px);
-      opacity: 0;
-      transform: translateY(12px) scale(0.9);
-      animation: emoji-in 420ms cubic-bezier(.2,.8,.2,1) forwards;
-      text-shadow:
-        0 0 14px rgba(56, 189, 248, 0.9),
-        0 6px 10px rgba(0, 0, 0, 0.9);
-    }
-
-    @keyframes emoji-in {
-      0%   { opacity: 0; transform: translateY(12px) scale(0.9); }
-      60%  { opacity: 1; transform: translateY(-3px) scale(1.05); }
-      100% { opacity: 1; transform: translateY(0) scale(1); }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .emoji { animation: none; opacity: 1; transform: none; }
-    }
-
-    .bottom {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding-top: 4px;
-    }
-
-    .action-wrap {
-      width: 100%;
-      display: flex;
-      justify-content: center;
-    }
-
-    .action-btn {
-      --size: min(112px, 23vmin);
-      width: var(--size);
-      height: var(--size);
-      border-radius: 999px;
-      position: relative;
-      border: 1px solid rgba(226, 232, 240, 0.9);
-      background:
-        radial-gradient(circle at 30% 10%, #e0faff 0%, #7dd3fc 30%, transparent 60%),
-        radial-gradient(circle at 70% 110%, #0ea5e9 0%, #0369a1 55%, #020617 90%);
-      box-shadow:
-        0 0 0 1px rgba(15, 23, 42, 0.9),
-        0 14px 22px rgba(15, 23, 42, 0.95),
-        0 0 24px rgba(34, 211, 238, 0.85),
-        inset 0 2px 0 rgba(255, 255, 255, 0.9);
-      display: grid;
-      place-items: center;
-      font-weight: 700;
-      letter-spacing: 0.4px;
-      color: #02131f;
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-      transition: transform 110ms ease, box-shadow 150ms ease, filter 150ms ease;
-      overflow: hidden;
-      text-transform: uppercase;
-      font-size: 11px;
-    }
-
-    .action-btn::before {
-      content: "";
-      position: absolute;
-      inset: 9% 16% 55%;
-      border-radius: 999px;
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0.4) 55%, transparent 100%);
-      opacity: 0.9;
-      pointer-events: none;
-    }
-
-    .action-btn::after {
-      content: "PLAY";
-      position: relative;
-      z-index: 1;
-      text-shadow:
-        0 1px 0 rgba(255, 255, 255, 0.95),
-        0 0 10px rgba(56, 189, 248, 0.9);
-    }
-
-    .action-btn:active {
-      transform: translateY(2px) scale(0.97);
-      box-shadow:
-        0 6px 14px rgba(15, 23, 42, 0.95),
-        0 0 18px rgba(34, 211, 238, 0.8),
-        inset 0 2px 4px rgba(30, 64, 175, 0.9);
-      filter: brightness(0.96);
-    }
-
-    .action-btn:focus-visible {
-      outline: 3px solid rgba(191, 219, 254, 0.95);
-      outline-offset: 3px;
-    }
-
-    .ripple {
-      position: absolute;
-      border-radius: 50%;
-      transform: scale(0);
-      background: radial-gradient(circle, rgba(248, 250, 252, 0.9) 0%, transparent 70%);
-      animation: ripple 650ms ease-out;
-      pointer-events: none;
-      mix-blend-mode: screen;
-    }
-
-    @keyframes ripple {
-      to { transform: scale(3.2); opacity: 0; }
-    }
-
-    .rotate-overlay {
-      position: fixed;
-      inset: 0;
-      display: none;
-      background: rgba(15,23,42,0.96);
-      backdrop-filter: blur(8px);
-      z-index: 50;
-      color: #e5f3ff;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 32px;
-    }
-
-    @media (orientation: landscape) and (max-width: 768px) {
-      .rotate-overlay { display: flex; }
-    }
-
-    .icon { width: 16px; height: 16px; }
-
-    .sr-only {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border: 0;
-    }
-
-    button { border: 0; background: none; }
-  </style>
-</head>
-<body>
-  <div class="blob-layer" aria-hidden="true"></div>
-  <div class="decorative-waves decorative-waves--back" aria-hidden="true"></div>
-  <div class="decorative-waves decorative-waves--front" aria-hidden="true"></div>
-  <div class="bubble-field" aria-hidden="true">
-    <div class="bubble"></div>
-    <div class="bubble"></div>
-    <div class="bubble"></div>
-    <div class="bubble"></div>
+import React, { useState, useEffect, useMemo } from 'react';
+import { Heart, Zap, Shield, Sparkles, Sword, Backpack, Skull, RefreshCw, ChevronRight, Trophy } from 'lucide-react';
+
+// --- DATA & CONFIG ---
+
+const STATS = {
+  GRIT: { icon: '💪', color: 'text-orange-400', label: 'Grit', desc: 'Raw physical power' },
+  VIBE: { icon: '✨', color: 'text-purple-400', label: 'Vibe', desc: 'Magical potential & synergy' },
+  SPICE: { icon: '🌶️', color: 'text-red-500', label: 'Spice', desc: 'Crit chance & explosions' },
+  LUCK: { icon: '🍀', color: 'text-green-400', label: 'Luck', desc: 'Dodge & loot quality' },
+};
+
+const ITEM_TYPES = {
+  WEAPON: 'weapon',
+  OFFHAND: 'offhand',
+  HEAD: 'head',
+  ACC: 'accessory',
+};
+
+const ITEMS = [
+  { id: 'sword1', name: 'Rusty Pin', emoji: '📍', type: ITEM_TYPES.WEAPON, stats: { GRIT: 2 }, tags: ['metal'] },
+  { id: 'sword2', name: 'Baguette', emoji: '🥖', type: ITEM_TYPES.WEAPON, stats: { GRIT: 3, VIBE: 1 }, tags: ['food'] },
+  { id: 'shield1', name: 'Trash Lid', emoji: '🗑️', type: ITEM_TYPES.OFFHAND, stats: { GRIT: 1, LUCK: 2 }, tags: ['metal', 'urban'] },
+  { id: 'hat1', name: 'Cool Shades', emoji: '🕶️', type: ITEM_TYPES.HEAD, stats: { VIBE: 5 }, tags: ['cool'] },
+  { id: 'acc1', name: 'Lucky Die', emoji: '🎲', type: ITEM_TYPES.ACC, stats: { LUCK: 5, SPICE: 2 }, tags: ['game'] },
+  { id: 'food1', name: 'Spicy Taco', emoji: '🌮', type: ITEM_TYPES.ACC, stats: { SPICE: 4, GRIT: 1 }, tags: ['food', 'spicy'] },
+  { id: 'tech1', name: 'Old Phone', emoji: '📱', type: ITEM_TYPES.OFFHAND, stats: { VIBE: 3, LUCK: -1 }, tags: ['tech'] },
+  { id: 'rare1', name: 'Ghost Chili', emoji: '👻', type: ITEM_TYPES.WEAPON, stats: { SPICE: 8, VIBE: 3 }, tags: ['spicy', 'spooky'] },
+];
+
+const ENEMIES = [
+  { name: 'Angry Blob', emoji: '💧', hp: 20, dmg: 3 },
+  { name: 'Rat King', emoji: '🐀', hp: 35, dmg: 5 },
+  { name: 'Wifi Demon', emoji: '📶', hp: 50, dmg: 8 },
+  { name: 'Bureaucrat', emoji: '👔', hp: 80, dmg: 12 },
+];
+
+// --- COMPONENTS ---
+
+const StatBadge = ({ statKey, value }) => (
+  <div className={`flex items-center gap-1 px-2 py-1 rounded-full bg-slate-800 border border-slate-700 ${STATS[statKey].color} text-xs font-bold`}>
+    <span>{STATS[statKey].icon}</span>
+    <span>{value}</span>
   </div>
+);
 
-  <div class="app" role="application" aria-label="Nova Grid ocean game UI">
-    <header class="top" aria-label="Game header and stats">
-      <div class="top-inner">
-        <div class="top-row">
-          <div class="brand-block">
-            <div class="brand-line">
-              <span class="brand-dot" aria-hidden="true"></span>
-              <span>Nova Grid</span>
-            </div>
-            <div class="brand-sub">Dive run · Ocean Tier II</div>
-          </div>
-          <div class="top-main-stats" aria-label="Core stats">
-            <span class="pill" title="Level">
-              <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <path d="M5 12h14M5 12a7 7 0 0 1 7-7v0a7 7 0 0 1 7 7M5 12a7 7 0 0 0 7 7v0a7 7 0 0 0 7-7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-              </svg>
-              <strong>Lv 3</strong>
-            </span>
-            <span class="pill" title="Score">
-              <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <path d="M12 6v12m6-6H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-              </svg>
-              1,250
-            </span>
-          </div>
-        </div>
-        <div class="top-row top-row-secondary" aria-label="Session resources">
-          <div class="chip-row" aria-label="Resource chips">
-            <span class="chip" aria-label="Lives"><span class="chip-icon">❤️</span><strong id="lives">3</strong></span>
-            <span class="chip" aria-label="Gems"><span class="chip-icon">💎</span><strong id="gems">12</strong></span>
-            <span class="chip" aria-label="Energy"><span class="chip-icon">⚡</span><strong id="energy">84%</strong></span>
-            <span class="chip" aria-label="Timer"><span class="chip-icon">⏱</span><strong id="timer">01:23</strong></span>
-          </div>
-          <div class="mini-cta-row" aria-label="Quick actions">
-            <button class="mini-cta" aria-label="View quests">Quests</button>
-            <button class="mini-cta" aria-label="Open boosts menu">Boosts</button>
-          </div>
+const ItemCard = ({ item, isEquipped, onClick, isSelected }) => {
+  if (!item) return <div className="w-full h-16 bg-slate-800/50 rounded-lg border border-slate-700 border-dashed flex items-center justify-center text-slate-600">Empty</div>;
+
+  return (
+    <button 
+      onClick={() => onClick(item)}
+      className={`w-full relative flex items-center gap-3 p-2 rounded-lg border transition-all active:scale-95
+        ${isSelected 
+          ? 'bg-blue-900/30 border-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]' 
+          : 'bg-slate-800 border-slate-700 hover:border-slate-600'}`}
+    >
+      <div className="w-10 h-10 flex items-center justify-center text-2xl bg-slate-900 rounded-md border border-slate-700">
+        {item.emoji}
+      </div>
+      <div className="flex-1 text-left">
+        <div className="text-sm font-bold text-slate-200">{item.name}</div>
+        <div className="flex gap-2 mt-1 flex-wrap">
+          {Object.entries(item.stats).map(([key, val]) => (
+            <span key={key} className={`text-[10px] ${STATS[key].color}`}>{STATS[key].icon} +{val}</span>
+          ))}
         </div>
       </div>
-    </header>
+      {isEquipped && <div className="absolute top-1 right-1 w-2 h-2 bg-green-500 rounded-full shadow-lg shadow-green-500/50"></div>}
+    </button>
+  );
+};
 
-    <main class="middle" aria-label="Game board">
-      <div class="board-stack" aria-label="Board stack">
-        <section class="board" aria-label="3 by 3 grid">
-          <button class="cell" aria-label="Cell 1" aria-pressed="false">
-            <div class="cell__flipper">
-              <div class="cell__face cell__face--front"></div>
-              <div class="cell__face cell__face--back"></div>
-            </div>
-          </button>
-          <button class="cell" aria-label="Cell 2" aria-pressed="false">
-            <div class="cell__flipper">
-              <div class="cell__face cell__face--front"></div>
-              <div class="cell__face cell__face--back"></div>
-            </div>
-          </button>
-          <button class="cell" aria-label="Cell 3" aria-pressed="false">
-            <div class="cell__flipper">
-              <div class="cell__face cell__face--front"></div>
-              <div class="cell__face cell__face--back"></div>
-            </div>
-          </button>
-          <button class="cell" aria-label="Cell 4" aria-pressed="false">
-            <div class="cell__flipper">
-              <div class="cell__face cell__face--front"></div>
-              <div class="cell__face cell__face--back"></div>
-            </div>
-          </button>
-          <button class="cell" aria-label="Cell 5" aria-pressed="false">
-            <div class="cell__flipper">
-              <div class="cell__face cell__face--front"></div>
-              <div class="cell__face cell__face--back"></div>
-            </div>
-          </button>
-          <button class="cell" aria-label="Cell 6" aria-pressed="false">
-            <div class="cell__flipper">
-              <div class="cell__face cell__face--front"></div>
-              <div class="cell__face cell__face--back"></div>
-            </div>
-          </button>
-          <button class="cell" aria-label="Cell 7" aria-pressed="false">
-            <div class="cell__flipper">
-              <div class="cell__face cell__face--front"></div>
-              <div class="cell__face cell__face--back"></div>
-            </div>
-          </button>
-          <button class="cell" aria-label="Cell 8" aria-pressed="false">
-            <div class="cell__flipper">
-              <div class="cell__face cell__face--front"></div>
-              <div class="cell__face cell__face--back"></div>
-            </div>
-          </button>
-          <button class="cell" aria-label="Cell 9" aria-pressed="false">
-            <div class="cell__flipper">
-              <div class="cell__face cell__face--front"></div>
-              <div class="cell__face cell__face--back"></div>
-            </div>
-          </button>
-        </section>
+export default function App() {
+  // --- STATE ---
+  const [view, setView] = useState('HOME'); // HOME, COMBAT, INVENTORY, GAMEOVER
+  const [turn, setTurn] = useState(0);
+  const [logs, setLogs] = useState(['Welcome to the Dungeon. Check your gear!']);
+  
+  // Player State
+  const [hp, setHp] = useState(50);
+  const [maxHp, setMaxHp] = useState(50);
+  const [xp, setXp] = useState(0);
+  const [level, setLevel] = useState(1);
+  
+  // Inventory & Equipment
+  const [inventory, setInventory] = useState([ITEMS[0], ITEMS[2], ITEMS[5]]); // Starting items
+  const [equipped, setEquipped] = useState({
+    [ITEM_TYPES.WEAPON]: null,
+    [ITEM_TYPES.OFFHAND]: null,
+    [ITEM_TYPES.HEAD]: null,
+    [ITEM_TYPES.ACC]: null,
+  });
+  const [selectedItem, setSelectedItem] = useState(null);
 
-        <div class="strip strip--bottom" aria-label="Bottom strip">
-          <div class="mini-bar">
-            <div class="mini-group" aria-label="Bottom counters">
-              <span class="chip" aria-label="Streak">
-                <span class="chip-icon">🔥</span><strong id="streak">x2</strong>
-              </span>
-              <span class="chip" aria-label="Stars">
-                <span class="chip-icon">⭐️</span><strong id="stars">5</strong>
-              </span>
-            </div>
-            <div class="mini-group" aria-label="Depth indicator">
-              <span class="depth-label">Depth <strong>80m</strong></span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </main>
+  // Combat State
+  const [currentEnemy, setCurrentEnemy] = useState(null);
+  const [combatState, setCombatState] = useState('idle'); // idle, player_turn, enemy_turn
 
-    <footer class="bottom" aria-label="Actions">
-      <div class="action-wrap">
-        <button class="action-btn" id="primaryAction" aria-label="Primary action">
-          <span class="sr-only">Primary Action</span>
-        </button>
-      </div>
-    </footer>
-  </div>
-
-  <div class="rotate-overlay" aria-live="polite">
-    <div>
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path d="M7 7h10a2 2 0 0 1 2 2v6m-2 2H7a2 2 0 0 1-2-2V9m10-5 4 4m0-4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-      </svg>
-      <div style="margin-top:12px; font-weight:600">Please rotate your device</div>
-      <div style="margin-top:6px; color:#cbd5f5">This game is best in portrait.</div>
-    </div>
-  </div>
-
-  <script>
-    const cells = Array.from(document.querySelectorAll('.cell'));
-    cells.forEach((c) => {
-      c.addEventListener('click', () => {
-        c.classList.toggle('is-flipped');
-        c.setAttribute('aria-pressed', c.classList.contains('is-flipped') ? 'true' : 'false');
-      });
+  // --- DERIVED STATS & SYNERGIES ---
+  const totalStats = useMemo(() => {
+    const base = { GRIT: 1, VIBE: 1, SPICE: 1, LUCK: 1 };
+    Object.values(equipped).forEach(item => {
+      if (item) {
+        Object.entries(item.stats).forEach(([key, val]) => {
+          base[key] = (base[key] || 0) + val;
+        });
+      }
     });
+    return base;
+  }, [equipped]);
 
-    const actionBtn = document.getElementById('primaryAction');
+  const activeSynergies = useMemo(() => {
+    const synergies = [];
+    const allTags = Object.values(equipped).filter(i => i).flatMap(i => i.tags);
+    
+    if (allTags.filter(t => t === 'food').length >= 2) {
+      synergies.push({ name: 'Combo Meal', desc: 'Heal 2 HP per turn', id: 'food' });
+    }
+    if (allTags.includes('cool') && allTags.includes('tech')) {
+      synergies.push({ name: 'Cyberpunk', desc: '+5 Vibe, Neon Aesthetics', id: 'cyber' });
+    }
+    if (allTags.includes('spicy') && allTags.includes('metal')) {
+      synergies.push({ name: 'Hot Iron', desc: 'Attacks burn enemies', id: 'hotiron' });
+    }
+    
+    // Apply synergy stats
+    if (synergies.find(s => s.id === 'cyber')) totalStats.VIBE += 5;
 
-    const EMOJIS = ['🐙', '🦑', '🦐', '🦞', '🦀', '🐡', '🐠', '🐟', '🐬', '🐳', '🐋', '🦈', '🐚', '🪸'];
+    return synergies;
+  }, [equipped, totalStats]);
 
-    const EMOJI_INFO = {
-      '🐙': 'An octopus with eight arms. Very smart!',
-      '🦑': 'A squid, related to the octopus. Swims fast!',
-      '🦐': 'A small shrimp. A tasty seafood.',
-      '🦞': 'A lobster with big claws. A delicacy!',
-      '🦀': 'A crab that walks sideways. Watch out for its pinchers!',
-      '🐡': 'A pufferfish. Puffs up when scared!',
-      '🐠': 'A colorful tropical fish. Lives in coral reefs.',
-      '🐟': 'A fish, just swimming along. Glub glub!',
-      '🐬': 'A playful dolphin. Known for its high jumps.',
-      '🐳': 'A spouting whale. A gentle giant of the sea.',
-      '🐋': 'A blue whale, the largest animal on Earth!',
-      '🦈': 'A shark, the apex predator of the ocean.',
-      '🐚': 'A beautiful seashell. Listen for the ocean!',
-      '🪸': 'A piece of coral. Home to many fish!'
+  // --- HELPERS ---
+  const addLog = (msg) => setLogs(prev => [msg, ...prev].slice(0, 20));
+
+  const equipItem = (item) => {
+    if (!item) return;
+    const currentEquipped = equipped[item.type];
+    
+    // Swap logic
+    setEquipped(prev => ({ ...prev, [item.type]: item }));
+    
+    // Remove from inventory, add previously equipped back
+    let newInv = inventory.filter(i => i !== item);
+    if (currentEquipped) newInv.push(currentEquipped);
+    
+    setInventory(newInv);
+    setSelectedItem(null);
+    addLog(`Equipped ${item.name} ${item.emoji}`);
+  };
+
+  const unequipItem = (type) => {
+    const item = equipped[type];
+    if (!item) return;
+    
+    setEquipped(prev => ({ ...prev, [type]: null }));
+    setInventory(prev => [...prev, item]);
+    addLog(`Unequipped ${item.name}`);
+  };
+
+  // --- COMBAT LOGIC ---
+  const startCombat = () => {
+    const enemyTemplate = ENEMIES[Math.floor(Math.random() * ENEMIES.length)];
+    // Scale enemy with level
+    const enemy = { 
+      ...enemyTemplate, 
+      hp: enemyTemplate.hp + (level * 10),
+      maxHp: enemyTemplate.hp + (level * 10),
+      dmg: enemyTemplate.dmg + level 
     };
+    setCurrentEnemy(enemy);
+    setView('COMBAT');
+    setCombatState('player_turn');
+    addLog(`Wild ${enemy.name} appeared!`);
+  };
 
-    function populateEmojisSoft() {
-      cells.forEach((c, i) => {
-        const frontFace = c.querySelector('.cell__face--front');
-        const backFace = c.querySelector('.cell__face--back');
+  const handleAttack = () => {
+    if (combatState !== 'player_turn' || !currentEnemy) return;
 
-        c.classList.remove('is-flipped');
-        c.setAttribute('aria-pressed', 'false');
+    // Damage Calc
+    const baseDmg = totalStats.GRIT * 2;
+    const critChance = totalStats.SPICE * 5; // 5% per spice
+    const isCrit = Math.random() * 100 < critChance;
+    const finalDmg = isCrit ? Math.floor(baseDmg * 2) : baseDmg;
 
-        if (frontFace) frontFace.innerHTML = '';
-        if (backFace) backFace.innerHTML = '';
+    // Apply Damage
+    const newEnemyHp = currentEnemy.hp - finalDmg;
+    
+    if (isCrit) addLog(`CRITICAL! You smashed ${currentEnemy.emoji} for ${finalDmg} dmg!`);
+    else addLog(`You hit ${currentEnemy.emoji} for ${finalDmg} dmg.`);
 
-        const emoji = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
-        const description = EMOJI_INFO[emoji] || 'No info available.';
+    if (newEnemyHp <= 0) {
+      // Victory
+      setCurrentEnemy(null);
+      const xpGain = 20 + (totalStats.LUCK * 2);
+      setXp(prev => prev + xpGain);
+      
+      // Loot Drop Chance
+      if (Math.random() < 0.5 + (totalStats.LUCK * 0.05)) {
+        const loot = ITEMS[Math.floor(Math.random() * ITEMS.length)];
+        setInventory(prev => [...prev, { ...loot, id: Date.now() }]); // Unique ID for dupes
+        addLog(`Found loot: ${loot.name} ${loot.emoji}`);
+      }
+      
+      addLog(`Victory! Gained ${xpGain} XP.`);
+      setView('HOME');
+    } else {
+      setCurrentEnemy(prev => ({ ...prev, hp: newEnemyHp }));
+      setCombatState('enemy_turn');
+      setTimeout(enemyAttack, 1000);
+    }
+  };
 
-        const span = document.createElement('span');
-        span.className = 'emoji';
-        span.textContent = emoji;
-        span.style.animationDelay = (i * 35) + 'ms';
-        if (frontFace) frontFace.appendChild(span);
-
-        const infoContainer = document.createElement('div');
-        infoContainer.className = 'info-content';
-        infoContainer.innerHTML = `
-          <span class="info-emoji" aria-hidden="true">${emoji}</span>
-          <div class="info-divider"></div>
-          <p class="info-text">${description}</p>
-        `;
-        if (backFace) backFace.appendChild(infoContainer);
-
-        c.setAttribute('aria-label', `Cell ${i + 1}, ${emoji}, tap to see info`);
-      });
+  const enemyAttack = () => {
+    if (!currentEnemy) return;
+    
+    // Dodge Chance
+    const dodgeChance = totalStats.LUCK * 2; // 2% per luck
+    if (Math.random() * 100 < dodgeChance) {
+      addLog(`You dodged the ${currentEnemy.name}'s attack!`);
+    } else {
+      const dmg = currentEnemy.dmg; // Simplified defense
+      setHp(prev => Math.max(0, prev - dmg));
+      addLog(`${currentEnemy.emoji} hit you for ${dmg} damage.`);
+    }
+    
+    // Synergy: Combo Meal Heal
+    if (activeSynergies.find(s => s.id === 'food')) {
+        setHp(prev => Math.min(maxHp, prev + 2));
     }
 
-    actionBtn.addEventListener('click', (e) => {
-      const rect = actionBtn.getBoundingClientRect();
-      const size = Math.max(rect.width, rect.height);
-      const ripple = document.createElement('span');
-      ripple.className = 'ripple';
-      ripple.style.width = ripple.style.height = size + 'px';
-      const x = e.clientX - rect.left - size / 2;
-      const y = e.clientY - rect.top - size / 2;
-      ripple.style.left = x + 'px';
-      ripple.style.top = y + 'px';
-      actionBtn.appendChild(ripple);
-      ripple.addEventListener('animationend', () => ripple.remove());
+    setCombatState('player_turn');
+  };
 
-      populateEmojisSoft();
-    });
+  useEffect(() => {
+    if (hp <= 0 && view !== 'GAMEOVER') {
+      setView('GAMEOVER');
+      addLog("You have perished...");
+    }
+  }, [hp]);
 
-    window.addEventListener('load', () => {
-      populateEmojisSoft();
-    });
-  </script>
-</body>
-</html>
+  // --- RENDER VIEWS ---
+
+  const Header = () => (
+    <div className="bg-slate-900 p-4 border-b border-slate-800 sticky top-0 z-20 shadow-md">
+      <div className="flex justify-between items-end mb-2">
+        <div>
+            <h1 className="font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 text-xl italic">
+                EMOJI QUEST
+            </h1>
+            <div className="text-xs text-slate-400">Lvl {level} Vagabond</div>
+        </div>
+        <div className="flex gap-3 text-sm font-bold">
+           <div className="flex items-center text-red-400"><Heart size={16} className="mr-1 fill-current"/> {hp}/{maxHp}</div>
+           <div className="flex items-center text-yellow-400"><Trophy size={16} className="mr-1"/> {xp}</div>
+        </div>
+      </div>
+      
+      {/* Mini Stat Bar */}
+      <div className="flex justify-between bg-slate-800 rounded-lg p-2">
+        {Object.keys(STATS).map(key => (
+           <div key={key} className="flex flex-col items-center w-1/4 border-r border-slate-700 last:border-0">
+                <span className="text-lg leading-none mb-1">{STATS[key].icon}</span>
+                <span className={`text-[10px] font-bold ${STATS[key].color}`}>{totalStats[key]}</span>
+           </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const InventoryView = () => (
+    <div className="p-4 pb-24 animate-in fade-in duration-300">
+      <h2 className="text-slate-400 font-bold text-xs uppercase tracking-widest mb-4">Currently Equipped</h2>
+      
+      <div className="grid grid-cols-2 gap-3 mb-6">
+        {[ITEM_TYPES.HEAD, ITEM_TYPES.WEAPON, ITEM_TYPES.OFFHAND, ITEM_TYPES.ACC].map(type => (
+           <div key={type} className="relative">
+               <div className="absolute -top-2 -left-2 z-10 bg-slate-950 text-xs px-2 py-0.5 rounded border border-slate-700 text-slate-500 uppercase font-bold scale-75 origin-top-left">
+                   {type}
+               </div>
+               {equipped[type] ? (
+                   <ItemCard item={equipped[type]} isEquipped={true} onClick={() => unequipItem(type)} />
+               ) : (
+                   <div className="h-16 border border-slate-800 bg-slate-900/50 rounded-lg flex items-center justify-center text-slate-700 text-2xl">
+                       {type === ITEM_TYPES.WEAPON ? '⚔️' : type === ITEM_TYPES.HEAD ? '🧢' : type === ITEM_TYPES.OFFHAND ? '🛡️' : '💍'}
+                   </div>
+               )}
+           </div>
+        ))}
+      </div>
+
+      {activeSynergies.length > 0 && (
+          <div className="mb-6 bg-purple-900/20 border border-purple-500/30 rounded-lg p-3">
+              <h3 className="text-purple-300 text-xs font-bold uppercase mb-2 flex items-center gap-2">
+                  <Sparkles size={14} /> Active Synergies
+              </h3>
+              <div className="space-y-2">
+                  {activeSynergies.map(s => (
+                      <div key={s.id} className="text-sm">
+                          <span className="font-bold text-purple-200">{s.name}:</span> <span className="text-purple-300/80">{s.desc}</span>
+                      </div>
+                  ))}
+              </div>
+          </div>
+      )}
+
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-slate-400 font-bold text-xs uppercase tracking-widest">Backpack ({inventory.length})</h2>
+      </div>
+
+      <div className="space-y-2">
+        {inventory.map((item, idx) => (
+            <div key={idx} className={selectedItem === item ? 'ring-2 ring-blue-500 rounded-lg' : ''}>
+                <ItemCard 
+                    item={item} 
+                    onClick={(i) => setSelectedItem(selectedItem === i ? null : i)} 
+                    isSelected={selectedItem === item}
+                />
+                {selectedItem === item && (
+                    <button 
+                        onClick={() => equipItem(item)}
+                        className="w-full mt-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-b-lg text-sm flex items-center justify-center gap-2 animate-in slide-in-from-top-2"
+                    >
+                        Equip to {item.type.toUpperCase()} <ChevronRight size={16} />
+                    </button>
+                )}
+            </div>
+        ))}
+        {inventory.length === 0 && <div className="text-center text-slate-600 py-8 italic">Your bag is empty. Go fight stuff!</div>}
+      </div>
+    </div>
+  );
+
+  const CombatView = () => (
+    <div className="h-full flex flex-col p-4 pb-24 animate-in zoom-in-95 duration-300">
+       {/* Enemy Area */}
+       <div className="flex-1 flex flex-col items-center justify-center relative">
+          <div className="text-6xl animate-bounce filter drop-shadow-lg mb-4">
+             {currentEnemy?.emoji}
+          </div>
+          <div className="text-2xl font-bold text-white mb-1">{currentEnemy?.name}</div>
+          
+          {/* HP Bar */}
+          <div className="w-48 h-4 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
+              <div 
+                className="h-full bg-red-500 transition-all duration-500 ease-out"
+                style={{ width: `${(currentEnemy.hp / currentEnemy.maxHp) * 100}%` }}
+              />
+          </div>
+          <div className="mt-1 text-xs text-slate-400">{currentEnemy.hp} / {currentEnemy.maxHp} HP</div>
+
+          {combatState === 'enemy_turn' && (
+              <div className="absolute top-0 bg-red-500 text-white px-3 py-1 rounded-full font-bold animate-pulse">
+                  Enemy Attacking!
+              </div>
+          )}
+       </div>
+
+       {/* Actions */}
+       <div className="mt-auto bg-slate-800 rounded-xl p-4 border border-slate-700">
+           <div className="grid grid-cols-2 gap-3">
+               <button 
+                 onClick={handleAttack}
+                 disabled={combatState !== 'player_turn'}
+                 className="bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed text-white p-4 rounded-lg font-bold text-lg flex flex-col items-center gap-1 active:scale-95 transition-transform"
+               >
+                   <Sword size={24} />
+                   Attack
+               </button>
+               <button className="bg-slate-700 text-slate-400 p-4 rounded-lg font-bold flex flex-col items-center gap-1 opacity-50 cursor-not-allowed">
+                   <Backpack size={24} />
+                   Item
+               </button>
+           </div>
+           <div className="mt-3 text-center text-xs text-slate-500 font-mono">
+               Your Vibe: {totalStats.VIBE} • Crit Chance: {totalStats.SPICE * 5}%
+           </div>
+       </div>
+    </div>
+  );
+
+  const HomeView = () => (
+    <div className="flex flex-col items-center justify-center h-[60vh] p-6 text-center animate-in fade-in">
+        <div className="w-24 h-24 bg-slate-800 rounded-full flex items-center justify-center text-5xl border-4 border-slate-700 mb-6 shadow-xl shadow-purple-900/20">
+            🧐
+        </div>
+        <h2 className="text-2xl font-bold text-white mb-2">Ready to Explore?</h2>
+        <p className="text-slate-400 mb-8 max-w-xs">
+            The dungeon is full of weird loot and bad vibes. Adjust your gear before you head out.
+        </p>
+        <button 
+            onClick={startCombat}
+            className="w-full max-w-xs bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold py-4 px-8 rounded-xl shadow-lg shadow-purple-900/40 flex items-center justify-center gap-3 text-lg transition-all hover:scale-105 active:scale-95"
+        >
+            <Skull size={24} />
+            Enter Room
+        </button>
+    </div>
+  );
+
+  // --- MAIN LAYOUT ---
+
+  return (
+    <div className="bg-slate-950 text-slate-200 min-h-screen font-sans max-w-md mx-auto relative overflow-hidden shadow-2xl flex flex-col">
+      <Header />
+
+      {/* LOG SCROLL */}
+      <div className="bg-slate-900/50 p-2 border-b border-slate-800 h-24 overflow-y-auto text-xs font-mono text-slate-400 flex flex-col-reverse">
+         {logs.map((log, i) => (
+             <div key={i} className="mb-1 border-l-2 border-slate-700 pl-2 opacity-80 hover:opacity-100">
+                 {log}
+             </div>
+         ))}
+      </div>
+
+      {/* MAIN CONTENT AREA */}
+      <main className="flex-1 overflow-y-auto">
+          {view === 'HOME' && <HomeView />}
+          {view === 'INVENTORY' && <InventoryView />}
+          {view === 'COMBAT' && <CombatView />}
+          {view === 'GAMEOVER' && (
+              <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+                  <div className="text-6xl mb-4">💀</div>
+                  <h2 className="text-3xl font-bold text-red-500 mb-2">GAME OVER</h2>
+                  <p className="mb-8 text-slate-400">The vibes were too strong for you.</p>
+                  <button onClick={() => window.location.reload()} className="bg-white text-black px-6 py-3 rounded-full font-bold flex items-center gap-2">
+                      <RefreshCw size={18} /> Restart
+                  </button>
+              </div>
+          )}
+      </main>
+
+      {/* BOTTOM NAV */}
+      <nav className="bg-slate-900 border-t border-slate-800 flex justify-around p-2 pb-6 md:pb-2 sticky bottom-0 z-50">
+        <button 
+            onClick={() => view !== 'COMBAT' && setView('HOME')} 
+            className={`flex flex-col items-center p-2 rounded-lg min-w-[64px] transition-colors ${view === 'HOME' ? 'text-blue-400 bg-slate-800' : 'text-slate-500'} ${view === 'COMBAT' ? 'opacity-25' : ''}`}
+            disabled={view === 'COMBAT'}
+        >
+            <Skull size={24} className={view === 'HOME' ? 'fill-current' : ''} />
+            <span className="text-[10px] font-bold mt-1">Explore</span>
+        </button>
+        
+        <div className="w-px bg-slate-800 mx-2"></div>
+
+        <button 
+            onClick={() => view !== 'COMBAT' && setView('INVENTORY')} 
+            className={`flex flex-col items-center p-2 rounded-lg min-w-[64px] transition-colors ${view === 'INVENTORY' ? 'text-purple-400 bg-slate-800' : 'text-slate-500'} ${view === 'COMBAT' ? 'opacity-25' : ''}`}
+            disabled={view === 'COMBAT'}
+        >
+            <div className="relative">
+                <Backpack size={24} className={view === 'INVENTORY' ? 'fill-current' : ''} />
+                {inventory.length > 0 && <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-slate-900"></div>}
+            </div>
+            <span className="text-[10px] font-bold mt-1">Bag</span>
+        </button>
+      </nav>
+    </div>
+  );
+}
