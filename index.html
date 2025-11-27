@@ -2,468 +2,414 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Emoji Dungeon: Vibe Check</title>
-    
-    <!-- Tailwind CSS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chaos Slots 🎰</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- React & ReactDOM -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    
-    <!-- Babel -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
     <style>
-        /* Mobile Optimization Resets */
-        html, body {
-            height: 100%;
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap');
+
+        :root {
+            --neon-pink: #ff00ff;
+            --neon-blue: #00ffff;
+            --neon-purple: #bc13fe;
+        }
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background-color: #0f172a;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(188, 19, 254, 0.3) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(0, 255, 255, 0.3) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: white;
+            overflow-x: hidden;
+            touch-action: manipulation; /* Improves touch response */
+        }
+
+        /* Slot Machine Casing */
+        .machine-casing {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 
+                0 0 20px rgba(0,0,0,0.5),
+                inset 0 0 0 1px rgba(255,255,255,0.1);
+        }
+
+        /* Individual Slot Cells */
+        .slot-cell {
+            background: #1e293b;
+            box-shadow: inset 0 4px 6px rgba(0,0,0,0.3);
+            perspective: 1000px;
             overflow: hidden;
-            touch-action: manipulation; /* Disables double-tap zoom */
-            overscroll-behavior: none; /* Prevents pull-to-refresh on some browsers */
-            background-color: #020617; /* Slate 950 */
-            -webkit-tap-highlight-color: transparent;
+            position: relative;
         }
-        #root {
-            height: 100%;
-            width: 100%;
+
+        .emoji-content {
+            font-size: 3rem;
+            line-height: 1;
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.3));
+            transition: transform 0.1s;
         }
-        
-        /* Custom Animations */
-        @keyframes pulse-red {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+
+        /* Animation States */
+        .spinning .emoji-content {
+            animation: spinBlur 0.1s infinite linear;
+            filter: blur(4px);
+            opacity: 0.7;
         }
-        .animate-pulse-red {
-            animation: pulse-red 2s infinite;
+
+        @keyframes spinBlur {
+            0% { transform: translateY(-20%); }
+            50% { transform: translateY(20%); }
+            100% { transform: translateY(-20%); }
         }
-        
-        /* Hide Scrollbar but keep functionality */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
+
+        .win-pulse {
+            animation: winGlow 0.8s ease-in-out infinite alternate;
+            z-index: 10;
+            border: 2px solid var(--neon-blue);
         }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
+
+        @keyframes winGlow {
+            from { box-shadow: 0 0 10px var(--neon-blue), inset 0 0 10px var(--neon-blue); background: #2a3a52;}
+            to { box-shadow: 0 0 25px var(--neon-pink), inset 0 0 20px var(--neon-pink); background: #354a66;}
+        }
+
+        /* Coin/Score Animation */
+        .coin-pop {
+            animation: coinPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes coinPop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); color: var(--neon-blue); }
+            100% { transform: scale(1); }
+        }
+
+        /* Button Styling */
+        .spin-btn {
+            background: linear-gradient(135deg, var(--neon-purple), var(--neon-pink));
+            box-shadow: 0 6px 0 #8b008b;
+            transition: all 0.1s;
+        }
+        .spin-btn:active:not(:disabled) {
+            transform: translateY(6px);
+            box-shadow: 0 0 0 #8b008b;
+        }
+        .spin-btn:disabled {
+            filter: grayscale(1);
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: translateY(6px);
+            box-shadow: 0 0 0 #8b008b;
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        /* Message Toast */
+        .toast-msg {
+            animation: slideUpFade 0.5s ease-out forwards;
+        }
+        @keyframes slideUpFade {
+            0% { opacity: 0; transform: translate(-50%, 20px); }
+            100% { opacity: 1; transform: translate(-50%, 0); }
         }
     </style>
 </head>
-<body class="text-slate-200 font-sans antialiased selection:bg-purple-500 selection:text-white">
-    <div id="root"></div>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
 
-    <script type="text/babel">
-        const { useState, useEffect, useMemo, useRef } = React;
+    <!-- Header / Stats -->
+    <div class="w-full max-w-md flex justify-between items-center mb-6 px-2">
+        <div>
+            <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-cyan-400">
+                CHAOS SLOTS
+            </h1>
+            <p class="text-xs text-slate-400">Match 3 in a line!</p>
+        </div>
+        <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 flex items-center space-x-2 shadow-lg">
+            <span class="text-2xl">🪙</span>
+            <span id="balanceDisplay" class="text-2xl font-bold text-yellow-400">100</span>
+        </div>
+    </div>
 
-        // --- CONSTANTS ---
-        const STATS = {
-            GRIT: { icon: '💪', color: 'text-orange-400', label: 'Grit' },
-            VIBE: { icon: '✨', color: 'text-purple-400', label: 'Vibe' },
-            SPICE: { icon: '🌶️', color: 'text-red-500', label: 'Spice' },
-            LUCK: { icon: '🍀', color: 'text-green-400', label: 'Luck' },
-        };
+    <!-- Main Game Unit -->
+    <div class="machine-casing rounded-3xl p-6 w-full max-w-md relative">
+        
+        <!-- Win Message Overlay Area -->
+        <div id="messageArea" class="absolute top-0 left-1/2 -translate-x-1/2 -mt-12 pointer-events-none w-full text-center h-10">
+            <!-- Dynamic Messages injected here -->
+        </div>
 
-        const ITEM_TYPES = {
-            WEAPON: 'weapon',
-            OFFHAND: 'offhand',
-            HEAD: 'head',
-            ACC: 'accessory',
-        };
+        <!-- The 3x3 Grid -->
+        <div class="grid grid-cols-3 gap-3 mb-6" id="slotGrid">
+            <!-- Cells generated by JS -->
+        </div>
 
-        const ITEMS = [
-            { id: 'sword1', name: 'Rusty Pin', emoji: '📍', type: ITEM_TYPES.WEAPON, stats: { GRIT: 2 }, tags: ['metal'] },
-            { id: 'sword2', name: 'Baguette', emoji: '🥖', type: ITEM_TYPES.WEAPON, stats: { GRIT: 3, VIBE: 1 }, tags: ['food'] },
-            { id: 'shield1', name: 'Trash Lid', emoji: '🗑️', type: ITEM_TYPES.OFFHAND, stats: { GRIT: 1, LUCK: 2 }, tags: ['metal', 'urban'] },
-            { id: 'hat1', name: 'Cool Shades', emoji: '🕶️', type: ITEM_TYPES.HEAD, stats: { VIBE: 5 }, tags: ['cool'] },
-            { id: 'acc1', name: 'Lucky Die', emoji: '🎲', type: ITEM_TYPES.ACC, stats: { LUCK: 5, SPICE: 2 }, tags: ['game'] },
-            { id: 'food1', name: 'Spicy Taco', emoji: '🌮', type: ITEM_TYPES.ACC, stats: { SPICE: 4, GRIT: 1 }, tags: ['food', 'spicy'] },
-            { id: 'tech1', name: 'Old Phone', emoji: '📱', type: ITEM_TYPES.OFFHAND, stats: { VIBE: 3, LUCK: -1 }, tags: ['tech'] },
-            { id: 'rare1', name: 'Ghost Chili', emoji: '👻', type: ITEM_TYPES.WEAPON, stats: { SPICE: 8, VIBE: 3 }, tags: ['spicy', 'spooky'] },
+        <!-- Controls -->
+        <div class="flex flex-col gap-4">
+            <div class="flex justify-between text-sm font-semibold text-slate-400 uppercase tracking-wider">
+                <span>Cost: <span class="text-white">10</span></span>
+                <span>Jackpot: <span class="text-pink-400">1000</span></span>
+            </div>
+
+            <button id="spinBtn" class="spin-btn w-full py-5 rounded-2xl text-2xl font-bold tracking-widest text-white uppercase shadow-lg select-none">
+                SPIN!
+            </button>
+        </div>
+    </div>
+
+    <!-- Payout Table (Small) -->
+    <div class="mt-8 grid grid-cols-4 gap-2 text-center opacity-70 max-w-md w-full text-sm">
+        <div class="bg-slate-800/50 rounded p-1">💎 x3<br><span class="text-yellow-400">1000</span></div>
+        <div class="bg-slate-800/50 rounded p-1">👽 x3<br><span class="text-yellow-400">200</span></div>
+        <div class="bg-slate-800/50 rounded p-1">🤡 x3<br><span class="text-yellow-400">100</span></div>
+        <div class="bg-slate-800/50 rounded p-1">Any x3<br><span class="text-yellow-400">25</span></div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div id="gameOverModal" class="hidden fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 p-8 rounded-3xl max-w-sm w-full text-center shadow-2xl transform scale-100 transition-transform">
+            <div class="text-6xl mb-4">💸</div>
+            <h2 class="text-3xl font-bold text-white mb-2">You're Broke!</h2>
+            <p class="text-slate-400 mb-6">The chaos consumed your wallet.</p>
+            <button onclick="resetGame()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-xl w-full shadow-lg transition-colors">
+                Beg for Coins
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- Configuration ---
+        const COST_PER_SPIN = 10;
+        const INITIAL_BALANCE = 100;
+        
+        // Symbols and their relative rarity/value
+        // id: internal identifier
+        // char: the emoji
+        // weight: probability weight (higher = more common)
+        // payout: multiplier for getting 3 in a row
+        const SYMBOLS = [
+            { id: 'gem',    char: '💎', weight: 5,  payout: 100 },
+            { id: 'alien',  char: '👽', weight: 15, payout: 20 },
+            { id: 'clown',  char: '🤡', weight: 25, payout: 10 },
+            { id: 'poop',   char: '💩', weight: 35, payout: 5 },
+            { id: 'egg',    char: '🍆', weight: 40, payout: 3 },
+            { id: 'duck',   char: '🦆', weight: 40, payout: 3 },
+            { id: 'moyai',  char: '🗿', weight: 45, payout: 2.5 },
+            { id: 'avocado',char: '🥑', weight: 50, payout: 2.5 },
         ];
 
-        const ENEMIES = [
-            { name: 'Angry Blob', emoji: '💧', hp: 20, dmg: 3 },
-            { name: 'Rat King', emoji: '🐀', hp: 35, dmg: 5 },
-            { name: 'Wifi Demon', emoji: '📶', hp: 50, dmg: 8 },
-            { name: 'Bureaucrat', emoji: '👔', hp: 80, dmg: 12 },
+        // Winning Lines (Rows, Cols, Diagonals)
+        const WIN_LINES = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+            [0, 3, 6], [1, 4, 7], [2, 5, 8], // Cols
+            [0, 4, 8], [2, 4, 6]             // Diagonals
         ];
 
-        // --- COMPONENTS ---
+        // --- State ---
+        let balance = INITIAL_BALANCE;
+        let isSpinning = false;
+        let gridState = new Array(9).fill(null);
 
-        // Compact Item Card for Inventory List
-        const InventoryItemRow = ({ item, onClick, isSelected }) => (
-            <button 
-                onClick={() => onClick(item)}
-                className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all active:scale-95 touch-manipulation
-                    ${isSelected 
-                    ? 'bg-slate-800 border-blue-500 ring-1 ring-blue-500' 
-                    : 'bg-slate-900/50 border-slate-800 hover:bg-slate-800'}`}
-            >
-                <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center text-2xl bg-slate-950 rounded-lg border border-slate-800">
-                    {item.emoji}
-                </div>
-                <div className="flex-1 flex flex-col items-start">
-                    <span className="text-sm font-bold text-slate-200">{item.name}</span>
-                    <div className="flex gap-2 mt-0.5">
-                        {Object.entries(item.stats).map(([key, val]) => (
-                            <span key={key} className={`text-[10px] font-bold uppercase ${STATS[key].color} bg-slate-950/50 px-1.5 rounded`}>
-                                {STATS[key].icon} {val > 0 ? '+' : ''}{val}
-                            </span>
-                        ))}
-                    </div>
-                </div>
-                {isSelected && <div className="w-3 h-3 rounded-full bg-blue-500 shadow-lg shadow-blue-500/50"></div>}
-            </button>
-        );
+        // --- Elements ---
+        const balanceDisplay = document.getElementById('balanceDisplay');
+        const gridEl = document.getElementById('slotGrid');
+        const spinBtn = document.getElementById('spinBtn');
+        const messageArea = document.getElementById('messageArea');
+        const gameOverModal = document.getElementById('gameOverModal');
 
-        // Large Slot for Equipped Items
-        const EquipSlot = ({ type, item, onClick }) => (
-            <button 
-                onClick={onClick}
-                className={`relative flex flex-col items-center justify-center p-2 rounded-xl border-2 border-dashed transition-all active:scale-95 h-24
-                ${item 
-                    ? 'bg-slate-800 border-slate-600 border-solid shadow-md' 
-                    : 'bg-slate-900/30 border-slate-800 text-slate-700'}`}
-            >
-                <div className="text-3xl mb-1">{item ? item.emoji : (type === ITEM_TYPES.WEAPON ? '⚔️' : type === ITEM_TYPES.HEAD ? '🧢' : type === ITEM_TYPES.OFFHAND ? '🛡️' : '💍')}</div>
-                <div className="text-[10px] font-bold uppercase tracking-wider truncate w-full text-center">
-                    {item ? item.name : type}
-                </div>
-                {!item && <div className="absolute inset-0 flex items-center justify-center text-slate-700 opacity-20 text-4xl font-black select-none pointer-events-none">+</div>}
-            </button>
-        );
-
-        function App() {
-            // --- STATE ---
-            const [view, setView] = useState('HOME');
-            const [logs, setLogs] = useState(['Welcome. Gear up.']);
-            
-            // Player
-            const [hp, setHp] = useState(50);
-            const [maxHp, setMaxHp] = useState(50);
-            const [xp, setXp] = useState(0);
-            const [level, setLevel] = useState(1);
-            
-            // Inventory
-            const [inventory, setInventory] = useState([ITEMS[0], ITEMS[2], ITEMS[5]]); 
-            const [equipped, setEquipped] = useState({
-                [ITEM_TYPES.WEAPON]: null,
-                [ITEM_TYPES.OFFHAND]: null,
-                [ITEM_TYPES.HEAD]: null,
-                [ITEM_TYPES.ACC]: null,
-            });
-            const [selectedItem, setSelectedItem] = useState(null);
-
-            // Combat
-            const [currentEnemy, setCurrentEnemy] = useState(null);
-            const [combatState, setCombatState] = useState('idle'); 
-
-            // --- DERIVED STATS ---
-            const totalStats = useMemo(() => {
-                const base = { GRIT: 1, VIBE: 1, SPICE: 1, LUCK: 1 };
-                Object.values(equipped).forEach(item => {
-                    if (item) {
-                        Object.entries(item.stats).forEach(([key, val]) => {
-                            base[key] = (base[key] || 0) + val;
-                        });
-                    }
-                });
-                return base;
-            }, [equipped]);
-
-            const activeSynergies = useMemo(() => {
-                const synergies = [];
-                const allTags = Object.values(equipped).filter(i => i).flatMap(i => i.tags);
+        // --- Initialization ---
+        function init() {
+            // Build Grid
+            gridEl.innerHTML = '';
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'slot-cell rounded-xl h-20 sm:h-24 flex items-center justify-center border border-slate-700/50';
+                cell.id = `slot-${i}`;
                 
-                if (allTags.filter(t => t === 'food').length >= 2) synergies.push({ name: 'Combo Meal', desc: 'Heal 2 HP/turn', id: 'food' });
-                if (allTags.includes('cool') && allTags.includes('tech')) synergies.push({ name: 'Cyberpunk', desc: '+5 Vibe', id: 'cyber' });
-                if (allTags.includes('spicy') && allTags.includes('metal')) synergies.push({ name: 'Hot Iron', desc: 'Burn dmg', id: 'hotiron' });
+                const content = document.createElement('div');
+                content.className = 'emoji-content';
+                content.innerText = '🎰'; // Starting symbol
                 
-                if (synergies.find(s => s.id === 'cyber')) totalStats.VIBE += 5;
-                return synergies;
-            }, [equipped, totalStats]);
-
-            // --- ACTIONS ---
-            const addLog = (msg) => setLogs(prev => [msg, ...prev].slice(0, 20));
-
-            const equipItem = (item) => {
-                if (!item) return;
-                const currentEquipped = equipped[item.type];
-                setEquipped(prev => ({ ...prev, [item.type]: item }));
-                let newInv = inventory.filter(i => i !== item);
-                if (currentEquipped) newInv.push(currentEquipped);
-                setInventory(newInv);
-                setSelectedItem(null);
-                addLog(`Equipped ${item.name}`);
-            };
-
-            const unequipItem = (type) => {
-                const item = equipped[type];
-                if (!item) return;
-                setEquipped(prev => ({ ...prev, [type]: null }));
-                setInventory(prev => [...prev, item]);
-                addLog(`Unequipped ${item.name}`);
-            };
-
-            // Combat Logic
-            const startCombat = () => {
-                const enemyTemplate = ENEMIES[Math.floor(Math.random() * ENEMIES.length)];
-                const enemy = { 
-                    ...enemyTemplate, 
-                    hp: enemyTemplate.hp + (level * 10),
-                    maxHp: enemyTemplate.hp + (level * 10),
-                    dmg: enemyTemplate.dmg + level 
-                };
-                setCurrentEnemy(enemy);
-                setView('COMBAT');
-                setCombatState('player_turn');
-                addLog(`Wild ${enemy.name} appeared!`);
-            };
-
-            const handleAttack = () => {
-                if (combatState !== 'player_turn' || !currentEnemy) return;
-                const baseDmg = totalStats.GRIT * 2;
-                const isCrit = Math.random() * 100 < (totalStats.SPICE * 5);
-                const finalDmg = isCrit ? Math.floor(baseDmg * 2) : baseDmg;
-                const newEnemyHp = currentEnemy.hp - finalDmg;
-                
-                addLog(`${isCrit ? 'CRIT!' : 'Hit'} ${currentEnemy.emoji} for ${finalDmg}`);
-
-                if (newEnemyHp <= 0) {
-                    setCurrentEnemy(null);
-                    const xpGain = 20 + (totalStats.LUCK * 2);
-                    setXp(prev => prev + xpGain);
-                    if (xp + xpGain >= level * 100) setLevel(l => l + 1);
-                    if (Math.random() < 0.5 + (totalStats.LUCK * 0.05)) {
-                        const loot = ITEMS[Math.floor(Math.random() * ITEMS.length)];
-                        setInventory(prev => [...prev, { ...loot, id: Date.now() }]); 
-                        addLog(`Loot: ${loot.name}`);
-                    }
-                    setView('HOME');
-                } else {
-                    setCurrentEnemy(prev => ({ ...prev, hp: newEnemyHp }));
-                    setCombatState('enemy_turn');
-                    setTimeout(enemyAttack, 800);
-                }
-            };
-
-            const enemyAttack = () => {
-                if (!currentEnemy) return;
-                if (Math.random() * 100 < (totalStats.LUCK * 2)) {
-                    addLog(`Dodged attack!`);
-                } else {
-                    const dmg = currentEnemy.dmg;
-                    setHp(prev => Math.max(0, prev - dmg));
-                    addLog(`Took ${dmg} dmg`);
-                }
-                if (activeSynergies.find(s => s.id === 'food')) setHp(prev => Math.min(maxHp, prev + 2));
-                setCombatState('player_turn');
-            };
-
-            useEffect(() => {
-                if (hp <= 0 && view !== 'GAMEOVER') setView('GAMEOVER');
-            }, [hp]);
-
-            // --- VIEWS ---
-
-            const TopBar = () => (
-                <div className="bg-slate-900 pt-safe-top pb-2 px-4 shadow-lg z-10 shrink-0">
-                    <div className="flex justify-between items-center mb-2 mt-2">
-                        <h1 className="text-lg font-black italic text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">EMOJI DUNGEON</h1>
-                        <div className="text-xs font-mono text-slate-500">LVL {level}</div>
-                    </div>
-                    
-                    {/* New Prominent HP Bar */}
-                    <div className="relative w-full h-6 bg-slate-800 rounded-full overflow-hidden border border-slate-700 shadow-inner">
-                        <div 
-                            className={`h-full transition-all duration-500 ease-out flex items-center justify-end px-2 ${hp < maxHp * 0.3 ? 'bg-red-600 animate-pulse' : 'bg-gradient-to-r from-red-500 to-red-600'}`}
-                            style={{ width: `${(hp / maxHp) * 100}%` }}
-                        >
-                        </div>
-                        <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white drop-shadow-md">
-                            {hp} / {maxHp} HP
-                        </div>
-                    </div>
-                </div>
-            );
-
-            const InventoryView = () => (
-                <div className="flex flex-col h-full overflow-hidden">
-                    {/* Fixed Top: Paper Doll */}
-                    <div className="bg-slate-900/50 p-4 border-b border-slate-800 shrink-0">
-                        <div className="grid grid-cols-4 gap-2">
-                            {[ITEM_TYPES.HEAD, ITEM_TYPES.WEAPON, ITEM_TYPES.OFFHAND, ITEM_TYPES.ACC].map(type => (
-                                <EquipSlot 
-                                    key={type} 
-                                    type={type} 
-                                    item={equipped[type]} 
-                                    onClick={() => unequipItem(type)} 
-                                />
-                            ))}
-                        </div>
-                        {/* Stats Summary */}
-                        <div className="flex justify-around mt-4 bg-slate-800/50 p-2 rounded-lg border border-slate-700/50">
-                            {Object.keys(STATS).map(key => (
-                                <div key={key} className="flex flex-col items-center">
-                                    <span className="text-lg leading-none">{STATS[key].icon}</span>
-                                    <span className={`text-xs font-bold ${STATS[key].color}`}>{totalStats[key]}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Scrollable Bottom: Backpack */}
-                    <div className="flex-1 overflow-y-auto p-4 pb-32 overscroll-contain no-scrollbar">
-                        <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 sticky top-0 bg-slate-950 py-2 z-10">Backpack</h3>
-                        <div className="flex flex-col gap-2">
-                            {inventory.map((item, idx) => (
-                                <InventoryItemRow 
-                                    key={item.id + idx} 
-                                    item={item} 
-                                    isSelected={selectedItem === item}
-                                    onClick={setSelectedItem}
-                                />
-                            ))}
-                            {inventory.length === 0 && <div className="text-center text-slate-600 py-10 italic">Empty bag...</div>}
-                        </div>
-                    </div>
-
-                    {/* Floating Action Sheet for Selected Item */}
-                    <div className={`absolute bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-700 p-4 pb-safe-bottom transform transition-transform duration-300 z-50 ${selectedItem ? 'translate-y-0' : 'translate-y-full'}`}>
-                        {selectedItem && (
-                            <div className="flex gap-3 items-center">
-                                <div className="text-4xl bg-slate-800 p-2 rounded-lg">{selectedItem.emoji}</div>
-                                <div className="flex-1">
-                                    <div className="font-bold text-white">{selectedItem.name}</div>
-                                    <div className="text-xs text-slate-400 uppercase">{selectedItem.type}</div>
-                                </div>
-                                <button 
-                                    onClick={() => equipItem(selectedItem)}
-                                    className="bg-blue-600 active:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-blue-900/20 flex items-center gap-2"
-                                >
-                                    Equip <span className="text-xl">⇪</span>
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            );
-
-            const CombatView = () => (
-                <div className="flex flex-col h-full p-4">
-                    {/* Enemy Stage */}
-                    <div className="flex-1 flex flex-col items-center justify-center relative pb-12">
-                        <div className="text-8xl animate-bounce mb-6 filter drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]">{currentEnemy?.emoji}</div>
-                        <div className="text-2xl font-black text-white tracking-tight">{currentEnemy?.name}</div>
-                        
-                        <div className="w-64 h-5 bg-slate-800 rounded-full overflow-hidden border-2 border-slate-700 mt-2">
-                            <div className="h-full bg-red-500 transition-all duration-300" style={{ width: `${(currentEnemy.hp / currentEnemy.maxHp) * 100}%` }} />
-                        </div>
-                        <div className="mt-1 font-mono text-slate-400">{currentEnemy.hp} HP</div>
-
-                        {/* Floating Combat Text / Status */}
-                        {combatState === 'enemy_turn' && (
-                            <div className="absolute top-10 bg-red-500/90 text-white px-4 py-1 rounded-full font-bold text-sm animate-pulse shadow-lg">
-                                ATTACKING!
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Combat Controls */}
-                    <div className="grid grid-cols-2 gap-4 h-32 shrink-0 pb-safe-bottom">
-                        <button 
-                            onClick={handleAttack}
-                            disabled={combatState !== 'player_turn'}
-                            className="bg-red-600 active:bg-red-700 disabled:opacity-50 disabled:scale-100 text-white rounded-2xl font-black text-xl flex flex-col items-center justify-center gap-1 shadow-xl shadow-red-900/20 transition-transform active:scale-95"
-                        >
-                            <span className="text-3xl">⚔️</span>
-                            SMASH
-                        </button>
-                        <button className="bg-slate-800 text-slate-500 rounded-2xl font-bold flex flex-col items-center justify-center gap-1 border border-slate-700 opacity-50">
-                            <span className="text-3xl">🎒</span>
-                            ITEM
-                        </button>
-                    </div>
-                </div>
-            );
-
-            const HomeView = () => (
-                <div className="flex flex-col items-center justify-center h-full p-6 pb-32 text-center">
-                    <div className="w-32 h-32 bg-gradient-to-br from-slate-800 to-slate-900 rounded-[2rem] flex items-center justify-center text-6xl border-4 border-slate-700 mb-8 shadow-2xl shadow-purple-900/20 rotate-3 hover:rotate-0 transition-transform">
-                        🧐
-                    </div>
-                    <h2 className="text-3xl font-black text-white mb-3">Into the Dark</h2>
-                    <p className="text-slate-400 mb-10 leading-relaxed max-w-xs mx-auto">
-                        Monsters lurk below. Your backpack is messy. <br/>Fix your vibe before you fight.
-                    </p>
-                    <button 
-                        onClick={startCombat}
-                        className="w-full max-w-xs bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold py-5 px-8 rounded-2xl shadow-lg shadow-purple-900/40 flex items-center justify-center gap-3 text-xl active:scale-95 transition-transform"
-                    >
-                        <span>💀</span> ENTER
-                    </button>
-                </div>
-            );
-
-            return (
-                <div className="h-[100dvh] w-full max-w-md mx-auto bg-slate-950 flex flex-col relative shadow-2xl overflow-hidden">
-                    <TopBar />
-                    
-                    {/* Main Content Area */}
-                    <main className="flex-1 overflow-hidden relative bg-slate-950">
-                        {view === 'HOME' && <HomeView />}
-                        {view === 'INVENTORY' && <InventoryView />}
-                        {view === 'COMBAT' && <CombatView />}
-                        {view === 'GAMEOVER' && (
-                            <div className="absolute inset-0 z-50 bg-slate-950/90 flex flex-col items-center justify-center p-8 text-center backdrop-blur-sm">
-                                <div className="text-8xl mb-4 animate-bounce">💀</div>
-                                <h2 className="text-4xl font-black text-red-500 mb-2">YOU DIED</h2>
-                                <button onClick={() => window.location.reload()} className="mt-8 bg-white text-black px-8 py-4 rounded-full font-bold text-lg shadow-xl active:scale-95">
-                                    Try Again
-                                </button>
-                            </div>
-                        )}
-                    </main>
-
-                    {/* Log Ticker */}
-                    {view !== 'INVENTORY' && (
-                         <div className="h-8 bg-slate-900 flex items-center px-4 border-t border-slate-800 shrink-0 overflow-hidden whitespace-nowrap">
-                            <span className="text-xs font-mono text-slate-400 opacity-75 mr-2">LOG:</span>
-                            <span className="text-xs font-mono text-white">{logs[0]}</span>
-                        </div>
-                    )}
-
-                    {/* Navigation Bar */}
-                    <nav className="bg-slate-900 border-t border-slate-800 flex justify-around p-2 pb-safe-bottom shrink-0 z-40">
-                        <button 
-                            onClick={() => view !== 'COMBAT' && setView('HOME')} 
-                            disabled={view === 'COMBAT'}
-                            className={`flex-1 flex flex-col items-center p-2 rounded-xl transition-all ${view === 'HOME' ? 'bg-slate-800 text-blue-400' : 'text-slate-500'} ${view === 'COMBAT' ? 'opacity-20 grayscale' : ''}`}
-                        >
-                            <span className="text-2xl mb-1">🧭</span>
-                            <span className="text-[10px] font-bold uppercase">Explore</span>
-                        </button>
-                        
-                        <div className="w-px bg-slate-800 my-2"></div>
-
-                        <button 
-                            onClick={() => view !== 'COMBAT' && setView('INVENTORY')} 
-                            disabled={view === 'COMBAT'}
-                            className={`flex-1 flex flex-col items-center p-2 rounded-xl transition-all ${view === 'INVENTORY' ? 'bg-slate-800 text-purple-400' : 'text-slate-500'} ${view === 'COMBAT' ? 'opacity-20 grayscale' : ''}`}
-                        >
-                            <div className="relative">
-                                <span className="text-2xl mb-1">🎒</span>
-                                {inventory.length > 0 && <div className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-slate-900"></div>}
-                            </div>
-                            <span className="text-[10px] font-bold uppercase">Gear</span>
-                        </button>
-                    </nav>
-                </div>
-            );
+                cell.appendChild(content);
+                gridEl.appendChild(cell);
+            }
+            updateBalance(0);
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        // --- Logic ---
+
+        // Weighted Random Selection
+        function getRandomSymbol() {
+            const totalWeight = SYMBOLS.reduce((sum, s) => sum + s.weight, 0);
+            let random = Math.random() * totalWeight;
+            
+            for (const symbol of SYMBOLS) {
+                if (random < symbol.weight) {
+                    return symbol;
+                }
+                random -= symbol.weight;
+            }
+            return SYMBOLS[SYMBOLS.length - 1];
+        }
+
+        function updateBalance(amount) {
+            balance += amount;
+            balanceDisplay.innerText = Math.floor(balance);
+            
+            // Animation
+            balanceDisplay.parentElement.classList.remove('coin-pop');
+            void balanceDisplay.parentElement.offsetWidth; // trigger reflow
+            balanceDisplay.parentElement.classList.add('coin-pop');
+
+            if (balance < COST_PER_SPIN && !isSpinning) {
+                setTimeout(() => {
+                    gameOverModal.classList.remove('hidden');
+                }, 1000);
+            }
+        }
+
+        function showMessage(text, colorClass = 'text-yellow-400') {
+            const msg = document.createElement('div');
+            msg.className = `toast-msg font-bold text-xl drop-shadow-md ${colorClass}`;
+            msg.innerText = text;
+            messageArea.innerHTML = '';
+            messageArea.appendChild(msg);
+        }
+
+        function clearEffects() {
+            // Remove winning borders
+            document.querySelectorAll('.slot-cell').forEach(el => el.classList.remove('win-pulse'));
+            messageArea.innerHTML = '';
+        }
+
+        async function spin() {
+            if (isSpinning || balance < COST_PER_SPIN) return;
+
+            // Start
+            isSpinning = true;
+            updateBalance(-COST_PER_SPIN);
+            spinBtn.disabled = true;
+            clearEffects();
+
+            // Prepare results
+            const finalSymbols = [];
+            for (let i = 0; i < 9; i++) {
+                finalSymbols.push(getRandomSymbol());
+            }
+
+            // Animation Sequence
+            const cells = document.querySelectorAll('.slot-cell');
+            
+            // Start spinning visuals
+            cells.forEach((cell, index) => {
+                cell.classList.add('spinning');
+                // visual jitter to make it look active
+                const interval = setInterval(() => {
+                    cell.querySelector('.emoji-content').innerText = getRandomSymbol().char;
+                }, 100);
+                cell.dataset.spinInterval = interval;
+            });
+
+            // Stop logic (column by column delay)
+            const delayPerCol = 400; // ms
+            
+            for (let i = 0; i < 9; i++) {
+                // Calculate which column this index belongs to (0,1,2)
+                const col = i % 3; 
+                // Delay based on column + slight random jitter for row
+                const stopDelay = 500 + (col * delayPerCol) + (Math.random() * 200);
+
+                setTimeout(() => {
+                    const cell = cells[i];
+                    clearInterval(cell.dataset.spinInterval);
+                    cell.classList.remove('spinning');
+                    
+                    // Set final content
+                    cell.querySelector('.emoji-content').innerText = finalSymbols[i].char;
+                    
+                    // Add a bounce effect
+                    cell.querySelector('.emoji-content').style.transform = "scale(1.2)";
+                    setTimeout(() => cell.querySelector('.emoji-content').style.transform = "scale(1)", 150);
+
+                }, stopDelay);
+            }
+
+            // Wait for all to finish before checking wins
+            // Max delay is approx 500 + 2*400 + 200 = 1500ms
+            setTimeout(() => {
+                checkWins(finalSymbols);
+                isSpinning = false;
+                if (balance >= COST_PER_SPIN) {
+                    spinBtn.disabled = false;
+                }
+            }, 1600);
+        }
+
+        function checkWins(currentGridSymbols) {
+            let totalWin = 0;
+            let winCount = 0;
+            const winningLinesIndices = [];
+
+            // Check every line configuration
+            WIN_LINES.forEach(line => {
+                const s1 = currentGridSymbols[line[0]];
+                const s2 = currentGridSymbols[line[1]];
+                const s3 = currentGridSymbols[line[2]];
+
+                if (s1.id === s2.id && s2.id === s3.id) {
+                    // It's a match!
+                    const winAmount = COST_PER_SPIN * s1.payout;
+                    totalWin += winAmount;
+                    winCount++;
+                    winningLinesIndices.push(...line);
+                }
+            });
+
+            if (totalWin > 0) {
+                updateBalance(totalWin);
+                
+                // Visual feedback
+                const uniqueWinningIndices = [...new Set(winningLinesIndices)];
+                uniqueWinningIndices.forEach(index => {
+                    document.getElementById(`slot-${index}`).classList.add('win-pulse');
+                });
+
+                if (totalWin >= 1000) {
+                    showMessage(`JACKPOT! +${totalWin}`, 'text-pink-500 text-3xl');
+                } else if (winCount > 1) {
+                    showMessage(`MULTI-WIN! +${totalWin}`, 'text-cyan-400');
+                } else {
+                    showMessage(`WIN! +${totalWin}`);
+                }
+            } else {
+                // Random lose messages occasionally
+                if(Math.random() > 0.8) {
+                    const loseMsgs = ["Oof.", "Not this time.", "Try again!", "So close..."];
+                    showMessage(loseMsgs[Math.floor(Math.random()*loseMsgs.length)], 'text-slate-500 text-sm');
+                }
+            }
+        }
+
+        function resetGame() {
+            balance = INITIAL_BALANCE;
+            balanceDisplay.innerText = balance;
+            gameOverModal.classList.add('hidden');
+            spinBtn.disabled = false;
+            init();
+        }
+
+        // Start
+        init();
+
+        // Event Listener
+        spinBtn.addEventListener('click', spin);
+
     </script>
 </body>
 </html>
