@@ -3,413 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Chaos Slots 🎰</title>
+    <title>Mobile Game UI Template</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap');
-
-        :root {
-            --neon-pink: #ff00ff;
-            --neon-blue: #00ffff;
-            --neon-purple: #bc13fe;
-        }
-
+        /* Prevent pull-to-refresh on mobile */
         body {
-            font-family: 'Fredoka', sans-serif;
-            background-color: #0f172a;
+            overscroll-behavior: none;
+            touch-action: none;
+        }
+        
+        /* Cyberpunk/Sci-fi subtle grid background */
+        .bg-grid-pattern {
             background-image: 
-                radial-gradient(at 0% 0%, rgba(188, 19, 254, 0.3) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(0, 255, 255, 0.3) 0px, transparent 50%);
-            background-attachment: fixed;
-            color: white;
-            overflow-x: hidden;
-            touch-action: manipulation; /* Improves touch response */
+                linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
         }
 
-        /* Slot Machine Casing */
-        .machine-casing {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 
-                0 0 20px rgba(0,0,0,0.5),
-                inset 0 0 0 1px rgba(255,255,255,0.1);
+        /* Custom Scrollbar for the side panel if content overflows */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
         }
-
-        /* Individual Slot Cells */
-        .slot-cell {
-            background: #1e293b;
-            box-shadow: inset 0 4px 6px rgba(0,0,0,0.3);
-            perspective: 1000px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .emoji-content {
-            font-size: 3rem;
-            line-height: 1;
-            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.3));
-            transition: transform 0.1s;
-        }
-
-        /* Animation States */
-        .spinning .emoji-content {
-            animation: spinBlur 0.1s infinite linear;
-            filter: blur(4px);
-            opacity: 0.7;
-        }
-
-        @keyframes spinBlur {
-            0% { transform: translateY(-20%); }
-            50% { transform: translateY(20%); }
-            100% { transform: translateY(-20%); }
-        }
-
-        .win-pulse {
-            animation: winGlow 0.8s ease-in-out infinite alternate;
-            z-index: 10;
-            border: 2px solid var(--neon-blue);
-        }
-
-        @keyframes winGlow {
-            from { box-shadow: 0 0 10px var(--neon-blue), inset 0 0 10px var(--neon-blue); background: #2a3a52;}
-            to { box-shadow: 0 0 25px var(--neon-pink), inset 0 0 20px var(--neon-pink); background: #354a66;}
-        }
-
-        /* Coin/Score Animation */
-        .coin-pop {
-            animation: coinPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        @keyframes coinPop {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.3); color: var(--neon-blue); }
-            100% { transform: scale(1); }
-        }
-
-        /* Button Styling */
-        .spin-btn {
-            background: linear-gradient(135deg, var(--neon-purple), var(--neon-pink));
-            box-shadow: 0 6px 0 #8b008b;
-            transition: all 0.1s;
-        }
-        .spin-btn:active:not(:disabled) {
-            transform: translateY(6px);
-            box-shadow: 0 0 0 #8b008b;
-        }
-        .spin-btn:disabled {
-            filter: grayscale(1);
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: translateY(6px);
-            box-shadow: 0 0 0 #8b008b;
-        }
-
-        /* Modal Overlay */
-        .modal-overlay {
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(5px);
-        }
-
-        /* Message Toast */
-        .toast-msg {
-            animation: slideUpFade 0.5s ease-out forwards;
-        }
-        @keyframes slideUpFade {
-            0% { opacity: 0; transform: translate(-50%, 20px); }
-            100% { opacity: 1; transform: translate(-50%, 0); }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-4">
+<body class="bg-black text-gray-100 font-sans h-screen w-screen overflow-hidden">
 
-    <!-- Header / Stats -->
-    <div class="w-full max-w-md flex justify-between items-center mb-6 px-2">
-        <div>
-            <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-cyan-400">
-                CHAOS SLOTS
-            </h1>
-            <p class="text-xs text-slate-400">Match 3 in a line!</p>
-        </div>
-        <div class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 flex items-center space-x-2 shadow-lg">
-            <span class="text-2xl">🪙</span>
-            <span id="balanceDisplay" class="text-2xl font-bold text-yellow-400">100</span>
-        </div>
-    </div>
+    <!-- Main App Container -->
+    <div id="app" class="relative w-full h-full max-w-md mx-auto bg-gray-900 shadow-2xl overflow-hidden flex flex-col">
 
-    <!-- Main Game Unit -->
-    <div class="machine-casing rounded-3xl p-6 w-full max-w-md relative">
-        
-        <!-- Win Message Overlay Area -->
-        <div id="messageArea" class="absolute top-0 left-1/2 -translate-x-1/2 -mt-12 pointer-events-none w-full text-center h-10">
-            <!-- Dynamic Messages injected here -->
-        </div>
-
-        <!-- The 3x3 Grid -->
-        <div class="grid grid-cols-3 gap-3 mb-6" id="slotGrid">
-            <!-- Cells generated by JS -->
-        </div>
-
-        <!-- Controls -->
-        <div class="flex flex-col gap-4">
-            <div class="flex justify-between text-sm font-semibold text-slate-400 uppercase tracking-wider">
-                <span>Cost: <span class="text-white">10</span></span>
-                <span>Jackpot: <span class="text-pink-400">1000</span></span>
+        <!-- LAYER 3: Right Vertical Column (The Overlay) -->
+        <!-- "Wide vertical column... isn't very wide" interpreted as a Sidebar Panel -->
+        <!-- Extends 50% down screen height. Covers elements behind it. -->
+        <div class="absolute top-0 right-0 w-24 h-[50%] bg-gray-800 border-l border-b border-gray-600 z-30 flex flex-col items-center py-4 gap-4 shadow-xl">
+            <!-- Example Side Panel Content -->
+            <div class="w-12 h-12 bg-gray-700 rounded-lg border border-gray-600 flex items-center justify-center cursor-pointer hover:bg-gray-600 transition-colors">
+                <i data-lucide="backpack" class="w-6 h-6 text-emerald-400"></i>
             </div>
-
-            <button id="spinBtn" class="spin-btn w-full py-5 rounded-2xl text-2xl font-bold tracking-widest text-white uppercase shadow-lg select-none">
-                SPIN!
-            </button>
+            <div class="w-12 h-12 bg-gray-700 rounded-lg border border-gray-600 flex items-center justify-center cursor-pointer hover:bg-gray-600 transition-colors">
+                <i data-lucide="scroll" class="w-6 h-6 text-amber-400"></i>
+            </div>
+            <div class="w-12 h-12 bg-gray-700 rounded-lg border border-gray-600 flex items-center justify-center cursor-pointer hover:bg-gray-600 transition-colors">
+                <i data-lucide="users" class="w-6 h-6 text-blue-400"></i>
+            </div>
+            <!-- Spacer to show it can hold more -->
+            <div class="flex-grow"></div>
+            <div class="w-8 h-8 rounded-full bg-red-900/50 border border-red-500 flex items-center justify-center">
+                <span class="text-xs font-bold text-red-400">!</span>
+            </div>
         </div>
-    </div>
 
-    <!-- Payout Table (Small) -->
-    <div class="mt-8 grid grid-cols-4 gap-2 text-center opacity-70 max-w-md w-full text-sm">
-        <div class="bg-slate-800/50 rounded p-1">💎 x3<br><span class="text-yellow-400">1000</span></div>
-        <div class="bg-slate-800/50 rounded p-1">👽 x3<br><span class="text-yellow-400">200</span></div>
-        <div class="bg-slate-800/50 rounded p-1">🤡 x3<br><span class="text-yellow-400">100</span></div>
-        <div class="bg-slate-800/50 rounded p-1">Any x3<br><span class="text-yellow-400">25</span></div>
-    </div>
-
-    <!-- Game Over Modal -->
-    <div id="gameOverModal" class="hidden fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-700 p-8 rounded-3xl max-w-sm w-full text-center shadow-2xl transform scale-100 transition-transform">
-            <div class="text-6xl mb-4">💸</div>
-            <h2 class="text-3xl font-bold text-white mb-2">You're Broke!</h2>
-            <p class="text-slate-400 mb-6">The chaos consumed your wallet.</p>
-            <button onclick="resetGame()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-xl w-full shadow-lg transition-colors">
-                Beg for Coins
-            </button>
+        <!-- LAYER 2: Top Bar -->
+        <!-- Slim top bar for stats. Right side visually obstructed by Layer 3. -->
+        <div class="absolute top-0 left-0 w-full h-14 bg-gray-900/95 backdrop-blur border-b border-gray-700 z-20 flex items-center px-4 justify-between">
+            <!-- Left Side Stats -->
+            <div class="flex items-center gap-4">
+                <!-- User Level -->
+                <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center border border-blue-400 shadow-lg shadow-blue-500/20">
+                    <span class="font-bold text-xs">12</span>
+                </div>
+                
+                <!-- Resources -->
+                <div class="flex flex-col">
+                    <div class="flex items-center gap-1">
+                        <i data-lucide="coins" class="w-3 h-3 text-yellow-400"></i>
+                        <span class="text-xs font-mono text-yellow-100">14,250</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <i data-lucide="gem" class="w-3 h-3 text-purple-400"></i>
+                        <span class="text-xs font-mono text-purple-100">50</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- We add padding-right to ensure text doesn't flow under the panel, 
+                 even though the panel visually covers this area. -->
+            <div class="pr-24">
+               <!-- Center/Right content could go here, but gets covered -->
+            </div>
         </div>
+
+        <!-- LAYER 1: Central Game Area -->
+        <!-- Large empty area. Partially covered on right by Layer 3. -->
+        <div class="relative flex-grow bg-gray-900 bg-grid-pattern z-0 mt-14 mb-20 overflow-hidden">
+            <!-- Hypothetical Game Content Placeholder -->
+            <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div class="text-center opacity-30">
+                    <div class="w-32 h-32 border-2 border-dashed border-gray-500 rounded-full mx-auto mb-4 flex items-center justify-center animate-pulse">
+                        <span class="text-xs uppercase tracking-widest">Main View</span>
+                    </div>
+                    <p class="text-xs text-gray-500 font-mono">Viewport Center</p>
+                </div>
+            </div>
+            
+            <!-- Example 'Unit' or 'Object' in the game world -->
+            <div class="absolute top-1/3 left-1/4 w-12 h-12 bg-indigo-500 rounded-lg shadow-lg shadow-indigo-500/50 border border-indigo-300 transform rotate-12"></div>
+        </div>
+
+        <!-- LAYER 2: Bottom Section -->
+        <!-- Buttons. Fixed height. -->
+        <div class="absolute bottom-0 left-0 w-full h-24 bg-gray-800 border-t border-gray-700 z-20 flex items-center justify-around px-2 pb-safe">
+            
+            <!-- Button 1 -->
+            <button class="flex flex-col items-center gap-1 group active:scale-95 transition-transform">
+                <div class="w-12 h-10 rounded bg-gray-700 border-b-4 border-gray-950 group-hover:bg-gray-600 group-hover:border-gray-800 transition-colors flex items-center justify-center">
+                    <i data-lucide="sword" class="w-5 h-5 text-gray-300"></i>
+                </div>
+                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Attack</span>
+            </button>
+
+            <!-- Button 2 (Main Action) -->
+            <button class="flex flex-col items-center gap-1 -mt-6 group active:scale-95 transition-transform">
+                <div class="w-16 h-14 rounded-xl bg-blue-600 border-b-4 border-blue-900 shadow-lg shadow-blue-900/50 group-hover:bg-blue-500 transition-colors flex items-center justify-center">
+                    <i data-lucide="play" class="w-8 h-8 text-white fill-current"></i>
+                </div>
+                <span class="text-[10px] font-bold text-blue-400 uppercase tracking-wide">Start</span>
+            </button>
+
+            <!-- Button 3 -->
+            <button class="flex flex-col items-center gap-1 group active:scale-95 transition-transform">
+                <div class="w-12 h-10 rounded bg-gray-700 border-b-4 border-gray-950 group-hover:bg-gray-600 group-hover:border-gray-800 transition-colors flex items-center justify-center">
+                    <i data-lucide="shield" class="w-5 h-5 text-gray-300"></i>
+                </div>
+                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Defend</span>
+            </button>
+
+        </div>
+
     </div>
 
     <script>
-        // --- Configuration ---
-        const COST_PER_SPIN = 10;
-        const INITIAL_BALANCE = 100;
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Simple console log to prove JS is hooked up
+        console.log("Game UI Loaded");
         
-        // Symbols and their relative rarity/value
-        // id: internal identifier
-        // char: the emoji
-        // weight: probability weight (higher = more common)
-        // payout: multiplier for getting 3 in a row
-        const SYMBOLS = [
-            { id: 'gem',    char: '💎', weight: 5,  payout: 100 },
-            { id: 'alien',  char: '👽', weight: 15, payout: 20 },
-            { id: 'clown',  char: '🤡', weight: 25, payout: 10 },
-            { id: 'poop',   char: '💩', weight: 35, payout: 5 },
-            { id: 'egg',    char: '🍆', weight: 40, payout: 3 },
-            { id: 'duck',   char: '🦆', weight: 40, payout: 3 },
-            { id: 'moyai',  char: '🗿', weight: 45, payout: 2.5 },
-            { id: 'avocado',char: '🥑', weight: 50, payout: 2.5 },
-        ];
-
-        // Winning Lines (Rows, Cols, Diagonals)
-        const WIN_LINES = [
-            [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
-            [0, 3, 6], [1, 4, 7], [2, 5, 8], // Cols
-            [0, 4, 8], [2, 4, 6]             // Diagonals
-        ];
-
-        // --- State ---
-        let balance = INITIAL_BALANCE;
-        let isSpinning = false;
-        let gridState = new Array(9).fill(null);
-
-        // --- Elements ---
-        const balanceDisplay = document.getElementById('balanceDisplay');
-        const gridEl = document.getElementById('slotGrid');
-        const spinBtn = document.getElementById('spinBtn');
-        const messageArea = document.getElementById('messageArea');
-        const gameOverModal = document.getElementById('gameOverModal');
-
-        // --- Initialization ---
-        function init() {
-            // Build Grid
-            gridEl.innerHTML = '';
-            for (let i = 0; i < 9; i++) {
-                const cell = document.createElement('div');
-                cell.className = 'slot-cell rounded-xl h-20 sm:h-24 flex items-center justify-center border border-slate-700/50';
-                cell.id = `slot-${i}`;
-                
-                const content = document.createElement('div');
-                content.className = 'emoji-content';
-                content.innerText = '🎰'; // Starting symbol
-                
-                cell.appendChild(content);
-                gridEl.appendChild(cell);
-            }
-            updateBalance(0);
-        }
-
-        // --- Logic ---
-
-        // Weighted Random Selection
-        function getRandomSymbol() {
-            const totalWeight = SYMBOLS.reduce((sum, s) => sum + s.weight, 0);
-            let random = Math.random() * totalWeight;
-            
-            for (const symbol of SYMBOLS) {
-                if (random < symbol.weight) {
-                    return symbol;
-                }
-                random -= symbol.weight;
-            }
-            return SYMBOLS[SYMBOLS.length - 1];
-        }
-
-        function updateBalance(amount) {
-            balance += amount;
-            balanceDisplay.innerText = Math.floor(balance);
-            
-            // Animation
-            balanceDisplay.parentElement.classList.remove('coin-pop');
-            void balanceDisplay.parentElement.offsetWidth; // trigger reflow
-            balanceDisplay.parentElement.classList.add('coin-pop');
-
-            if (balance < COST_PER_SPIN && !isSpinning) {
-                setTimeout(() => {
-                    gameOverModal.classList.remove('hidden');
-                }, 1000);
-            }
-        }
-
-        function showMessage(text, colorClass = 'text-yellow-400') {
-            const msg = document.createElement('div');
-            msg.className = `toast-msg font-bold text-xl drop-shadow-md ${colorClass}`;
-            msg.innerText = text;
-            messageArea.innerHTML = '';
-            messageArea.appendChild(msg);
-        }
-
-        function clearEffects() {
-            // Remove winning borders
-            document.querySelectorAll('.slot-cell').forEach(el => el.classList.remove('win-pulse'));
-            messageArea.innerHTML = '';
-        }
-
-        async function spin() {
-            if (isSpinning || balance < COST_PER_SPIN) return;
-
-            // Start
-            isSpinning = true;
-            updateBalance(-COST_PER_SPIN);
-            spinBtn.disabled = true;
-            clearEffects();
-
-            // Prepare results
-            const finalSymbols = [];
-            for (let i = 0; i < 9; i++) {
-                finalSymbols.push(getRandomSymbol());
-            }
-
-            // Animation Sequence
-            const cells = document.querySelectorAll('.slot-cell');
-            
-            // Start spinning visuals
-            cells.forEach((cell, index) => {
-                cell.classList.add('spinning');
-                // visual jitter to make it look active
-                const interval = setInterval(() => {
-                    cell.querySelector('.emoji-content').innerText = getRandomSymbol().char;
-                }, 100);
-                cell.dataset.spinInterval = interval;
+        // Add basic touch feedback
+        document.querySelectorAll('button, .cursor-pointer').forEach(btn => {
+            btn.addEventListener('touchstart', () => {
+                // Haptic feedback pattern if supported
+                if (navigator.vibrate) navigator.vibrate(10);
             });
-
-            // Stop logic (column by column delay)
-            const delayPerCol = 400; // ms
-            
-            for (let i = 0; i < 9; i++) {
-                // Calculate which column this index belongs to (0,1,2)
-                const col = i % 3; 
-                // Delay based on column + slight random jitter for row
-                const stopDelay = 500 + (col * delayPerCol) + (Math.random() * 200);
-
-                setTimeout(() => {
-                    const cell = cells[i];
-                    clearInterval(cell.dataset.spinInterval);
-                    cell.classList.remove('spinning');
-                    
-                    // Set final content
-                    cell.querySelector('.emoji-content').innerText = finalSymbols[i].char;
-                    
-                    // Add a bounce effect
-                    cell.querySelector('.emoji-content').style.transform = "scale(1.2)";
-                    setTimeout(() => cell.querySelector('.emoji-content').style.transform = "scale(1)", 150);
-
-                }, stopDelay);
-            }
-
-            // Wait for all to finish before checking wins
-            // Max delay is approx 500 + 2*400 + 200 = 1500ms
-            setTimeout(() => {
-                checkWins(finalSymbols);
-                isSpinning = false;
-                if (balance >= COST_PER_SPIN) {
-                    spinBtn.disabled = false;
-                }
-            }, 1600);
-        }
-
-        function checkWins(currentGridSymbols) {
-            let totalWin = 0;
-            let winCount = 0;
-            const winningLinesIndices = [];
-
-            // Check every line configuration
-            WIN_LINES.forEach(line => {
-                const s1 = currentGridSymbols[line[0]];
-                const s2 = currentGridSymbols[line[1]];
-                const s3 = currentGridSymbols[line[2]];
-
-                if (s1.id === s2.id && s2.id === s3.id) {
-                    // It's a match!
-                    const winAmount = COST_PER_SPIN * s1.payout;
-                    totalWin += winAmount;
-                    winCount++;
-                    winningLinesIndices.push(...line);
-                }
-            });
-
-            if (totalWin > 0) {
-                updateBalance(totalWin);
-                
-                // Visual feedback
-                const uniqueWinningIndices = [...new Set(winningLinesIndices)];
-                uniqueWinningIndices.forEach(index => {
-                    document.getElementById(`slot-${index}`).classList.add('win-pulse');
-                });
-
-                if (totalWin >= 1000) {
-                    showMessage(`JACKPOT! +${totalWin}`, 'text-pink-500 text-3xl');
-                } else if (winCount > 1) {
-                    showMessage(`MULTI-WIN! +${totalWin}`, 'text-cyan-400');
-                } else {
-                    showMessage(`WIN! +${totalWin}`);
-                }
-            } else {
-                // Random lose messages occasionally
-                if(Math.random() > 0.8) {
-                    const loseMsgs = ["Oof.", "Not this time.", "Try again!", "So close..."];
-                    showMessage(loseMsgs[Math.floor(Math.random()*loseMsgs.length)], 'text-slate-500 text-sm');
-                }
-            }
-        }
-
-        function resetGame() {
-            balance = INITIAL_BALANCE;
-            balanceDisplay.innerText = balance;
-            gameOverModal.classList.add('hidden');
-            spinBtn.disabled = false;
-            init();
-        }
-
-        // Start
-        init();
-
-        // Event Listener
-        spinBtn.addEventListener('click', spin);
-
+        });
     </script>
 </body>
 </html>
