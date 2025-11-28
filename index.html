@@ -38,10 +38,10 @@
             overflow: hidden;
             font-family: var(--font-main);
             
-            /* Updated: Darker Forest Green Background */
+            /* Darker Forest Green Background */
             background-color: #66bb6a; 
             background-image: 
-                /* Slightly stronger grid lines (0.12 opacity) to show on darker green */
+                /* Grid lines */
                 linear-gradient(rgba(0,0,0,0.12) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(0,0,0,0.12) 1px, transparent 1px),
                 /* Forest Green Gradient */
@@ -58,9 +58,22 @@
             flex-direction: column;
         }
 
+        /* --- CENTER EMOJI (Bathtub) --- */
+        .center-emoji {
+            position: absolute;
+            /* Positioned visually in the open space between top UI and footer */
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 8rem;
+            opacity: 0.5;
+            z-index: 5; /* Behind UI, above background */
+            pointer-events: none; /* Allows clicking through to the grid/game */
+            filter: drop-shadow(0 10px 10px rgba(0,0,0,0.3));
+        }
+
         /* --- SHARED STYLES --- */
         .panel {
-            /* Darker shadow */
             box-shadow: 0 4px 6px rgba(0,0,0,0.6);
             color: white;
             font-weight: bold;
@@ -93,7 +106,6 @@
             align-items: center;
             justify-content: space-between;
             z-index: 20;
-            /* Darker shadow */
             filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5));
         }
 
@@ -106,14 +118,12 @@
         .stat-value { font-size: 1.1rem; color: #443300; font-weight: 800; }
 
         /* --- 2. TOP RIGHT: ENEMY PROGRESS (Red Column) --- */
-        /* Updated: Darker red, stronger gradient, new content layout */
         .ui-event-panel {
             position: absolute;
             top: 0;
             right: 0;
             width: 30%;
             height: 50%; 
-            /* Stronger, darker red gradient */
             background: linear-gradient(180deg, #d32f2f 0%, #5d0000 100%);
             
             border-bottom-left-radius: 15px;
@@ -123,23 +133,18 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            /* Reduced top padding to move Neighbor higher */
             padding-top: 8px;
             padding-bottom: 10px;
-            /* UPDATED: Increased gap to space out meters */
             gap: 18px; 
             z-index: 20;
-            /* Darker shadow */
             box-shadow: -4px 4px 10px rgba(0,0,0,0.6);
         }
 
-        /* UPDATED: Matches .stat-label style exactly, but white */
         .enemy-header {
             font-size: 0.6rem;
             opacity: 0.8;
             color: white;
             text-transform: uppercase;
-            /* UPDATED: Removed bold (inherited from .panel) to match Power/Gold style */
             font-weight: normal; 
             margin-bottom: 2px; 
         }
@@ -154,7 +159,6 @@
 
         .meter-icon {
             font-size: 1.5rem;
-            /* Darker shadow */
             filter: drop-shadow(0 2px 2px rgba(0,0,0,0.6));
         }
 
@@ -177,11 +181,10 @@
         .fill-orange { background: #ff9800; width: 45%; }
         .fill-grey { background: #90a4ae; width: 20%; }
 
-        /* New Styles for the side-by-side squares */
         .neighbor-slots-row {
             display: flex;
             gap: 10px;
-            margin-top: auto; /* Pushes them to the bottom of the flex container */
+            margin-top: auto; 
             margin-bottom: 10px;
         }
 
@@ -193,7 +196,6 @@
             border-radius: 6px;
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
         }
-
 
         /* --- 3. LEFT SIDEBAR: ACTION BUTTONS (Red) --- */
         .ui-sidebar-container {
@@ -212,12 +214,10 @@
         .side-btn {
             width: 100%;
             aspect-ratio: 1; 
-            /* Swapped to PURPLE theme */
             background: linear-gradient(135deg, var(--ui-purple) 0%, var(--ui-purple-dark) 100%);
             border-radius: 8px;
             border: 1px solid rgba(255,255,255,0.3);
             border-left: none;
-            /* Darker shadow */
             box-shadow: 3px 3px 5px rgba(0,0,0,0.5);
             display: flex;
             justify-content: center;
@@ -231,11 +231,11 @@
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 32%; 
+            /* UPDATED: Reduced height from 32% to 28% to "lower" the black bar visually */
+            height: 28%; 
             z-index: 30;
             display: flex;
             flex-direction: column;
-            /* Removed shadow behind the footer/black bar as requested */
             box-shadow: none; 
         }
 
@@ -248,10 +248,9 @@
             display: flex;
             align-items: center;
             padding: 0 10px;
-            /* Slots are now equally spaced */
             justify-content: space-evenly; 
-            gap: 0; /* Gap handled by space-evenly */
-            overflow-x: hidden; /* Fixed number of slots, no scrolling needed */
+            gap: 0; 
+            overflow-x: hidden; 
         }
         
         .ui-inventory-strip::-webkit-scrollbar { display: none; }
@@ -262,7 +261,6 @@
             background: #1a1a1a;
             border: 1px solid #444;
             border-radius: 4px;
-            /* Darker shadow inside slots remains */
             box-shadow: inset 0 2px 5px rgba(0,0,0,0.8);
             display: flex;
             justify-content: center;
@@ -273,7 +271,6 @@
             transition: all 0.1s ease;
         }
         
-        /* Updated Highlight Color to Yellow */
         .inv-slot.active { 
             border-color: #FFD700; 
             color: #FFD700; 
@@ -288,17 +285,15 @@
             background: linear-gradient(180deg, var(--ui-teal-dark) 0%, #00363a 100%);
             border-top: 1px solid rgba(255,255,255,0.1);
             position: relative;
-            background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
-            background-size: 10px 10px;
+            /* UPDATED: Removed the radial-gradient dot pattern here */
             
             display: flex;
-            flex-direction: column; /* Stack vertically now */
+            flex-direction: column; 
             justify-content: center;
             align-items: center;
             gap: 15px;
         }
 
-        /* New button row */
         .control-row {
             display: flex;
             gap: 20px;
@@ -315,7 +310,6 @@
             align-items: center;
             font-size: 1.2rem;
             color: white;
-            /* Darker shadow */
             box-shadow: 0 4px 6px rgba(0,0,0,0.5);
         }
 
@@ -325,10 +319,8 @@
             background: linear-gradient(to bottom, var(--ui-teal), var(--ui-teal-dark));
             border-radius: 25px;
             border: 2px solid rgba(255,255,255,0.3);
-            /* Darker shadow */
             box-shadow: 0 4px 10px rgba(0,0,0,0.6);
             color: white;
-            /* Increased font size for larger Camera emoji */
             font-size: 2.2rem;
             text-transform: uppercase;
             letter-spacing: 2px;
@@ -336,7 +328,6 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            /* Added padding bottom to lift the emoji higher visually */
             padding-bottom: 8px;
         }
 
@@ -346,6 +337,9 @@
 
     <div id="game-viewport">
         
+        <!-- Center Floating Emoji -->
+        <div class="center-emoji">🛁</div>
+
         <!-- 1. Top Left Stats (Yellow) -->
         <div class="ui-stats-bar">
             <div class="stat-group">
@@ -356,7 +350,6 @@
                 <span class="stat-label">Gold</span>
                 <span class="stat-value">99k</span>
             </div>
-            <!-- Added 3rd Counter -->
             <div class="stat-group">
                 <span class="stat-label">Gems</span>
                 <span class="stat-value">50</span>
@@ -366,28 +359,23 @@
 
         <!-- 2. Top Right: Enemy Progress (Red Column) -->
         <div class="ui-event-panel panel">
-            <!-- Updated Header Text Style to match Power -->
             <div class="enemy-header">Neighbor</div>
             
-            <!-- Meter 1 -->
             <div class="meter-container">
                 <div class="meter-icon">📈</div>
                 <div class="meter-bar"><div class="meter-fill fill-red"></div></div>
             </div>
 
-            <!-- Meter 2 -->
             <div class="meter-container">
                 <div class="meter-icon">👎</div>
                 <div class="meter-bar"><div class="meter-fill fill-orange"></div></div>
             </div>
 
-            <!-- Meter 3 -->
             <div class="meter-container">
                 <div class="meter-icon">⌛</div>
                 <div class="meter-bar"><div class="meter-fill fill-grey"></div></div>
             </div>
 
-            <!-- New Empty Squares Area -->
             <div class="neighbor-slots-row">
                 <div class="neighbor-slot"></div>
                 <div class="neighbor-slot"></div>
@@ -419,12 +407,9 @@
             <!-- Main Control Area -->
             <div class="ui-controls-main">
                 
-                <!-- Added Row of secondary buttons -->
                 <div class="control-row">
                     <div class="action-circle-btn btn-pressable">🏪</div>
-                    <!-- CHANGED: Bank to Eyes -->
                     <div class="action-circle-btn btn-pressable">👀</div>
-                    <!-- CHANGED: Telescope to Die, added ID for logic -->
                     <div class="action-circle-btn btn-pressable" id="btn-dice">🎲</div>
                 </div>
 
@@ -449,13 +434,9 @@
         // --- BUTTON PRESS ANIMATION ---
         document.querySelectorAll('.btn-pressable').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                // Fixed logic to safely animate
                 const targetEl = e.currentTarget;
                 const originalTransform = targetEl.style.transform;
-                
-                // Add scale down effect
                 targetEl.style.transform = "scale(0.9)";
-                
                 setTimeout(() => {
                     targetEl.style.transform = originalTransform;
                 }, 100);
@@ -468,45 +449,33 @@
         let isRolling = false;
 
         diceBtn.addEventListener('click', () => {
-            if (isRolling) return; // Prevent double clicking
+            if (isRolling) return; 
             isRolling = true;
             
-            // Random target index (0 to 5)
             const targetIndex = Math.floor(Math.random() * slots.length);
             
             let currentIndex = 0;
-            // Find current active index to start from
             slots.forEach((slot, index) => {
                 if (slot.classList.contains('active')) currentIndex = index;
             });
 
-            // Configuration for the roll
-            let speed = 50; // Initial speed (ms)
+            let speed = 50; 
             let steps = 0;
-            const minSteps = 20; // Minimum spins before stopping
+            const minSteps = 20; 
             
-            // Recursive function to handle the cycling
             function step() {
-                // Remove active from current
                 slots[currentIndex].classList.remove('active');
-                
-                // Move to next
                 currentIndex = (currentIndex + 1) % slots.length;
-                
-                // Add active to new
                 slots[currentIndex].classList.add('active');
                 steps++;
 
-                // If we've spun enough and reached target
                 if (steps > minSteps && currentIndex === targetIndex) {
                     isRolling = false;
-                    // Final "pulse" effect on the winner
                     slots[currentIndex].style.transform = "scale(1.2)";
                     setTimeout(() => slots[currentIndex].style.transform = "", 200);
                     return;
                 }
 
-                // Slow down logic as we approach the end (simple linear slowdown)
                 if (steps > minSteps - 8) {
                     speed += 30;
                 }
@@ -514,7 +483,6 @@
                 setTimeout(step, speed);
             }
 
-            // Start the loop
             step();
         });
 
