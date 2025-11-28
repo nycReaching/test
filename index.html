@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- Browser UI color remains BLACK as requested previously -->
+    <!-- Browser UI color remains BLACK -->
     <meta name="theme-color" content="#000000">
     <title>Pro Game UI Update</title>
     <style>
@@ -17,7 +17,6 @@
             --ui-red-dark: #B71C1C;
             --ui-teal: #00BCD4;
             --ui-teal-dark: #006064;
-            /* Added Brown Variables */
             --ui-brown: #5D4037;
             --ui-brown-dark: #3E2723;
             --ui-dark: #1a1a1a;
@@ -65,18 +64,36 @@
             flex-direction: column;
         }
 
-        /* --- CENTER EMOJI --- */
-        .center-emoji {
+        /* --- MAP PROPS (Background Emojis) --- */
+        .map-prop {
             position: absolute;
+            z-index: 5; /* Same layer as bathtub */
+            pointer-events: none;
+            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3));
+        }
+
+        /* Bathtub */
+        .prop-bathtub {
             top: 40%;
             left: 42%; 
             transform: translate(-50%, -50%);
             font-size: 6rem;
-            opacity: 1;
-            z-index: 5; 
-            pointer-events: none; 
-            filter: drop-shadow(0 10px 10px rgba(0,0,0,0.3));
         }
+
+        /* Tree: Bottom left of visible area (Footer is 28% high, so we position above that) */
+        .prop-tree {
+            bottom: 32%; /* Just above the footer line */
+            left: 8%;
+            font-size: 4rem;
+        }
+
+        /* House: Above the tree */
+        .prop-house {
+            bottom: 43%; /* Positioned above the tree */
+            left: 8%;
+            font-size: 4rem;
+        }
+
 
         /* --- SHARED STYLES --- */
         .panel {
@@ -187,11 +204,21 @@
         .fill-orange { background: #ff9800; width: 45%; }
         .fill-grey { background: #90a4ae; width: 20%; }
 
+        /* New Sabotage Label */
+        .sabotage-label {
+            font-size: 0.5rem;
+            color: rgba(255,255,255,0.7);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: auto; /* Pushes everything above it up, and sits at the bottom with the slots */
+            margin-bottom: 4px;
+        }
+
         .neighbor-slots-row {
             display: flex;
             gap: 10px;
-            margin-top: auto; 
             margin-bottom: 10px;
+            /* Removed margin-top: auto from here, as the label above handles the push now */
         }
 
         .neighbor-slot {
@@ -316,7 +343,7 @@
         .camera-row {
             display: flex;
             align-items: center;
-            gap: 20px; /* Increased gap for decorative icons */
+            gap: 20px; 
         }
 
         .action-circle-btn {
@@ -351,7 +378,6 @@
             padding-bottom: 8px;
         }
         
-        /* New Class for Decorative Icons */
         .decorative-icon {
             font-size: 3rem;
             filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5));
@@ -366,7 +392,11 @@
         
         <div id="game-background"></div>
 
-        <div class="center-emoji">🛁</div>
+        <!-- Props in the game world -->
+        <div class="map-prop prop-bathtub">🛁</div>
+        <div class="map-prop prop-tree">🌳</div>
+        <div class="map-prop prop-house">🏠</div>
+
 
         <!-- 1. Top Left Stats -->
         <div class="ui-stats-bar">
@@ -403,6 +433,9 @@
                 <div class="meter-icon">🚘</div>
                 <div class="meter-bar"><div class="meter-fill fill-grey"></div></div>
             </div>
+
+            <!-- SABOTAGE Label -->
+            <div class="sabotage-label">Sabotage</div>
 
             <div class="neighbor-slots-row">
                 <div class="neighbor-slot"></div>
