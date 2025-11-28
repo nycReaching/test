@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- Updated: Sets the browser UI color (status bar/nav bar) to match the dark teal footer -->
+    <meta name="theme-color" content="#00363a">
     <title>Pro Game UI Update</title>
     <style>
         /* --- RESET & VARIABLES --- */
@@ -38,7 +40,20 @@
             overflow: hidden;
             font-family: var(--font-main);
             
-            /* Darker Forest Green Background */
+            /* UPDATED: Body background is now TEAL to match the bottom footer/gesture bar */
+            background-color: #00363a; 
+        }
+
+        /* UPDATED: New container for the Green Game Background */
+        #game-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0; /* Behind everything */
+            
+            /* Darker Forest Green Background moved here */
             background-color: #66bb6a; 
             background-image: 
                 /* Grid lines */
@@ -47,7 +62,7 @@
                 /* Forest Green Gradient */
                 linear-gradient(160deg, #81c784 0%, #2e7d32 100%);
             background-size: 20px 20px, 20px 20px, cover;
-            background-attachment: fixed;
+            /* Removed 'fixed' attachment to prevent mobile layout issues inside absolute div */
         }
 
         #game-viewport {
@@ -61,12 +76,13 @@
         /* --- CENTER EMOJI (Bathtub) --- */
         .center-emoji {
             position: absolute;
-            /* Positioned visually in the open space between top UI and footer */
+            /* UPDATED: Positioned slightly to the left (was 50%) */
             top: 40%;
-            left: 50%;
+            left: 42%; 
             transform: translate(-50%, -50%);
-            font-size: 8rem;
-            opacity: 0.5;
+            /* UPDATED: Smaller size (was 8rem) and full opacity */
+            font-size: 6rem;
+            opacity: 1;
             z-index: 5; /* Behind UI, above background */
             pointer-events: none; /* Allows clicking through to the grid/game */
             filter: drop-shadow(0 10px 10px rgba(0,0,0,0.3));
@@ -231,7 +247,6 @@
             bottom: 0;
             left: 0;
             width: 100%;
-            /* UPDATED: Reduced height from 32% to 28% to "lower" the black bar visually */
             height: 28%; 
             z-index: 30;
             display: flex;
@@ -285,7 +300,6 @@
             background: linear-gradient(180deg, var(--ui-teal-dark) 0%, #00363a 100%);
             border-top: 1px solid rgba(255,255,255,0.1);
             position: relative;
-            /* UPDATED: Removed the radial-gradient dot pattern here */
             
             display: flex;
             flex-direction: column; 
@@ -337,6 +351,9 @@
 
     <div id="game-viewport">
         
+        <!-- UPDATED: Background Logic for Mobile Bars -->
+        <div id="game-background"></div>
+
         <!-- Center Floating Emoji -->
         <div class="center-emoji">🛁</div>
 
