@@ -57,7 +57,8 @@
 
         /* --- SHARED STYLES --- */
         .panel {
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            /* Darker shadow */
+            box-shadow: 0 4px 6px rgba(0,0,0,0.6);
             color: white;
             font-weight: bold;
             display: flex;
@@ -89,7 +90,8 @@
             align-items: center;
             justify-content: space-between;
             z-index: 20;
-            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.2));
+            /* Darker shadow */
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5));
         }
 
         .stat-group {
@@ -122,7 +124,8 @@
             padding-bottom: 10px;
             gap: 12px;
             z-index: 20;
-            box-shadow: -4px 4px 10px rgba(0,0,0,0.3);
+            /* Darker shadow */
+            box-shadow: -4px 4px 10px rgba(0,0,0,0.6);
         }
 
         /* New Styles for Enemy Meters */
@@ -144,7 +147,8 @@
 
         .meter-icon {
             font-size: 1.5rem;
-            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3));
+            /* Darker shadow */
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.6));
         }
 
         .meter-bar {
@@ -189,7 +193,8 @@
             border-radius: 8px;
             border: 1px solid rgba(255,255,255,0.3);
             border-left: none;
-            box-shadow: 3px 3px 5px rgba(0,0,0,0.2);
+            /* Darker shadow */
+            box-shadow: 3px 3px 5px rgba(0,0,0,0.5);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -206,7 +211,8 @@
             z-index: 30;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 -5px 15px rgba(0,0,0,0.2);
+            /* Darker shadow */
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.5);
         }
 
         /* 4a. Inventory Strip (Black) */
@@ -230,7 +236,8 @@
             background: #1a1a1a;
             border: 1px solid #444;
             border-radius: 4px;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+            /* Darker shadow */
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.8);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -273,7 +280,8 @@
             align-items: center;
             font-size: 1.2rem;
             color: white;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            /* Darker shadow */
+            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
         }
 
         .main-action-btn {
@@ -282,7 +290,8 @@
             background: linear-gradient(to bottom, var(--ui-teal), var(--ui-teal-dark));
             border-radius: 25px;
             border: 2px solid rgba(255,255,255,0.3);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            /* Darker shadow */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.6);
             color: white;
             /* Increased font size for larger Camera emoji */
             font-size: 2.2rem;
@@ -292,6 +301,8 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            /* Added padding bottom to lift the emoji higher visually */
+            padding-bottom: 8px;
         }
 
     </style>
@@ -361,8 +372,7 @@
                 <div class="inv-slot">4</div>
                 <div class="inv-slot">5</div>
                 <div class="inv-slot">6</div>
-                <div class="inv-slot">7</div>
-                <div class="inv-slot">8</div>
+                <!-- Removed slots 7 and 8 -->
             </div>
 
             <!-- Main Control Area -->
