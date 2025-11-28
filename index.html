@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- Updated: Sets the browser UI color (status bar/nav bar) to BLACK -->
+    <!-- Browser UI color remains BLACK as requested previously -->
     <meta name="theme-color" content="#000000">
     <title>Pro Game UI Update</title>
     <style>
@@ -17,9 +17,11 @@
             --ui-red-dark: #B71C1C;
             --ui-teal: #00BCD4;
             --ui-teal-dark: #006064;
+            /* Added Brown Variables */
+            --ui-brown: #5D4037;
+            --ui-brown-dark: #3E2723;
             --ui-dark: #1a1a1a;
             --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            /* Fallback for browsers not supporting dvh */
             --app-height: 100vh;
         }
 
@@ -33,33 +35,24 @@
             margin: 0;
             padding: 0;
             width: 100vw;
-            /* Use dynamic viewport height to account for mobile URL bars */
             height: 100dvh;
-            /* Fallback for older browsers */
             height: var(--app-height); 
             overflow: hidden;
             font-family: var(--font-main);
-            
-            /* UPDATED: Body background is now BLACK for the gesture bar */
             background-color: #000000; 
         }
 
-        /* Container for the Green Game Background */
         #game-background {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 0; /* Behind everything */
-            
-            /* Darker Forest Green Background */
+            z-index: 0; 
             background-color: #66bb6a; 
             background-image: 
-                /* Grid lines */
                 linear-gradient(rgba(0,0,0,0.12) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(0,0,0,0.12) 1px, transparent 1px),
-                /* Forest Green Gradient */
                 linear-gradient(160deg, #81c784 0%, #2e7d32 100%);
             background-size: 20px 20px, 20px 20px, cover;
         }
@@ -72,7 +65,7 @@
             flex-direction: column;
         }
 
-        /* --- CENTER EMOJI (Bathtub) --- */
+        /* --- CENTER EMOJI --- */
         .center-emoji {
             position: absolute;
             top: 40%;
@@ -80,7 +73,7 @@
             transform: translate(-50%, -50%);
             font-size: 6rem;
             opacity: 1;
-            z-index: 5; /* Behind UI, above background */
+            z-index: 5; 
             pointer-events: none; 
             filter: drop-shadow(0 10px 10px rgba(0,0,0,0.3));
         }
@@ -104,7 +97,7 @@
             filter: brightness(0.9);
         }
 
-        /* --- 1. TOP LEFT: PLAYER STATS (Yellow) --- */
+        /* --- 1. TOP LEFT: PLAYER STATS --- */
         .ui-stats-bar {
             position: absolute;
             top: 0;
@@ -130,7 +123,7 @@
         .stat-label { font-size: 0.6rem; opacity: 0.8; color: #443300; text-transform: uppercase; }
         .stat-value { font-size: 1.1rem; color: #443300; font-weight: 800; }
 
-        /* --- 2. TOP RIGHT: ENEMY PROGRESS (Red Column) --- */
+        /* --- 2. TOP RIGHT: ENEMY PROGRESS --- */
         .ui-event-panel {
             position: absolute;
             top: 0;
@@ -210,7 +203,7 @@
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
         }
 
-        /* --- 3. LEFT SIDEBAR: ACTION BUTTONS (Red) --- */
+        /* --- 3. LEFT SIDEBAR: ACTION BUTTONS --- */
         .ui-sidebar-container {
             position: absolute;
             top: 15%;
@@ -291,18 +284,18 @@
             transform: scale(1.05);
         }
 
-        /* 4b. Main Controls (Teal) */
+        /* 4b. Main Controls (Dark Brown) */
         .ui-controls-main {
             flex-grow: 1;
-            /* Base Teal Background */
-            background-color: #006064; 
-            /* UPDATED: Added Grid on top of Gradient */
+            /* Updated: Dark Brown Background */
+            background-color: var(--ui-brown-dark); 
+            
             background-image: 
                 /* White grid lines (faint) */
                 linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px),
-                /* Teal Gradient */
-                linear-gradient(180deg, var(--ui-teal-dark) 0%, #00363a 100%);
+                /* Dark Brown Gradient */
+                linear-gradient(180deg, var(--ui-brown) 0%, var(--ui-brown-dark) 100%);
             
             background-size: 20px 20px, 20px 20px, cover;
             border-top: 1px solid rgba(255,255,255,0.1);
@@ -318,6 +311,12 @@
         .control-row {
             display: flex;
             gap: 20px;
+        }
+        
+        .camera-row {
+            display: flex;
+            align-items: center;
+            gap: 20px; /* Increased gap for decorative icons */
         }
 
         .action-circle-btn {
@@ -335,7 +334,6 @@
         }
 
         .main-action-btn {
-            /* UPDATED: Reduced width from 160px to 120px */
             width: 120px;
             height: 55px;
             background: linear-gradient(to bottom, var(--ui-teal), var(--ui-teal-dark));
@@ -352,6 +350,13 @@
             align-items: center;
             padding-bottom: 8px;
         }
+        
+        /* New Class for Decorative Icons */
+        .decorative-icon {
+            font-size: 3rem;
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5));
+            cursor: default;
+        }
 
     </style>
 </head>
@@ -359,30 +364,28 @@
 
     <div id="game-viewport">
         
-        <!-- Background Logic for Mobile Bars -->
         <div id="game-background"></div>
 
-        <!-- Center Floating Emoji -->
         <div class="center-emoji">🛁</div>
 
-        <!-- 1. Top Left Stats (Yellow) -->
+        <!-- 1. Top Left Stats -->
         <div class="ui-stats-bar">
             <div class="stat-group">
-                <span class="stat-label">Power</span>
-                <span class="stat-value">2,450</span>
+                <span class="stat-label">Funds</span>
+                <span class="stat-value">$1,000</span>
             </div>
             <div class="stat-group">
-                <span class="stat-label">Gold</span>
-                <span class="stat-value">99k</span>
+                <span class="stat-label">Research</span>
+                <span class="stat-value">10</span>
             </div>
             <div class="stat-group">
-                <span class="stat-label">Gems</span>
-                <span class="stat-value">50</span>
+                <span class="stat-label">Luck</span>
+                <span class="stat-value">3</span>
             </div>
             <div style="width: 10px;"></div>
         </div>
 
-        <!-- 2. Top Right: Enemy Progress (Red Column) -->
+        <!-- 2. Top Right: Enemy Progress -->
         <div class="ui-event-panel panel">
             <div class="enemy-header">Neighbor</div>
             
@@ -396,7 +399,6 @@
                 <div class="meter-bar"><div class="meter-fill fill-orange"></div></div>
             </div>
 
-            <!-- UPDATED: Icon changed from Hourglass to Car -->
             <div class="meter-container">
                 <div class="meter-icon">🚘</div>
                 <div class="meter-bar"><div class="meter-fill fill-grey"></div></div>
@@ -408,7 +410,7 @@
             </div>
         </div>
 
-        <!-- 3. Left Side Actions (Purple Buttons) -->
+        <!-- 3. Left Side Actions -->
         <div class="ui-sidebar-container">
             <div class="side-btn btn-pressable">🧡</div>
             <div class="side-btn btn-pressable">💛</div>
@@ -417,7 +419,7 @@
             <div class="side-btn btn-pressable">🩶</div>
         </div>
 
-        <!-- 4. Footer (Black Strip + Teal Area) -->
+        <!-- 4. Footer -->
         <div class="ui-footer-container">
             
             <!-- Inventory Strip -->
@@ -430,7 +432,7 @@
                 <div class="inv-slot">6</div>
             </div>
 
-            <!-- Main Control Area -->
+            <!-- Main Control Area (Brown) -->
             <div class="ui-controls-main">
                 
                 <div class="control-row">
@@ -439,8 +441,15 @@
                     <div class="action-circle-btn btn-pressable" id="btn-dice">🎲</div>
                 </div>
 
-                <div class="main-action-btn btn-pressable">
-                    📷
+                <!-- Camera Row with Decorative Icons -->
+                <div class="camera-row">
+                    <div class="decorative-icon">🕯️</div>
+                    
+                    <div class="main-action-btn btn-pressable">
+                        📷
+                    </div>
+                    
+                    <div class="decorative-icon">👟</div>
                 </div>
             </div>
         </div>
@@ -448,7 +457,6 @@
     </div>
 
     <script>
-        // Update the app height property to handle mobile browsers correctly
         function setAppHeight() {
             const vh = window.innerHeight;
             document.documentElement.style.setProperty('--app-height', `${vh}px`);
@@ -457,7 +465,6 @@
         window.addEventListener('resize', setAppHeight);
         setAppHeight();
         
-        // --- BUTTON PRESS ANIMATION ---
         document.querySelectorAll('.btn-pressable').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const targetEl = e.currentTarget;
