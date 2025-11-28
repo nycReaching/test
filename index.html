@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- Updated: Sets the browser UI color (status bar/nav bar) to match the dark teal footer -->
-    <meta name="theme-color" content="#00363a">
+    <!-- Updated: Sets the browser UI color (status bar/nav bar) to BLACK -->
+    <meta name="theme-color" content="#000000">
     <title>Pro Game UI Update</title>
     <style>
         /* --- RESET & VARIABLES --- */
@@ -40,11 +40,11 @@
             overflow: hidden;
             font-family: var(--font-main);
             
-            /* UPDATED: Body background is now TEAL to match the bottom footer/gesture bar */
-            background-color: #00363a; 
+            /* UPDATED: Body background is now BLACK for the gesture bar */
+            background-color: #000000; 
         }
 
-        /* UPDATED: New container for the Green Game Background */
+        /* Container for the Green Game Background */
         #game-background {
             position: absolute;
             top: 0;
@@ -53,7 +53,7 @@
             height: 100%;
             z-index: 0; /* Behind everything */
             
-            /* Darker Forest Green Background moved here */
+            /* Darker Forest Green Background */
             background-color: #66bb6a; 
             background-image: 
                 /* Grid lines */
@@ -62,7 +62,6 @@
                 /* Forest Green Gradient */
                 linear-gradient(160deg, #81c784 0%, #2e7d32 100%);
             background-size: 20px 20px, 20px 20px, cover;
-            /* Removed 'fixed' attachment to prevent mobile layout issues inside absolute div */
         }
 
         #game-viewport {
@@ -76,15 +75,13 @@
         /* --- CENTER EMOJI (Bathtub) --- */
         .center-emoji {
             position: absolute;
-            /* UPDATED: Positioned slightly to the left (was 50%) */
             top: 40%;
             left: 42%; 
             transform: translate(-50%, -50%);
-            /* UPDATED: Smaller size (was 8rem) and full opacity */
             font-size: 6rem;
             opacity: 1;
             z-index: 5; /* Behind UI, above background */
-            pointer-events: none; /* Allows clicking through to the grid/game */
+            pointer-events: none; 
             filter: drop-shadow(0 10px 10px rgba(0,0,0,0.3));
         }
 
@@ -297,7 +294,17 @@
         /* 4b. Main Controls (Teal) */
         .ui-controls-main {
             flex-grow: 1;
-            background: linear-gradient(180deg, var(--ui-teal-dark) 0%, #00363a 100%);
+            /* Base Teal Background */
+            background-color: #006064; 
+            /* UPDATED: Added Grid on top of Gradient */
+            background-image: 
+                /* White grid lines (faint) */
+                linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px),
+                /* Teal Gradient */
+                linear-gradient(180deg, var(--ui-teal-dark) 0%, #00363a 100%);
+            
+            background-size: 20px 20px, 20px 20px, cover;
             border-top: 1px solid rgba(255,255,255,0.1);
             position: relative;
             
@@ -328,7 +335,8 @@
         }
 
         .main-action-btn {
-            width: 160px;
+            /* UPDATED: Reduced width from 160px to 120px */
+            width: 120px;
             height: 55px;
             background: linear-gradient(to bottom, var(--ui-teal), var(--ui-teal-dark));
             border-radius: 25px;
@@ -351,7 +359,7 @@
 
     <div id="game-viewport">
         
-        <!-- UPDATED: Background Logic for Mobile Bars -->
+        <!-- Background Logic for Mobile Bars -->
         <div id="game-background"></div>
 
         <!-- Center Floating Emoji -->
@@ -388,8 +396,9 @@
                 <div class="meter-bar"><div class="meter-fill fill-orange"></div></div>
             </div>
 
+            <!-- UPDATED: Icon changed from Hourglass to Car -->
             <div class="meter-container">
-                <div class="meter-icon">⌛</div>
+                <div class="meter-icon">🚘</div>
                 <div class="meter-bar"><div class="meter-fill fill-grey"></div></div>
             </div>
 
