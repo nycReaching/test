@@ -75,20 +75,28 @@
            ---------------------------------------------------
         */
 
-        /* Telescope: Placed above the bathtub */
+        /* Telescope: Higher up */
         .prop-telescope {
-            top: 25%;
+            top: 15%; /* Moved higher from 25% */
             left: 42%;
             transform: translate(-50%, -50%) rotate(-10deg);
             font-size: 3.5rem;
         }
 
-        /* Bathtub: Higher up and smaller */
+        /* Bathtub */
         .prop-bathtub {
-            top: 35%; /* Moved up from 40% */
+            top: 35%; 
             left: 42%; 
             transform: translate(-50%, -50%);
-            font-size: 4rem; /* Reduced from 6rem */
+            font-size: 4rem; 
+        }
+
+        /* Scales: Below Bathtub */
+        .prop-scales {
+            top: 48%; /* Below bathtub (35%) */
+            left: 42%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
         }
 
         /* Trees: A cluster of 3 to the left */
@@ -101,14 +109,24 @@
         .tree-2 { left: 12%; z-index: 6; /* Slight overlap right */ }
         .tree-3 { left: 18%; z-index: 5; /* Slight overlap right */ }
 
-        /* Flowers: To the right of the trees with some space */
+        /* Tiny House: Above middle tree */
+        .prop-house-tiny {
+            bottom: 46%; /* Higher than tree bottom (32%) */
+            left: 12%;   /* Aligned with tree-2 */
+            transform: translateX(10%); /* Slight nudge to center visually on foliage */
+            font-size: 1.5rem;
+            z-index: 7;
+        }
+
+        /* Flowers: Moved further right + added Rose */
         .prop-flower {
-            bottom: 33%; /* Slightly higher/smaller variation */
+            bottom: 33%; 
             font-size: 2.5rem;
         }
         
-        .flower-hya { left: 32%; } /* Hyacinth */
-        .flower-sun { left: 38%; } /* Sunflower */
+        .flower-hya { left: 45%; } /* Moved right */
+        .flower-sun { left: 51%; } /* Moved right */
+        .flower-rose { left: 57%; } /* New Rose */
 
 
         /* --- SHARED STYLES --- */
@@ -411,13 +429,17 @@
         <div class="map-prop prop-telescope">🔭</div>
 
         <div class="map-prop prop-bathtub">🛁</div>
+        <div class="map-prop prop-scales">⚖️</div>
         
+        <div class="map-prop prop-house-tiny">🏠</div>
+
         <div class="map-prop prop-tree tree-1">🌳</div>
         <div class="map-prop prop-tree tree-2">🌳</div>
         <div class="map-prop prop-tree tree-3">🌳</div>
         
         <div class="map-prop prop-flower flower-hya">🪻</div>
         <div class="map-prop prop-flower flower-sun">🌻</div>
+        <div class="map-prop prop-flower flower-rose">🌹</div>
 
 
         <div class="ui-stats-bar">
@@ -465,9 +487,10 @@
         <div class="ui-sidebar-container">
             <div class="side-btn btn-pressable">🧡</div>
             <div class="side-btn btn-pressable">💛</div>
-            <div class="side-btn btn-pressable">💚</div>
-            <div class="side-btn btn-pressable">🤎</div>
-            <div class="side-btn btn-pressable">🩶</div>
+            <!-- Updated Icons Below -->
+            <div class="side-btn btn-pressable">🧑‍🌾</div>
+            <div class="side-btn btn-pressable">🪻</div>
+            <div class="side-btn btn-pressable">🌳</div>
         </div>
 
         <div class="ui-footer-container">
