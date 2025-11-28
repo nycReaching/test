@@ -149,13 +149,11 @@
             background: linear-gradient(135deg, var(--ui-gold) 0%, var(--ui-gold-dark) 100%);
             clip-path: polygon(0 0, 100% 0, 95% 100%, 0% 100%);
             
-            /* UPDATED ALIGNMENT */
-            padding-left: 15px; /* Reduced to push Left content closer to edge */
-            padding-right: 35px; /* Reduced to utilise unused space */
-            
-            display: flex;
+            /* GRID LAYOUT FOR EQUAL SPACING */
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
             align-items: center;
-            justify-content: space-between;
+            
             z-index: 20;
             filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5));
         }
@@ -165,17 +163,22 @@
             flex-direction: column;
             line-height: 1;
             justify-content: center;
-            flex: 1; /* Allow groups to take available space for text-align to work effectively */
         }
 
-        /* Specific Alignments */
+        /* Alignment Specifics within Grid Cells */
         .stat-group.align-left {
+            justify-self: start;
+            padding-left: 20px;
             align-items: flex-start;
         }
         .stat-group.align-center {
+            justify-self: center;
             align-items: center;
         }
         .stat-group.align-right {
+            justify-self: end;
+            /* Extra padding to account for the angled cut on the right */
+            padding-right: 50px; 
             align-items: flex-end;
         }
 
@@ -185,8 +188,10 @@
             color: #443300;
             text-transform: uppercase; 
         }
+        
+        /* Updated: Slightly smaller font size */
         .stat-value { 
-            font-size: 1.25rem; 
+            font-size: 1.15rem; 
             color: #443300; 
             font-weight: 800;
         }
@@ -290,16 +295,14 @@
             gap: 12px;
             padding-left: 5px;
             z-index: 15;
-            /* Allow sidebar to overlap if needed, but not block */
             pointer-events: none; 
         }
 
-        /* Container for button + potential popout menu */
         .sidebar-item-wrapper {
             position: relative;
             width: 100%;
             height: auto;
-            pointer-events: auto; /* Re-enable clicks */
+            pointer-events: auto;
             display: flex;
             align-items: center;
         }
@@ -320,10 +323,10 @@
             z-index: 2;
         }
 
-        /* --- SLIDE OUT TREE MENU --- */
-        .tree-menu {
+        /* --- SHARED SLIDE OUT MENU STYLES --- */
+        .slide-menu {
             position: absolute;
-            left: 90%; /* Start tucked under/behind button */
+            left: 90%; 
             top: 0;
             height: 100%;
             background: rgba(40, 20, 60, 0.95);
@@ -343,25 +346,38 @@
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             z-index: 1; /* Behind button */
             box-shadow: 4px 4px 8px rgba(0,0,0,0.4);
+            
+            /* Horizontal Scroll for safety if many items */
+            overflow-x: auto;
+            white-space: nowrap;
         }
+        
+        .slide-menu::-webkit-scrollbar { display: none; }
 
-        .tree-menu.open {
-            width: 200px; /* Width enough for 4 emojis */
+        .slide-menu.open {
             opacity: 1;
-            padding: 0 10px 0 15px; /* Left padding creates gap from button */
+            padding: 0 10px 0 15px; 
             pointer-events: auto;
-            left: 85%; /* Slide out */
+            left: 85%;
         }
 
-        .tree-option {
+        /* Tree menu specific width */
+        .menu-trees.open { width: 200px; }
+        
+        /* Flower menu needs more width for 7 items */
+        .menu-flowers.open { width: 280px; } 
+
+        .menu-option {
             font-size: 1.4rem;
             padding: 5px;
             cursor: pointer;
             transition: transform 0.2s;
             flex: 1;
+            min-width: 35px; /* Ensure clickable area */
             text-align: center;
+            display: inline-block;
         }
-        .tree-option:active {
+        .menu-option:active {
             transform: scale(0.8);
         }
 
@@ -568,19 +584,31 @@
             <div class="sidebar-item-wrapper">
                 <div class="side-btn btn-pressable">🧑‍🌾</div>
             </div>
+
+            <!-- Flower Button Wrapper with Slide Out Menu -->
             <div class="sidebar-item-wrapper">
-                <div class="side-btn btn-pressable">🪻</div>
+                <div class="side-btn btn-pressable" id="btn-flower-toggle">🌷</div>
+                
+                <div class="slide-menu menu-flowers" id="flower-menu">
+                    <div class="menu-option">🌹</div>
+                    <div class="menu-option">🌸</div>
+                    <div class="menu-option">🌺</div>
+                    <div class="menu-option">🌻</div>
+                    <div class="menu-option">🌼</div>
+                    <div class="menu-option">🌷</div>
+                    <div class="menu-option">🪻</div>
+                </div>
             </div>
             
             <!-- Tree Button Wrapper with Slide Out Menu -->
             <div class="sidebar-item-wrapper">
                 <div class="side-btn btn-pressable" id="btn-tree-toggle">🌳</div>
                 
-                <div class="tree-menu" id="tree-menu">
-                    <div class="tree-option">🌴</div>
-                    <div class="tree-option">🌳</div>
-                    <div class="tree-option">🌲</div>
-                    <div class="tree-option">🎋</div>
+                <div class="slide-menu menu-trees" id="tree-menu">
+                    <div class="menu-option">🌴</div>
+                    <div class="menu-option">🌳</div>
+                    <div class="menu-option">🌲</div>
+                    <div class="menu-option">🎋</div>
                 </div>
             </div>
         </div>
@@ -631,7 +659,6 @@
         document.querySelectorAll('.btn-pressable').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const targetEl = e.currentTarget;
-                // Only animate scale if not the tree button (handled separately for clarity, though could combine)
                 const originalTransform = targetEl.style.transform;
                 targetEl.style.transform = "scale(0.9)";
                 setTimeout(() => {
@@ -640,22 +667,43 @@
             });
         });
 
-        // --- TREE MENU TOGGLE ---
+        // --- MENU LOGIC ---
+        
         const treeBtn = document.getElementById('btn-tree-toggle');
         const treeMenu = document.getElementById('tree-menu');
         
+        const flowerBtn = document.getElementById('btn-flower-toggle');
+        const flowerMenu = document.getElementById('flower-menu');
+
+        function closeAllMenus() {
+            treeMenu.classList.remove('open');
+            flowerMenu.classList.remove('open');
+        }
+
+        // Tree Toggle
         treeBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevent immediate body click
-            treeMenu.classList.toggle('open');
+            e.stopPropagation(); 
+            const wasOpen = treeMenu.classList.contains('open');
+            closeAllMenus(); // Close others first
+            if (!wasOpen) treeMenu.classList.add('open');
+        });
+
+        // Flower Toggle
+        flowerBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const wasOpen = flowerMenu.classList.contains('open');
+            closeAllMenus(); // Close others first
+            if (!wasOpen) flowerMenu.classList.add('open');
         });
 
         // Close menu if clicking outside
         document.body.addEventListener('click', (e) => {
-            if (treeMenu.classList.contains('open')) {
-                // If click is not inside the menu and not on the button
-                if (!treeMenu.contains(e.target) && e.target !== treeBtn) {
-                    treeMenu.classList.remove('open');
-                }
+            // Check if click is outside of both menus and buttons
+            const clickInsideTree = treeMenu.contains(e.target) || treeBtn.contains(e.target);
+            const clickInsideFlower = flowerMenu.contains(e.target) || flowerBtn.contains(e.target);
+
+            if (!clickInsideTree && !clickInsideFlower) {
+                closeAllMenus();
             }
         });
 
