@@ -37,12 +37,15 @@
             height: var(--app-height); 
             overflow: hidden;
             font-family: var(--font-main);
-            /* Updated: Slightly darker green background */
-            background-color: #c8e6c9; 
+            
+            /* Updated: Darker Forest Green Background */
+            background-color: #66bb6a; 
             background-image: 
-                linear-gradient(rgba(0,0,0,0.08) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0,0,0,0.08) 1px, transparent 1px),
-                linear-gradient(160deg, #dcedc8 0%, #aed581 100%);
+                /* Slightly stronger grid lines (0.12 opacity) to show on darker green */
+                linear-gradient(rgba(0,0,0,0.12) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,0.12) 1px, transparent 1px),
+                /* Forest Green Gradient */
+                linear-gradient(160deg, #81c784 0%, #2e7d32 100%);
             background-size: 20px 20px, 20px 20px, cover;
             background-attachment: fixed;
         }
@@ -123,7 +126,8 @@
             /* Reduced top padding to move Neighbor higher */
             padding-top: 8px;
             padding-bottom: 10px;
-            gap: 12px;
+            /* UPDATED: Increased gap to space out meters */
+            gap: 18px; 
             z-index: 20;
             /* Darker shadow */
             box-shadow: -4px 4px 10px rgba(0,0,0,0.6);
@@ -135,7 +139,8 @@
             opacity: 0.8;
             color: white;
             text-transform: uppercase;
-            /* Removed extra letter-spacing to match "Power" perfectly, or add it back if desired */
+            /* UPDATED: Removed bold (inherited from .panel) to match Power/Gold style */
+            font-weight: normal; 
             margin-bottom: 2px; 
         }
 
