@@ -75,25 +75,25 @@
            ---------------------------------------------------
         */
 
-        /* Telescope: Higher up */
+        /* Telescope: Anchor Point */
         .prop-telescope {
-            top: 15%; /* Moved higher from 25% */
+            top: 15%; 
             left: 42%;
             transform: translate(-50%, -50%) rotate(-10deg);
             font-size: 3.5rem;
         }
 
-        /* Bathtub */
+        /* Bathtub: 14% lower than telescope */
         .prop-bathtub {
-            top: 35%; 
+            top: 29%; 
             left: 42%; 
             transform: translate(-50%, -50%);
             font-size: 4rem; 
         }
 
-        /* Scales: Below Bathtub */
+        /* Scales: 14% lower than bathtub */
         .prop-scales {
-            top: 48%; /* Below bathtub (35%) */
+            top: 43%;
             left: 42%;
             transform: translate(-50%, -50%);
             font-size: 3rem;
@@ -106,27 +106,28 @@
         }
 
         .tree-1 { left: 5%; z-index: 5; }
-        .tree-2 { left: 12%; z-index: 6; /* Slight overlap right */ }
-        .tree-3 { left: 18%; z-index: 5; /* Slight overlap right */ }
+        .tree-2 { left: 12%; z-index: 6; /* Middle tree */ }
+        .tree-3 { left: 18%; z-index: 5; }
 
-        /* Tiny House: Above middle tree */
+        /* Tiny House: Birdhouse style placement */
         .prop-house-tiny {
-            bottom: 46%; /* Higher than tree bottom (32%) */
-            left: 12%;   /* Aligned with tree-2 */
-            transform: translateX(10%); /* Slight nudge to center visually on foliage */
+            bottom: 40%; /* Lowered to sit IN the foliage */
+            left: 12%;   /* Aligned with tree-2 left edge */
+            /* Shifted right to center on the tree visually */
+            transform: translateX(25%); 
             font-size: 1.5rem;
-            z-index: 7;
+            z-index: 7; /* Above tree-2 */
         }
 
-        /* Flowers: Moved further right + added Rose */
+        /* Flowers */
         .prop-flower {
             bottom: 33%; 
             font-size: 2.5rem;
         }
         
-        .flower-hya { left: 45%; } /* Moved right */
-        .flower-sun { left: 51%; } /* Moved right */
-        .flower-rose { left: 57%; } /* New Rose */
+        .flower-hya { left: 45%; } 
+        .flower-sun { left: 51%; } 
+        .flower-rose { left: 57%; } 
 
 
         /* --- SHARED STYLES --- */
@@ -169,11 +170,21 @@
         .stat-group {
             display: flex;
             flex-direction: column;
-            line-height: 1.1;
+            line-height: 1;
+            /* Added slight padding to accommodate larger text if needed */
+            justify-content: center;
         }
-        .stat-label { font-size: 0.6rem; opacity: 0.8; color: #443300;
-            text-transform: uppercase; }
-        .stat-value { font-size: 1.1rem; color: #443300; font-weight: 800;
+        /* Increased Font Sizes */
+        .stat-label { 
+            font-size: 0.75rem; /* Up from 0.6rem */
+            opacity: 0.8; 
+            color: #443300;
+            text-transform: uppercase; 
+        }
+        .stat-value { 
+            font-size: 1.25rem; /* Up from 1.1rem */
+            color: #443300; 
+            font-weight: 800;
         }
 
         /* --- 2. TOP RIGHT: ENEMY PROGRESS --- */
@@ -194,17 +205,18 @@
             align-items: center;
             padding-top: 8px;
             padding-bottom: 10px;
-            gap: 18px; 
+            gap: 15px; /* Slightly reduced gap to fit larger text */
             z-index: 20;
             box-shadow: -4px 4px 10px rgba(0,0,0,0.6);
         }
 
+        /* Increased Font Sizes */
         .enemy-header {
-            font-size: 0.6rem;
-            opacity: 0.8;
+            font-size: 0.75rem; /* Up from 0.6rem */
+            opacity: 0.9;
             color: white;
             text-transform: uppercase;
-            font-weight: normal; 
+            font-weight: bold; /* Made bold for better visibility */
             margin-bottom: 2px;
         }
 
@@ -240,12 +252,13 @@
         .fill-orange { background: #ff9800; width: 45%; }
         .fill-grey { background: #90a4ae; width: 20%; }
 
+        /* Increased Font Size */
         .sabotage-label {
-            font-size: 0.6rem;
-            opacity: 0.8;
+            font-size: 0.75rem; /* Up from 0.6rem */
+            opacity: 0.9;
             color: white;
             text-transform: uppercase;
-            font-weight: normal;
+            font-weight: bold;
             margin-top: auto;
             margin-bottom: 4px;
         }
@@ -426,11 +439,17 @@
         
         <div id="game-background"></div>
 
+        <!-- 
+           VERTICAL SPACING ADJUSTMENT
+           Telescope: 15%
+           Bathtub: 29% (Gap: 14%)
+           Scales: 43% (Gap: 14%)
+        -->
         <div class="map-prop prop-telescope">🔭</div>
-
         <div class="map-prop prop-bathtub">🛁</div>
         <div class="map-prop prop-scales">⚖️</div>
         
+        <!-- House moved to overlap tree-2 foliage -->
         <div class="map-prop prop-house-tiny">🏠</div>
 
         <div class="map-prop prop-tree tree-1">🌳</div>
@@ -487,7 +506,6 @@
         <div class="ui-sidebar-container">
             <div class="side-btn btn-pressable">🧡</div>
             <div class="side-btn btn-pressable">💛</div>
-            <!-- Updated Icons Below -->
             <div class="side-btn btn-pressable">🧑‍🌾</div>
             <div class="side-btn btn-pressable">🪻</div>
             <div class="side-btn btn-pressable">🌳</div>
