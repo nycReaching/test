@@ -3,155 +3,142 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mobile Game UI Template</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <title>Game UI Template</title>
     <style>
-        /* Prevent pull-to-refresh on mobile */
-        body {
-            overscroll-behavior: none;
-            touch-action: none;
-        }
-        
-        /* Cyberpunk/Sci-fi subtle grid background */
-        .bg-grid-pattern {
-            background-image: 
-                linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-            background-size: 20px 20px;
+        /* Reset and Base Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
-        /* Custom Scrollbar for the side panel if content overflows */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden; /* Prevent scrolling for a game-like feel */
+            background-color: #ffffff; /* The "White Space" */
+            font-family: sans-serif;
         }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
+
+        /* Main Game Container */
+        #game-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
         }
+
+        /* --- UI SECTIONS BASED ON SKETCH --- */
+
+        /* 1. Top Left Yellow Block 
+           Appears to take up about 65-70% of the width and is relatively short. */
+        .ui-top-left {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 70%;
+            height: 8%; /* Adjust based on preference */
+            background-color: #FFD700; /* Gold/Yellow */
+            z-index: 10;
+        }
+
+        /* 2. Top Right Purple Block 
+           Appears to be narrower but significantly taller/deeper than the yellow block. */
+        .ui-top-right {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 30%; /* Fill the remaining width */
+            height: 25%; /* Much deeper than the yellow bar */
+            background-color: #9C27B0; /* Purple */
+            z-index: 10;
+        }
+
+        /* 3. Left Side Red Bar 
+           Starts below the yellow block, doesn't touch bottom. */
+        .ui-sidebar-left {
+            position: absolute;
+            top: 14%; /* Starts a bit below the yellow header */
+            left: 0;
+            width: 12%;
+            height: 40%;
+            background-color: #8B0000; /* Dark Red */
+            z-index: 5;
+        }
+
+        /* 4. The Footer Area 
+           Contains the black separator and the blue block. */
+        .ui-footer-group {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 25%; /* Total height of footer area */
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        .ui-footer-separator {
+            width: 100%;
+            height: 15%; /* Relative to the footer group height */
+            min-height: 20px; /* Ensure it's visible */
+            background-color: #000000; /* Black Bar */
+        }
+
+        .ui-footer-main {
+            width: 100%;
+            flex-grow: 1; /* Fills the rest of the footer group */
+            background-color: #2E8B99; /* Teal/Blue */
+        }
+
+        /* Optional: Debug overlay to show the "White Middle Section" is clear */
+        .middle-area-debug {
+            position: absolute;
+            top: 30%;
+            left: 20%;
+            width: 60%;
+            height: 30%;
+            /* Border just to prove this area is empty for game content */
+            /* border: 2px dashed #ccc; */
+            pointer-events: none;
+        }
+
     </style>
 </head>
-<body class="bg-black text-gray-100 font-sans h-screen w-screen overflow-hidden">
+<body>
 
-    <!-- Main App Container -->
-    <div id="app" class="relative w-full h-full max-w-md mx-auto bg-gray-900 shadow-2xl overflow-hidden flex flex-col">
+    <div id="game-container">
+        <!-- Top Left Yellow Section -->
+        <div class="ui-top-left"></div>
 
-        <!-- LAYER 3: Right Vertical Column (The Overlay) -->
-        <!-- "Wide vertical column... isn't very wide" interpreted as a Sidebar Panel -->
-        <!-- Extends 50% down screen height. Covers elements behind it. -->
-        <div class="absolute top-0 right-0 w-24 h-[50%] bg-gray-800 border-l border-b border-gray-600 z-30 flex flex-col items-center py-4 gap-4 shadow-xl">
-            <!-- Example Side Panel Content -->
-            <div class="w-12 h-12 bg-gray-700 rounded-lg border border-gray-600 flex items-center justify-center cursor-pointer hover:bg-gray-600 transition-colors">
-                <i data-lucide="backpack" class="w-6 h-6 text-emerald-400"></i>
-            </div>
-            <div class="w-12 h-12 bg-gray-700 rounded-lg border border-gray-600 flex items-center justify-center cursor-pointer hover:bg-gray-600 transition-colors">
-                <i data-lucide="scroll" class="w-6 h-6 text-amber-400"></i>
-            </div>
-            <div class="w-12 h-12 bg-gray-700 rounded-lg border border-gray-600 flex items-center justify-center cursor-pointer hover:bg-gray-600 transition-colors">
-                <i data-lucide="users" class="w-6 h-6 text-blue-400"></i>
-            </div>
-            <!-- Spacer to show it can hold more -->
-            <div class="flex-grow"></div>
-            <div class="w-8 h-8 rounded-full bg-red-900/50 border border-red-500 flex items-center justify-center">
-                <span class="text-xs font-bold text-red-400">!</span>
-            </div>
+        <!-- Top Right Purple Section -->
+        <div class="ui-top-right"></div>
+
+        <!-- Left Sidebar Red Section -->
+        <div class="ui-sidebar-left"></div>
+
+        <!-- Bottom Footer Group (Black Bar + Blue Area) -->
+        <div class="ui-footer-group">
+            <div class="ui-footer-separator"></div>
+            <div class="ui-footer-main"></div>
         </div>
-
-        <!-- LAYER 2: Top Bar -->
-        <!-- Slim top bar for stats. Right side visually obstructed by Layer 3. -->
-        <div class="absolute top-0 left-0 w-full h-14 bg-gray-900/95 backdrop-blur border-b border-gray-700 z-20 flex items-center px-4 justify-between">
-            <!-- Left Side Stats -->
-            <div class="flex items-center gap-4">
-                <!-- User Level -->
-                <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center border border-blue-400 shadow-lg shadow-blue-500/20">
-                    <span class="font-bold text-xs">12</span>
-                </div>
-                
-                <!-- Resources -->
-                <div class="flex flex-col">
-                    <div class="flex items-center gap-1">
-                        <i data-lucide="coins" class="w-3 h-3 text-yellow-400"></i>
-                        <span class="text-xs font-mono text-yellow-100">14,250</span>
-                    </div>
-                    <div class="flex items-center gap-1">
-                        <i data-lucide="gem" class="w-3 h-3 text-purple-400"></i>
-                        <span class="text-xs font-mono text-purple-100">50</span>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- We add padding-right to ensure text doesn't flow under the panel, 
-                 even though the panel visually covers this area. -->
-            <div class="pr-24">
-               <!-- Center/Right content could go here, but gets covered -->
-            </div>
-        </div>
-
-        <!-- LAYER 1: Central Game Area -->
-        <!-- Large empty area. Partially covered on right by Layer 3. -->
-        <div class="relative flex-grow bg-gray-900 bg-grid-pattern z-0 mt-14 mb-20 overflow-hidden">
-            <!-- Hypothetical Game Content Placeholder -->
-            <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div class="text-center opacity-30">
-                    <div class="w-32 h-32 border-2 border-dashed border-gray-500 rounded-full mx-auto mb-4 flex items-center justify-center animate-pulse">
-                        <span class="text-xs uppercase tracking-widest">Main View</span>
-                    </div>
-                    <p class="text-xs text-gray-500 font-mono">Viewport Center</p>
-                </div>
-            </div>
-            
-            <!-- Example 'Unit' or 'Object' in the game world -->
-            <div class="absolute top-1/3 left-1/4 w-12 h-12 bg-indigo-500 rounded-lg shadow-lg shadow-indigo-500/50 border border-indigo-300 transform rotate-12"></div>
-        </div>
-
-        <!-- LAYER 2: Bottom Section -->
-        <!-- Buttons. Fixed height. -->
-        <div class="absolute bottom-0 left-0 w-full h-24 bg-gray-800 border-t border-gray-700 z-20 flex items-center justify-around px-2 pb-safe">
-            
-            <!-- Button 1 -->
-            <button class="flex flex-col items-center gap-1 group active:scale-95 transition-transform">
-                <div class="w-12 h-10 rounded bg-gray-700 border-b-4 border-gray-950 group-hover:bg-gray-600 group-hover:border-gray-800 transition-colors flex items-center justify-center">
-                    <i data-lucide="sword" class="w-5 h-5 text-gray-300"></i>
-                </div>
-                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Attack</span>
-            </button>
-
-            <!-- Button 2 (Main Action) -->
-            <button class="flex flex-col items-center gap-1 -mt-6 group active:scale-95 transition-transform">
-                <div class="w-16 h-14 rounded-xl bg-blue-600 border-b-4 border-blue-900 shadow-lg shadow-blue-900/50 group-hover:bg-blue-500 transition-colors flex items-center justify-center">
-                    <i data-lucide="play" class="w-8 h-8 text-white fill-current"></i>
-                </div>
-                <span class="text-[10px] font-bold text-blue-400 uppercase tracking-wide">Start</span>
-            </button>
-
-            <!-- Button 3 -->
-            <button class="flex flex-col items-center gap-1 group active:scale-95 transition-transform">
-                <div class="w-12 h-10 rounded bg-gray-700 border-b-4 border-gray-950 group-hover:bg-gray-600 group-hover:border-gray-800 transition-colors flex items-center justify-center">
-                    <i data-lucide="shield" class="w-5 h-5 text-gray-300"></i>
-                </div>
-                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Defend</span>
-            </button>
-
-        </div>
-
+        
+        <!-- The middle area is technically the body background, 
+             where the game "action" would happen. -->
     </div>
 
     <script>
-        // Initialize Lucide Icons
-        lucide.createIcons();
+        // Simple script to handle viewport height on mobile browsers 
+        // (fixes issues with browser address bars covering the bottom UI)
+        function setAppHeight() {
+            const doc = document.documentElement;
+            doc.style.setProperty('--app-height', `${window.innerHeight}px`);
+        }
 
-        // Simple console log to prove JS is hooked up
-        console.log("Game UI Loaded");
-        
-        // Add basic touch feedback
-        document.querySelectorAll('button, .cursor-pointer').forEach(btn => {
-            btn.addEventListener('touchstart', () => {
-                // Haptic feedback pattern if supported
-                if (navigator.vibrate) navigator.vibrate(10);
-            });
-        });
+        window.addEventListener('resize', setAppHeight);
+        setAppHeight();
     </script>
 </body>
 </html>
