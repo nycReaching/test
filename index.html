@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pro Game UI Template</title>
+    <title>Pro Game UI Update</title>
     <style>
         /* --- RESET & VARIABLES --- */
         :root {
@@ -129,13 +129,14 @@
             box-shadow: -4px 4px 10px rgba(0,0,0,0.6);
         }
 
-        /* New Styles for Enemy Meters */
+        /* UPDATED: Matches .stat-label style exactly, but white */
         .enemy-header {
-            font-size: 0.75rem;
+            font-size: 0.6rem;
+            opacity: 0.8;
+            color: white;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #ffcdd2;
-            margin-bottom: 2px; /* Tightened spacing */
+            /* Removed extra letter-spacing to match "Power" perfectly, or add it back if desired */
+            margin-bottom: 2px; 
         }
 
         .meter-container {
@@ -264,13 +265,16 @@
             font-size: 0.7rem;
             color: #666;
             flex-shrink: 0;
+            transition: all 0.1s ease;
         }
         
         /* Updated Highlight Color to Yellow */
         .inv-slot.active { 
             border-color: #FFD700; 
             color: #FFD700; 
-            box-shadow: 0 0 5px #FFD700; 
+            box-shadow: 0 0 8px #FFD700; 
+            background: #332b00;
+            transform: scale(1.05);
         }
 
         /* 4b. Main Controls (Teal) */
@@ -357,7 +361,7 @@
 
         <!-- 2. Top Right: Enemy Progress (Red Column) -->
         <div class="ui-event-panel panel">
-            <!-- Updated Header Text -->
+            <!-- Updated Header Text Style to match Power -->
             <div class="enemy-header">Neighbor</div>
             
             <!-- Meter 1 -->
@@ -405,7 +409,6 @@
                 <div class="inv-slot">4</div>
                 <div class="inv-slot">5</div>
                 <div class="inv-slot">6</div>
-                <!-- Removed slots 7 and 8 -->
             </div>
 
             <!-- Main Control Area -->
@@ -414,8 +417,10 @@
                 <!-- Added Row of secondary buttons -->
                 <div class="control-row">
                     <div class="action-circle-btn btn-pressable">🏪</div>
-                    <div class="action-circle-btn btn-pressable">🏦</div>
-                    <div class="action-circle-btn btn-pressable">🔭</div>
+                    <!-- CHANGED: Bank to Eyes -->
+                    <div class="action-circle-btn btn-pressable">👀</div>
+                    <!-- CHANGED: Telescope to Die, added ID for logic -->
+                    <div class="action-circle-btn btn-pressable" id="btn-dice">🎲</div>
                 </div>
 
                 <div class="main-action-btn btn-pressable">
@@ -436,14 +441,14 @@
         window.addEventListener('resize', setAppHeight);
         setAppHeight();
         
+        // --- BUTTON PRESS ANIMATION ---
         document.querySelectorAll('.btn-pressable').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                console.log('UI Element Clicked');
-                
                 // Fixed logic to safely animate
                 const targetEl = e.currentTarget;
                 const originalTransform = targetEl.style.transform;
                 
+                // Add scale down effect
                 targetEl.style.transform = "scale(0.9)";
                 
                 setTimeout(() => {
@@ -451,6 +456,63 @@
                 }, 100);
             });
         });
+
+        // --- DICE LOGIC ---
+        const diceBtn = document.getElementById('btn-dice');
+        const slots = document.querySelectorAll('.inv-slot');
+        let isRolling = false;
+
+        diceBtn.addEventListener('click', () => {
+            if (isRolling) return; // Prevent double clicking
+            isRolling = true;
+            
+            // Random target index (0 to 5)
+            const targetIndex = Math.floor(Math.random() * slots.length);
+            
+            let currentIndex = 0;
+            // Find current active index to start from
+            slots.forEach((slot, index) => {
+                if (slot.classList.contains('active')) currentIndex = index;
+            });
+
+            // Configuration for the roll
+            let speed = 50; // Initial speed (ms)
+            let steps = 0;
+            const minSteps = 20; // Minimum spins before stopping
+            
+            // Recursive function to handle the cycling
+            function step() {
+                // Remove active from current
+                slots[currentIndex].classList.remove('active');
+                
+                // Move to next
+                currentIndex = (currentIndex + 1) % slots.length;
+                
+                // Add active to new
+                slots[currentIndex].classList.add('active');
+                steps++;
+
+                // If we've spun enough and reached target
+                if (steps > minSteps && currentIndex === targetIndex) {
+                    isRolling = false;
+                    // Final "pulse" effect on the winner
+                    slots[currentIndex].style.transform = "scale(1.2)";
+                    setTimeout(() => slots[currentIndex].style.transform = "", 200);
+                    return;
+                }
+
+                // Slow down logic as we approach the end (simple linear slowdown)
+                if (steps > minSteps - 8) {
+                    speed += 30;
+                }
+
+                setTimeout(step, speed);
+            }
+
+            // Start the loop
+            step();
+        });
+
     </script>
 </body>
 </html>
