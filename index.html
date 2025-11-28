@@ -71,11 +71,7 @@
             filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3));
         }
 
-        /* UPDATED PROPS
-           ---------------------------------------------------
-        */
-
-        /* Telescope: Anchor Point */
+        /* UPDATED PROPS */
         .prop-telescope {
             top: 15%; 
             left: 42%;
@@ -83,7 +79,6 @@
             font-size: 3.5rem;
         }
 
-        /* Bathtub: 14% lower than telescope */
         .prop-bathtub {
             top: 29%; 
             left: 42%; 
@@ -91,7 +86,6 @@
             font-size: 4rem; 
         }
 
-        /* Scales: 14% lower than bathtub */
         .prop-scales {
             top: 43%;
             left: 42%;
@@ -99,27 +93,23 @@
             font-size: 3rem;
         }
 
-        /* Trees: A cluster of 3 to the left */
         .prop-tree {
-            bottom: 32%; /* Sits on the 'horizon' line */
+            bottom: 32%; 
             font-size: 4rem;
         }
 
         .tree-1 { left: 5%; z-index: 5; }
-        .tree-2 { left: 12%; z-index: 6; /* Middle tree */ }
+        .tree-2 { left: 12%; z-index: 6; }
         .tree-3 { left: 18%; z-index: 5; }
 
-        /* Tiny House: Birdhouse style placement */
         .prop-house-tiny {
-            bottom: 40%; /* Lowered to sit IN the foliage */
-            left: 12%;   /* Aligned with tree-2 left edge */
-            /* Shifted right to center on the tree visually */
+            bottom: 40%;
+            left: 12%;
             transform: translateX(25%); 
             font-size: 1.5rem;
-            z-index: 7; /* Above tree-2 */
+            z-index: 7;
         }
 
-        /* Flowers */
         .prop-flower {
             bottom: 33%; 
             font-size: 2.5rem;
@@ -158,8 +148,11 @@
             height: 60px;
             background: linear-gradient(135deg, var(--ui-gold) 0%, var(--ui-gold-dark) 100%);
             clip-path: polygon(0 0, 100% 0, 95% 100%, 0% 100%);
-            padding-left: 20px;
-            padding-right: 40px;
+            
+            /* UPDATED ALIGNMENT */
+            padding-left: 15px; /* Reduced to push Left content closer to edge */
+            padding-right: 35px; /* Reduced to utilise unused space */
+            
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -171,18 +164,29 @@
             display: flex;
             flex-direction: column;
             line-height: 1;
-            /* Added slight padding to accommodate larger text if needed */
             justify-content: center;
+            flex: 1; /* Allow groups to take available space for text-align to work effectively */
         }
-        /* Increased Font Sizes */
+
+        /* Specific Alignments */
+        .stat-group.align-left {
+            align-items: flex-start;
+        }
+        .stat-group.align-center {
+            align-items: center;
+        }
+        .stat-group.align-right {
+            align-items: flex-end;
+        }
+
         .stat-label { 
-            font-size: 0.75rem; /* Up from 0.6rem */
+            font-size: 0.75rem; 
             opacity: 0.8; 
             color: #443300;
             text-transform: uppercase; 
         }
         .stat-value { 
-            font-size: 1.25rem; /* Up from 1.1rem */
+            font-size: 1.25rem; 
             color: #443300; 
             font-weight: 800;
         }
@@ -195,28 +199,25 @@
             width: 30%;
             height: 50%; 
             background: linear-gradient(180deg, #d32f2f 0%, #5d0000 100%);
-            
             border-bottom-left-radius: 15px;
             border-left: 2px solid rgba(255,255,255,0.2);
             border-bottom: 2px solid rgba(0,0,0,0.2);
-            
             display: flex;
             flex-direction: column;
             align-items: center;
             padding-top: 8px;
             padding-bottom: 10px;
-            gap: 15px; /* Slightly reduced gap to fit larger text */
+            gap: 15px;
             z-index: 20;
             box-shadow: -4px 4px 10px rgba(0,0,0,0.6);
         }
 
-        /* Increased Font Sizes */
         .enemy-header {
-            font-size: 0.75rem; /* Up from 0.6rem */
+            font-size: 0.75rem; 
             opacity: 0.9;
             color: white;
             text-transform: uppercase;
-            font-weight: bold; /* Made bold for better visibility */
+            font-weight: bold;
             margin-bottom: 2px;
         }
 
@@ -252,9 +253,8 @@
         .fill-orange { background: #ff9800; width: 45%; }
         .fill-grey { background: #90a4ae; width: 20%; }
 
-        /* Increased Font Size */
         .sabotage-label {
-            font-size: 0.75rem; /* Up from 0.6rem */
+            font-size: 0.75rem;
             opacity: 0.9;
             color: white;
             text-transform: uppercase;
@@ -290,6 +290,18 @@
             gap: 12px;
             padding-left: 5px;
             z-index: 15;
+            /* Allow sidebar to overlap if needed, but not block */
+            pointer-events: none; 
+        }
+
+        /* Container for button + potential popout menu */
+        .sidebar-item-wrapper {
+            position: relative;
+            width: 100%;
+            height: auto;
+            pointer-events: auto; /* Re-enable clicks */
+            display: flex;
+            align-items: center;
         }
 
         .side-btn {
@@ -304,7 +316,55 @@
             justify-content: center;
             align-items: center;
             font-size: 1.4rem;
+            position: relative;
+            z-index: 2;
         }
+
+        /* --- SLIDE OUT TREE MENU --- */
+        .tree-menu {
+            position: absolute;
+            left: 90%; /* Start tucked under/behind button */
+            top: 0;
+            height: 100%;
+            background: rgba(40, 20, 60, 0.95);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 0 8px 8px 0;
+            display: flex;
+            align-items: center;
+            padding: 0;
+            gap: 0;
+            
+            /* Hidden state */
+            width: 0;
+            opacity: 0;
+            overflow: hidden;
+            pointer-events: none;
+            
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            z-index: 1; /* Behind button */
+            box-shadow: 4px 4px 8px rgba(0,0,0,0.4);
+        }
+
+        .tree-menu.open {
+            width: 200px; /* Width enough for 4 emojis */
+            opacity: 1;
+            padding: 0 10px 0 15px; /* Left padding creates gap from button */
+            pointer-events: auto;
+            left: 85%; /* Slide out */
+        }
+
+        .tree-option {
+            font-size: 1.4rem;
+            padding: 5px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            flex: 1;
+            text-align: center;
+        }
+        .tree-option:active {
+            transform: scale(0.8);
+        }
+
 
         /* --- 4. BOTTOM AREA: INVENTORY & CONTROLS --- */
         .ui-footer-container {
@@ -439,17 +499,10 @@
         
         <div id="game-background"></div>
 
-        <!-- 
-           VERTICAL SPACING ADJUSTMENT
-           Telescope: 15%
-           Bathtub: 29% (Gap: 14%)
-           Scales: 43% (Gap: 14%)
-        -->
         <div class="map-prop prop-telescope">🔭</div>
         <div class="map-prop prop-bathtub">🛁</div>
         <div class="map-prop prop-scales">⚖️</div>
         
-        <!-- House moved to overlap tree-2 foliage -->
         <div class="map-prop prop-house-tiny">🏠</div>
 
         <div class="map-prop prop-tree tree-1">🌳</div>
@@ -462,19 +515,21 @@
 
 
         <div class="ui-stats-bar">
-            <div class="stat-group">
+            <!-- Align Left -->
+            <div class="stat-group align-left">
                 <span class="stat-label">Funds</span>
                 <span class="stat-value">$1,000</span>
             </div>
-            <div class="stat-group">
+            <!-- Align Center -->
+            <div class="stat-group align-center">
                 <span class="stat-label">Research</span>
                 <span class="stat-value">10</span>
             </div>
-            <div class="stat-group">
+            <!-- Align Right -->
+            <div class="stat-group align-right">
                 <span class="stat-label">Luck</span>
                 <span class="stat-value">3</span>
             </div>
-            <div style="width: 10px;"></div>
         </div>
 
         <div class="ui-event-panel panel">
@@ -504,11 +559,30 @@
         </div>
 
         <div class="ui-sidebar-container">
-            <div class="side-btn btn-pressable">🧡</div>
-            <div class="side-btn btn-pressable">💛</div>
-            <div class="side-btn btn-pressable">🧑‍🌾</div>
-            <div class="side-btn btn-pressable">🪻</div>
-            <div class="side-btn btn-pressable">🌳</div>
+            <div class="sidebar-item-wrapper">
+                <div class="side-btn btn-pressable">🧡</div>
+            </div>
+            <div class="sidebar-item-wrapper">
+                <div class="side-btn btn-pressable">💛</div>
+            </div>
+            <div class="sidebar-item-wrapper">
+                <div class="side-btn btn-pressable">🧑‍🌾</div>
+            </div>
+            <div class="sidebar-item-wrapper">
+                <div class="side-btn btn-pressable">🪻</div>
+            </div>
+            
+            <!-- Tree Button Wrapper with Slide Out Menu -->
+            <div class="sidebar-item-wrapper">
+                <div class="side-btn btn-pressable" id="btn-tree-toggle">🌳</div>
+                
+                <div class="tree-menu" id="tree-menu">
+                    <div class="tree-option">🌴</div>
+                    <div class="tree-option">🌳</div>
+                    <div class="tree-option">🌲</div>
+                    <div class="tree-option">🎋</div>
+                </div>
+            </div>
         </div>
 
         <div class="ui-footer-container">
@@ -553,9 +627,11 @@
         window.addEventListener('resize', setAppHeight);
         setAppHeight();
 
+        // Generic Button Press Animation
         document.querySelectorAll('.btn-pressable').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const targetEl = e.currentTarget;
+                // Only animate scale if not the tree button (handled separately for clarity, though could combine)
                 const originalTransform = targetEl.style.transform;
                 targetEl.style.transform = "scale(0.9)";
                 setTimeout(() => {
@@ -563,6 +639,26 @@
                 }, 100);
             });
         });
+
+        // --- TREE MENU TOGGLE ---
+        const treeBtn = document.getElementById('btn-tree-toggle');
+        const treeMenu = document.getElementById('tree-menu');
+        
+        treeBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent immediate body click
+            treeMenu.classList.toggle('open');
+        });
+
+        // Close menu if clicking outside
+        document.body.addEventListener('click', (e) => {
+            if (treeMenu.classList.contains('open')) {
+                // If click is not inside the menu and not on the button
+                if (!treeMenu.contains(e.target) && e.target !== treeBtn) {
+                    treeMenu.classList.remove('open');
+                }
+            }
+        });
+
 
         // --- DICE LOGIC ---
         const diceBtn = document.getElementById('btn-dice');
