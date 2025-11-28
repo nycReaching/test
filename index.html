@@ -80,18 +80,25 @@
             font-size: 6rem;
         }
 
-        /* Tree: Bottom left of visible area (Footer is 28% high, so we position above that) */
+        /* Tree: Bottom left of visible area */
         .prop-tree {
             bottom: 32%; /* Just above the footer line */
             left: 8%;
             font-size: 4rem;
         }
 
-        /* House: Above the tree */
+        /* House: Above the tree (Smaller size now) */
         .prop-house {
-            bottom: 43%; /* Positioned above the tree */
-            left: 8%;
-            font-size: 4rem;
+            bottom: 41%; /* Adjusted lower to sit on tree since it's smaller */
+            left: 10%; /* Slightly adjusted to center over tree trunk visual */
+            font-size: 2.5rem; /* Reduced size */
+        }
+
+        /* Log: To the right of the tree */
+        .prop-log {
+            bottom: 33%; /* Roughly aligned with tree base */
+            left: 28%;   /* To the right of the tree */
+            font-size: 2.5rem; /* Same small size as house */
         }
 
 
@@ -163,6 +170,7 @@
             box-shadow: -4px 4px 10px rgba(0,0,0,0.6);
         }
 
+        /* Common style for panel headers */
         .enemy-header {
             font-size: 0.6rem;
             opacity: 0.8;
@@ -204,13 +212,15 @@
         .fill-orange { background: #ff9800; width: 45%; }
         .fill-grey { background: #90a4ae; width: 20%; }
 
-        /* New Sabotage Label */
+        /* Sabotage Label: Uses exact same styles as enemy-header, plus positioning */
         .sabotage-label {
-            font-size: 0.5rem;
-            color: rgba(255,255,255,0.7);
+            font-size: 0.6rem;
+            opacity: 0.8;
+            color: white;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: auto; /* Pushes everything above it up, and sits at the bottom with the slots */
+            font-weight: normal;
+            
+            margin-top: auto; /* Pushes everything above it up */
             margin-bottom: 4px;
         }
 
@@ -218,7 +228,6 @@
             display: flex;
             gap: 10px;
             margin-bottom: 10px;
-            /* Removed margin-top: auto from here, as the label above handles the push now */
         }
 
         .neighbor-slot {
@@ -314,7 +323,6 @@
         /* 4b. Main Controls (Dark Brown) */
         .ui-controls-main {
             flex-grow: 1;
-            /* Updated: Dark Brown Background */
             background-color: var(--ui-brown-dark); 
             
             background-image: 
@@ -396,6 +404,7 @@
         <div class="map-prop prop-bathtub">🛁</div>
         <div class="map-prop prop-tree">🌳</div>
         <div class="map-prop prop-house">🏠</div>
+        <div class="map-prop prop-log">🪵</div>
 
 
         <!-- 1. Top Left Stats -->
@@ -434,7 +443,7 @@
                 <div class="meter-bar"><div class="meter-fill fill-grey"></div></div>
             </div>
 
-            <!-- SABOTAGE Label -->
+            <!-- SABOTAGE Label (Updated Style) -->
             <div class="sabotage-label">Sabotage</div>
 
             <div class="neighbor-slots-row">
