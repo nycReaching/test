@@ -132,23 +132,23 @@
 
         .prop-house-tiny {
             bottom: 39%; 
-            left: 28%;   /* Aligned with tree-2 */
-            transform: translateX(40%); /* Shifted further right */
+            left: 31%;   /* Moved from 28% to 31% to center with tree-2 */
+            transform: translateX(0); /* Removed previous offset */
             font-size: 2.2rem; 
             z-index: 7;
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
             pointer-events: none;
         }
 
-        /* Flowers: Lower and Further Right */
+        /* Flowers: Lifted up to match Tree row */
         .prop-flower {
-            bottom: 28%; /* Lowered from 33% */
+            bottom: 30%; /* Lifted from 28% to match trees */
             font-size: 2.5rem;
             filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3));
             pointer-events: none;
         }
         
-        .flower-hya { left: 65%; } /* Further right */
+        .flower-hya { left: 65%; } 
         .flower-sun { left: 71%; } 
         .flower-rose { left: 77%; } 
 
@@ -219,11 +219,16 @@
             text-transform: uppercase; 
         }
         
+        /* New Color Classes */
         .stat-value { 
             font-size: 1.15rem; 
-            color: #443300; 
             font-weight: 800;
         }
+        
+        .stat-funds { color: #006400; } /* Dark Green */
+        .stat-research { color: #00008B; } /* Dark Blue */
+        .stat-luck { color: #C2185B; } /* Dark Pink */
+
 
         /* --- 2. TOP RIGHT: ENEMY PROGRESS --- */
         .ui-event-panel {
@@ -242,6 +247,7 @@
             padding-top: 8px;
             padding-bottom: 10px;
             gap: 15px;
+            /* Z-Index stays at 20, but sidebar is now higher */
             z-index: 20;
             box-shadow: -4px 4px 10px rgba(0,0,0,0.6);
         }
@@ -323,7 +329,8 @@
             flex-direction: column;
             gap: 12px;
             padding-left: 5px;
-            z-index: 15;
+            /* Z-Index raised to 30 to sit ABOVE the enemy panel (z-index: 20) */
+            z-index: 30;
             pointer-events: none; 
         }
 
@@ -458,12 +465,14 @@
             flex-grow: 1;
             background-color: var(--ui-brown-dark); 
             
+            /* UPDATED: Dark Brown Polka Dots Pattern */
             background-image: 
-                linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px),
+                radial-gradient(rgba(30, 15, 5, 0.4) 15%, transparent 16%),
                 linear-gradient(180deg, var(--ui-brown) 0%, var(--ui-brown-dark) 100%);
             
-            background-size: 20px 20px, 20px 20px, cover;
+            background-position: 0 0, 0 0;
+            background-size: 20px 20px, cover;
+            
             border-top: 1px solid rgba(255,255,255,0.1);
             position: relative;
             
@@ -544,14 +553,15 @@
             <div class="inner-emoji">⚖️</div>
         </div>
         
-        <!-- House shifted right with trees -->
+        <!-- House shifted right -->
         <div class="map-prop prop-house-tiny">🏠</div>
 
-        <!-- Trees shifted right and enlarged -->
+        <!-- Trees -->
         <div class="map-prop prop-tree tree-1">🌳</div>
         <div class="map-prop prop-tree tree-2">🌳</div>
         <div class="map-prop prop-tree tree-3">🌳</div>
         
+        <!-- Flowers moved up -->
         <div class="map-prop prop-flower flower-hya">🪻</div>
         <div class="map-prop prop-flower flower-sun">🌻</div>
         <div class="map-prop prop-flower flower-rose">🌹</div>
@@ -561,17 +571,17 @@
             <!-- Align Left -->
             <div class="stat-group align-left">
                 <span class="stat-label">Funds</span>
-                <span class="stat-value">$1,000</span>
+                <span class="stat-value stat-funds">$1,000</span>
             </div>
             <!-- Align Center -->
             <div class="stat-group align-center">
                 <span class="stat-label">Research</span>
-                <span class="stat-value">10</span>
+                <span class="stat-value stat-research">10</span>
             </div>
             <!-- Align Right -->
             <div class="stat-group align-right">
                 <span class="stat-label">Luck</span>
-                <span class="stat-value">3</span>
+                <span class="stat-value stat-luck">3</span>
             </div>
         </div>
 
