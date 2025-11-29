@@ -504,7 +504,7 @@
         .camera-row {
             display: flex;
             align-items: center;
-            gap: 4cqw; 
+            gap: 3cqw; /* Adjusted gap since buttons are wider */
         }
 
         .action-circle-btn {
@@ -519,6 +519,29 @@
             font-size: 5cqw;
             color: white;
             box-shadow: 0 1cqw 1.5cqw rgba(0,0,0,0.5);
+        }
+
+        /* NEW: Secondary Wide Buttons */
+        .secondary-action-btn {
+            width: 25cqw; 
+            aspect-ratio: 1.8 / 1; 
+            border-radius: 10cqw; 
+            border: 0.5cqw solid rgba(255,255,255,0.3);
+            box-shadow: 0 1cqw 2cqw rgba(0,0,0,0.6);
+            color: white;
+            font-size: 7cqw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding-bottom: 0.5cqw;
+        }
+
+        .btn-blue {
+            background: linear-gradient(to bottom, #1565C0, #0D47A1); /* Dark Blue */
+        }
+
+        .btn-green {
+            background: linear-gradient(to bottom, #2E7D32, #1B5E20); /* Dark Green */
         }
 
         .main-action-btn {
@@ -683,14 +706,14 @@
                 </div>
 
                 <div class="camera-row">
-                    <!-- Bottom Row: Store, Camera (Center), Dice -->
-                    <div class="action-circle-btn btn-pressable">🏪</div>
+                    <!-- Bottom Row: Store (Dark Blue), Camera (Center), Dice (Dark Green) -->
+                    <div class="secondary-action-btn btn-blue btn-pressable">🏪</div>
                     
                     <div class="main-action-btn btn-pressable">
                         📷
                     </div>
                     
-                    <div class="action-circle-btn btn-pressable" id="btn-dice">🎲</div>
+                    <div class="secondary-action-btn btn-green btn-pressable" id="btn-dice">🎲</div>
                 </div>
             </div>
         </div>
