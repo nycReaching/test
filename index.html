@@ -243,7 +243,7 @@
         }
         
         .stat-funds { color: #006400; } 
-        .stat-research { color: #00008B; } 
+        .stat-day { color: #5D4037; }  /* Dark Brown for Day */
         .stat-luck { color: #C2185B; } 
 
 
@@ -439,7 +439,8 @@
         .ui-inventory-strip {
             width: 100%;
             height: 18%; /* Relative height */
-            background: linear-gradient(to bottom, #2a2a2a, #000000);
+            /* UPDATED: Dark Pink Gradient */
+            background: linear-gradient(to right, #880e4f, #c2185b);
             border-top: 1px solid #444;
             display: flex;
             align-items: center;
@@ -454,25 +455,29 @@
         .inv-slot {
             height: 75%; /* Relative to strip height */
             aspect-ratio: 1;
-            background: #1a1a1a;
-            border: 1px solid #444;
-            border-radius: 1cqw;
-            box-shadow: inset 0 0.5cqw 1cqw rgba(0,0,0,0.8);
+            /* UPDATED: No box styling */
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 3cqw;
-            color: #666;
+            
+            /* UPDATED: Orange Text */
+            color: #FF9800;
+            font-weight: bold;
+            font-size: 5cqw; /* Larger font since box is gone */
+            
             flex-shrink: 0;
             transition: all 0.1s ease;
         }
         
         .inv-slot.active { 
-            border-color: #FFD700;
+            /* UPDATED: Visual feedback for active state without box */
             color: #FFD700; 
-            box-shadow: 0 0 2cqw #FFD700; 
-            background: #332b00;
-            transform: scale(1.05);
+            transform: scale(1.6); /* Pop effect */
+            text-shadow: 0 0 2cqw #FFD700, 0 0 4cqw rgba(255, 100, 0, 0.5);
         }
 
         .ui-controls-main {
@@ -584,19 +589,19 @@
 
 
         <div class="ui-stats-bar">
-            <!-- Align Left -->
+            <!-- Align Left: DAY -->
             <div class="stat-group align-left">
-                <span class="stat-label">Funds</span>
+                <span class="stat-label">DAY</span>
+                <span class="stat-value stat-day">1</span>
+            </div>
+            <!-- Align Center: FUNDS -->
+            <div class="stat-group align-center">
+                <span class="stat-label">FUNDS</span>
                 <span class="stat-value stat-funds">$1,000</span>
             </div>
-            <!-- Align Center -->
-            <div class="stat-group align-center">
-                <span class="stat-label">Research</span>
-                <span class="stat-value stat-research">10</span>
-            </div>
-            <!-- Align Right -->
+            <!-- Align Right: LUCK -->
             <div class="stat-group align-right">
-                <span class="stat-label">Luck</span>
+                <span class="stat-label">LUCK</span>
                 <span class="stat-value stat-luck">3</span>
             </div>
         </div>
@@ -784,7 +789,7 @@
 
                 if (steps > minSteps && currentIndex === targetIndex) {
                     isRolling = false;
-                    slots[currentIndex].style.transform = "scale(1.2)";
+                    slots[currentIndex].style.transform = "scale(1.2)"; // Scale back to slight enlarge
                     setTimeout(() => slots[currentIndex].style.transform = "", 200);
                     return;
                 }
