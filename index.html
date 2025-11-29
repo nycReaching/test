@@ -482,17 +482,8 @@
 
         .ui-controls-main {
             flex-grow: 1;
-            background-color: var(--ui-brown-dark); 
-            
-            /* Dark Brown Polka Dots Pattern */
-            background-image: 
-                radial-gradient(rgba(30, 15, 5, 0.4) 15%, transparent 16%),
-                linear-gradient(180deg, var(--ui-brown) 0%, var(--ui-brown-dark) 100%);
-            
-            /* Fixed background size for texture consistency, 
-               or use percentages like 5% 5% to scale dots */
-            background-position: 0 0, 0 0;
-            background-size: 20px 20px, cover;
+            /* UPDATED: Simple Dark Gradient (removed polka dots) */
+            background: linear-gradient(180deg, var(--ui-brown-dark) 0%, #1a0e0a 100%);
             
             border-top: 1px solid rgba(255,255,255,0.1);
             position: relative;
@@ -507,6 +498,7 @@
         .control-row {
             display: flex;
             gap: 4cqw;
+            align-items: center; /* Ensures text icons align with button */
         }
         
         .camera-row {
@@ -684,19 +676,21 @@
             <div class="ui-controls-main">
                 
                 <div class="control-row">
-                    <div class="action-circle-btn btn-pressable">🏪</div>
+                    <!-- Top Row: Candle, Eyes (Center), Shoe -->
+                    <div class="decorative-icon">🕯️</div>
                     <div class="action-circle-btn btn-pressable">👀</div>
-                    <div class="action-circle-btn btn-pressable" id="btn-dice">🎲</div>
+                    <div class="decorative-icon">👟</div>
                 </div>
 
                 <div class="camera-row">
-                    <div class="decorative-icon">🕯️</div>
+                    <!-- Bottom Row: Store, Camera (Center), Dice -->
+                    <div class="action-circle-btn btn-pressable">🏪</div>
                     
                     <div class="main-action-btn btn-pressable">
                         📷
                     </div>
                     
-                    <div class="decorative-icon">👟</div>
+                    <div class="action-circle-btn btn-pressable" id="btn-dice">🎲</div>
                 </div>
             </div>
         </div>
