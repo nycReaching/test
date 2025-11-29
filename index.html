@@ -97,11 +97,27 @@
             
             /* THE SLANT */
             transform: translate(-50%, -50%) skewX(-12deg);
+            position: absolute; /* Ensure relative positioning for children works if needed, but absolute is set by .map-prop */
         }
         
         .item-container .inner-emoji {
             /* Counter-skew so the emoji stays upright */
             transform: skewX(12deg);
+        }
+
+        /* NEW: Map Prop Numbers */
+        .prop-number {
+            position: absolute;
+            bottom: -5%;
+            right: -5%;
+            font-size: 8cqw;
+            color: white;
+            font-weight: 900;
+            /* Counter-skew the number too so it stands straight */
+            transform: skewX(12deg);
+            text-shadow: 0 0.5cqw 1cqw rgba(0,0,0,0.8);
+            z-index: 10;
+            line-height: 1;
         }
 
         /* Telescope */
@@ -325,6 +341,10 @@
             border: 1px dashed rgba(255,255,255,0.3);
             border-radius: 1.5cqw;
             box-shadow: inset 0 0.5cqw 1cqw rgba(0,0,0,0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 6cqw; /* For content inside */
         }
 
         /* --- 3. LEFT SIDEBAR: ACTION BUTTONS --- */
@@ -524,8 +544,8 @@
             padding-bottom: 1cqw;
         }
 
-        /* --- SHOP MODAL --- */
-        .shop-modal {
+        /* --- SHARED MODAL STYLES --- */
+        .modal-base {
             position: absolute;
             top: 50%;
             left: 50%;
@@ -535,9 +555,7 @@
             /* Start slightly zoomed out for pop-in effect */
             transform: translate(-50%, -50%) scale(0.9);
             
-            background: linear-gradient(135deg, #1565C0, #0D47A1); 
-            
-            /* Shiny Border styling to match shop button */
+            /* Shiny Border styling */
             border: 0.5cqw solid rgba(255,255,255,0.3);
             border-radius: 4cqw;
             box-shadow: 0 2cqw 4cqw rgba(0,0,0,0.8);
@@ -554,10 +572,19 @@
             transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         
-        .shop-modal.open {
+        .modal-base.open {
             opacity: 1;
             pointer-events: auto;
             transform: translate(-50%, -50%) scale(1);
+        }
+
+        .shop-modal-style {
+            background: linear-gradient(135deg, #1565C0, #0D47A1); 
+        }
+
+        /* NEW: Purple Gradient for Book Modal */
+        .book-modal-style {
+            background: linear-gradient(135deg, var(--ui-purple), var(--ui-purple-dark)); 
         }
         
     </style>
@@ -571,14 +598,17 @@
         <!-- CONTAINERS FOR PROPS (Modern Slanted Look) -->
         <div class="map-prop item-container prop-telescope">
             <div class="inner-emoji">🔭</div>
+            <div class="prop-number">3</div>
         </div>
         
         <div class="map-prop item-container prop-bathtub">
             <div class="inner-emoji">🛁</div>
+            <div class="prop-number">7</div>
         </div>
         
         <div class="map-prop item-container prop-scales">
             <div class="inner-emoji">⚖️</div>
+            <div class="prop-number">4</div>
         </div>
         
         <!-- House -->
@@ -596,8 +626,13 @@
 
 
         <!-- SHOP MODAL -->
-        <div id="shop-modal" class="shop-modal">
+        <div id="shop-modal" class="modal-base shop-modal-style">
             <div class="shop-title">SHOP EMPTY</div>
+        </div>
+
+        <!-- BOOK MODAL (Purple) -->
+        <div id="book-modal" class="modal-base book-modal-style">
+            <div class="shop-title">BOOK EMPTY</div>
         </div>
 
 
@@ -637,14 +672,16 @@
             <div class="sabotage-label">Sabotage</div>
 
             <div class="neighbor-slots-row">
-                <div class="neighbor-slot"></div>
+                <!-- Added Cat here -->
+                <div class="neighbor-slot">🐈</div>
                 <div class="neighbor-slot"></div>
             </div>
         </div>
 
         <div class="ui-sidebar-container">
             <div class="sidebar-item-wrapper">
-                <div class="side-btn btn-pressable">🧡</div>
+                <!-- Changed Heart to Book -->
+                <div class="side-btn btn-pressable" id="btn-book">📚</div>
             </div>
             <div class="sidebar-item-wrapper">
                 <div class="side-btn btn-pressable">💛</div>
@@ -694,7 +731,7 @@
             <div class="ui-controls-main">
                 
                 <div class="camera-row">
-                    <!-- Shop Button (Added ID for trigger) -->
+                    <!-- Shop Button -->
                     <div class="secondary-action-btn btn-blue btn-pressable" id="btn-shop">🏪</div>
                     
                     <div class="main-action-btn btn-pressable">
@@ -757,21 +794,49 @@
         document.body.addEventListener('click', (e) => {
             const clickInsideTree = treeMenu.contains(e.target) || treeBtn.contains(e.target);
             const clickInsideFlower = flowerMenu.contains(e.target) || flowerBtn.contains(e.target);
-
             // Close side menus if clicking elsewhere
             if (!clickInsideTree && !clickInsideFlower) {
                 closeAllMenus();
             }
         });
 
-        // --- SHOP MODAL LOGIC ---
+        // --- MODAL LOGIC (Shop & Book) ---
         const shopBtn = document.getElementById('btn-shop');
         const shopModal = document.getElementById('shop-modal');
         
+        const bookBtn = document.getElementById('btn-book');
+        const bookModal = document.getElementById('book-modal');
+        
+        function closeModals() {
+            shopModal.classList.remove('open');
+            bookModal.classList.remove('open');
+        }
+
         shopBtn.addEventListener('click', (e) => {
-            // Prevent event from bubbling up and closing menus immediately if that logic existed
             e.stopPropagation(); 
-            shopModal.classList.toggle('open');
+            const wasOpen = shopModal.classList.contains('open');
+            closeModals(); // Close others first
+            if (!wasOpen) shopModal.classList.add('open');
+        });
+
+        bookBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const wasOpen = bookModal.classList.contains('open');
+            closeModals();
+            if (!wasOpen) bookModal.classList.add('open');
+        });
+
+        // Close modals on outside click
+        document.body.addEventListener('click', (e) => {
+            // Note: If you click inside the modal content, this might close it depending on bubbling.
+            // But since the modal is 'pointer-events: auto' and above others, we just need to make sure
+            // we don't close it if clicking *inside* it.
+            const clickedShop = shopModal.contains(e.target) || shopBtn.contains(e.target);
+            const clickedBook = bookModal.contains(e.target) || bookBtn.contains(e.target);
+
+            if (!clickedShop && !clickedBook) {
+                closeModals();
+            }
         });
 
 
