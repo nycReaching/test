@@ -43,23 +43,15 @@
             align-items: center;
         }
 
-        /* --- MASTER CONTAINER --- 
-           This is the key to consistent scaling.
-           It acts as a virtual "phone screen" on desktop.
-        */
+        /* --- MASTER CONTAINER --- */
         #game-viewport {
             position: relative;
             width: 100%;
             height: 100%;
-            
-            /* Logic for Desktop/Tablet consistency */
-            max-width: 550px; /* Never get wider than a large tablet/phone */
+            max-width: 550px; 
             background: black;
-            box-shadow: 0 0 50px rgba(0,0,0,0.5); /* Nice shadow on desktop */
-            
-            /* Enable Container Queries for child elements */
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
             container-type: size; 
-            
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -72,9 +64,7 @@
             width: 100%;
             height: 100%;
             z-index: 0; 
-            /* Neon Green to Dark Forest Green */
             background: linear-gradient(180deg, #b2ff59 0%, #0d380d 90%);
-            
             background-image: 
                 linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px),
@@ -88,38 +78,46 @@
             z-index: 5; 
         }
 
-        /* --- CONTAINER STYLES FOR ITEMS --- */
-        /* Converted from fixed px to percentages (cqw) */
+        /* --- UPDATED ITEM CONTAINERS (Snow/Asymmetric Look) --- */
         .item-container {
-            width: 18cqw;  /* 18% of container width */
-            aspect-ratio: 1 / 1; /* Keep it square */
+            width: 19cqw;  
+            aspect-ratio: 1 / 1; 
             height: auto;
-            border-radius: 20%;
+            
+            /* Asymmetric / Slanted "Snowy" Border Radius */
+            border-radius: 60% 40% 70% 30% / 50% 30% 70% 50%;
+            
             display: flex;
             justify-content: center;
             align-items: center;
-            box-shadow: 0 1cqw 2cqw rgba(0,0,0,0.5);
-            border: 0.5cqw solid rgba(255,255,255,0.4);
+            box-shadow: 0 1cqw 2cqw rgba(0,0,0,0.4);
+            
+            /* Icy White Border */
+            border: 0.6cqw solid rgba(240, 255, 255, 0.9);
+            
+            /* Slight rotation for the slant effect */
+            transform: translate(-50%, -50%) rotate(-5deg);
         }
 
         /* Telescope */
         .prop-telescope {
             top: 15%; 
             left: 42%;
-            transform: translate(-50%, -50%); 
             background: #283593; 
         }
         .prop-telescope .inner-emoji {
-            font-size: 10cqw; /* Fluid font size */
-            transform: rotate(-10deg);
+            font-size: 10cqw;
+            transform: rotate(-5deg); /* Counter-rotate emoji slightly if needed */
         }
 
         /* Bathtub */
         .prop-bathtub {
             top: 29%; 
             left: 42%; 
-            transform: translate(-50%, -50%);
             background: #00ACC1; 
+            /* Slightly different shape for variety */
+            border-radius: 40% 60% 30% 70% / 60% 50% 50% 40%;
+            transform: translate(-50%, -50%) rotate(3deg);
         }
         .prop-bathtub .inner-emoji {
             font-size: 11cqw;
@@ -129,8 +127,10 @@
         .prop-scales {
             top: 43%;
             left: 42%;
-            transform: translate(-50%, -50%);
             background: #5D4037; 
+            /* Another variation */
+            border-radius: 50% 50% 60% 40% / 40% 60% 50% 50%;
+            transform: translate(-50%, -50%) rotate(-2deg);
         }
         .prop-scales .inner-emoji {
             font-size: 10cqw; 
@@ -140,7 +140,7 @@
         /* --- TREES & HOUSE UPDATES --- */
         .prop-tree {
             bottom: 30%; 
-            font-size: 20cqw; /* Fluid font size */
+            font-size: 20cqw; 
             filter: drop-shadow(0 1cqw 1cqw rgba(0,0,0,0.3));
             pointer-events: none;
         }
@@ -196,14 +196,12 @@
             top: 0;
             left: 0;
             width: 65%;
-            height: 8%; /* Percentage height */
+            height: 8%;
             background: linear-gradient(135deg, var(--ui-gold) 0%, var(--ui-gold-dark) 100%);
             clip-path: polygon(0 0, 100% 0, 95% 100%, 0% 100%);
-            
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
             align-items: center;
-            
             z-index: 20;
             filter: drop-shadow(0 1cqw 1cqw rgba(0,0,0,0.5));
         }
@@ -214,7 +212,6 @@
             line-height: 1;
             justify-content: center;
         }
-
         .stat-group.align-left {
             justify-self: start;
             padding-left: 5cqw;
@@ -236,14 +233,12 @@
             color: #443300;
             text-transform: uppercase; 
         }
-        
         .stat-value { 
             font-size: 4cqw; 
             font-weight: 800;
         }
-        
         .stat-funds { color: #006400; } 
-        .stat-day { color: #5D4037; }  /* Dark Brown for Day */
+        .stat-day { color: #5D4037; }
         .stat-luck { color: #C2185B; } 
 
 
@@ -292,7 +287,7 @@
 
         .meter-bar {
             width: 100%;
-            height: 1.5cqw; /* Scalable bar height */
+            height: 1.5cqw; 
             background: rgba(0,0,0,0.4);
             border-radius: 1cqw;
             border: 1px solid rgba(255,255,255,0.1);
@@ -438,8 +433,7 @@
 
         .ui-inventory-strip {
             width: 100%;
-            height: 18%; /* Relative height */
-            /* UPDATED: Dark Pink Gradient */
+            height: 18%; 
             background: linear-gradient(to right, #880e4f, #c2185b);
             border-top: 1px solid #444;
             display: flex;
@@ -453,81 +447,56 @@
         .ui-inventory-strip::-webkit-scrollbar { display: none; }
 
         .inv-slot {
-            height: 75%; /* Relative to strip height */
+            height: 75%; 
             aspect-ratio: 1;
-            /* UPDATED: No box styling */
             background: transparent;
             border: none;
             box-shadow: none;
-            
             display: flex;
             justify-content: center;
             align-items: center;
-            
-            /* UPDATED: Orange Text */
             color: #FF9800;
             font-weight: bold;
-            font-size: 5cqw; /* Larger font since box is gone */
-            
+            font-size: 5cqw; 
             flex-shrink: 0;
             transition: all 0.1s ease;
         }
         
         .inv-slot.active { 
-            /* UPDATED: Visual feedback for active state without box */
             color: #FFD700; 
-            transform: scale(1.6); /* Pop effect */
+            transform: scale(1.6); 
             text-shadow: 0 0 2cqw #FFD700, 0 0 4cqw rgba(255, 100, 0, 0.5);
         }
 
         .ui-controls-main {
             flex-grow: 1;
-            /* UPDATED: Simple Dark Gradient (removed polka dots) */
             background: linear-gradient(180deg, var(--ui-brown-dark) 0%, #1a0e0a 100%);
-            
             border-top: 1px solid rgba(255,255,255,0.1);
             position: relative;
-            
             display: flex;
             flex-direction: column;
+            /* CENTER CONTENT VERTICALLY now that top row is gone */
             justify-content: center;
             align-items: center;
-            gap: 4cqw;
         }
 
-        .control-row {
-            display: flex;
-            gap: 4cqw;
-            align-items: center; /* Ensures text icons align with button */
-        }
-        
         .camera-row {
             display: flex;
             align-items: center;
-            gap: 3cqw; /* Adjusted gap since buttons are wider */
+            gap: 3cqw; 
         }
 
-        .action-circle-btn {
-            width: 12cqw;
-            aspect-ratio: 1;
-            border-radius: 50%;
-            background: rgba(0,0,0,0.2);
-            border: 1px solid rgba(255,255,255,0.2);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 5cqw;
-            color: white;
-            box-shadow: 0 1cqw 1.5cqw rgba(0,0,0,0.5);
-        }
+        /* --- BUTTON UPDATES --- */
 
-        /* NEW: Secondary Wide Buttons */
         .secondary-action-btn {
             width: 25cqw; 
             aspect-ratio: 1.8 / 1; 
             border-radius: 10cqw; 
+            
+            /* HIGHLIGHT ACCENT: Matching the camera button's border styling */
             border: 0.5cqw solid rgba(255,255,255,0.3);
             box-shadow: 0 1cqw 2cqw rgba(0,0,0,0.6);
+            
             color: white;
             font-size: 7cqw;
             display: flex;
@@ -537,11 +506,12 @@
         }
 
         .btn-blue {
-            background: linear-gradient(to bottom, #1565C0, #0D47A1); /* Dark Blue */
+            background: linear-gradient(to bottom, #1565C0, #0D47A1); 
         }
 
-        .btn-green {
-            background: linear-gradient(to bottom, #2E7D32, #1B5E20); /* Dark Green */
+        /* NEW: Dark Pink Gradient for Dice */
+        .btn-pink-gradient {
+            background: linear-gradient(to bottom, #D81B60, #880E4F); 
         }
 
         .main-action-btn {
@@ -549,8 +519,11 @@
             aspect-ratio: 2.2 / 1;
             background: linear-gradient(to bottom, var(--ui-teal), var(--ui-teal-dark));
             border-radius: 10cqw;
+            
+            /* CAMERA BUTTON BORDER STYLE (The "Highlight Accent") */
             border: 0.5cqw solid rgba(255,255,255,0.3);
             box-shadow: 0 1cqw 2cqw rgba(0,0,0,0.6);
+            
             color: white;
             font-size: 9cqw;
             text-transform: uppercase;
@@ -562,12 +535,6 @@
             padding-bottom: 1cqw;
         }
         
-        .decorative-icon {
-            font-size: 8cqw;
-            filter: drop-shadow(0 1cqw 1cqw rgba(0,0,0,0.5));
-            cursor: default;
-        }
-
     </style>
 </head>
 <body>
@@ -576,7 +543,7 @@
         
         <div id="game-background"></div>
 
-        <!-- CONTAINERS FOR PROPS -->
+        <!-- CONTAINERS FOR PROPS (Updated to "Snow/Asymetric" look) -->
         <div class="map-prop item-container prop-telescope">
             <div class="inner-emoji">🔭</div>
         </div>
@@ -698,22 +665,18 @@
 
             <div class="ui-controls-main">
                 
-                <div class="control-row">
-                    <!-- Top Row: Candle, Eyes (Center), Shoe -->
-                    <div class="decorative-icon">🕯️</div>
-                    <div class="action-circle-btn btn-pressable">👀</div>
-                    <div class="decorative-icon">👟</div>
-                </div>
+                <!-- TOP ROW (Candle, Eyes, Shoe) REMOVED -->
 
                 <div class="camera-row">
-                    <!-- Bottom Row: Store (Dark Blue), Camera (Center), Dice (Dark Green) -->
+                    <!-- Bottom Row: Store (Dark Blue), Camera (Center), Dice (Dark Pink) -->
                     <div class="secondary-action-btn btn-blue btn-pressable">🏪</div>
                     
                     <div class="main-action-btn btn-pressable">
                         📷
                     </div>
                     
-                    <div class="secondary-action-btn btn-green btn-pressable" id="btn-dice">🎲</div>
+                    <!-- Updated class to btn-pink-gradient -->
+                    <div class="secondary-action-btn btn-pink-gradient btn-pressable" id="btn-dice">🎲</div>
                 </div>
             </div>
         </div>
