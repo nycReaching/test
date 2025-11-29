@@ -37,7 +37,32 @@
             height: var(--app-height); 
             overflow: hidden;
             font-family: var(--font-main);
-            background-color: #000000;
+            background-color: #111; /* Dark background for desktop margins */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- MASTER CONTAINER --- 
+           This is the key to consistent scaling.
+           It acts as a virtual "phone screen" on desktop.
+        */
+        #game-viewport {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            
+            /* Logic for Desktop/Tablet consistency */
+            max-width: 550px; /* Never get wider than a large tablet/phone */
+            background: black;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5); /* Nice shadow on desktop */
+            
+            /* Enable Container Queries for child elements */
+            container-type: size; 
+            
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
 
         #game-background {
@@ -57,14 +82,6 @@
             background-size: 30px 30px, 30px 30px, cover;
         }
 
-        #game-viewport {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-
         /* --- MAP PROPS (Background Emojis) --- */
         .map-prop {
             position: absolute;
@@ -72,15 +89,17 @@
         }
 
         /* --- CONTAINER STYLES FOR ITEMS --- */
+        /* Converted from fixed px to percentages (cqw) */
         .item-container {
-            width: 70px; /* Reduced size from 80px */
-            height: 70px; /* Reduced size from 80px */
-            border-radius: 12px;
+            width: 18cqw;  /* 18% of container width */
+            aspect-ratio: 1 / 1; /* Keep it square */
+            height: auto;
+            border-radius: 20%;
             display: flex;
             justify-content: center;
             align-items: center;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
-            border: 2px solid rgba(255,255,255,0.4);
+            box-shadow: 0 1cqw 2cqw rgba(0,0,0,0.5);
+            border: 0.5cqw solid rgba(255,255,255,0.4);
         }
 
         /* Telescope */
@@ -88,10 +107,10 @@
             top: 15%; 
             left: 42%;
             transform: translate(-50%, -50%); 
-            background: #283593; /* Indigo */
+            background: #283593; 
         }
         .prop-telescope .inner-emoji {
-            font-size: 2.5rem; /* Smaller font */
+            font-size: 10cqw; /* Fluid font size */
             transform: rotate(-10deg);
         }
 
@@ -100,10 +119,10 @@
             top: 29%; 
             left: 42%; 
             transform: translate(-50%, -50%);
-            background: #00ACC1; /* Cyan/Teal */
+            background: #00ACC1; 
         }
         .prop-bathtub .inner-emoji {
-            font-size: 3rem; /* Smaller font */
+            font-size: 11cqw;
         }
 
         /* Scales */
@@ -111,40 +130,39 @@
             top: 43%;
             left: 42%;
             transform: translate(-50%, -50%);
-            background: #5D4037; /* Brown */
+            background: #5D4037; 
         }
         .prop-scales .inner-emoji {
-            font-size: 2.5rem; /* Smaller font */
+            font-size: 10cqw; 
         }
 
 
         /* --- TREES & HOUSE UPDATES --- */
         .prop-tree {
             bottom: 30%; 
-            font-size: 5.5rem; 
-            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3));
+            font-size: 20cqw; /* Fluid font size */
+            filter: drop-shadow(0 1cqw 1cqw rgba(0,0,0,0.3));
             pointer-events: none;
         }
 
         .tree-1 { left: 20%; z-index: 5; }
-        .tree-2 { left: 28%; z-index: 6; } /* Middle Tree */
+        .tree-2 { left: 28%; z-index: 6; } 
         .tree-3 { left: 36%; z-index: 5; }
 
         .prop-house-tiny {
             bottom: 39%; 
-            left: 31%;   /* Moved from 28% to 31% to center with tree-2 */
-            transform: translateX(0); /* Removed previous offset */
-            font-size: 2.2rem; 
+            left: 31%;   
+            font-size: 8cqw; 
             z-index: 7;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+            filter: drop-shadow(0 0.5cqw 1cqw rgba(0,0,0,0.5));
             pointer-events: none;
         }
 
-        /* Flowers: Lifted up to match Tree row */
+        /* Flowers */
         .prop-flower {
-            bottom: 30%; /* Lifted from 28% to match trees */
-            font-size: 2.5rem;
-            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3));
+            bottom: 30%; 
+            font-size: 9cqw;
+            filter: drop-shadow(0 0.5cqw 0.5cqw rgba(0,0,0,0.3));
             pointer-events: none;
         }
         
@@ -155,7 +173,7 @@
 
         /* --- SHARED STYLES --- */
         .panel {
-            box-shadow: 0 4px 6px rgba(0,0,0,0.6);
+            box-shadow: 0 1cqw 1.5cqw rgba(0,0,0,0.6);
             color: white;
             font-weight: bold;
             display: flex;
@@ -178,7 +196,7 @@
             top: 0;
             left: 0;
             width: 65%;
-            height: 60px;
+            height: 8%; /* Percentage height */
             background: linear-gradient(135deg, var(--ui-gold) 0%, var(--ui-gold-dark) 100%);
             clip-path: polygon(0 0, 100% 0, 95% 100%, 0% 100%);
             
@@ -187,7 +205,7 @@
             align-items: center;
             
             z-index: 20;
-            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5));
+            filter: drop-shadow(0 1cqw 1cqw rgba(0,0,0,0.5));
         }
 
         .stat-group {
@@ -199,7 +217,7 @@
 
         .stat-group.align-left {
             justify-self: start;
-            padding-left: 20px;
+            padding-left: 5cqw;
             align-items: flex-start;
         }
         .stat-group.align-center {
@@ -208,26 +226,25 @@
         }
         .stat-group.align-right {
             justify-self: end;
-            padding-right: 50px; 
+            padding-right: 12cqw; 
             align-items: flex-end;
         }
 
         .stat-label { 
-            font-size: 0.75rem; 
+            font-size: 2.5cqw; 
             opacity: 0.8; 
             color: #443300;
             text-transform: uppercase; 
         }
         
-        /* New Color Classes */
         .stat-value { 
-            font-size: 1.15rem; 
+            font-size: 4cqw; 
             font-weight: 800;
         }
         
-        .stat-funds { color: #006400; } /* Dark Green */
-        .stat-research { color: #00008B; } /* Dark Blue */
-        .stat-luck { color: #C2185B; } /* Dark Pink */
+        .stat-funds { color: #006400; } 
+        .stat-research { color: #00008B; } 
+        .stat-luck { color: #C2185B; } 
 
 
         /* --- 2. TOP RIGHT: ENEMY PROGRESS --- */
@@ -236,56 +253,55 @@
             top: 0;
             right: 0;
             width: 30%;
-            height: 50%; 
+            height: 40%; 
             background: linear-gradient(180deg, #d32f2f 0%, #5d0000 100%);
-            border-bottom-left-radius: 15px;
-            border-left: 2px solid rgba(255,255,255,0.2);
-            border-bottom: 2px solid rgba(0,0,0,0.2);
+            border-bottom-left-radius: 4cqw;
+            border-left: 0.5cqw solid rgba(255,255,255,0.2);
+            border-bottom: 0.5cqw solid rgba(0,0,0,0.2);
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding-top: 8px;
-            padding-bottom: 10px;
-            gap: 15px;
-            /* Z-Index stays at 20, but sidebar is now higher */
+            padding-top: 2cqw;
+            padding-bottom: 2cqw;
+            gap: 3cqw;
             z-index: 20;
-            box-shadow: -4px 4px 10px rgba(0,0,0,0.6);
+            box-shadow: -1cqw 1cqw 2cqw rgba(0,0,0,0.6);
         }
 
         .enemy-header {
-            font-size: 0.75rem; 
+            font-size: 2.5cqw; 
             opacity: 0.9;
             color: white;
             text-transform: uppercase;
             font-weight: bold;
-            margin-bottom: 2px;
+            margin-bottom: 0.5cqw;
         }
 
         .meter-container {
             width: 80%;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 1cqw;
             align-items: center;
         }
 
         .meter-icon {
-            font-size: 1.5rem;
-            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.6));
+            font-size: 5cqw;
+            filter: drop-shadow(0 0.5cqw 0.5cqw rgba(0,0,0,0.6));
         }
 
         .meter-bar {
             width: 100%;
-            height: 8px;
+            height: 1.5cqw; /* Scalable bar height */
             background: rgba(0,0,0,0.4);
-            border-radius: 4px;
+            border-radius: 1cqw;
             border: 1px solid rgba(255,255,255,0.1);
             overflow: hidden;
         }
 
         .meter-fill {
             height: 100%;
-            border-radius: 4px;
+            border-radius: 1cqw;
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.3);
         }
 
@@ -294,28 +310,28 @@
         .fill-grey { background: #90a4ae; width: 20%; }
 
         .sabotage-label {
-            font-size: 0.75rem;
+            font-size: 2.5cqw;
             opacity: 0.9;
             color: white;
             text-transform: uppercase;
             font-weight: bold;
             margin-top: auto;
-            margin-bottom: 4px;
+            margin-bottom: 1cqw;
         }
 
         .neighbor-slots-row {
             display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
+            gap: 2cqw;
+            margin-bottom: 2cqw;
         }
 
         .neighbor-slot {
-            width: 40px;
-            height: 40px;
+            width: 10cqw;
+            aspect-ratio: 1;
             background: rgba(0,0,0,0.2);
             border: 1px dashed rgba(255,255,255,0.3);
-            border-radius: 6px;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+            border-radius: 1.5cqw;
+            box-shadow: inset 0 0.5cqw 1cqw rgba(0,0,0,0.3);
         }
 
         /* --- 3. LEFT SIDEBAR: ACTION BUTTONS --- */
@@ -327,9 +343,8 @@
             height: 60%; 
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            padding-left: 5px;
-            /* Z-Index raised to 30 to sit ABOVE the enemy panel (z-index: 20) */
+            gap: 2cqw;
+            padding-left: 1cqw;
             z-index: 30;
             pointer-events: none; 
         }
@@ -337,7 +352,6 @@
         .sidebar-item-wrapper {
             position: relative;
             width: 100%;
-            height: auto;
             pointer-events: auto;
             display: flex;
             align-items: center;
@@ -347,14 +361,14 @@
             width: 100%;
             aspect-ratio: 1; 
             background: linear-gradient(135deg, var(--ui-purple) 0%, var(--ui-purple-dark) 100%);
-            border-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 2cqw;
+            border: 0.3cqw solid rgba(255,255,255,0.3);
             border-left: none;
-            box-shadow: 3px 3px 5px rgba(0,0,0,0.5);
+            box-shadow: 1cqw 1cqw 1.5cqw rgba(0,0,0,0.5);
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 1.4rem;
+            font-size: 6cqw;
             position: relative;
             z-index: 2;
         }
@@ -367,7 +381,7 @@
             height: 100%;
             background: rgba(40, 20, 60, 0.95);
             border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 0 8px 8px 0;
+            border-radius: 0 2cqw 2cqw 0;
             display: flex;
             align-items: center;
             padding: 0;
@@ -378,7 +392,7 @@
             pointer-events: none;
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             z-index: 1; 
-            box-shadow: 4px 4px 8px rgba(0,0,0,0.4);
+            box-shadow: 1cqw 1cqw 2cqw rgba(0,0,0,0.4);
             overflow-x: auto;
             white-space: nowrap;
         }
@@ -387,21 +401,21 @@
 
         .slide-menu.open {
             opacity: 1;
-            padding: 0 10px 0 15px; 
+            padding: 0 2cqw 0 3cqw; 
             pointer-events: auto;
             left: 85%;
         }
 
-        .menu-trees.open { width: 200px; }
-        .menu-flowers.open { width: 280px; } 
+        .menu-trees.open { width: 50cqw; }
+        .menu-flowers.open { width: 65cqw; } 
 
         .menu-option {
-            font-size: 1.4rem;
-            padding: 5px;
+            font-size: 6cqw;
+            padding: 1cqw;
             cursor: pointer;
             transition: transform 0.2s;
             flex: 1;
-            min-width: 35px;
+            min-width: 8cqw;
             text-align: center;
             display: inline-block;
         }
@@ -424,12 +438,12 @@
 
         .ui-inventory-strip {
             width: 100%;
-            height: 50px;
+            height: 18%; /* Relative height */
             background: linear-gradient(to bottom, #2a2a2a, #000000);
             border-top: 1px solid #444;
             display: flex;
             align-items: center;
-            padding: 0 10px;
+            padding: 0 2cqw;
             justify-content: space-evenly;
             gap: 0; 
             overflow-x: hidden; 
@@ -438,16 +452,16 @@
         .ui-inventory-strip::-webkit-scrollbar { display: none; }
 
         .inv-slot {
-            min-width: 36px;
-            height: 36px;
+            height: 75%; /* Relative to strip height */
+            aspect-ratio: 1;
             background: #1a1a1a;
             border: 1px solid #444;
-            border-radius: 4px;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.8);
+            border-radius: 1cqw;
+            box-shadow: inset 0 0.5cqw 1cqw rgba(0,0,0,0.8);
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 0.7rem;
+            font-size: 3cqw;
             color: #666;
             flex-shrink: 0;
             transition: all 0.1s ease;
@@ -456,7 +470,7 @@
         .inv-slot.active { 
             border-color: #FFD700;
             color: #FFD700; 
-            box-shadow: 0 0 8px #FFD700; 
+            box-shadow: 0 0 2cqw #FFD700; 
             background: #332b00;
             transform: scale(1.05);
         }
@@ -465,11 +479,13 @@
             flex-grow: 1;
             background-color: var(--ui-brown-dark); 
             
-            /* UPDATED: Dark Brown Polka Dots Pattern */
+            /* Dark Brown Polka Dots Pattern */
             background-image: 
                 radial-gradient(rgba(30, 15, 5, 0.4) 15%, transparent 16%),
                 linear-gradient(180deg, var(--ui-brown) 0%, var(--ui-brown-dark) 100%);
             
+            /* Fixed background size for texture consistency, 
+               or use percentages like 5% 5% to scale dots */
             background-position: 0 0, 0 0;
             background-size: 20px 20px, cover;
             
@@ -480,55 +496,55 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            gap: 15px;
+            gap: 4cqw;
         }
 
         .control-row {
             display: flex;
-            gap: 20px;
+            gap: 4cqw;
         }
         
         .camera-row {
             display: flex;
             align-items: center;
-            gap: 20px; 
+            gap: 4cqw; 
         }
 
         .action-circle-btn {
-            width: 50px;
-            height: 50px;
+            width: 12cqw;
+            aspect-ratio: 1;
             border-radius: 50%;
             background: rgba(0,0,0,0.2);
             border: 1px solid rgba(255,255,255,0.2);
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 1.2rem;
+            font-size: 5cqw;
             color: white;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+            box-shadow: 0 1cqw 1.5cqw rgba(0,0,0,0.5);
         }
 
         .main-action-btn {
-            width: 120px;
-            height: 55px;
+            width: 35cqw;
+            aspect-ratio: 2.2 / 1;
             background: linear-gradient(to bottom, var(--ui-teal), var(--ui-teal-dark));
-            border-radius: 25px;
-            border: 2px solid rgba(255,255,255,0.3);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+            border-radius: 10cqw;
+            border: 0.5cqw solid rgba(255,255,255,0.3);
+            box-shadow: 0 1cqw 2cqw rgba(0,0,0,0.6);
             color: white;
-            font-size: 2.2rem;
+            font-size: 9cqw;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 0.5cqw;
             font-weight: bold;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding-bottom: 8px;
+            padding-bottom: 1cqw;
         }
         
         .decorative-icon {
-            font-size: 3rem;
-            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5));
+            font-size: 8cqw;
+            filter: drop-shadow(0 1cqw 1cqw rgba(0,0,0,0.5));
             cursor: default;
         }
 
@@ -540,7 +556,7 @@
         
         <div id="game-background"></div>
 
-        <!-- NEW CONTAINERS FOR PROPS -->
+        <!-- CONTAINERS FOR PROPS -->
         <div class="map-prop item-container prop-telescope">
             <div class="inner-emoji">🔭</div>
         </div>
@@ -553,7 +569,7 @@
             <div class="inner-emoji">⚖️</div>
         </div>
         
-        <!-- House shifted right -->
+        <!-- House -->
         <div class="map-prop prop-house-tiny">🏠</div>
 
         <!-- Trees -->
@@ -561,7 +577,7 @@
         <div class="map-prop prop-tree tree-2">🌳</div>
         <div class="map-prop prop-tree tree-3">🌳</div>
         
-        <!-- Flowers moved up -->
+        <!-- Flowers -->
         <div class="map-prop prop-flower flower-hya">🪻</div>
         <div class="map-prop prop-flower flower-sun">🌻</div>
         <div class="map-prop prop-flower flower-rose">🌹</div>
@@ -631,7 +647,6 @@
                     <div class="menu-option">🌸</div>
                     <div class="menu-option">🌺</div>
                     <div class="menu-option">🌻</div>
-                    <!-- 🌼 Removed as requested -->
                     <div class="menu-option">🌷</div>
                     <div class="menu-option">🪻</div>
                 </div>
@@ -717,7 +732,6 @@
             flowerMenu.classList.remove('open');
         }
 
-        // Tree Toggle
         treeBtn.addEventListener('click', (e) => {
             e.stopPropagation(); 
             const wasOpen = treeMenu.classList.contains('open');
@@ -725,7 +739,6 @@
             if (!wasOpen) treeMenu.classList.add('open');
         });
 
-        // Flower Toggle
         flowerBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             const wasOpen = flowerMenu.classList.contains('open');
@@ -733,7 +746,6 @@
             if (!wasOpen) flowerMenu.classList.add('open');
         });
 
-        // Close menu if clicking outside
         document.body.addEventListener('click', (e) => {
             const clickInsideTree = treeMenu.contains(e.target) || treeBtn.contains(e.target);
             const clickInsideFlower = flowerMenu.contains(e.target) || flowerBtn.contains(e.target);
