@@ -78,25 +78,30 @@
             z-index: 5; 
         }
 
-        /* --- UPDATED ITEM CONTAINERS (Snow/Asymmetric Look) --- */
+        /* --- UPDATED ITEM CONTAINERS (Modern Slanted Look) --- */
         .item-container {
-            width: 19cqw;  
+            width: 18cqw;  
             aspect-ratio: 1 / 1; 
             height: auto;
             
-            /* Asymmetric / Slanted "Snowy" Border Radius */
-            border-radius: 60% 40% 70% 30% / 50% 30% 70% 50%;
+            /* Modern Pro: Borderless, Rectangular but Slanted */
+            border-radius: 1.5cqw; /* Very subtle rounding */
+            border: none;
             
             display: flex;
             justify-content: center;
             align-items: center;
-            box-shadow: 0 1cqw 2cqw rgba(0,0,0,0.4);
             
-            /* Icy White Border */
-            border: 0.6cqw solid rgba(240, 255, 255, 0.9);
+            /* Deep modern shadow */
+            box-shadow: 1cqw 1cqw 2cqw rgba(0,0,0,0.5);
             
-            /* Slight rotation for the slant effect */
-            transform: translate(-50%, -50%) rotate(-5deg);
+            /* THE SLANT */
+            transform: translate(-50%, -50%) skewX(-12deg);
+        }
+        
+        .item-container .inner-emoji {
+            /* Counter-skew so the emoji stays upright */
+            transform: skewX(12deg);
         }
 
         /* Telescope */
@@ -107,7 +112,6 @@
         }
         .prop-telescope .inner-emoji {
             font-size: 10cqw;
-            transform: rotate(-5deg); /* Counter-rotate emoji slightly if needed */
         }
 
         /* Bathtub */
@@ -115,9 +119,6 @@
             top: 29%; 
             left: 42%; 
             background: #00ACC1; 
-            /* Slightly different shape for variety */
-            border-radius: 40% 60% 30% 70% / 60% 50% 50% 40%;
-            transform: translate(-50%, -50%) rotate(3deg);
         }
         .prop-bathtub .inner-emoji {
             font-size: 11cqw;
@@ -128,16 +129,13 @@
             top: 43%;
             left: 42%;
             background: #5D4037; 
-            /* Another variation */
-            border-radius: 50% 50% 60% 40% / 40% 60% 50% 50%;
-            transform: translate(-50%, -50%) rotate(-2deg);
         }
         .prop-scales .inner-emoji {
             font-size: 10cqw; 
         }
 
 
-        /* --- TREES & HOUSE UPDATES --- */
+        /* --- TREES & HOUSE --- */
         .prop-tree {
             bottom: 30%; 
             font-size: 20cqw; 
@@ -368,7 +366,7 @@
             z-index: 2;
         }
 
-        /* --- SHARED SLIDE OUT MENU STYLES --- */
+        /* --- SLIDE OUT MENU --- */
         .slide-menu {
             position: absolute;
             left: 90%; 
@@ -418,7 +416,7 @@
             transform: scale(0.8);
         }
 
-        /* --- 4. BOTTOM AREA: INVENTORY & CONTROLS --- */
+        /* --- 4. BOTTOM AREA --- */
         .ui-footer-container {
             position: absolute;
             bottom: 0;
@@ -475,7 +473,6 @@
             position: relative;
             display: flex;
             flex-direction: column;
-            /* CENTER CONTENT VERTICALLY now that top row is gone */
             justify-content: center;
             align-items: center;
         }
@@ -486,17 +483,13 @@
             gap: 3cqw; 
         }
 
-        /* --- BUTTON UPDATES --- */
-
+        /* --- BUTTONS --- */
         .secondary-action-btn {
             width: 25cqw; 
             aspect-ratio: 1.8 / 1; 
             border-radius: 10cqw; 
-            
-            /* HIGHLIGHT ACCENT: Matching the camera button's border styling */
             border: 0.5cqw solid rgba(255,255,255,0.3);
             box-shadow: 0 1cqw 2cqw rgba(0,0,0,0.6);
-            
             color: white;
             font-size: 7cqw;
             display: flex;
@@ -509,7 +502,6 @@
             background: linear-gradient(to bottom, #1565C0, #0D47A1); 
         }
 
-        /* NEW: Dark Pink Gradient for Dice */
         .btn-pink-gradient {
             background: linear-gradient(to bottom, #D81B60, #880E4F); 
         }
@@ -519,11 +511,8 @@
             aspect-ratio: 2.2 / 1;
             background: linear-gradient(to bottom, var(--ui-teal), var(--ui-teal-dark));
             border-radius: 10cqw;
-            
-            /* CAMERA BUTTON BORDER STYLE (The "Highlight Accent") */
             border: 0.5cqw solid rgba(255,255,255,0.3);
             box-shadow: 0 1cqw 2cqw rgba(0,0,0,0.6);
-            
             color: white;
             font-size: 9cqw;
             text-transform: uppercase;
@@ -534,6 +523,42 @@
             align-items: center;
             padding-bottom: 1cqw;
         }
+
+        /* --- SHOP MODAL --- */
+        .shop-modal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 80%;
+            height: 40%;
+            
+            /* Start slightly zoomed out for pop-in effect */
+            transform: translate(-50%, -50%) scale(0.9);
+            
+            background: linear-gradient(135deg, #1565C0, #0D47A1); 
+            
+            /* Shiny Border styling to match shop button */
+            border: 0.5cqw solid rgba(255,255,255,0.3);
+            border-radius: 4cqw;
+            box-shadow: 0 2cqw 4cqw rgba(0,0,0,0.8);
+            
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 4cqw;
+            
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .shop-modal.open {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translate(-50%, -50%) scale(1);
+        }
         
     </style>
 </head>
@@ -543,7 +568,7 @@
         
         <div id="game-background"></div>
 
-        <!-- CONTAINERS FOR PROPS (Updated to "Snow/Asymetric" look) -->
+        <!-- CONTAINERS FOR PROPS (Modern Slanted Look) -->
         <div class="map-prop item-container prop-telescope">
             <div class="inner-emoji">🔭</div>
         </div>
@@ -570,18 +595,21 @@
         <div class="map-prop prop-flower flower-rose">🌹</div>
 
 
+        <!-- SHOP MODAL -->
+        <div id="shop-modal" class="shop-modal">
+            <div class="shop-title">SHOP EMPTY</div>
+        </div>
+
+
         <div class="ui-stats-bar">
-            <!-- Align Left: DAY -->
             <div class="stat-group align-left">
                 <span class="stat-label">DAY</span>
                 <span class="stat-value stat-day">1</span>
             </div>
-            <!-- Align Center: FUNDS -->
             <div class="stat-group align-center">
                 <span class="stat-label">FUNDS</span>
                 <span class="stat-value stat-funds">$1,000</span>
             </div>
-            <!-- Align Right: LUCK -->
             <div class="stat-group align-right">
                 <span class="stat-label">LUCK</span>
                 <span class="stat-value stat-luck">3</span>
@@ -665,17 +693,14 @@
 
             <div class="ui-controls-main">
                 
-                <!-- TOP ROW (Candle, Eyes, Shoe) REMOVED -->
-
                 <div class="camera-row">
-                    <!-- Bottom Row: Store (Dark Blue), Camera (Center), Dice (Dark Pink) -->
-                    <div class="secondary-action-btn btn-blue btn-pressable">🏪</div>
+                    <!-- Shop Button (Added ID for trigger) -->
+                    <div class="secondary-action-btn btn-blue btn-pressable" id="btn-shop">🏪</div>
                     
                     <div class="main-action-btn btn-pressable">
                         📷
                     </div>
                     
-                    <!-- Updated class to btn-pink-gradient -->
                     <div class="secondary-action-btn btn-pink-gradient btn-pressable" id="btn-dice">🎲</div>
                 </div>
             </div>
@@ -705,10 +730,8 @@
         });
 
         // --- MENU LOGIC ---
-        
         const treeBtn = document.getElementById('btn-tree-toggle');
         const treeMenu = document.getElementById('tree-menu');
-        
         const flowerBtn = document.getElementById('btn-flower-toggle');
         const flowerMenu = document.getElementById('flower-menu');
 
@@ -735,9 +758,20 @@
             const clickInsideTree = treeMenu.contains(e.target) || treeBtn.contains(e.target);
             const clickInsideFlower = flowerMenu.contains(e.target) || flowerBtn.contains(e.target);
 
+            // Close side menus if clicking elsewhere
             if (!clickInsideTree && !clickInsideFlower) {
                 closeAllMenus();
             }
+        });
+
+        // --- SHOP MODAL LOGIC ---
+        const shopBtn = document.getElementById('btn-shop');
+        const shopModal = document.getElementById('shop-modal');
+        
+        shopBtn.addEventListener('click', (e) => {
+            // Prevent event from bubbling up and closing menus immediately if that logic existed
+            e.stopPropagation(); 
+            shopModal.classList.toggle('open');
         });
 
 
@@ -751,7 +785,6 @@
             isRolling = true;
             
             const targetIndex = Math.floor(Math.random() * slots.length);
-            
             let currentIndex = 0;
             slots.forEach((slot, index) => {
                 if (slot.classList.contains('active')) currentIndex = index;
@@ -769,7 +802,7 @@
 
                 if (steps > minSteps && currentIndex === targetIndex) {
                     isRolling = false;
-                    slots[currentIndex].style.transform = "scale(1.2)"; // Scale back to slight enlarge
+                    slots[currentIndex].style.transform = "scale(1.2)";
                     setTimeout(() => slots[currentIndex].style.transform = "", 200);
                     return;
                 }
@@ -780,7 +813,6 @@
 
                 setTimeout(step, speed);
             }
-
             step();
         });
 
