@@ -47,10 +47,9 @@
             width: 100%;
             height: 100%;
             z-index: 0; 
-            /* Updated Gradient: Neon Green to Dark Forest Green */
+            /* Neon Green to Dark Forest Green */
             background: linear-gradient(180deg, #b2ff59 0%, #0d380d 90%);
             
-            /* Keep grid texture */
             background-image: 
                 linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px),
@@ -70,14 +69,12 @@
         .map-prop {
             position: absolute;
             z-index: 5; 
-            /* Removed pointer-events: none so containers feel 'solid' visually, though currently no interaction */
-            /* pointer-events: none; */ 
         }
 
         /* --- CONTAINER STYLES FOR ITEMS --- */
         .item-container {
-            width: 80px;
-            height: 80px;
+            width: 70px; /* Reduced size from 80px */
+            height: 70px; /* Reduced size from 80px */
             border-radius: 12px;
             display: flex;
             justify-content: center;
@@ -86,19 +83,19 @@
             border: 2px solid rgba(255,255,255,0.4);
         }
 
-        /* Telescope: Sky/Space Theme Container */
+        /* Telescope */
         .prop-telescope {
             top: 15%; 
             left: 42%;
-            transform: translate(-50%, -50%); /* Removed rotation from container, apply to emoji if needed */
+            transform: translate(-50%, -50%); 
             background: #283593; /* Indigo */
         }
         .prop-telescope .inner-emoji {
-            font-size: 3rem;
+            font-size: 2.5rem; /* Smaller font */
             transform: rotate(-10deg);
         }
 
-        /* Bathtub: Water Theme Container */
+        /* Bathtub */
         .prop-bathtub {
             top: 29%; 
             left: 42%; 
@@ -106,10 +103,10 @@
             background: #00ACC1; /* Cyan/Teal */
         }
         .prop-bathtub .inner-emoji {
-            font-size: 3.5rem;
+            font-size: 3rem; /* Smaller font */
         }
 
-        /* Scales: Law/Wood Theme Container */
+        /* Scales */
         .prop-scales {
             top: 43%;
             left: 42%;
@@ -117,45 +114,43 @@
             background: #5D4037; /* Brown */
         }
         .prop-scales .inner-emoji {
-            font-size: 3rem;
+            font-size: 2.5rem; /* Smaller font */
         }
 
 
         /* --- TREES & HOUSE UPDATES --- */
-        /* Shifted right and made larger */
         .prop-tree {
             bottom: 30%; 
-            font-size: 5.5rem; /* Larger from 4rem */
+            font-size: 5.5rem; 
             filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3));
             pointer-events: none;
         }
 
-        /* New positions shifted right by ~15% */
         .tree-1 { left: 20%; z-index: 5; }
         .tree-2 { left: 28%; z-index: 6; } /* Middle Tree */
         .tree-3 { left: 36%; z-index: 5; }
 
         .prop-house-tiny {
-            bottom: 39%; /* Adjusted for new tree size */
+            bottom: 39%; 
             left: 28%;   /* Aligned with tree-2 */
-            transform: translateX(15%); 
-            font-size: 2.2rem; /* Larger from 1.5rem */
+            transform: translateX(40%); /* Shifted further right */
+            font-size: 2.2rem; 
             z-index: 7;
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
             pointer-events: none;
         }
 
-        /* Flowers: adjusted slightly to fit new tree positions */
+        /* Flowers: Lower and Further Right */
         .prop-flower {
-            bottom: 33%; 
+            bottom: 28%; /* Lowered from 33% */
             font-size: 2.5rem;
             filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3));
             pointer-events: none;
         }
         
-        .flower-hya { left: 55%; } 
-        .flower-sun { left: 61%; } 
-        .flower-rose { left: 67%; } 
+        .flower-hya { left: 65%; } /* Further right */
+        .flower-sun { left: 71%; } 
+        .flower-rose { left: 77%; } 
 
 
         /* --- SHARED STYLES --- */
@@ -626,7 +621,7 @@
                     <div class="menu-option">🌸</div>
                     <div class="menu-option">🌺</div>
                     <div class="menu-option">🌻</div>
-                    <div class="menu-option">🌼</div>
+                    <!-- 🌼 Removed as requested -->
                     <div class="menu-option">🌷</div>
                     <div class="menu-option">🪻</div>
                 </div>
