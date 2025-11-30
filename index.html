@@ -285,7 +285,6 @@
             box-shadow: -1cqw 1cqw 2cqw rgba(0,0,0,0.6);
         }
 
-        /* Matches FUNDS style but white */
         .enemy-header {
             font-size: 2.5cqw; 
             opacity: 0.9;
@@ -351,7 +350,6 @@
             margin-top: 2cqw; 
         }
 
-        /* Matches FUNDS style but white */
         .sabotage-label {
             font-size: 2.5cqw; 
             opacity: 0.9;
@@ -481,15 +479,15 @@
             display: flex;
             flex-direction: column;
             box-shadow: none;
-            overflow: visible; /* Allow overlapping elements */
+            overflow: visible; 
         }
 
         .ui-inventory-strip {
-            /* Positioning for 50/50 overlap */
+            /* Positioning: Inside footer now (top 2cqw), centered horizontally */
             position: absolute;
-            top: 0;
+            top: 2cqw; 
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translateX(-50%);
             z-index: 50;
 
             width: 92%;
@@ -499,7 +497,10 @@
             
             /* Styles matched to Dice Button (#btn-dice) */
             background: linear-gradient(to bottom, #D81B60, #880E4F); 
+            
+            /* Border will be animated in JS */
             border: 0.5cqw solid rgba(255,255,255,0.3);
+            
             box-shadow: 0 1cqw 2cqw rgba(0,0,0,0.6);
             
             display: flex;
@@ -523,7 +524,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            color: rgba(255,255,255,0.5); /* Dimmed white for better contrast on pink */
+            color: rgba(255,255,255,0.5); 
             font-weight: bold;
             font-size: 6cqw; 
             flex-shrink: 0;
@@ -541,7 +542,7 @@
 
         .ui-controls-main {
             flex-grow: 1;
-            /* Updated to Lightened Midnight Blue Gradient so it's not black */
+            /* Lightened Midnight Blue Gradient */
             background: linear-gradient(180deg, #0d2b4d 0%, #000000 100%);
             
             position: relative;
@@ -550,8 +551,8 @@
             justify-content: center;
             align-items: center;
             
-            /* Add some padding to top to account for overlapping strip */
-            padding-top: 5cqw;
+            /* Padding pushed down to make room for the inventory strip at the top */
+            padding-top: 10cqw;
         }
 
         .camera-row {
@@ -606,8 +607,8 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 80%;
-            height: 40%;
+            width: 90%; /* Widened for Shop Columns */
+            height: 60%; /* Taller for Shop Columns */
             
             transform: translate(-50%, -50%) scale(0.9);
             
@@ -617,14 +618,15 @@
             
             z-index: 100;
             display: flex;
-            justify-content: center;
-            align-items: center;
+            flex-direction: column; /* Changed to column for top/bottom split */
+            
             color: white;
             font-size: 4cqw;
             
             opacity: 0;
             pointer-events: none;
             transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: hidden;
         }
         
         .modal-base.open {
@@ -635,6 +637,70 @@
 
         .shop-modal-style {
             background: linear-gradient(135deg, #1565C0, #0D47A1); 
+        }
+
+        /* SHOP LAYOUT */
+        .shop-top-half {
+            width: 100%;
+            height: 60%;
+            border-bottom: 2px solid rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: row;
+            background: rgba(0,0,0,0.1);
+        }
+        
+        .shop-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid rgba(255,255,255,0.1);
+            align-items: center;
+            padding: 1cqw;
+        }
+        .shop-column:last-child { border-right: none; }
+        
+        .shop-header {
+            font-size: 3cqw;
+            text-transform: uppercase;
+            margin-bottom: 1cqw;
+            font-weight: bold;
+            text-align: center;
+            opacity: 0.9;
+            height: 15%;
+            display: flex;
+            align-items: center;
+        }
+        
+        .shop-items-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1cqw;
+            width: 100%;
+            height: 85%;
+            align-items: center;
+        }
+        
+        .shop-item-placeholder {
+            width: 90%;
+            flex: 1;
+            background: rgba(255,255,255,0.1);
+            border-radius: 1cqw;
+            border: 1px solid rgba(255,255,255,0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5cqw;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .shop-bottom-half {
+            width: 100%;
+            height: 40%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0.5;
+            font-size: 3cqw;
         }
 
         .book-modal-style {
@@ -668,7 +734,6 @@
 
         .bird-unknown {
             font-size: 11cqw;
-            
             filter: brightness(0); 
             opacity: 0.6;
             cursor: help;
@@ -748,7 +813,38 @@
 
         <!-- MODALS -->
         <div id="shop-modal" class="modal-base shop-modal-style">
-            <div class="shop-title">SHOP EMPTY</div>
+            <div class="shop-top-half">
+                <!-- Column 1 -->
+                <div class="shop-column">
+                    <div class="shop-header">Bird<br>Houses</div>
+                    <div class="shop-items-container">
+                        <div class="shop-item-placeholder">🏠</div>
+                        <div class="shop-item-placeholder">🛖</div>
+                        <div class="shop-item-placeholder">🏯</div>
+                    </div>
+                </div>
+                <!-- Column 2 -->
+                <div class="shop-column">
+                    <div class="shop-header">Bird<br>Baths</div>
+                    <div class="shop-items-container">
+                        <div class="shop-item-placeholder">⛲</div>
+                        <div class="shop-item-placeholder">🛁</div>
+                        <div class="shop-item-placeholder">🚿</div>
+                    </div>
+                </div>
+                <!-- Column 3 -->
+                <div class="shop-column">
+                    <div class="shop-header">Bird<br>Feeders</div>
+                    <div class="shop-items-container">
+                        <div class="shop-item-placeholder">🌽</div>
+                        <div class="shop-item-placeholder">🥯</div>
+                        <div class="shop-item-placeholder">🥖</div>
+                    </div>
+                </div>
+            </div>
+            <div class="shop-bottom-half">
+                (Empty Bottom Half)
+            </div>
         </div>
 
         <div id="book-modal" class="modal-base book-modal-style">
@@ -1084,18 +1180,23 @@
                 slots[currentIndex].classList.add('active');
                 steps++;
                 
-                // --- ANIMATION: Smooth hue rotation while rolling ---
+                // --- ANIMATION: Smooth border color rotation ---
+                // We leave the filter on 'none' or just manipulate border color directly
                 hue = (hue + 20) % 360;
-                strip.style.filter = `hue-rotate(${hue}deg)`;
+                // Using HSLA to cycle border color
+                strip.style.borderColor = `hsl(${hue}, 100%, 50%)`;
+                
+                // Ensure no filter is messing with numbers
+                strip.style.filter = "none";
 
                 if (steps > minSteps && currentIndex === targetIndex) {
                     isRolling = false;
                     slots[currentIndex].style.transform = "scale(1.2)";
                     
                     // --- FINISH ---
-                    // Reset filter smoothly
-                    strip.style.transition = "filter 0.5s ease";
-                    strip.style.filter = "none";
+                    // Reset border smoothly
+                    strip.style.transition = "border-color 0.5s ease";
+                    strip.style.borderColor = "rgba(255,255,255,0.3)";
 
                     setTimeout(() => {
                         slots[currentIndex].style.transform = "";
