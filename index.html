@@ -159,40 +159,42 @@
             pointer-events: none;
         }
 
-        .tree-1 { left: 20%; z-index: 5; }
+        /* UPDATED: Spread out trees */
+        .tree-1 { left: 15%; z-index: 5; }
         .tree-2 { left: 28%; z-index: 6; } 
-        .tree-3 { left: 36%; z-index: 5; }
+        .tree-3 { left: 41%; z-index: 5; }
 
         .prop-house-tiny {
             bottom: 39%; 
-            left: 31%;   
+            left: 28%;   /* Adjusted slightly to match tree gap */
             font-size: 8cqw; 
             z-index: 7;
             filter: drop-shadow(0 0.5cqw 1cqw rgba(0,0,0,0.5));
             pointer-events: none;
         }
 
-        /* --- FLOWERS & SEEDLINGS --- */
+        /* --- SPROUTS (New Separate Section) --- */
+        .prop-sprout-layer {
+            position: absolute;
+            bottom: 55%; /* Much higher up */
+            font-size: 6cqw;
+            filter: drop-shadow(0 0.5cqw 0.5cqw rgba(0,0,0,0.3));
+            z-index: 4;
+            /* Align with flowers vertically, but higher up */
+        }
+        
+        .sprout-1 { left: 66%; }
+        .sprout-2 { left: 72%; }
+        .sprout-3 { left: 78%; }
+
+
+        /* --- FLOWERS --- */
         .prop-flower {
             bottom: 30%; 
-            font-size: 9cqw;
+            /* UPDATED: Larger Size */
+            font-size: 12cqw;
             filter: drop-shadow(0 0.5cqw 0.5cqw rgba(0,0,0,0.3));
             pointer-events: none;
-            
-            /* Stack seedling above flower */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        .flower-seed {
-            font-size: 0.6em; /* Relative to the container font-size */
-            margin-bottom: -0.4em; /* Pull it down to overlap slightly */
-            z-index: 1;
-        }
-        
-        .flower-bloom {
-            z-index: 2;
         }
         
         .flower-hya { left: 65%; } 
@@ -436,6 +438,8 @@
 
         .menu-trees.open { width: 50cqw; }
         .menu-flowers.open { width: 65cqw; } 
+        /* Added Farmer Menu Width */
+        .menu-farmer.open { width: 40cqw; }
 
         .menu-option {
             font-size: 6cqw;
@@ -634,19 +638,15 @@
         <div class="map-prop prop-tree tree-2">🌲</div>
         <div class="map-prop prop-tree tree-3">🎋</div>
         
-        <!-- Flowers with Seedlings -->
-        <div class="map-prop prop-flower flower-hya">
-            <div class="flower-seed">🌱</div>
-            <div class="flower-bloom">🪻</div>
-        </div>
-        <div class="map-prop prop-flower flower-sun">
-            <div class="flower-seed">🌱</div>
-            <div class="flower-bloom">🌻</div>
-        </div>
-        <div class="map-prop prop-flower flower-rose">
-            <div class="flower-seed">🌱</div>
-            <div class="flower-bloom">🌹</div>
-        </div>
+        <!-- Sprouts (Separate Layer Above Flowers) -->
+        <div class="map-prop prop-sprout-layer sprout-1">🌱</div>
+        <div class="map-prop prop-sprout-layer sprout-2">🌱</div>
+        <div class="map-prop prop-sprout-layer sprout-3">🌱</div>
+
+        <!-- Flowers -->
+        <div class="map-prop prop-flower flower-hya">🪻</div>
+        <div class="map-prop prop-flower flower-sun">🌻</div>
+        <div class="map-prop prop-flower flower-rose">🌹</div>
 
 
         <!-- MODALS -->
@@ -712,8 +712,16 @@
                 <!-- Changed Heart to Self -->
                 <div class="side-btn btn-pressable" id="btn-self">👤</div>
             </div>
+            
+            <!-- Farmer Button Wrapper with Slide Out Menu -->
             <div class="sidebar-item-wrapper">
-                <div class="side-btn btn-pressable">🧑‍🌾</div>
+                <div class="side-btn btn-pressable" id="btn-farmer-toggle">🧑‍🌾</div>
+                
+                <div class="slide-menu menu-farmer" id="farmer-menu">
+                    <div class="menu-option">🌱</div>
+                    <div class="menu-option">🪴</div>
+                    <div class="menu-option">🪱</div>
+                </div>
             </div>
 
             <!-- Flower Button Wrapper with Slide Out Menu -->
@@ -797,10 +805,15 @@
         const treeMenu = document.getElementById('tree-menu');
         const flowerBtn = document.getElementById('btn-flower-toggle');
         const flowerMenu = document.getElementById('flower-menu');
+        
+        // New Farmer Menu Refs
+        const farmerBtn = document.getElementById('btn-farmer-toggle');
+        const farmerMenu = document.getElementById('farmer-menu');
 
         function closeAllMenus() {
             treeMenu.classList.remove('open');
             flowerMenu.classList.remove('open');
+            farmerMenu.classList.remove('open');
         }
 
         treeBtn.addEventListener('click', (e) => {
@@ -816,11 +829,20 @@
             closeAllMenus(); 
             if (!wasOpen) flowerMenu.classList.add('open');
         });
+        
+        farmerBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const wasOpen = farmerMenu.classList.contains('open');
+            closeAllMenus(); 
+            if (!wasOpen) farmerMenu.classList.add('open');
+        });
 
         document.body.addEventListener('click', (e) => {
             const clickInsideTree = treeMenu.contains(e.target) || treeBtn.contains(e.target);
             const clickInsideFlower = flowerMenu.contains(e.target) || flowerBtn.contains(e.target);
-            if (!clickInsideTree && !clickInsideFlower) {
+            const clickInsideFarmer = farmerMenu.contains(e.target) || farmerBtn.contains(e.target);
+            
+            if (!clickInsideTree && !clickInsideFlower && !clickInsideFarmer) {
                 closeAllMenus();
             }
         });
