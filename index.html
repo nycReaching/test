@@ -634,8 +634,34 @@
             background: linear-gradient(135deg, #1565C0, #0D47A1); 
         }
 
+        /* Purple Gradient for Book & Self Modals */
         .book-modal-style {
             background: linear-gradient(135deg, var(--ui-purple), var(--ui-purple-dark)); 
+        }
+        
+        /* --- BIRD COLLECTION STYLES --- */
+        .bird-collection-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 1cqw;
+            width: 95%;
+            padding: 2cqw;
+            justify-items: center;
+            align-items: center;
+        }
+
+        .bird-unknown {
+            font-size: 5cqw;
+            /* "Blackened out" silhouette effect */
+            filter: brightness(0); 
+            opacity: 0.6;
+            cursor: help;
+            transition: transform 0.2s;
+        }
+        
+        .bird-unknown:hover {
+            transform: scale(1.2);
+            opacity: 0.8;
         }
         
     </style>
@@ -696,7 +722,29 @@
         </div>
 
         <div id="book-modal" class="modal-base book-modal-style">
-            <div class="shop-title">BOOK EMPTY</div>
+            <div class="bird-collection-grid">
+                <!-- Row 1 -->
+                <div class="bird-unknown">🐓</div>
+                <div class="bird-unknown">🦃</div>
+                <div class="bird-unknown">🦆</div>
+                <div class="bird-unknown">🦅</div>
+                <div class="bird-unknown">🕊️</div>
+                <div class="bird-unknown">🦢</div>
+                <!-- Row 2 -->
+                <div class="bird-unknown">🦜</div>
+                <div class="bird-unknown">🐦‍⬛</div>
+                <div class="bird-unknown">🪿</div>
+                <div class="bird-unknown">🐦‍🔥</div>
+                <div class="bird-unknown">🦩</div>
+                <div class="bird-unknown">🦚</div>
+                <!-- Row 3 -->
+                <div class="bird-unknown">🦉</div>
+                <div class="bird-unknown">🦤</div>
+                <div class="bird-unknown">🐦</div>
+                <div class="bird-unknown">🐧</div>
+                <div class="bird-unknown">🐥</div>
+                <div class="bird-unknown">🐣</div>
+            </div>
         </div>
         
         <div id="self-modal" class="modal-base book-modal-style">
