@@ -638,6 +638,62 @@
         .shop-modal-style {
             background: linear-gradient(135deg, #1565C0, #0D47A1); 
         }
+        
+        /* SELF MODAL & SUMMARY MODAL SPECIFICS */
+        .self-content {
+            padding: 6cqw;
+            display: flex;
+            flex-direction: column;
+            gap: 4cqw;
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .self-stat-row {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(0,0,0,0.2);
+            padding: 2cqw;
+            border-radius: 2cqw;
+        }
+        .stat-item { display: flex; flex-direction: column; align-items: center; }
+        .stat-item span:first-child { font-size: 3cqw; opacity: 0.8; margin-bottom: 1cqw; }
+        .stat-item span:last-child { font-size: 5cqw; font-weight: bold; }
+        
+        .self-section {
+            background: rgba(0,0,0,0.2);
+            padding: 3cqw;
+            border-radius: 2cqw;
+        }
+        .self-label { font-size: 3.5cqw; opacity: 0.9; margin-bottom: 1cqw; display: block; font-weight: bold; color: var(--ui-gold); }
+        .self-value { opacity: 0.6; font-style: italic; }
+
+        .summary-btn {
+            width: 100%;
+            padding: 3cqw;
+            background: linear-gradient(to right, #00BCD4, #006064);
+            border: none;
+            border-radius: 2cqw;
+            color: white;
+            font-weight: bold;
+            font-size: 4cqw;
+            box-shadow: 0 1cqw 1cqw rgba(0,0,0,0.4);
+            margin-top: auto; /* Push to bottom */
+            text-align: center;
+        }
+
+        .summary-modal-style {
+            background: linear-gradient(160deg, #2E7D32, #1B5E20);
+            padding: 6cqw;
+            font-size: 3.5cqw;
+            line-height: 1.5;
+            overflow-y: auto;
+            text-align: left;
+        }
+        .summary-modal-style p { margin-bottom: 4cqw; }
+        .summary-modal-style strong { color: var(--ui-gold); }
+
 
         /* SHOP LAYOUT */
         .shop-top-half {
@@ -966,8 +1022,45 @@
             <div class="modal-nav-btn" id="book-nav-btn">⭐</div>
         </div>
         
+        <!-- SELF MODAL (Updated) -->
         <div id="self-modal" class="modal-base book-modal-style">
-            <div class="shop-title">SELF EMPTY</div>
+            <div class="self-content">
+                <div class="self-stat-row">
+                    <div class="stat-item">
+                        <span>CONFIDENCE</span>
+                        <span style="color: #4CAF50;">4</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>INSECURITY</span>
+                        <span style="color: #F44336;">3</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>TOXICITY</span>
+                        <span style="color: #E91E63;">5</span>
+                    </div>
+                </div>
+
+                <div class="self-section">
+                    <span class="self-label">Run History</span>
+                    <span class="self-value">(empty)</span>
+                </div>
+
+                <div class="self-section">
+                    <span class="self-label">Settings</span>
+                    <span class="self-value">(empty)</span>
+                </div>
+
+                <div class="summary-btn btn-pressable" id="btn-open-summary">
+                    Game Summary
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW GAME SUMMARY MODAL -->
+        <div id="summary-modal" class="modal-base summary-modal-style">
+            <p><strong>Backyard Birding</strong> is a roguelike creature collector where the player aims to outshine their bird-enthusiast neighbor by setting up the ultimate environment to snap pictures of unique and rare birds.</p>
+            <p><strong>Backyard Birding</strong> is designed to have a sandbox-like feel, rewarding experimentation and creative builds. There are 18 birds to discover and over 10 rare visitors. Players can shape their runs towards an aggressive pace to try and beat the neighbor, or safe builds to chip away at unlocks, or go for all-or-nothing runs aimed for finding specific, rare birds.</p>
+            <div style="text-align:center; margin-top: 6cqw; font-size: 3cqw; opacity: 0.6;">(Tap outside to close)</div>
         </div>
 
 
@@ -1015,7 +1108,8 @@
                 <div class="sabotage-label">Sabotage</div>
                 <div class="neighbor-slots-row">
                     <div class="neighbor-slot">🐈</div>
-                    <div class="neighbor-slot"></div>
+                    <!-- ADDED MAILBOX HERE -->
+                    <div class="neighbor-slot">📬</div>
                 </div>
             </div>
         </div>
@@ -1173,10 +1267,15 @@
         const selfBtn = document.getElementById('btn-self');
         const selfModal = document.getElementById('self-modal');
         
+        // Summary Modal Logic
+        const openSummaryBtn = document.getElementById('btn-open-summary');
+        const summaryModal = document.getElementById('summary-modal');
+
         function closeModals() {
             shopModal.classList.remove('open');
             bookModal.classList.remove('open');
             selfModal.classList.remove('open');
+            summaryModal.classList.remove('open'); // Close summary too
             
             // Reset book page on close
             setTimeout(() => {
@@ -1224,12 +1323,24 @@
             if (!wasOpen) selfModal.classList.add('open');
         });
 
+        // Open summary from self modal
+        openSummaryBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            // Don't close self modal immediately if you want it to feel like a stack, 
+            // but for simplicity we usually close others to avoid z-index mess.
+            // Let's close self and open summary.
+            closeModals(); 
+            // Small timeout to allow transition if needed, or just open immediately
+            summaryModal.classList.add('open');
+        });
+
         document.body.addEventListener('click', (e) => {
             const clickedShop = shopModal.contains(e.target) || shopBtn.contains(e.target);
             const clickedBook = bookModal.contains(e.target) || bookBtn.contains(e.target);
             const clickedSelf = selfModal.contains(e.target) || selfBtn.contains(e.target);
+            const clickedSummary = summaryModal.contains(e.target) || openSummaryBtn.contains(e.target);
 
-            if (!clickedShop && !clickedBook && !clickedSelf) {
+            if (!clickedShop && !clickedBook && !clickedSelf && !clickedSummary) {
                 closeModals();
             }
         });
@@ -1254,16 +1365,12 @@
             // Start fast border animation
             let borderHue = 0;
             const borderInterval = setInterval(() => {
-                borderHue = (borderHue + 25) % 360; // Faster increment
-                
-                // --- REMOVE GREEN LOGIC ---
-                // Green is around 120. We skip from 80 to 170.
+                borderHue = (borderHue + 25) % 360; 
                 if (borderHue > 80 && borderHue < 170) {
                     borderHue = 170;
                 }
-                
                 strip.style.borderColor = `hsl(${borderHue}, 100%, 50%)`;
-            }, 30); // Faster Interval (was 50ms)
+            }, 30); 
 
             let speed = 50; 
             let steps = 0;
@@ -1283,16 +1390,13 @@
                     slots[currentIndex].style.transform = "scale(1.2)";
                     
                     // --- FINISH ---
-                    // Stop border animation
                     clearInterval(borderInterval);
 
-                    // Reset border smoothly
                     strip.style.transition = "border-color 0.5s ease";
                     strip.style.borderColor = "rgba(255,255,255,0.3)";
 
                     setTimeout(() => {
                         slots[currentIndex].style.transform = "";
-                        // Clear transition property so it doesn't affect next start
                         setTimeout(() => {
                             strip.style.transition = "";
                         }, 500);
