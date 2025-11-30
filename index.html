@@ -608,7 +608,7 @@
             top: 50%;
             left: 50%;
             width: 90%; /* Widened for Shop Columns */
-            height: 60%; /* Taller for Shop Columns */
+            height: 75%; /* Taller for Shop Headers */
             
             transform: translate(-50%, -50%) scale(0.9);
             
@@ -683,6 +683,29 @@
             text-align: center;
         }
 
+        /* NEW SELF BUTTONS */
+        .self-btn-row {
+            display: flex;
+            gap: 2cqw;
+            width: 100%;
+        }
+        .self-action-btn {
+            flex: 1;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 2cqw;
+            padding: 2cqw 0.5cqw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3.5cqw;
+            font-weight: bold;
+            box-shadow: 0 0.5cqw 1cqw rgba(0,0,0,0.2);
+            text-align: center;
+            white-space: nowrap;
+        }
+
+
         .summary-modal-style {
             background: linear-gradient(160deg, #2E7D32, #1B5E20);
             padding: 6cqw;
@@ -696,13 +719,28 @@
 
 
         /* SHOP LAYOUT */
+        .shop-section-header {
+            width: 100%;
+            background: rgba(0,0,0,0.3);
+            color: var(--ui-gold);
+            text-transform: uppercase;
+            font-size: 3cqw;
+            letter-spacing: 0.2cqw;
+            padding: 1.5cqw;
+            text-align: center;
+            font-weight: bold;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            flex-shrink: 0;
+        }
+
         .shop-top-half {
             width: 100%;
-            height: 60%;
-            border-bottom: 2px solid rgba(0,0,0,0.3);
+            flex-grow: 1.5; /* Takes up more space */
             display: flex;
             flex-direction: row;
             background: rgba(0,0,0,0.1);
+            min-height: 0; /* allows flex scroll */
         }
         
         .shop-column {
@@ -726,7 +764,7 @@
             letter-spacing: 0.05cqw;
             text-shadow: 0 0.2cqw 0.5cqw rgba(0,0,0,0.3);
             
-            height: 15%;
+            height: 10%;
             display: flex;
             align-items: center;
             text-align: center;
@@ -737,7 +775,7 @@
             flex-direction: column;
             gap: 1.5cqw;
             width: 100%;
-            height: 85%;
+            height: 90%;
             align-items: center;
             justify-content: flex-start; /* Ensure items stack from top */
             padding-top: 1cqw;
@@ -762,7 +800,7 @@
         .shop-item-style .inner-emoji {
             /* Counter-skew emoji */
             transform: skewX(12deg);
-            font-size: 7cqw; /* Much Larger (was 5cqw) */
+            font-size: 7cqw; 
             line-height: 1;
         }
 
@@ -783,12 +821,12 @@
             bottom: -5%;
             right: -8%;
             color: white;
-            font-size: 2.5cqw;
-            font-weight: 700;
+            font-size: 5cqw; /* INCREASED */
+            font-weight: 900;
             transform: skewX(12deg);
             z-index: 10;
-            opacity: 0.9;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+            opacity: 0.95;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
         }
         
         .item-col-1 { background: #283593; } /* Matches Telescope Blue */
@@ -797,12 +835,13 @@
 
         .shop-bottom-half {
             width: 100%;
-            height: 40%;
+            flex-grow: 1;
             display: flex;
             justify-content: center;
             align-items: center;
             opacity: 0.5;
             font-size: 3cqw;
+            min-height: 0;
         }
 
         .book-modal-style {
@@ -915,6 +954,9 @@
 
         <!-- MODALS -->
         <div id="shop-modal" class="modal-base shop-modal-style">
+            
+            <div class="shop-section-header">Bird Supplies</div>
+            
             <div class="shop-top-half">
                 <!-- Column 1 -->
                 <div class="shop-column">
@@ -980,6 +1022,9 @@
                     </div>
                 </div>
             </div>
+
+            <div class="shop-section-header">Variety Shop</div>
+
             <div class="shop-bottom-half">
                 (Empty Bottom Half)
             </div>
@@ -1048,6 +1093,13 @@
                 <div class="self-section">
                     <span class="self-label">Settings</span>
                     <span class="self-value">(empty)</span>
+                </div>
+
+                <!-- NEW BUTTONS ROW -->
+                <div class="self-btn-row">
+                    <div class="self-action-btn btn-pressable">🍺 Bar</div>
+                    <div class="self-action-btn btn-pressable">🎰 Casino</div>
+                    <div class="self-action-btn btn-pressable">Therapist 👔</div>
                 </div>
 
                 <div class="summary-btn btn-pressable" id="btn-open-summary">
