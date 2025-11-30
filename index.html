@@ -37,7 +37,7 @@
             height: var(--app-height); 
             overflow: hidden;
             font-family: var(--font-main);
-            background-color: #111; /* Dark background for desktop margins */
+            background-color: #111; 
             display: flex;
             justify-content: center;
             align-items: center;
@@ -72,40 +72,79 @@
             background-size: 30px 30px, 30px 30px, cover;
         }
 
-        /* --- MAP PROPS (Background Emojis) --- */
+        /* --- DEBUG ZONES (For Development) --- */
+        .debug-zone {
+            position: absolute;
+            border: 0.5cqw dashed rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.05);
+            z-index: 1; /* Behind props but above BG */
+            pointer-events: none;
+            display: flex;
+            justify-content: center;
+            padding-top: 1cqw;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 3cqw;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.2cqw;
+            border-radius: 2cqw;
+        }
+
+        /* Zone Positioning */
+        .zone-items {
+            top: 12%;
+            left: 32%;
+            width: 38%;
+            height: 45%;
+        }
+        
+        .zone-trees {
+            bottom: 28%;
+            left: 2%;
+            width: 45%;
+            height: 25%;
+        }
+
+        .zone-flowers {
+            bottom: 28%;
+            right: 2%;
+            width: 50%;
+            height: 18%;
+        }
+
+        .zone-sprouts {
+            bottom: 46%;
+            right: 5%;
+            width: 40%;
+            height: 15%;
+        }
+
+
+        /* --- MAP PROPS --- */
         .map-prop {
             position: absolute;
             z-index: 5; 
         }
 
-        /* --- UPDATED ITEM CONTAINERS (Modern Slanted Look) --- */
+        /* --- ITEM CONTAINERS --- */
         .item-container {
             width: 18cqw;  
             aspect-ratio: 1 / 1; 
             height: auto;
-            
-            /* Modern Pro: Borderless, Rectangular but Slanted */
-            border-radius: 1.5cqw; /* Very subtle rounding */
+            border-radius: 1.5cqw; 
             border: none;
-            
             display: flex;
             justify-content: center;
             align-items: center;
-            
-            /* Deep modern shadow */
             box-shadow: 1cqw 1cqw 2cqw rgba(0,0,0,0.5);
-            
-            /* THE SLANT */
             transform: translate(-50%, -50%) skewX(-12deg);
             position: absolute; 
         }
         
         .item-container .inner-emoji {
-            /* Counter-skew so the emoji stays upright */
             transform: skewX(12deg);
         }
 
-        /* Map Prop Numbers */
         .prop-number {
             position: absolute;
             bottom: -5%;
@@ -113,45 +152,36 @@
             font-size: 8cqw;
             color: white;
             font-weight: 900;
-            /* Counter-skew the number too so it stands straight */
             transform: skewX(12deg);
             text-shadow: 0 0.5cqw 1cqw rgba(0,0,0,0.8);
             z-index: 10;
             line-height: 1;
         }
 
-        /* Telescope */
+        /* ITEMS (Centered Vertically) */
         .prop-telescope {
             top: 15%; 
-            left: 42%;
+            left: 50%; /* Centered in zone */
             background: #283593; 
         }
-        .prop-telescope .inner-emoji {
-            font-size: 10cqw;
-        }
+        .prop-telescope .inner-emoji { font-size: 10cqw; }
 
-        /* Bathtub */
         .prop-bathtub {
             top: 29%; 
-            left: 42%; 
+            left: 50%; 
             background: #00ACC1; 
         }
-        .prop-bathtub .inner-emoji {
-            font-size: 11cqw;
-        }
+        .prop-bathtub .inner-emoji { font-size: 11cqw; }
 
-        /* Scales */
         .prop-scales {
             top: 43%;
-            left: 42%;
+            left: 50%;
             background: #5D4037; 
         }
-        .prop-scales .inner-emoji {
-            font-size: 10cqw; 
-        }
+        .prop-scales .inner-emoji { font-size: 10cqw; }
 
 
-        /* --- TREES & HOUSE --- */
+        /* --- TREES & HOUSE (Moved to Left Zone) --- */
         .prop-tree {
             bottom: 30%; 
             font-size: 20cqw; 
@@ -159,21 +189,31 @@
             pointer-events: none;
         }
 
-        /* UPDATED: Trees moved to the RIGHT */
-        .tree-1 { left: 19%; z-index: 5; }
-        .tree-2 { left: 32%; z-index: 6; } 
-        .tree-3 { left: 45%; z-index: 5; }
+        /* Shifted LEFT */
+        .tree-1 { left: 5%; z-index: 5; }
+        .tree-2 { left: 18%; z-index: 6; } 
+        .tree-3 { left: 31%; z-index: 5; }
 
         .prop-house-tiny {
             bottom: 39%; 
-            left: 28%;   
+            left: 17%; /* Adjusted to sit between trees */
             font-size: 8cqw; 
             z-index: 7;
             filter: drop-shadow(0 0.5cqw 1cqw rgba(0,0,0,0.5));
             pointer-events: none;
         }
 
-        /* --- SPROUTS & WORM --- */
+        /* Candle (Moved to far Left) */
+        .prop-candle {
+            bottom: 30%;
+            left: 5%; 
+            font-size: 5cqw;
+            filter: drop-shadow(0 0 1cqw rgba(255, 200, 0, 0.6));
+            z-index: 8;
+            pointer-events: none;
+        }
+
+        /* --- SPROUTS & WORM (Right Zone) --- */
         .prop-sprout-layer {
             position: absolute;
             bottom: 46%; 
@@ -186,18 +226,17 @@
         .sprout-2 { left: 72%; }
         .sprout-3 { left: 82%; }
 
-        /* UPDATED: Worm Smaller & Lower */
         .prop-worm {
-            bottom: 48%; /* Lowered to overlap */
+            bottom: 48%; 
             left: 72%;   
-            font-size: 10cqw; /* Slightly smaller */
+            font-size: 10cqw; 
             filter: drop-shadow(0 0.5cqw 0.5cqw rgba(0,0,0,0.4));
             z-index: 5;
             transform: translateX(-20%); 
             pointer-events: none;
         }
 
-        /* --- FLOWERS --- */
+        /* --- FLOWERS (Bottom Right Zone) --- */
         .prop-flower {
             bottom: 30%; 
             font-size: 11cqw; 
@@ -210,16 +249,6 @@
         .flower-3 { left: 74%; } 
         .flower-4 { left: 81%; }
         .flower-5 { left: 88%; }
-
-        /* --- CANDLE --- */
-        .prop-candle {
-            bottom: 30%;
-            left: 16%; /* Moved Right */
-            font-size: 5cqw;
-            filter: drop-shadow(0 0 1cqw rgba(255, 200, 0, 0.6));
-            z-index: 8;
-            pointer-events: none;
-        }
 
 
         /* --- SHARED STYLES --- */
@@ -282,14 +311,14 @@
         .stat-luck { color: #C2185B; } 
 
 
-        /* --- 2. TOP RIGHT: ENEMY PROGRESS (UPDATED MOBILE SIZING) --- */
+        /* --- 2. TOP RIGHT: ENEMY PROGRESS --- */
         .ui-event-panel {
             position: absolute;
             top: 0;
             right: 0;
             width: 30%;
             height: auto; 
-            min-height: 42%; /* Slightly taller to accommodate bigger icons */
+            min-height: 42%; 
             background: linear-gradient(180deg, #d32f2f 0%, #5d0000 100%);
             border-bottom-left-radius: 4cqw;
             border-left: 0.5cqw solid rgba(255,255,255,0.2);
@@ -297,7 +326,6 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            /* Even spacing adjustments */
             justify-content: space-evenly; 
             padding-top: 2cqw; 
             padding-bottom: 3cqw;
@@ -307,7 +335,7 @@
         }
 
         .enemy-header {
-            font-size: 3.5cqw; /* Larger Header */
+            font-size: 3.5cqw; 
             opacity: 0.95;
             color: white;
             text-transform: uppercase;
@@ -321,7 +349,7 @@
             width: 85%;
             display: flex;
             flex-direction: column;
-            gap: 1.5cqw; /* More breathing room */
+            gap: 1.5cqw; 
             background: rgba(0,0,0,0.1);
             padding: 1.5cqw;
             border-radius: 1.5cqw;
@@ -337,7 +365,7 @@
         }
 
         .meter-icon {
-            font-size: 6cqw; /* Much Larger Icons */
+            font-size: 6cqw; 
             width: 7cqw;
             text-align: center;
             filter: drop-shadow(0 0.2cqw 0.2cqw rgba(0,0,0,0.6));
@@ -345,7 +373,7 @@
 
         .meter-bar {
             flex-grow: 1;
-            height: 1.8cqw; /* Thicker bars */
+            height: 1.8cqw; 
             background: rgba(0,0,0,0.4);
             border-radius: 1cqw;
             border: 1px solid rgba(255,255,255,0.1);
@@ -372,7 +400,7 @@
         }
 
         .sabotage-label {
-            font-size: 2.8cqw; /* Larger Label */
+            font-size: 2.8cqw; 
             opacity: 0.9;
             color: white;
             text-transform: uppercase;
@@ -386,7 +414,7 @@
         }
 
         .neighbor-slot {
-            width: 12cqw; /* Larger Slots */
+            width: 12cqw; 
             aspect-ratio: 1;
             background: rgba(0,0,0,0.2);
             border: 1px dashed rgba(255,255,255,0.3);
@@ -395,10 +423,10 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 7cqw; /* Larger Emoji inside slot */
+            font-size: 7cqw; 
         }
 
-        /* --- 3. LEFT SIDEBAR: ACTION BUTTONS --- */
+        /* --- 3. LEFT SIDEBAR --- */
         .ui-sidebar-container {
             position: absolute;
             top: 15%;
@@ -593,8 +621,6 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            
-            /* LIFTED CAMERA EMOJI */
             padding-bottom: 2.5cqw; 
         }
 
@@ -634,12 +660,10 @@
             background: linear-gradient(135deg, #1565C0, #0D47A1); 
         }
 
-        /* Purple Gradient for Book & Self Modals */
         .book-modal-style {
             background: linear-gradient(135deg, var(--ui-purple), var(--ui-purple-dark)); 
         }
         
-        /* --- BIRD COLLECTION STYLES --- */
         .bird-collection-grid {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
@@ -652,7 +676,6 @@
 
         .bird-unknown {
             font-size: 5cqw;
-            /* "Blackened out" silhouette effect */
             filter: brightness(0); 
             opacity: 0.6;
             cursor: help;
@@ -671,6 +694,12 @@
     <div id="game-viewport">
         
         <div id="game-background"></div>
+
+        <!-- DEBUG ZONES -->
+        <div class="debug-zone zone-items">Items</div>
+        <div class="debug-zone zone-trees">Trees</div>
+        <div class="debug-zone zone-flowers">Flowers</div>
+        <div class="debug-zone zone-sprouts">Sprouts</div>
 
         <!-- CONTAINERS FOR PROPS -->
         <div class="map-prop item-container prop-telescope">
@@ -691,20 +720,20 @@
         <!-- House -->
         <div class="map-prop prop-house-tiny">🏠</div>
 
-        <!-- Candle (Moved Right) -->
+        <!-- Candle (Left) -->
         <div class="map-prop prop-candle">🕯️</div>
 
-        <!-- Trees (Moved Right) -->
+        <!-- Trees (Left) -->
         <div class="map-prop prop-tree tree-1">🌳</div>
         <div class="map-prop prop-tree tree-2">🌲</div>
         <div class="map-prop prop-tree tree-3">🎋</div>
         
-        <!-- Sprouts (Separate Layer Above Flowers) -->
+        <!-- Sprouts -->
         <div class="map-prop prop-sprout-layer sprout-1">🌱</div>
         <div class="map-prop prop-sprout-layer sprout-2">🌱</div>
         <div class="map-prop prop-sprout-layer sprout-3">🌱</div>
 
-        <!-- Giant Worm (Lower & Smaller) -->
+        <!-- Giant Worm -->
         <div class="map-prop prop-worm">🪱</div>
 
         <!-- Flowers -->
