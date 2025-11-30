@@ -159,14 +159,14 @@
             pointer-events: none;
         }
 
-        /* UPDATED: Spread out trees */
-        .tree-1 { left: 15%; z-index: 5; }
-        .tree-2 { left: 28%; z-index: 6; } 
-        .tree-3 { left: 41%; z-index: 5; }
+        /* UPDATED: Trees moved to the RIGHT */
+        .tree-1 { left: 19%; z-index: 5; }
+        .tree-2 { left: 32%; z-index: 6; } 
+        .tree-3 { left: 45%; z-index: 5; }
 
         .prop-house-tiny {
             bottom: 39%; 
-            left: 28%;   /* Adjusted slightly to match tree gap */
+            left: 28%;   
             font-size: 8cqw; 
             z-index: 7;
             filter: drop-shadow(0 0.5cqw 1cqw rgba(0,0,0,0.5));
@@ -182,31 +182,29 @@
             z-index: 4;
         }
         
-        /* Updated spacing for sprouts */
         .sprout-1 { left: 62%; }
         .sprout-2 { left: 72%; }
         .sprout-3 { left: 82%; }
 
-        /* New Worm */
+        /* UPDATED: Worm Smaller & Lower */
         .prop-worm {
-            bottom: 52%; /* Sitting above the sprouts */
-            left: 72%;   /* Centered over the middle sprout */
-            font-size: 12cqw;
+            bottom: 48%; /* Lowered to overlap */
+            left: 72%;   
+            font-size: 10cqw; /* Slightly smaller */
             filter: drop-shadow(0 0.5cqw 0.5cqw rgba(0,0,0,0.4));
             z-index: 5;
-            transform: translateX(-20%); /* Center adjustment */
+            transform: translateX(-20%); 
             pointer-events: none;
         }
 
         /* --- FLOWERS --- */
         .prop-flower {
             bottom: 30%; 
-            font-size: 11cqw; /* Slightly smaller to fit 5 */
+            font-size: 11cqw; 
             filter: drop-shadow(0 0.5cqw 0.5cqw rgba(0,0,0,0.3));
             pointer-events: none;
         }
         
-        /* Re-spaced for 5 flowers */
         .flower-1 { left: 60%; } 
         .flower-2 { left: 67%; } 
         .flower-3 { left: 74%; } 
@@ -216,7 +214,7 @@
         /* --- CANDLE --- */
         .prop-candle {
             bottom: 30%;
-            left: 10%;
+            left: 16%; /* Moved Right */
             font-size: 5cqw;
             filter: drop-shadow(0 0 1cqw rgba(255, 200, 0, 0.6));
             z-index: 8;
@@ -284,14 +282,14 @@
         .stat-luck { color: #C2185B; } 
 
 
-        /* --- 2. TOP RIGHT: ENEMY PROGRESS (UPDATED LAYOUT) --- */
+        /* --- 2. TOP RIGHT: ENEMY PROGRESS (UPDATED MOBILE SIZING) --- */
         .ui-event-panel {
             position: absolute;
             top: 0;
             right: 0;
             width: 30%;
-            height: auto; /* Let content dictate height */
-            min-height: 35%;
+            height: auto; 
+            min-height: 42%; /* Slightly taller to accommodate bigger icons */
             background: linear-gradient(180deg, #d32f2f 0%, #5d0000 100%);
             border-bottom-left-radius: 4cqw;
             border-left: 0.5cqw solid rgba(255,255,255,0.2);
@@ -299,53 +297,55 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding-top: 1.5cqw; /* Reduced padding */
-            padding-bottom: 2cqw;
-            gap: 1.5cqw; /* Reduced gap for tighter fit */
+            /* Even spacing adjustments */
+            justify-content: space-evenly; 
+            padding-top: 2cqw; 
+            padding-bottom: 3cqw;
+            gap: 1.5cqw; 
             z-index: 20;
             box-shadow: -1cqw 1cqw 2cqw rgba(0,0,0,0.6);
         }
 
         .enemy-header {
-            font-size: 2.2cqw; 
-            opacity: 0.9;
+            font-size: 3.5cqw; /* Larger Header */
+            opacity: 0.95;
             color: white;
             text-transform: uppercase;
-            font-weight: bold;
+            font-weight: 800;
             margin-bottom: 0;
             letter-spacing: 0.1cqw;
+            text-shadow: 0 0.2cqw 0.5cqw rgba(0,0,0,0.3);
         }
 
         .meter-group {
-            width: 80%;
+            width: 85%;
             display: flex;
             flex-direction: column;
-            gap: 1cqw;
-            /* Container to group meters nicely */
+            gap: 1.5cqw; /* More breathing room */
             background: rgba(0,0,0,0.1);
-            padding: 1cqw;
-            border-radius: 1cqw;
+            padding: 1.5cqw;
+            border-radius: 1.5cqw;
         }
 
         .meter-container {
             width: 100%;
             display: flex;
-            flex-direction: row; /* Horizontal alignment inside meter row */
-            gap: 1.5cqw;
+            flex-direction: row; 
+            gap: 2cqw;
             align-items: center;
             justify-content: center;
         }
 
         .meter-icon {
-            font-size: 4cqw;
-            width: 5cqw;
+            font-size: 6cqw; /* Much Larger Icons */
+            width: 7cqw;
             text-align: center;
             filter: drop-shadow(0 0.2cqw 0.2cqw rgba(0,0,0,0.6));
         }
 
         .meter-bar {
             flex-grow: 1;
-            height: 1.2cqw; 
+            height: 1.8cqw; /* Thicker bars */
             background: rgba(0,0,0,0.4);
             border-radius: 1cqw;
             border: 1px solid rgba(255,255,255,0.1);
@@ -367,12 +367,12 @@
             flex-direction: column;
             align-items: center;
             width: 100%;
-            gap: 0.5cqw;
+            gap: 1cqw;
             margin-top: 0.5cqw;
         }
 
         .sabotage-label {
-            font-size: 2cqw;
+            font-size: 2.8cqw; /* Larger Label */
             opacity: 0.9;
             color: white;
             text-transform: uppercase;
@@ -381,21 +381,21 @@
 
         .neighbor-slots-row {
             display: flex;
-            gap: 1.5cqw;
+            gap: 2cqw;
             margin-bottom: 0;
         }
 
         .neighbor-slot {
-            width: 9cqw;
+            width: 12cqw; /* Larger Slots */
             aspect-ratio: 1;
             background: rgba(0,0,0,0.2);
             border: 1px dashed rgba(255,255,255,0.3);
-            border-radius: 1.5cqw;
+            border-radius: 2cqw;
             box-shadow: inset 0 0.5cqw 1cqw rgba(0,0,0,0.3);
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 5cqw; 
+            font-size: 7cqw; /* Larger Emoji inside slot */
         }
 
         /* --- 3. LEFT SIDEBAR: ACTION BUTTONS --- */
@@ -691,29 +691,28 @@
         <!-- House -->
         <div class="map-prop prop-house-tiny">🏠</div>
 
-        <!-- Candle (NEW) -->
+        <!-- Candle (Moved Right) -->
         <div class="map-prop prop-candle">🕯️</div>
 
-        <!-- Trees -->
+        <!-- Trees (Moved Right) -->
         <div class="map-prop prop-tree tree-1">🌳</div>
         <div class="map-prop prop-tree tree-2">🌲</div>
         <div class="map-prop prop-tree tree-3">🎋</div>
         
         <!-- Sprouts (Separate Layer Above Flowers) -->
-        <!-- Added spacing between classes in CSS -->
         <div class="map-prop prop-sprout-layer sprout-1">🌱</div>
         <div class="map-prop prop-sprout-layer sprout-2">🌱</div>
         <div class="map-prop prop-sprout-layer sprout-3">🌱</div>
 
-        <!-- Giant Worm (NEW) -->
+        <!-- Giant Worm (Lower & Smaller) -->
         <div class="map-prop prop-worm">🪱</div>
 
-        <!-- Flowers (ADDED NEW ONES) -->
+        <!-- Flowers -->
         <div class="map-prop prop-flower flower-1">🪻</div>
         <div class="map-prop prop-flower flower-2">🌻</div>
         <div class="map-prop prop-flower flower-3">🌹</div>
-        <div class="map-prop prop-flower flower-4">🌼</div> <!-- Blossom -->
-        <div class="map-prop prop-flower flower-5">🌷</div> <!-- Tulip -->
+        <div class="map-prop prop-flower flower-4">🌼</div> 
+        <div class="map-prop prop-flower flower-5">🌷</div> 
 
 
         <!-- MODALS -->
