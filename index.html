@@ -111,9 +111,6 @@
         }
 
         /* ITEMS: CENTER COLUMN */
-        /* The "Backyard Center" is visually between the Left Sidebar (15%) and Right Panel (starts at 70%).
-           Midpoint is approx 42.5%.
-        */
         .prop-telescope {
             top: 15%; 
             left: 42%; 
@@ -137,22 +134,21 @@
 
 
         /* --- TREES & HOUSE: BOTTOM LEFT QUADRANT --- */
-        /* Larger and shifted slightly right */
         .prop-tree {
             bottom: 30%; 
-            font-size: 24cqw; /* Increased from 20cqw */
+            font-size: 24cqw; 
             filter: drop-shadow(0 1cqw 1cqw rgba(0,0,0,0.3));
             pointer-events: none;
         }
 
-        .tree-1 { left: 8%; z-index: 5; } /* Shifted right (+3%) */
+        .tree-1 { left: 8%; z-index: 5; } 
         .tree-2 { left: 21%; z-index: 6; } 
         .tree-3 { left: 34%; z-index: 5; }
 
         .prop-house-tiny {
             bottom: 39%; 
-            left: 20%; /* Adjusted for new tree positions */
-            font-size: 9cqw; /* Slightly larger */
+            left: 20%; 
+            font-size: 9cqw; 
             z-index: 7;
             filter: drop-shadow(0 0.5cqw 1cqw rgba(0,0,0,0.5));
             pointer-events: none;
@@ -161,15 +157,14 @@
         /* Candle */
         .prop-candle {
             bottom: 30%;
-            left: 8%; /* Shifted right */
-            font-size: 6cqw; /* Slightly larger */
+            left: 8%; 
+            font-size: 6cqw; 
             filter: drop-shadow(0 0 1cqw rgba(255, 200, 0, 0.6));
             z-index: 8;
             pointer-events: none;
         }
 
         /* --- SPROUTS & WORM: RIGHT SIDE (MID-HEIGHT) --- */
-        /* Lowered by ~3% */
         .prop-sprout-layer {
             position: absolute;
             bottom: 45%; 
@@ -193,7 +188,6 @@
         }
 
         /* --- FLOWERS: BOTTOM RIGHT QUADRANT --- */
-        /* Shifted left by ~2% */
         .prop-flower {
             bottom: 30%; 
             font-size: 11cqw; 
@@ -291,14 +285,15 @@
             box-shadow: -1cqw 1cqw 2cqw rgba(0,0,0,0.6);
         }
 
+        /* Matches FUNDS style but white */
         .enemy-header {
-            font-size: 3.5cqw; 
-            opacity: 0.95;
+            font-size: 2.5cqw; 
+            opacity: 0.9;
             color: white;
             text-transform: uppercase;
-            font-weight: 800;
+            font-weight: 400; /* Thin/Regular weight */
             margin-bottom: 0;
-            letter-spacing: 0.1cqw;
+            letter-spacing: 0.05cqw;
             text-shadow: 0 0.2cqw 0.5cqw rgba(0,0,0,0.3);
         }
 
@@ -307,8 +302,8 @@
             display: flex;
             flex-direction: column;
             gap: 1.5cqw; 
-            background: rgba(0,0,0,0.1);
-            padding: 1.5cqw;
+            background: transparent; /* REMOVED BOX */
+            padding: 0; /* REMOVED PADDING */
             border-radius: 1.5cqw;
         }
 
@@ -322,7 +317,7 @@
         }
 
         .meter-icon {
-            font-size: 6cqw; 
+            font-size: 7cqw; /* INCREASED SIZE */
             width: 7cqw;
             text-align: center;
             filter: drop-shadow(0 0.2cqw 0.2cqw rgba(0,0,0,0.6));
@@ -330,7 +325,7 @@
 
         .meter-bar {
             flex-grow: 1;
-            height: 1.8cqw; 
+            height: 2.2cqw; /* INCREASED HEIGHT SLIGHTLY */
             background: rgba(0,0,0,0.4);
             border-radius: 1cqw;
             border: 1px solid rgba(255,255,255,0.1);
@@ -353,28 +348,30 @@
             align-items: center;
             width: 100%;
             gap: 1cqw;
-            margin-top: 0.5cqw;
+            margin-top: 2cqw; /* PUSHED DOWN */
         }
 
+        /* Matches FUNDS style but white */
         .sabotage-label {
-            font-size: 2.8cqw; 
+            font-size: 2.5cqw; 
             opacity: 0.9;
             color: white;
             text-transform: uppercase;
-            font-weight: bold;
+            font-weight: 400; /* Thin/Regular weight */
         }
 
         .neighbor-slots-row {
             display: flex;
             gap: 2cqw;
             margin-bottom: 0;
+            margin-top: 0.5cqw; /* Slight space below label */
         }
 
         .neighbor-slot {
             width: 12cqw; 
             aspect-ratio: 1;
             background: rgba(0,0,0,0.2);
-            border: 1px dashed rgba(255,255,255,0.3);
+            border: none; /* REMOVED DOTTED BORDER */
             border-radius: 2cqw;
             box-shadow: inset 0 0.5cqw 1cqw rgba(0,0,0,0.3);
             display: flex;
@@ -620,6 +617,21 @@
         .book-modal-style {
             background: linear-gradient(135deg, var(--ui-purple), var(--ui-purple-dark)); 
         }
+
+        /* PAGINATION FOR BOOK */
+        .book-page {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
         
         .bird-collection-grid {
             display: grid;
@@ -643,6 +655,21 @@
             transform: scale(1.2);
             opacity: 0.8;
         }
+
+        .modal-nav-btn {
+            position: absolute;
+            bottom: 2cqw;
+            right: 3cqw;
+            font-size: 6cqw;
+            cursor: pointer;
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5));
+            transition: transform 0.1s;
+            z-index: 101;
+        }
+        .modal-nav-btn:active {
+            transform: scale(0.9);
+        }
+        
         
     </style>
 </head>
@@ -701,29 +728,40 @@
         </div>
 
         <div id="book-modal" class="modal-base book-modal-style">
-            <div class="bird-collection-grid">
-                <!-- Row 1 -->
-                <div class="bird-unknown">🐓</div>
-                <div class="bird-unknown">🦃</div>
-                <div class="bird-unknown">🦆</div>
-                <div class="bird-unknown">🦅</div>
-                <div class="bird-unknown">🕊️</div>
-                <div class="bird-unknown">🦢</div>
-                <!-- Row 2 -->
-                <div class="bird-unknown">🦜</div>
-                <div class="bird-unknown">🐦‍⬛</div>
-                <div class="bird-unknown">🪿</div>
-                <div class="bird-unknown">🐦‍🔥</div>
-                <div class="bird-unknown">🦩</div>
-                <div class="bird-unknown">🦚</div>
-                <!-- Row 3 -->
-                <div class="bird-unknown">🦉</div>
-                <div class="bird-unknown">🦤</div>
-                <div class="bird-unknown">🐦</div>
-                <div class="bird-unknown">🐧</div>
-                <div class="bird-unknown">🐥</div>
-                <div class="bird-unknown">🐣</div>
+            <!-- PAGE 1 -->
+            <div id="book-page-1" class="book-page">
+                <div class="bird-collection-grid">
+                    <!-- Row 1 -->
+                    <div class="bird-unknown">🐓</div>
+                    <div class="bird-unknown">🦃</div>
+                    <div class="bird-unknown">🦆</div>
+                    <div class="bird-unknown">🦅</div>
+                    <div class="bird-unknown">🕊️</div>
+                    <div class="bird-unknown">🦢</div>
+                    <!-- Row 2 -->
+                    <div class="bird-unknown">🦜</div>
+                    <div class="bird-unknown">🐦‍⬛</div>
+                    <div class="bird-unknown">🪿</div>
+                    <div class="bird-unknown">🐦‍🔥</div>
+                    <div class="bird-unknown">🦩</div>
+                    <div class="bird-unknown">🦚</div>
+                    <!-- Row 3 -->
+                    <div class="bird-unknown">🦉</div>
+                    <div class="bird-unknown">🦤</div>
+                    <div class="bird-unknown">🐦</div>
+                    <div class="bird-unknown">🐧</div>
+                    <div class="bird-unknown">🐥</div>
+                    <div class="bird-unknown">🐣</div>
+                </div>
             </div>
+
+            <!-- PAGE 2 (Empty) -->
+            <div id="book-page-2" class="book-page" style="display: none;">
+                <div class="shop-title">PAGE 2</div>
+            </div>
+
+            <!-- Navigation Button -->
+            <div class="modal-nav-btn" id="book-nav-btn">⭐</div>
         </div>
         
         <div id="self-modal" class="modal-base book-modal-style">
@@ -750,6 +788,7 @@
         </div>
 
         <div class="ui-event-panel panel">
+            <!-- Matching FUNDS style: thin, clean, white -->
             <div class="enemy-header">Neighbor</div>
             
             <div class="meter-group">
@@ -770,6 +809,7 @@
             </div>
 
             <div class="sabotage-section">
+                <!-- Matching FUNDS style: thin, clean, white -->
                 <div class="sabotage-label">Sabotage</div>
                 <div class="neighbor-slots-row">
                     <div class="neighbor-slot">🐈</div>
@@ -923,7 +963,11 @@
         
         const bookBtn = document.getElementById('btn-book');
         const bookModal = document.getElementById('book-modal');
-        
+        const bookNavBtn = document.getElementById('book-nav-btn');
+        const bookPage1 = document.getElementById('book-page-1');
+        const bookPage2 = document.getElementById('book-page-2');
+        let bookPage = 1;
+
         const selfBtn = document.getElementById('btn-self');
         const selfModal = document.getElementById('self-modal');
         
@@ -931,6 +975,14 @@
             shopModal.classList.remove('open');
             bookModal.classList.remove('open');
             selfModal.classList.remove('open');
+            
+            // Reset book page on close
+            setTimeout(() => {
+                bookPage = 1;
+                bookPage1.style.display = 'flex';
+                bookPage2.style.display = 'none';
+                bookNavBtn.textContent = '⭐';
+            }, 200);
         }
 
         shopBtn.addEventListener('click', (e) => {
@@ -945,6 +997,22 @@
             const wasOpen = bookModal.classList.contains('open');
             closeModals();
             if (!wasOpen) bookModal.classList.add('open');
+        });
+        
+        // Book Page Toggle Logic
+        bookNavBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (bookPage === 1) {
+                bookPage = 2;
+                bookPage1.style.display = 'none';
+                bookPage2.style.display = 'flex';
+                bookNavBtn.textContent = '🔙';
+            } else {
+                bookPage = 1;
+                bookPage1.style.display = 'flex';
+                bookPage2.style.display = 'none';
+                bookNavBtn.textContent = '⭐';
+            }
         });
         
         selfBtn.addEventListener('click', (e) => {
