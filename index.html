@@ -660,38 +660,54 @@
         .shop-column:last-child { border-right: none; }
         
         .shop-header {
-            font-size: 3cqw;
-            text-transform: uppercase;
-            margin-bottom: 1cqw;
-            font-weight: bold;
-            text-align: center;
+            /* Matches .enemy-header EXACTLY */
+            font-size: 2.5cqw; 
             opacity: 0.9;
+            color: white;
+            text-transform: uppercase;
+            font-weight: 400; /* Thin/Regular weight */
+            margin-bottom: 1cqw;
+            letter-spacing: 0.05cqw;
+            text-shadow: 0 0.2cqw 0.5cqw rgba(0,0,0,0.3);
+            
             height: 15%;
             display: flex;
             align-items: center;
+            text-align: center;
         }
         
         .shop-items-container {
             display: flex;
             flex-direction: column;
-            gap: 1cqw;
+            gap: 1.5cqw;
             width: 100%;
             height: 85%;
             align-items: center;
         }
         
-        .shop-item-placeholder {
-            width: 90%;
-            flex: 1;
-            background: rgba(255,255,255,0.1);
-            border-radius: 1cqw;
-            border: 1px solid rgba(255,255,255,0.2);
+        /* Updated Shop Item Style to match Backyard Props */
+        .shop-item-style {
+            width: 80%;
+            aspect-ratio: 1;
+            border-radius: 1.5cqw;
+            border: none;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 2.5cqw;
-            color: rgba(255,255,255,0.5);
+            box-shadow: 0.5cqw 0.5cqw 1cqw rgba(0,0,0,0.5);
+            /* Skewed container */
+            transform: skewX(-12deg);
+            font-size: 5cqw; 
         }
+        
+        .shop-item-style .inner-emoji {
+            /* Counter-skew emoji */
+            transform: skewX(12deg);
+        }
+        
+        .item-col-1 { background: #283593; } /* Matches Telescope Blue */
+        .item-col-2 { background: #00ACC1; } /* Matches Bathtub Teal */
+        .item-col-3 { background: #5D4037; } /* Matches Scales Brown */
 
         .shop-bottom-half {
             width: 100%;
@@ -818,27 +834,27 @@
                 <div class="shop-column">
                     <div class="shop-header">Bird<br>Houses</div>
                     <div class="shop-items-container">
-                        <div class="shop-item-placeholder">🏠</div>
-                        <div class="shop-item-placeholder">🛖</div>
-                        <div class="shop-item-placeholder">🏯</div>
+                        <div class="shop-item-style item-col-1"><div class="inner-emoji">🏠</div></div>
+                        <div class="shop-item-style item-col-1"><div class="inner-emoji">🛖</div></div>
+                        <div class="shop-item-style item-col-1"><div class="inner-emoji">🏯</div></div>
                     </div>
                 </div>
                 <!-- Column 2 -->
                 <div class="shop-column">
                     <div class="shop-header">Bird<br>Baths</div>
                     <div class="shop-items-container">
-                        <div class="shop-item-placeholder">⛲</div>
-                        <div class="shop-item-placeholder">🛁</div>
-                        <div class="shop-item-placeholder">🚿</div>
+                        <div class="shop-item-style item-col-2"><div class="inner-emoji">⛲</div></div>
+                        <div class="shop-item-style item-col-2"><div class="inner-emoji">🛁</div></div>
+                        <div class="shop-item-style item-col-2"><div class="inner-emoji">🚿</div></div>
                     </div>
                 </div>
                 <!-- Column 3 -->
                 <div class="shop-column">
                     <div class="shop-header">Bird<br>Feeders</div>
                     <div class="shop-items-container">
-                        <div class="shop-item-placeholder">🌽</div>
-                        <div class="shop-item-placeholder">🥯</div>
-                        <div class="shop-item-placeholder">🥖</div>
+                        <div class="shop-item-style item-col-3"><div class="inner-emoji">🌽</div></div>
+                        <div class="shop-item-style item-col-3"><div class="inner-emoji">🥯</div></div>
+                        <div class="shop-item-style item-col-3"><div class="inner-emoji">🥖</div></div>
                     </div>
                 </div>
             </div>
@@ -1169,22 +1185,22 @@
                 if (slot.classList.contains('active')) currentIndex = index;
             });
 
+            // Start fast border animation separately
+            let borderHue = 0;
+            const borderInterval = setInterval(() => {
+                borderHue = (borderHue + 20) % 360;
+                strip.style.borderColor = `hsl(${borderHue}, 100%, 50%)`;
+            }, 50); // Consistent fast speed
+
             let speed = 50; 
             let steps = 0;
             const minSteps = 20;
-            let hue = 0; // Initialize hue for animation
             
             function step() {
                 slots[currentIndex].classList.remove('active');
                 currentIndex = (currentIndex + 1) % slots.length;
                 slots[currentIndex].classList.add('active');
                 steps++;
-                
-                // --- ANIMATION: Smooth border color rotation ---
-                // We leave the filter on 'none' or just manipulate border color directly
-                hue = (hue + 20) % 360;
-                // Using HSLA to cycle border color
-                strip.style.borderColor = `hsl(${hue}, 100%, 50%)`;
                 
                 // Ensure no filter is messing with numbers
                 strip.style.filter = "none";
@@ -1194,6 +1210,9 @@
                     slots[currentIndex].style.transform = "scale(1.2)";
                     
                     // --- FINISH ---
+                    // Stop border animation
+                    clearInterval(borderInterval);
+
                     // Reset border smoothly
                     strip.style.transition = "border-color 0.5s ease";
                     strip.style.borderColor = "rgba(255,255,255,0.3)";
