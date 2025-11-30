@@ -484,17 +484,16 @@
         }
 
         .ui-inventory-strip {
-            width: 100%;
+            /* Changed to Pill Shape, centered, not full width */
+            width: 92%;
+            margin: 0 auto;
             height: 18%; 
+            border-radius: 10cqw;
             
-            /* Lighter, Vibrant Cherry Pink Gradient */
-            background: linear-gradient(90deg, #F48FB1, #E91E63, #D81B60, #AD1457);
-            /* Increased background size to allow movement */
-            background-size: 400% 100%;
-            
-            /* Thinner borders (2px) */
-            border-top: 2px solid black;
-            border-bottom: 2px solid black;
+            /* Styles matched to Dice Button (#btn-dice) */
+            background: linear-gradient(to bottom, #D81B60, #880E4F); 
+            border: 0.5cqw solid rgba(255,255,255,0.3);
+            box-shadow: 0 1cqw 2cqw rgba(0,0,0,0.6);
             
             display: flex;
             align-items: center;
@@ -503,8 +502,8 @@
             gap: 0; 
             overflow: hidden; 
             
-            /* Smooth transitions for JS updates */
-            transition: background-position 0.1s linear, filter 0.1s linear;
+            /* Transition purely for hover/active if needed, removed BG animation logic */
+            transition: transform 0.1s;
         }
         
         .ui-inventory-strip::-webkit-scrollbar { display: none; }
@@ -518,25 +517,27 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            color: #FF9800;
+            color: rgba(255,255,255,0.5); /* Dimmed white for better contrast on pink */
             font-weight: bold;
             font-size: 6cqw; 
             flex-shrink: 0;
             transition: all 0.1s ease;
-            text-shadow: 0 0.5cqw 0.5cqw rgba(0,0,0,0.8);
+            text-shadow: 0 0.2cqw 0.5cqw rgba(0,0,0,0.3);
         }
         
+        /* Active slot style logic - bright yellow on pink */
         .inv-slot.active { 
             color: #FFD700; 
             transform: scale(1.6); 
             text-shadow: 0 0 2cqw #FFD700, 0 0 4cqw rgba(255, 100, 0, 0.5);
+            opacity: 1;
         }
 
         .ui-controls-main {
             flex-grow: 1;
-            background: linear-gradient(180deg, var(--ui-brown-dark) 0%, #1a0e0a 100%);
-            /* Removed border-top since strip has border-bottom now */
-            /* border-top: 1px solid rgba(255,255,255,0.1); */
+            /* Updated to Very Dark Blue Gradient */
+            background: linear-gradient(180deg, #051020 0%, #000000 100%);
+            
             position: relative;
             display: flex;
             flex-direction: column;
@@ -657,7 +658,9 @@
         }
 
         .bird-unknown {
-            font-size: 7cqw;
+            /* INCREASED SIZE AS REQUESTED */
+            font-size: 11cqw;
+            
             filter: brightness(0); 
             opacity: 0.6;
             cursor: help;
@@ -1065,7 +1068,6 @@
             let speed = 50; 
             let steps = 0;
             const minSteps = 20;
-            let hue = 0;
             
             function step() {
                 slots[currentIndex].classList.remove('active');
@@ -1073,31 +1075,15 @@
                 slots[currentIndex].classList.add('active');
                 steps++;
                 
-                // --- SYNCED ANIMATION UPDATES ---
-                // 1. Move Background steadily to the right based on step count
-                // (Using steps ensures smooth flow even when index loops)
-                const bgPos = steps * 20; 
-                strip.style.backgroundPosition = `${bgPos}% 50%`;
-                
-                // 2. Cycle Colors (Hue Rotate)
-                hue = (hue + 15) % 360;
-                strip.style.filter = `hue-rotate(${hue}deg) brightness(1.2)`;
+                // Note: removed background animation logic here as requested
 
                 if (steps > minSteps && currentIndex === targetIndex) {
                     isRolling = false;
                     slots[currentIndex].style.transform = "scale(1.2)";
                     
                     // --- FINISH ---
-                    // Reset or transition back to resting state
-                    strip.style.transition = 'filter 0.5s ease, background-position 0.5s ease';
-                    strip.style.filter = 'none';
-                    
                     setTimeout(() => {
                         slots[currentIndex].style.transform = "";
-                        // Reset transition for next roll so it's snappy
-                        setTimeout(() => {
-                            strip.style.transition = 'background-position 0.1s linear, filter 0.1s linear';
-                        }, 500);
                     }, 200);
                     return;
                 }
