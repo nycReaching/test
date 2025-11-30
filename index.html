@@ -173,14 +173,14 @@
             pointer-events: none;
         }
 
-        /* --- SPROUTS (New Separate Section) --- */
+        /* --- SPROUTS (Updated Position) --- */
         .prop-sprout-layer {
             position: absolute;
-            bottom: 55%; /* Much higher up */
+            /* MOVED DOWN to center between neighbor panel and flowers */
+            bottom: 46%; 
             font-size: 6cqw;
             filter: drop-shadow(0 0.5cqw 0.5cqw rgba(0,0,0,0.3));
             z-index: 4;
-            /* Align with flowers vertically, but higher up */
         }
         
         .sprout-1 { left: 66%; }
@@ -191,7 +191,7 @@
         /* --- FLOWERS --- */
         .prop-flower {
             bottom: 30%; 
-            /* UPDATED: Larger Size */
+            /* Larger Size */
             font-size: 12cqw;
             filter: drop-shadow(0 0.5cqw 0.5cqw rgba(0,0,0,0.3));
             pointer-events: none;
@@ -221,7 +221,7 @@
             filter: brightness(0.9);
         }
 
-        /* --- 1. TOP LEFT: PLAYER STATS --- */
+        /* --- 1. TOP LEFT: PLAYER STATS (UPDATED FOR SPACING) --- */
         .ui-stats-bar {
             position: absolute;
             top: 0;
@@ -230,9 +230,16 @@
             height: 8%;
             background: linear-gradient(135deg, var(--ui-gold) 0%, var(--ui-gold-dark) 100%);
             clip-path: polygon(0 0, 100% 0, 95% 100%, 0% 100%);
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            
+            /* CHANGED TO FLEX FOR EQUAL SPACING */
+            display: flex;
+            justify-content: space-between; /* This pushes them apart evenly */
             align-items: center;
+            
+            /* Visual balance padding */
+            padding-left: 4cqw;
+            padding-right: 10cqw; /* Larger on right to account for slant */
+            
             z-index: 20;
             filter: drop-shadow(0 1cqw 1cqw rgba(0,0,0,0.5));
         }
@@ -242,21 +249,11 @@
             flex-direction: column;
             line-height: 1;
             justify-content: center;
+            /* Center text within its own group */
+            align-items: center; 
         }
-        .stat-group.align-left {
-            justify-self: start;
-            padding-left: 5cqw;
-            align-items: flex-start;
-        }
-        .stat-group.align-center {
-            justify-self: center;
-            align-items: center;
-        }
-        .stat-group.align-right {
-            justify-self: end;
-            padding-right: 12cqw; 
-            align-items: flex-end;
-        }
+
+        /* Removed specific grid alignments, let Flexbox handle spacing */
 
         .stat-label { 
             font-size: 2.5cqw; 
@@ -438,7 +435,6 @@
 
         .menu-trees.open { width: 50cqw; }
         .menu-flowers.open { width: 65cqw; } 
-        /* Added Farmer Menu Width */
         .menu-farmer.open { width: 40cqw; }
 
         .menu-option {
@@ -560,7 +556,9 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding-bottom: 1cqw;
+            
+            /* LIFTED CAMERA EMOJI */
+            padding-bottom: 2.5cqw; /* Increased from 1cqw */
         }
 
         /* --- SHARED MODAL STYLES --- */
@@ -664,15 +662,18 @@
 
 
         <div class="ui-stats-bar">
-            <div class="stat-group align-left">
+            <!-- Align Left: DAY -->
+            <div class="stat-group">
                 <span class="stat-label">DAY</span>
                 <span class="stat-value stat-day">1</span>
             </div>
-            <div class="stat-group align-center">
+            <!-- Align Center: FUNDS -->
+            <div class="stat-group">
                 <span class="stat-label">FUNDS</span>
                 <span class="stat-value stat-funds">$1,000</span>
             </div>
-            <div class="stat-group align-right">
+            <!-- Align Right: LUCK -->
+            <div class="stat-group">
                 <span class="stat-label">LUCK</span>
                 <span class="stat-value stat-luck">3</span>
             </div>
