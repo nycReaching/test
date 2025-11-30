@@ -173,33 +173,55 @@
             pointer-events: none;
         }
 
-        /* --- SPROUTS (Updated Position) --- */
+        /* --- SPROUTS & WORM --- */
         .prop-sprout-layer {
             position: absolute;
-            /* MOVED DOWN to center between neighbor panel and flowers */
             bottom: 46%; 
             font-size: 6cqw;
             filter: drop-shadow(0 0.5cqw 0.5cqw rgba(0,0,0,0.3));
             z-index: 4;
         }
         
-        .sprout-1 { left: 66%; }
+        /* Updated spacing for sprouts */
+        .sprout-1 { left: 62%; }
         .sprout-2 { left: 72%; }
-        .sprout-3 { left: 78%; }
+        .sprout-3 { left: 82%; }
 
+        /* New Worm */
+        .prop-worm {
+            bottom: 52%; /* Sitting above the sprouts */
+            left: 72%;   /* Centered over the middle sprout */
+            font-size: 12cqw;
+            filter: drop-shadow(0 0.5cqw 0.5cqw rgba(0,0,0,0.4));
+            z-index: 5;
+            transform: translateX(-20%); /* Center adjustment */
+            pointer-events: none;
+        }
 
         /* --- FLOWERS --- */
         .prop-flower {
             bottom: 30%; 
-            /* Larger Size */
-            font-size: 12cqw;
+            font-size: 11cqw; /* Slightly smaller to fit 5 */
             filter: drop-shadow(0 0.5cqw 0.5cqw rgba(0,0,0,0.3));
             pointer-events: none;
         }
         
-        .flower-hya { left: 65%; } 
-        .flower-sun { left: 71%; } 
-        .flower-rose { left: 77%; } 
+        /* Re-spaced for 5 flowers */
+        .flower-1 { left: 60%; } 
+        .flower-2 { left: 67%; } 
+        .flower-3 { left: 74%; } 
+        .flower-4 { left: 81%; }
+        .flower-5 { left: 88%; }
+
+        /* --- CANDLE --- */
+        .prop-candle {
+            bottom: 30%;
+            left: 10%;
+            font-size: 5cqw;
+            filter: drop-shadow(0 0 1cqw rgba(255, 200, 0, 0.6));
+            z-index: 8;
+            pointer-events: none;
+        }
 
 
         /* --- SHARED STYLES --- */
@@ -221,7 +243,7 @@
             filter: brightness(0.9);
         }
 
-        /* --- 1. TOP LEFT: PLAYER STATS (UPDATED FOR SPACING) --- */
+        /* --- 1. TOP LEFT: PLAYER STATS --- */
         .ui-stats-bar {
             position: absolute;
             top: 0;
@@ -230,16 +252,11 @@
             height: 8%;
             background: linear-gradient(135deg, var(--ui-gold) 0%, var(--ui-gold-dark) 100%);
             clip-path: polygon(0 0, 100% 0, 95% 100%, 0% 100%);
-            
-            /* CHANGED TO FLEX FOR EQUAL SPACING */
             display: flex;
-            justify-content: space-between; /* This pushes them apart evenly */
+            justify-content: space-between; 
             align-items: center;
-            
-            /* Visual balance padding */
             padding-left: 4cqw;
-            padding-right: 10cqw; /* Larger on right to account for slant */
-            
+            padding-right: 10cqw; 
             z-index: 20;
             filter: drop-shadow(0 1cqw 1cqw rgba(0,0,0,0.5));
         }
@@ -249,11 +266,8 @@
             flex-direction: column;
             line-height: 1;
             justify-content: center;
-            /* Center text within its own group */
             align-items: center; 
         }
-
-        /* Removed specific grid alignments, let Flexbox handle spacing */
 
         .stat-label { 
             font-size: 2.5cqw; 
@@ -270,13 +284,14 @@
         .stat-luck { color: #C2185B; } 
 
 
-        /* --- 2. TOP RIGHT: ENEMY PROGRESS --- */
+        /* --- 2. TOP RIGHT: ENEMY PROGRESS (UPDATED LAYOUT) --- */
         .ui-event-panel {
             position: absolute;
             top: 0;
             right: 0;
             width: 30%;
-            height: 40%; 
+            height: auto; /* Let content dictate height */
+            min-height: 35%;
             background: linear-gradient(180deg, #d32f2f 0%, #5d0000 100%);
             border-bottom-left-radius: 4cqw;
             border-left: 0.5cqw solid rgba(255,255,255,0.2);
@@ -284,38 +299,53 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding-top: 2cqw;
+            padding-top: 1.5cqw; /* Reduced padding */
             padding-bottom: 2cqw;
-            gap: 3cqw;
+            gap: 1.5cqw; /* Reduced gap for tighter fit */
             z-index: 20;
             box-shadow: -1cqw 1cqw 2cqw rgba(0,0,0,0.6);
         }
 
         .enemy-header {
-            font-size: 2.5cqw; 
+            font-size: 2.2cqw; 
             opacity: 0.9;
             color: white;
             text-transform: uppercase;
             font-weight: bold;
-            margin-bottom: 0.5cqw;
+            margin-bottom: 0;
+            letter-spacing: 0.1cqw;
         }
 
-        .meter-container {
+        .meter-group {
             width: 80%;
             display: flex;
             flex-direction: column;
             gap: 1cqw;
+            /* Container to group meters nicely */
+            background: rgba(0,0,0,0.1);
+            padding: 1cqw;
+            border-radius: 1cqw;
+        }
+
+        .meter-container {
+            width: 100%;
+            display: flex;
+            flex-direction: row; /* Horizontal alignment inside meter row */
+            gap: 1.5cqw;
             align-items: center;
+            justify-content: center;
         }
 
         .meter-icon {
-            font-size: 5cqw;
-            filter: drop-shadow(0 0.5cqw 0.5cqw rgba(0,0,0,0.6));
+            font-size: 4cqw;
+            width: 5cqw;
+            text-align: center;
+            filter: drop-shadow(0 0.2cqw 0.2cqw rgba(0,0,0,0.6));
         }
 
         .meter-bar {
-            width: 100%;
-            height: 1.5cqw; 
+            flex-grow: 1;
+            height: 1.2cqw; 
             background: rgba(0,0,0,0.4);
             border-radius: 1cqw;
             border: 1px solid rgba(255,255,255,0.1);
@@ -332,24 +362,31 @@
         .fill-orange { background: #ff9800; width: 45%; }
         .fill-grey { background: #90a4ae; width: 20%; }
 
+        .sabotage-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            gap: 0.5cqw;
+            margin-top: 0.5cqw;
+        }
+
         .sabotage-label {
-            font-size: 2.5cqw;
+            font-size: 2cqw;
             opacity: 0.9;
             color: white;
             text-transform: uppercase;
             font-weight: bold;
-            margin-top: auto;
-            margin-bottom: 1cqw;
         }
 
         .neighbor-slots-row {
             display: flex;
-            gap: 2cqw;
-            margin-bottom: 2cqw;
+            gap: 1.5cqw;
+            margin-bottom: 0;
         }
 
         .neighbor-slot {
-            width: 10cqw;
+            width: 9cqw;
             aspect-ratio: 1;
             background: rgba(0,0,0,0.2);
             border: 1px dashed rgba(255,255,255,0.3);
@@ -358,7 +395,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 6cqw; 
+            font-size: 5cqw; 
         }
 
         /* --- 3. LEFT SIDEBAR: ACTION BUTTONS --- */
@@ -558,7 +595,7 @@
             align-items: center;
             
             /* LIFTED CAMERA EMOJI */
-            padding-bottom: 2.5cqw; /* Increased from 1cqw */
+            padding-bottom: 2.5cqw; 
         }
 
         /* --- SHARED MODAL STYLES --- */
@@ -569,10 +606,8 @@
             width: 80%;
             height: 40%;
             
-            /* Start slightly zoomed out for pop-in effect */
             transform: translate(-50%, -50%) scale(0.9);
             
-            /* Shiny Border styling */
             border: 0.5cqw solid rgba(255,255,255,0.3);
             border-radius: 4cqw;
             box-shadow: 0 2cqw 4cqw rgba(0,0,0,0.8);
@@ -599,7 +634,6 @@
             background: linear-gradient(135deg, #1565C0, #0D47A1); 
         }
 
-        /* Purple Gradient for Book & Self Modals */
         .book-modal-style {
             background: linear-gradient(135deg, var(--ui-purple), var(--ui-purple-dark)); 
         }
@@ -631,20 +665,29 @@
         <!-- House -->
         <div class="map-prop prop-house-tiny">🏠</div>
 
+        <!-- Candle (NEW) -->
+        <div class="map-prop prop-candle">🕯️</div>
+
         <!-- Trees -->
         <div class="map-prop prop-tree tree-1">🌳</div>
         <div class="map-prop prop-tree tree-2">🌲</div>
         <div class="map-prop prop-tree tree-3">🎋</div>
         
         <!-- Sprouts (Separate Layer Above Flowers) -->
+        <!-- Added spacing between classes in CSS -->
         <div class="map-prop prop-sprout-layer sprout-1">🌱</div>
         <div class="map-prop prop-sprout-layer sprout-2">🌱</div>
         <div class="map-prop prop-sprout-layer sprout-3">🌱</div>
 
-        <!-- Flowers -->
-        <div class="map-prop prop-flower flower-hya">🪻</div>
-        <div class="map-prop prop-flower flower-sun">🌻</div>
-        <div class="map-prop prop-flower flower-rose">🌹</div>
+        <!-- Giant Worm (NEW) -->
+        <div class="map-prop prop-worm">🪱</div>
+
+        <!-- Flowers (ADDED NEW ONES) -->
+        <div class="map-prop prop-flower flower-1">🪻</div>
+        <div class="map-prop prop-flower flower-2">🌻</div>
+        <div class="map-prop prop-flower flower-3">🌹</div>
+        <div class="map-prop prop-flower flower-4">🌼</div> <!-- Blossom -->
+        <div class="map-prop prop-flower flower-5">🌷</div> <!-- Tulip -->
 
 
         <!-- MODALS -->
@@ -682,26 +725,29 @@
         <div class="ui-event-panel panel">
             <div class="enemy-header">Neighbor</div>
             
-            <div class="meter-container">
-                <div class="meter-icon">📈</div>
-                <div class="meter-bar"><div class="meter-fill fill-red"></div></div>
+            <div class="meter-group">
+                <div class="meter-container">
+                    <div class="meter-icon">📈</div>
+                    <div class="meter-bar"><div class="meter-fill fill-red"></div></div>
+                </div>
+
+                <div class="meter-container">
+                    <div class="meter-icon">👎</div>
+                    <div class="meter-bar"><div class="meter-fill fill-orange"></div></div>
+                </div>
+
+                <div class="meter-container">
+                    <div class="meter-icon">🚘</div>
+                    <div class="meter-bar"><div class="meter-fill fill-grey"></div></div>
+                </div>
             </div>
 
-            <div class="meter-container">
-                <div class="meter-icon">👎</div>
-                <div class="meter-bar"><div class="meter-fill fill-orange"></div></div>
-            </div>
-
-            <div class="meter-container">
-                <div class="meter-icon">🚘</div>
-                <div class="meter-bar"><div class="meter-fill fill-grey"></div></div>
-            </div>
-
-            <div class="sabotage-label">Sabotage</div>
-
-            <div class="neighbor-slots-row">
-                <div class="neighbor-slot">🐈</div>
-                <div class="neighbor-slot"></div>
+            <div class="sabotage-section">
+                <div class="sabotage-label">Sabotage</div>
+                <div class="neighbor-slots-row">
+                    <div class="neighbor-slot">🐈</div>
+                    <div class="neighbor-slot"></div>
+                </div>
             </div>
         </div>
 
@@ -710,7 +756,6 @@
                 <div class="side-btn btn-pressable" id="btn-book">📚</div>
             </div>
             <div class="sidebar-item-wrapper">
-                <!-- Changed Heart to Self -->
                 <div class="side-btn btn-pressable" id="btn-self">👤</div>
             </div>
             
@@ -806,8 +851,6 @@
         const treeMenu = document.getElementById('tree-menu');
         const flowerBtn = document.getElementById('btn-flower-toggle');
         const flowerMenu = document.getElementById('flower-menu');
-        
-        // New Farmer Menu Refs
         const farmerBtn = document.getElementById('btn-farmer-toggle');
         const farmerMenu = document.getElementById('farmer-menu');
 
@@ -885,7 +928,6 @@
             if (!wasOpen) selfModal.classList.add('open');
         });
 
-        // Close modals on outside click
         document.body.addEventListener('click', (e) => {
             const clickedShop = shopModal.contains(e.target) || shopBtn.contains(e.target);
             const clickedBook = bookModal.contains(e.target) || bookBtn.contains(e.target);
