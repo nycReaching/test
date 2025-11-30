@@ -72,61 +72,6 @@
             background-size: 30px 30px, 30px 30px, cover;
         }
 
-        /* --- DEBUG ZONES (For Development) --- */
-        .debug-zone {
-            position: absolute;
-            border: 0.5cqw dashed rgba(255, 255, 255, 0.4);
-            background: rgba(255, 255, 255, 0.05);
-            z-index: 1; /* Behind props but above BG */
-            pointer-events: none;
-            display: flex;
-            justify-content: center;
-            padding-top: 1cqw;
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 3cqw;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 0.2cqw;
-            border-radius: 2cqw;
-        }
-
-        /* ZONE POSITIONING 
-           Tuned to match the emoji clusters exactly 
-        */
-
-        /* Center Column */
-        .zone-items {
-            top: 10%;
-            left: 35%;
-            width: 30%;
-            height: 48%;
-        }
-        
-        /* Bottom Left Quadrant */
-        .zone-trees {
-            bottom: 25%;
-            left: 2%;
-            width: 45%;
-            height: 25%;
-        }
-
-        /* Bottom Right Quadrant */
-        .zone-flowers {
-            bottom: 25%;
-            left: 55%;
-            width: 43%;
-            height: 18%;
-        }
-
-        /* Right Side (Above Flowers) */
-        .zone-sprouts {
-            bottom: 45%;
-            left: 60%;
-            width: 38%;
-            height: 15%;
-        }
-
-
         /* --- MAP PROPS --- */
         .map-prop {
             position: absolute;
@@ -165,66 +110,69 @@
             line-height: 1;
         }
 
-        /* ITEMS: CENTERED COLUMN */
-        /* These stay in the safe center zone between UI elements */
+        /* ITEMS: CENTER COLUMN */
+        /* The "Backyard Center" is visually between the Left Sidebar (15%) and Right Panel (starts at 70%).
+           Midpoint is approx 42.5%.
+        */
         .prop-telescope {
             top: 15%; 
-            left: 50%; 
+            left: 42%; 
             background: #283593; 
         }
         .prop-telescope .inner-emoji { font-size: 10cqw; }
 
         .prop-bathtub {
             top: 29%; 
-            left: 50%; 
+            left: 42%; 
             background: #00ACC1; 
         }
         .prop-bathtub .inner-emoji { font-size: 11cqw; }
 
         .prop-scales {
             top: 43%;
-            left: 50%;
+            left: 42%;
             background: #5D4037; 
         }
         .prop-scales .inner-emoji { font-size: 10cqw; }
 
 
         /* --- TREES & HOUSE: BOTTOM LEFT QUADRANT --- */
+        /* Larger and shifted slightly right */
         .prop-tree {
             bottom: 30%; 
-            font-size: 20cqw; 
+            font-size: 24cqw; /* Increased from 20cqw */
             filter: drop-shadow(0 1cqw 1cqw rgba(0,0,0,0.3));
             pointer-events: none;
         }
 
-        .tree-1 { left: 5%; z-index: 5; }
-        .tree-2 { left: 18%; z-index: 6; } 
-        .tree-3 { left: 31%; z-index: 5; }
+        .tree-1 { left: 8%; z-index: 5; } /* Shifted right (+3%) */
+        .tree-2 { left: 21%; z-index: 6; } 
+        .tree-3 { left: 34%; z-index: 5; }
 
         .prop-house-tiny {
             bottom: 39%; 
-            left: 17%; /* Sitting between trees */
-            font-size: 8cqw; 
+            left: 20%; /* Adjusted for new tree positions */
+            font-size: 9cqw; /* Slightly larger */
             z-index: 7;
             filter: drop-shadow(0 0.5cqw 1cqw rgba(0,0,0,0.5));
             pointer-events: none;
         }
 
-        /* Candle (Far Left) */
+        /* Candle */
         .prop-candle {
             bottom: 30%;
-            left: 5%; 
-            font-size: 5cqw;
+            left: 8%; /* Shifted right */
+            font-size: 6cqw; /* Slightly larger */
             filter: drop-shadow(0 0 1cqw rgba(255, 200, 0, 0.6));
             z-index: 8;
             pointer-events: none;
         }
 
         /* --- SPROUTS & WORM: RIGHT SIDE (MID-HEIGHT) --- */
-        /* Positioned above the flowers */
+        /* Lowered by ~3% */
         .prop-sprout-layer {
             position: absolute;
-            bottom: 48%; 
+            bottom: 45%; 
             font-size: 6cqw;
             filter: drop-shadow(0 0.5cqw 0.5cqw rgba(0,0,0,0.3));
             z-index: 4;
@@ -235,7 +183,7 @@
         .sprout-3 { left: 85%; }
 
         .prop-worm {
-            bottom: 50%; 
+            bottom: 47%; 
             left: 75%;   
             font-size: 10cqw; 
             filter: drop-shadow(0 0.5cqw 0.5cqw rgba(0,0,0,0.4));
@@ -245,6 +193,7 @@
         }
 
         /* --- FLOWERS: BOTTOM RIGHT QUADRANT --- */
+        /* Shifted left by ~2% */
         .prop-flower {
             bottom: 30%; 
             font-size: 11cqw; 
@@ -252,11 +201,11 @@
             pointer-events: none;
         }
         
-        .flower-1 { left: 60%; } 
-        .flower-2 { left: 67%; } 
-        .flower-3 { left: 74%; } 
-        .flower-4 { left: 81%; }
-        .flower-5 { left: 88%; }
+        .flower-1 { left: 58%; } 
+        .flower-2 { left: 65%; } 
+        .flower-3 { left: 72%; } 
+        .flower-4 { left: 79%; }
+        .flower-5 { left: 86%; }
 
 
         /* --- SHARED STYLES --- */
@@ -702,12 +651,6 @@
     <div id="game-viewport">
         
         <div id="game-background"></div>
-
-        <!-- DEBUG ZONES -->
-        <div class="debug-zone zone-items">Items</div>
-        <div class="debug-zone zone-trees">Trees</div>
-        <div class="debug-zone zone-flowers">Flowers</div>
-        <div class="debug-zone zone-sprouts">Garden</div>
 
         <!-- CONTAINERS FOR PROPS -->
         <div class="map-prop item-container prop-telescope">
