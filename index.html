@@ -487,33 +487,27 @@
             width: 100%;
             height: 18%; 
             
-            /* UPDATED: Dark Pink to Cherry Pink Gradient */
-            background: linear-gradient(90deg, #560027, #880E4F, #D81B60, #AD1457);
-            background-size: 300% 300%;
+            /* Lighter, Vibrant Cherry Pink Gradient */
+            background: linear-gradient(90deg, #F48FB1, #E91E63, #D81B60, #AD1457);
+            /* Increased background size to allow movement */
+            background-size: 400% 100%;
             
-            /* UPDATED: Doubled border thickness + Top and Bottom */
-            border-top: 0.6cqw solid black;
-            border-bottom: 0.6cqw solid black;
+            /* Thinner borders (2px) */
+            border-top: 2px solid black;
+            border-bottom: 2px solid black;
             
             display: flex;
             align-items: center;
             padding: 0 2cqw;
             justify-content: space-evenly;
             gap: 0; 
-            overflow: hidden; /* Stops scrolling */
+            overflow: hidden; 
+            
+            /* Smooth transitions for JS updates */
+            transition: background-position 0.1s linear, filter 0.1s linear;
         }
         
         .ui-inventory-strip::-webkit-scrollbar { display: none; }
-
-        /* Animation class added via JS */
-        .ui-inventory-strip.rolling-active {
-            animation: gradientExcitement 0.4s ease infinite alternate;
-        }
-
-        @keyframes gradientExcitement {
-            0% { background-position: 0% 50%; filter: brightness(1); }
-            100% { background-position: 100% 50%; filter: brightness(1.3); }
-        }
 
         .inv-slot {
             height: 75%; 
@@ -526,10 +520,10 @@
             align-items: center;
             color: #FF9800;
             font-weight: bold;
-            font-size: 6cqw; /* INCREASED SIZE */
+            font-size: 6cqw; 
             flex-shrink: 0;
             transition: all 0.1s ease;
-            text-shadow: 0 0.5cqw 0.5cqw rgba(0,0,0,0.8); /* ADDED SHADOW */
+            text-shadow: 0 0.5cqw 0.5cqw rgba(0,0,0,0.8);
         }
         
         .inv-slot.active { 
@@ -1055,13 +1049,12 @@
         // --- DICE LOGIC ---
         const diceBtn = document.getElementById('btn-dice');
         const slots = document.querySelectorAll('.inv-slot');
-        const strip = document.querySelector('.ui-inventory-strip'); // Added selector
+        const strip = document.querySelector('.ui-inventory-strip'); 
         let isRolling = false;
 
         diceBtn.addEventListener('click', () => {
             if (isRolling) return; 
             isRolling = true;
-            strip.classList.add('rolling-active'); // Start BG animation
             
             const targetIndex = Math.floor(Math.random() * slots.length);
             let currentIndex = 0;
@@ -1071,19 +1064,41 @@
 
             let speed = 50; 
             let steps = 0;
-            const minSteps = 20; 
+            const minSteps = 20;
+            let hue = 0;
             
             function step() {
                 slots[currentIndex].classList.remove('active');
                 currentIndex = (currentIndex + 1) % slots.length;
                 slots[currentIndex].classList.add('active');
                 steps++;
+                
+                // --- SYNCED ANIMATION UPDATES ---
+                // 1. Move Background steadily to the right based on step count
+                // (Using steps ensures smooth flow even when index loops)
+                const bgPos = steps * 20; 
+                strip.style.backgroundPosition = `${bgPos}% 50%`;
+                
+                // 2. Cycle Colors (Hue Rotate)
+                hue = (hue + 15) % 360;
+                strip.style.filter = `hue-rotate(${hue}deg) brightness(1.2)`;
 
                 if (steps > minSteps && currentIndex === targetIndex) {
                     isRolling = false;
-                    strip.classList.remove('rolling-active'); // Stop BG animation
                     slots[currentIndex].style.transform = "scale(1.2)";
-                    setTimeout(() => slots[currentIndex].style.transform = "", 200);
+                    
+                    // --- FINISH ---
+                    // Reset or transition back to resting state
+                    strip.style.transition = 'filter 0.5s ease, background-position 0.5s ease';
+                    strip.style.filter = 'none';
+                    
+                    setTimeout(() => {
+                        slots[currentIndex].style.transform = "";
+                        // Reset transition for next roll so it's snappy
+                        setTimeout(() => {
+                            strip.style.transition = 'background-position 0.1s linear, filter 0.1s linear';
+                        }, 500);
+                    }, 200);
                     return;
                 }
 
