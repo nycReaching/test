@@ -481,12 +481,19 @@
             display: flex;
             flex-direction: column;
             box-shadow: none;
+            overflow: visible; /* Allow overlapping elements */
         }
 
         .ui-inventory-strip {
-            /* Changed to Pill Shape, centered, not full width */
+            /* Positioning for 50/50 overlap */
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 50;
+
             width: 92%;
-            margin: 0 auto;
+            margin: 0;
             height: 18%; 
             border-radius: 10cqw;
             
@@ -502,7 +509,6 @@
             gap: 0; 
             overflow: hidden; 
             
-            /* Transition purely for hover/active if needed, removed BG animation logic */
             transition: transform 0.1s;
         }
         
@@ -535,14 +541,17 @@
 
         .ui-controls-main {
             flex-grow: 1;
-            /* Updated to Very Dark Blue Gradient */
-            background: linear-gradient(180deg, #051020 0%, #000000 100%);
+            /* Updated to Lightened Midnight Blue Gradient so it's not black */
+            background: linear-gradient(180deg, #0d2b4d 0%, #000000 100%);
             
             position: relative;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            
+            /* Add some padding to top to account for overlapping strip */
+            padding-top: 5cqw;
         }
 
         .camera-row {
@@ -658,7 +667,6 @@
         }
 
         .bird-unknown {
-            /* INCREASED SIZE AS REQUESTED */
             font-size: 11cqw;
             
             filter: brightness(0); 
@@ -1068,6 +1076,7 @@
             let speed = 50; 
             let steps = 0;
             const minSteps = 20;
+            let hue = 0; // Initialize hue for animation
             
             function step() {
                 slots[currentIndex].classList.remove('active');
@@ -1075,15 +1084,25 @@
                 slots[currentIndex].classList.add('active');
                 steps++;
                 
-                // Note: removed background animation logic here as requested
+                // --- ANIMATION: Smooth hue rotation while rolling ---
+                hue = (hue + 20) % 360;
+                strip.style.filter = `hue-rotate(${hue}deg)`;
 
                 if (steps > minSteps && currentIndex === targetIndex) {
                     isRolling = false;
                     slots[currentIndex].style.transform = "scale(1.2)";
                     
                     // --- FINISH ---
+                    // Reset filter smoothly
+                    strip.style.transition = "filter 0.5s ease";
+                    strip.style.filter = "none";
+
                     setTimeout(() => {
                         slots[currentIndex].style.transform = "";
+                        // Clear transition property so it doesn't affect next start
+                        setTimeout(() => {
+                            strip.style.transition = "";
+                        }, 500);
                     }, 200);
                     return;
                 }
