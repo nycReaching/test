@@ -57,19 +57,6 @@
             overflow: hidden;
         }
 
-        /* --- GAME WORLD WRAPPER (For Grayscale Effect) --- */
-        #game-world {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            transition: filter 0.5s ease;
-        }
-
-        #game-world.grayscale-mode {
-            filter: grayscale(100%);
-            pointer-events: none; /* Disable interaction underneath */
-        }
-
         #game-background {
             position: absolute;
             top: 0;
@@ -84,64 +71,6 @@
                 linear-gradient(180deg, #b2ff59 0%, #002b00 100%);
             background-size: 30px 30px, 30px 30px, cover;
         }
-
-        /* --- START SCREEN OVERLAY --- */
-        #start-screen {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 999;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background: rgba(0,0,0,0.3); /* Slight dimming */
-            backdrop-filter: blur(2px);
-            opacity: 1;
-            transition: opacity 0.3s ease;
-        }
-
-        #start-screen.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .start-menu-box {
-            display: flex;
-            flex-direction: column;
-            gap: 3cqw;
-            width: 70%;
-        }
-
-        .start-btn {
-            background: white;
-            color: #333;
-            font-size: 5cqw;
-            font-weight: bold;
-            text-transform: uppercase;
-            padding: 3cqw;
-            border-radius: 2cqw;
-            text-align: center;
-            box-shadow: 0 1cqw 2cqw rgba(0,0,0,0.5);
-            cursor: pointer;
-            border: 0.5cqw solid rgba(255,255,255,0.5);
-            transition: transform 0.1s;
-        }
-
-        .start-btn:active {
-            transform: scale(0.95);
-        }
-
-        .btn-intro { background: linear-gradient(135deg, #42A5F5, #1E88E5); color: white; }
-        .btn-explain { background: linear-gradient(135deg, #66BB6A, #43A047); color: white; }
-        .btn-close { 
-            background: linear-gradient(135deg, #ef5350, #c62828); 
-            color: white; 
-            margin-top: 2cqw;
-            width: 50%;
-            align-self: center;
-        }
-
 
         /* --- MAP PROPS --- */
         .map-prop {
@@ -761,229 +690,215 @@
 
     <div id="game-viewport">
         
-        <!-- WRAPPED GAME CONTENT FOR FILTERING -->
-        <div id="game-world" class="grayscale-mode">
-            
-            <div id="game-background"></div>
+        <div id="game-background"></div>
 
-            <!-- CONTAINERS FOR PROPS -->
-            <div class="map-prop item-container prop-telescope">
-                <div class="inner-emoji">🔭</div>
-                <div class="prop-number">3</div>
-            </div>
-            
-            <div class="map-prop item-container prop-bathtub">
-                <div class="inner-emoji">🛁</div>
-                <div class="prop-number">7</div>
-            </div>
-            
-            <div class="map-prop item-container prop-scales">
-                <div class="inner-emoji">⚖️</div>
-                <div class="prop-number">4</div>
-            </div>
-            
-            <!-- House -->
-            <div class="map-prop prop-house-tiny">🏠</div>
+        <!-- CONTAINERS FOR PROPS -->
+        <div class="map-prop item-container prop-telescope">
+            <div class="inner-emoji">🔭</div>
+            <div class="prop-number">3</div>
+        </div>
+        
+        <div class="map-prop item-container prop-bathtub">
+            <div class="inner-emoji">🛁</div>
+            <div class="prop-number">7</div>
+        </div>
+        
+        <div class="map-prop item-container prop-scales">
+            <div class="inner-emoji">⚖️</div>
+            <div class="prop-number">4</div>
+        </div>
+        
+        <!-- House -->
+        <div class="map-prop prop-house-tiny">🏠</div>
 
-            <!-- Candle (Left) -->
-            <div class="map-prop prop-candle">🕯️</div>
+        <!-- Candle (Left) -->
+        <div class="map-prop prop-candle">🕯️</div>
 
-            <!-- Trees (Left) -->
-            <div class="map-prop prop-tree tree-1">🌳</div>
-            <div class="map-prop prop-tree tree-2">🌲</div>
-            <div class="map-prop prop-tree tree-3">🎋</div>
-            
-            <!-- Sprouts -->
-            <div class="map-prop prop-sprout-layer sprout-1">🌱</div>
-            <div class="map-prop prop-sprout-layer sprout-2">🌱</div>
-            <div class="map-prop prop-sprout-layer sprout-3">🌱</div>
+        <!-- Trees (Left) -->
+        <div class="map-prop prop-tree tree-1">🌳</div>
+        <div class="map-prop prop-tree tree-2">🌲</div>
+        <div class="map-prop prop-tree tree-3">🎋</div>
+        
+        <!-- Sprouts -->
+        <div class="map-prop prop-sprout-layer sprout-1">🌱</div>
+        <div class="map-prop prop-sprout-layer sprout-2">🌱</div>
+        <div class="map-prop prop-sprout-layer sprout-3">🌱</div>
 
-            <!-- Giant Worm -->
-            <div class="map-prop prop-worm">🪱</div>
+        <!-- Giant Worm -->
+        <div class="map-prop prop-worm">🪱</div>
 
-            <!-- Flowers -->
-            <div class="map-prop prop-flower flower-1">🪻</div>
-            <div class="map-prop prop-flower flower-2">🌻</div>
-            <div class="map-prop prop-flower flower-3">🌹</div>
-            <div class="map-prop prop-flower flower-4">🌼</div> 
-            <div class="map-prop prop-flower flower-5">🌷</div> 
+        <!-- Flowers -->
+        <div class="map-prop prop-flower flower-1">🪻</div>
+        <div class="map-prop prop-flower flower-2">🌻</div>
+        <div class="map-prop prop-flower flower-3">🌹</div>
+        <div class="map-prop prop-flower flower-4">🌼</div> 
+        <div class="map-prop prop-flower flower-5">🌷</div> 
 
 
-            <!-- MODALS -->
-            <div id="shop-modal" class="modal-base shop-modal-style">
-                <div class="shop-title">SHOP EMPTY</div>
-            </div>
+        <!-- MODALS -->
+        <div id="shop-modal" class="modal-base shop-modal-style">
+            <div class="shop-title">SHOP EMPTY</div>
+        </div>
 
-            <div id="book-modal" class="modal-base book-modal-style">
-                <!-- PAGE 1 -->
-                <div id="book-page-1" class="book-page">
-                    <div class="bird-collection-grid">
-                        <!-- Row 1 -->
-                        <div class="bird-unknown">🐓</div>
-                        <div class="bird-unknown">🦃</div>
-                        <div class="bird-unknown">🦆</div>
-                        <div class="bird-unknown">🦅</div>
-                        <div class="bird-unknown">🕊️</div>
-                        <div class="bird-unknown">🦢</div>
-                        <!-- Row 2 -->
-                        <div class="bird-unknown">🦜</div>
-                        <div class="bird-unknown">🐦‍⬛</div>
-                        <div class="bird-unknown">🪿</div>
-                        <div class="bird-unknown">🐦‍🔥</div>
-                        <div class="bird-unknown">🦩</div>
-                        <div class="bird-unknown">🦚</div>
-                        <!-- Row 3 -->
-                        <div class="bird-unknown">🦉</div>
-                        <div class="bird-unknown">🦤</div>
-                        <div class="bird-unknown">🐦</div>
-                        <div class="bird-unknown">🐧</div>
-                        <div class="bird-unknown">🐥</div>
-                        <div class="bird-unknown">🐣</div>
-                    </div>
-                </div>
-
-                <!-- PAGE 2 (Empty) -->
-                <div id="book-page-2" class="book-page" style="display: none;">
-                    <div class="shop-title">PAGE 2</div>
-                </div>
-
-                <!-- Navigation Button -->
-                <div class="modal-nav-btn" id="book-nav-btn">⭐</div>
-            </div>
-            
-            <div id="self-modal" class="modal-base book-modal-style">
-                <div class="shop-title">SELF EMPTY</div>
-            </div>
-
-
-            <div class="ui-stats-bar">
-                <!-- Align Left: DAY -->
-                <div class="stat-group">
-                    <span class="stat-label">DAY</span>
-                    <span class="stat-value stat-day">1</span>
-                </div>
-                <!-- Align Center: FUNDS -->
-                <div class="stat-group">
-                    <span class="stat-label">FUNDS</span>
-                    <span class="stat-value stat-funds">$1,000</span>
-                </div>
-                <!-- Align Right: LUCK -->
-                <div class="stat-group">
-                    <span class="stat-label">LUCK</span>
-                    <span class="stat-value stat-luck">3</span>
+        <div id="book-modal" class="modal-base book-modal-style">
+            <!-- PAGE 1 -->
+            <div id="book-page-1" class="book-page">
+                <div class="bird-collection-grid">
+                    <!-- Row 1 -->
+                    <div class="bird-unknown">🐓</div>
+                    <div class="bird-unknown">🦃</div>
+                    <div class="bird-unknown">🦆</div>
+                    <div class="bird-unknown">🦅</div>
+                    <div class="bird-unknown">🕊️</div>
+                    <div class="bird-unknown">🦢</div>
+                    <!-- Row 2 -->
+                    <div class="bird-unknown">🦜</div>
+                    <div class="bird-unknown">🐦‍⬛</div>
+                    <div class="bird-unknown">🪿</div>
+                    <div class="bird-unknown">🐦‍🔥</div>
+                    <div class="bird-unknown">🦩</div>
+                    <div class="bird-unknown">🦚</div>
+                    <!-- Row 3 -->
+                    <div class="bird-unknown">🦉</div>
+                    <div class="bird-unknown">🦤</div>
+                    <div class="bird-unknown">🐦</div>
+                    <div class="bird-unknown">🐧</div>
+                    <div class="bird-unknown">🐥</div>
+                    <div class="bird-unknown">🐣</div>
                 </div>
             </div>
 
-            <div class="ui-event-panel panel">
+            <!-- PAGE 2 (Empty) -->
+            <div id="book-page-2" class="book-page" style="display: none;">
+                <div class="shop-title">PAGE 2</div>
+            </div>
+
+            <!-- Navigation Button -->
+            <div class="modal-nav-btn" id="book-nav-btn">⭐</div>
+        </div>
+        
+        <div id="self-modal" class="modal-base book-modal-style">
+            <div class="shop-title">SELF EMPTY</div>
+        </div>
+
+
+        <div class="ui-stats-bar">
+            <!-- Align Left: DAY -->
+            <div class="stat-group">
+                <span class="stat-label">DAY</span>
+                <span class="stat-value stat-day">1</span>
+            </div>
+            <!-- Align Center: FUNDS -->
+            <div class="stat-group">
+                <span class="stat-label">FUNDS</span>
+                <span class="stat-value stat-funds">$1,000</span>
+            </div>
+            <!-- Align Right: LUCK -->
+            <div class="stat-group">
+                <span class="stat-label">LUCK</span>
+                <span class="stat-value stat-luck">3</span>
+            </div>
+        </div>
+
+        <div class="ui-event-panel panel">
+            <!-- Matching FUNDS style: thin, clean, white -->
+            <div class="enemy-header">Neighbor</div>
+            
+            <div class="meter-group">
+                <div class="meter-container">
+                    <div class="meter-icon">📈</div>
+                    <div class="meter-bar"><div class="meter-fill fill-red"></div></div>
+                </div>
+
+                <div class="meter-container">
+                    <div class="meter-icon">👎</div>
+                    <div class="meter-bar"><div class="meter-fill fill-orange"></div></div>
+                </div>
+
+                <div class="meter-container">
+                    <div class="meter-icon">🚘</div>
+                    <div class="meter-bar"><div class="meter-fill fill-grey"></div></div>
+                </div>
+            </div>
+
+            <div class="sabotage-section">
                 <!-- Matching FUNDS style: thin, clean, white -->
-                <div class="enemy-header">Neighbor</div>
-                
-                <div class="meter-group">
-                    <div class="meter-container">
-                        <div class="meter-icon">📈</div>
-                        <div class="meter-bar"><div class="meter-fill fill-red"></div></div>
-                    </div>
-
-                    <div class="meter-container">
-                        <div class="meter-icon">👎</div>
-                        <div class="meter-bar"><div class="meter-fill fill-orange"></div></div>
-                    </div>
-
-                    <div class="meter-container">
-                        <div class="meter-icon">🚘</div>
-                        <div class="meter-bar"><div class="meter-fill fill-grey"></div></div>
-                    </div>
+                <div class="sabotage-label">Sabotage</div>
+                <div class="neighbor-slots-row">
+                    <div class="neighbor-slot">🐈</div>
+                    <div class="neighbor-slot"></div>
                 </div>
+            </div>
+        </div>
 
-                <div class="sabotage-section">
-                    <!-- Matching FUNDS style: thin, clean, white -->
-                    <div class="sabotage-label">Sabotage</div>
-                    <div class="neighbor-slots-row">
-                        <div class="neighbor-slot">🐈</div>
-                        <div class="neighbor-slot"></div>
-                    </div>
+        <div class="ui-sidebar-container">
+            <div class="sidebar-item-wrapper">
+                <div class="side-btn btn-pressable" id="btn-book">📚</div>
+            </div>
+            <div class="sidebar-item-wrapper">
+                <div class="side-btn btn-pressable" id="btn-self">👤</div>
+            </div>
+            
+            <!-- Farmer Button Wrapper with Slide Out Menu -->
+            <div class="sidebar-item-wrapper">
+                <div class="side-btn btn-pressable" id="btn-farmer-toggle">🧑‍🌾</div>
+                
+                <div class="slide-menu menu-farmer" id="farmer-menu">
+                    <div class="menu-option">🌱</div>
+                    <div class="menu-option">🪴</div>
+                    <div class="menu-option">🪱</div>
                 </div>
             </div>
 
-            <div class="ui-sidebar-container">
-                <div class="sidebar-item-wrapper">
-                    <div class="side-btn btn-pressable" id="btn-book">📚</div>
-                </div>
-                <div class="sidebar-item-wrapper">
-                    <div class="side-btn btn-pressable" id="btn-self">👤</div>
-                </div>
+            <!-- Flower Button Wrapper with Slide Out Menu -->
+            <div class="sidebar-item-wrapper">
+                <div class="side-btn btn-pressable" id="btn-flower-toggle">🌷</div>
                 
-                <!-- Farmer Button Wrapper with Slide Out Menu -->
-                <div class="sidebar-item-wrapper">
-                    <div class="side-btn btn-pressable" id="btn-farmer-toggle">🧑‍🌾</div>
-                    
-                    <div class="slide-menu menu-farmer" id="farmer-menu">
-                        <div class="menu-option">🌱</div>
-                        <div class="menu-option">🪴</div>
-                        <div class="menu-option">🪱</div>
-                    </div>
-                </div>
-
-                <!-- Flower Button Wrapper with Slide Out Menu -->
-                <div class="sidebar-item-wrapper">
-                    <div class="side-btn btn-pressable" id="btn-flower-toggle">🌷</div>
-                    
-                    <div class="slide-menu menu-flowers" id="flower-menu">
-                        <div class="menu-option">🌹</div>
-                        <div class="menu-option">🌺</div>
-                        <div class="menu-option">🌻</div>
-                        <div class="menu-option">🌷</div>
-                        <div class="menu-option">🪻</div>
-                    </div>
-                </div>
-                
-                <!-- Tree Button Wrapper with Slide Out Menu -->
-                <div class="sidebar-item-wrapper">
-                    <div class="side-btn btn-pressable" id="btn-tree-toggle">🌳</div>
-                    
-                    <div class="slide-menu menu-trees" id="tree-menu">
-                        <div class="menu-option">🌳</div>
-                        <div class="menu-option">🌲</div>
-                        <div class="menu-option">🌴</div>
-                        <div class="menu-option">🎋</div>
-                    </div>
+                <div class="slide-menu menu-flowers" id="flower-menu">
+                    <div class="menu-option">🌹</div>
+                    <div class="menu-option">🌺</div>
+                    <div class="menu-option">🌻</div>
+                    <div class="menu-option">🌷</div>
+                    <div class="menu-option">🪻</div>
                 </div>
             </div>
-
-            <div class="ui-footer-container">
+            
+            <!-- Tree Button Wrapper with Slide Out Menu -->
+            <div class="sidebar-item-wrapper">
+                <div class="side-btn btn-pressable" id="btn-tree-toggle">🌳</div>
                 
-                <div class="ui-inventory-strip">
-                    <div class="inv-slot active">1</div>
-                    <div class="inv-slot">2</div>
-                    <div class="inv-slot">3</div>
-                    <div class="inv-slot">4</div>
-                    <div class="inv-slot">5</div>
-                    <div class="inv-slot">6</div>
-                </div>
-
-                <div class="ui-controls-main">
-                    
-                    <div class="camera-row">
-                        <!-- Shop Button -->
-                        <div class="secondary-action-btn btn-blue btn-pressable" id="btn-shop">🏪</div>
-                        
-                        <div class="main-action-btn btn-pressable">
-                            📷
-                        </div>
-                        
-                        <div class="secondary-action-btn btn-pink-gradient btn-pressable" id="btn-dice">🎲</div>
-                    </div>
+                <div class="slide-menu menu-trees" id="tree-menu">
+                    <div class="menu-option">🌳</div>
+                    <div class="menu-option">🌲</div>
+                    <div class="menu-option">🌴</div>
+                    <div class="menu-option">🎋</div>
                 </div>
             </div>
+        </div>
 
-        </div> <!-- END GAME WORLD -->
+        <div class="ui-footer-container">
+            
+            <div class="ui-inventory-strip">
+                <div class="inv-slot active">1</div>
+                <div class="inv-slot">2</div>
+                <div class="inv-slot">3</div>
+                <div class="inv-slot">4</div>
+                <div class="inv-slot">5</div>
+                <div class="inv-slot">6</div>
+            </div>
 
-        <!-- START SCREEN OVERLAY -->
-        <div id="start-screen">
-            <div class="start-menu-box">
-                <div class="start-btn btn-intro">View Introduction</div>
-                <div class="start-btn btn-explain">View Explainer</div>
-                <div class="start-btn btn-close" id="close-start-screen">Close ❌</div>
+            <div class="ui-controls-main">
+                
+                <div class="camera-row">
+                    <!-- Shop Button -->
+                    <div class="secondary-action-btn btn-blue btn-pressable" id="btn-shop">🏪</div>
+                    
+                    <div class="main-action-btn btn-pressable">
+                        📷
+                    </div>
+                    
+                    <div class="secondary-action-btn btn-pink-gradient btn-pressable" id="btn-dice">🎲</div>
+                </div>
             </div>
         </div>
 
@@ -997,17 +912,6 @@
         
         window.addEventListener('resize', setAppHeight);
         setAppHeight();
-
-        // --- START SCREEN LOGIC ---
-        const startScreen = document.getElementById('start-screen');
-        const closeStartBtn = document.getElementById('close-start-screen');
-        const gameWorld = document.getElementById('game-world');
-
-        closeStartBtn.addEventListener('click', () => {
-            startScreen.classList.add('hidden');
-            gameWorld.classList.remove('grayscale-mode');
-        });
-
 
         // Generic Button Press Animation
         document.querySelectorAll('.btn-pressable').forEach(btn => {
