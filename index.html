@@ -97,7 +97,7 @@
             
             /* THE SLANT */
             transform: translate(-50%, -50%) skewX(-12deg);
-            position: absolute; /* Ensure relative positioning for children works if needed, but absolute is set by .map-prop */
+            position: absolute; 
         }
         
         .item-container .inner-emoji {
@@ -105,7 +105,7 @@
             transform: skewX(12deg);
         }
 
-        /* NEW: Map Prop Numbers */
+        /* Map Prop Numbers */
         .prop-number {
             position: absolute;
             bottom: -5%;
@@ -172,12 +172,27 @@
             pointer-events: none;
         }
 
-        /* Flowers */
+        /* --- FLOWERS & SEEDLINGS --- */
         .prop-flower {
             bottom: 30%; 
             font-size: 9cqw;
             filter: drop-shadow(0 0.5cqw 0.5cqw rgba(0,0,0,0.3));
             pointer-events: none;
+            
+            /* Stack seedling above flower */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .flower-seed {
+            font-size: 0.6em; /* Relative to the container font-size */
+            margin-bottom: -0.4em; /* Pull it down to overlap slightly */
+            z-index: 1;
+        }
+        
+        .flower-bloom {
+            z-index: 2;
         }
         
         .flower-hya { left: 65%; } 
@@ -344,7 +359,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 6cqw; /* For content inside */
+            font-size: 6cqw; 
         }
 
         /* --- 3. LEFT SIDEBAR: ACTION BUTTONS --- */
@@ -582,7 +597,7 @@
             background: linear-gradient(135deg, #1565C0, #0D47A1); 
         }
 
-        /* NEW: Purple Gradient for Book Modal */
+        /* Purple Gradient for Book & Self Modals */
         .book-modal-style {
             background: linear-gradient(135deg, var(--ui-purple), var(--ui-purple-dark)); 
         }
@@ -595,7 +610,7 @@
         
         <div id="game-background"></div>
 
-        <!-- CONTAINERS FOR PROPS (Modern Slanted Look) -->
+        <!-- CONTAINERS FOR PROPS -->
         <div class="map-prop item-container prop-telescope">
             <div class="inner-emoji">🔭</div>
             <div class="prop-number">3</div>
@@ -616,23 +631,35 @@
 
         <!-- Trees -->
         <div class="map-prop prop-tree tree-1">🌳</div>
-        <div class="map-prop prop-tree tree-2">🌳</div>
-        <div class="map-prop prop-tree tree-3">🌳</div>
+        <div class="map-prop prop-tree tree-2">🌲</div>
+        <div class="map-prop prop-tree tree-3">🎋</div>
         
-        <!-- Flowers -->
-        <div class="map-prop prop-flower flower-hya">🪻</div>
-        <div class="map-prop prop-flower flower-sun">🌻</div>
-        <div class="map-prop prop-flower flower-rose">🌹</div>
+        <!-- Flowers with Seedlings -->
+        <div class="map-prop prop-flower flower-hya">
+            <div class="flower-seed">🌱</div>
+            <div class="flower-bloom">🪻</div>
+        </div>
+        <div class="map-prop prop-flower flower-sun">
+            <div class="flower-seed">🌱</div>
+            <div class="flower-bloom">🌻</div>
+        </div>
+        <div class="map-prop prop-flower flower-rose">
+            <div class="flower-seed">🌱</div>
+            <div class="flower-bloom">🌹</div>
+        </div>
 
 
-        <!-- SHOP MODAL -->
+        <!-- MODALS -->
         <div id="shop-modal" class="modal-base shop-modal-style">
             <div class="shop-title">SHOP EMPTY</div>
         </div>
 
-        <!-- BOOK MODAL (Purple) -->
         <div id="book-modal" class="modal-base book-modal-style">
             <div class="shop-title">BOOK EMPTY</div>
+        </div>
+        
+        <div id="self-modal" class="modal-base book-modal-style">
+            <div class="shop-title">SELF EMPTY</div>
         </div>
 
 
@@ -672,7 +699,6 @@
             <div class="sabotage-label">Sabotage</div>
 
             <div class="neighbor-slots-row">
-                <!-- Added Cat here -->
                 <div class="neighbor-slot">🐈</div>
                 <div class="neighbor-slot"></div>
             </div>
@@ -680,11 +706,11 @@
 
         <div class="ui-sidebar-container">
             <div class="sidebar-item-wrapper">
-                <!-- Changed Heart to Book -->
                 <div class="side-btn btn-pressable" id="btn-book">📚</div>
             </div>
             <div class="sidebar-item-wrapper">
-                <div class="side-btn btn-pressable">💛</div>
+                <!-- Changed Heart to Self -->
+                <div class="side-btn btn-pressable" id="btn-self">👤</div>
             </div>
             <div class="sidebar-item-wrapper">
                 <div class="side-btn btn-pressable">🧑‍🌾</div>
@@ -794,28 +820,31 @@
         document.body.addEventListener('click', (e) => {
             const clickInsideTree = treeMenu.contains(e.target) || treeBtn.contains(e.target);
             const clickInsideFlower = flowerMenu.contains(e.target) || flowerBtn.contains(e.target);
-            // Close side menus if clicking elsewhere
             if (!clickInsideTree && !clickInsideFlower) {
                 closeAllMenus();
             }
         });
 
-        // --- MODAL LOGIC (Shop & Book) ---
+        // --- MODAL LOGIC (Shop, Book, Self) ---
         const shopBtn = document.getElementById('btn-shop');
         const shopModal = document.getElementById('shop-modal');
         
         const bookBtn = document.getElementById('btn-book');
         const bookModal = document.getElementById('book-modal');
         
+        const selfBtn = document.getElementById('btn-self');
+        const selfModal = document.getElementById('self-modal');
+        
         function closeModals() {
             shopModal.classList.remove('open');
             bookModal.classList.remove('open');
+            selfModal.classList.remove('open');
         }
 
         shopBtn.addEventListener('click', (e) => {
             e.stopPropagation(); 
             const wasOpen = shopModal.classList.contains('open');
-            closeModals(); // Close others first
+            closeModals();
             if (!wasOpen) shopModal.classList.add('open');
         });
 
@@ -825,16 +854,21 @@
             closeModals();
             if (!wasOpen) bookModal.classList.add('open');
         });
+        
+        selfBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const wasOpen = selfModal.classList.contains('open');
+            closeModals();
+            if (!wasOpen) selfModal.classList.add('open');
+        });
 
         // Close modals on outside click
         document.body.addEventListener('click', (e) => {
-            // Note: If you click inside the modal content, this might close it depending on bubbling.
-            // But since the modal is 'pointer-events: auto' and above others, we just need to make sure
-            // we don't close it if clicking *inside* it.
             const clickedShop = shopModal.contains(e.target) || shopBtn.contains(e.target);
             const clickedBook = bookModal.contains(e.target) || bookBtn.contains(e.target);
+            const clickedSelf = selfModal.contains(e.target) || selfBtn.contains(e.target);
 
-            if (!clickedShop && !clickedBook) {
+            if (!clickedShop && !clickedBook && !clickedSelf) {
                 closeModals();
             }
         });
