@@ -90,32 +90,32 @@
             border-radius: 2cqw;
         }
 
-        /* Zone Positioning */
+        /* Zone Positioning - TIGHTENED to fit content */
         .zone-items {
-            top: 12%;
-            left: 32%;
-            width: 38%;
-            height: 45%;
+            top: 5%;
+            left: 10%;
+            width: 20%;
+            height: 50%;
         }
         
         .zone-trees {
-            bottom: 28%;
-            left: 2%;
-            width: 45%;
+            bottom: 25%;
+            left: 12%;
+            width: 48%;
             height: 25%;
         }
 
         .zone-flowers {
             bottom: 28%;
-            right: 2%;
-            width: 50%;
+            left: 52%;
+            width: 44%;
             height: 18%;
         }
 
         .zone-sprouts {
-            bottom: 46%;
-            right: 5%;
-            width: 40%;
+            bottom: 38%;
+            left: 58%;
+            width: 34%;
             height: 15%;
         }
 
@@ -158,30 +158,30 @@
             line-height: 1;
         }
 
-        /* ITEMS (Centered Vertically) */
+        /* ITEMS (Moved LEFT) */
         .prop-telescope {
             top: 15%; 
-            left: 50%; /* Centered in zone */
+            left: 20%; 
             background: #283593; 
         }
         .prop-telescope .inner-emoji { font-size: 10cqw; }
 
         .prop-bathtub {
             top: 29%; 
-            left: 50%; 
+            left: 20%; 
             background: #00ACC1; 
         }
         .prop-bathtub .inner-emoji { font-size: 11cqw; }
 
         .prop-scales {
             top: 43%;
-            left: 50%;
+            left: 20%;
             background: #5D4037; 
         }
         .prop-scales .inner-emoji { font-size: 10cqw; }
 
 
-        /* --- TREES & HOUSE (Moved to Left Zone) --- */
+        /* --- TREES & HOUSE (Moved Slightly RIGHT) --- */
         .prop-tree {
             bottom: 30%; 
             font-size: 20cqw; 
@@ -189,34 +189,34 @@
             pointer-events: none;
         }
 
-        /* Shifted LEFT */
-        .tree-1 { left: 5%; z-index: 5; }
-        .tree-2 { left: 18%; z-index: 6; } 
-        .tree-3 { left: 31%; z-index: 5; }
+        /* Shifted RIGHT by approx 8-10% */
+        .tree-1 { left: 13%; z-index: 5; }
+        .tree-2 { left: 26%; z-index: 6; } 
+        .tree-3 { left: 39%; z-index: 5; }
 
         .prop-house-tiny {
             bottom: 39%; 
-            left: 17%; /* Adjusted to sit between trees */
+            left: 25%; /* Adjusted to sit between trees */
             font-size: 8cqw; 
             z-index: 7;
             filter: drop-shadow(0 0.5cqw 1cqw rgba(0,0,0,0.5));
             pointer-events: none;
         }
 
-        /* Candle (Moved to far Left) */
+        /* Candle (Shifted Right) */
         .prop-candle {
             bottom: 30%;
-            left: 5%; 
+            left: 13%; 
             font-size: 5cqw;
             filter: drop-shadow(0 0 1cqw rgba(255, 200, 0, 0.6));
             z-index: 8;
             pointer-events: none;
         }
 
-        /* --- SPROUTS & WORM (Right Zone) --- */
+        /* --- SPROUTS & WORM (Moved DOWN) --- */
         .prop-sprout-layer {
             position: absolute;
-            bottom: 46%; 
+            bottom: 40%; /* Moved down from 46% */
             font-size: 6cqw;
             filter: drop-shadow(0 0.5cqw 0.5cqw rgba(0,0,0,0.3));
             z-index: 4;
@@ -227,7 +227,7 @@
         .sprout-3 { left: 82%; }
 
         .prop-worm {
-            bottom: 48%; 
+            bottom: 42%; /* Moved down from 48% */
             left: 72%;   
             font-size: 10cqw; 
             filter: drop-shadow(0 0.5cqw 0.5cqw rgba(0,0,0,0.4));
@@ -236,7 +236,7 @@
             pointer-events: none;
         }
 
-        /* --- FLOWERS (Bottom Right Zone) --- */
+        /* --- FLOWERS (Moved Slightly LEFT) --- */
         .prop-flower {
             bottom: 30%; 
             font-size: 11cqw; 
@@ -244,11 +244,12 @@
             pointer-events: none;
         }
         
-        .flower-1 { left: 60%; } 
-        .flower-2 { left: 67%; } 
-        .flower-3 { left: 74%; } 
-        .flower-4 { left: 81%; }
-        .flower-5 { left: 88%; }
+        /* Shifted LEFT by approx 5-10% */
+        .flower-1 { left: 55%; } 
+        .flower-2 { left: 62%; } 
+        .flower-3 { left: 69%; } 
+        .flower-4 { left: 76%; }
+        .flower-5 { left: 83%; }
 
 
         /* --- SHARED STYLES --- */
@@ -699,7 +700,7 @@
         <div class="debug-zone zone-items">Items</div>
         <div class="debug-zone zone-trees">Trees</div>
         <div class="debug-zone zone-flowers">Flowers</div>
-        <div class="debug-zone zone-sprouts">Sprouts</div>
+        <div class="debug-zone zone-sprouts">Garden</div>
 
         <!-- CONTAINERS FOR PROPS -->
         <div class="map-prop item-container prop-telescope">
