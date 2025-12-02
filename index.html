@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#000000">
-    <title>Pro Game UI Update</title>
+    <title>Pro Game UI Update - Zones</title>
     <style>
         /* --- RESET & VARIABLES --- */
         :root {
@@ -72,137 +72,149 @@
             background-size: 30px 30px, 30px 30px, cover;
         }
 
-        /* --- MAP PROPS --- */
-        .map-prop {
+        /* --- ZONES CONFIGURATION --- 
+           These are the 4 main areas. They are positioned absolutely,
+           but their contents are managed by flex/grid for stability.
+        */
+        .placement-zone {
             position: absolute;
-            z-index: 5; 
-        }
-
-        /* --- ITEM CONTAINERS --- */
-        .item-container {
-            width: 18cqw;  
-            aspect-ratio: 1 / 1; 
-            height: auto;
-            border-radius: 1.5cqw; 
-            border: none;
+            z-index: 5;
+            /* Debug styling for visualization */
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 2cqw;
             display: flex;
             justify-content: center;
             align-items: center;
-            box-shadow: 1cqw 1cqw 2cqw rgba(0,0,0,0.5);
-            transform: translate(-50%, -50%) skewX(-12deg);
-            position: absolute; 
+        }
+
+        .zone-label {
+            position: absolute;
+            top: -3cqw;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 2.5cqw;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        /* ZONE 1: ITEMS COLUMN (Center) */
+        #zone-items {
+            top: 12%;
+            left: 50%;
+            transform: translateX(-50%) skewX(-12deg); /* Global skew for the column */
+            width: 25%;
+            height: 45%;
+            flex-direction: column;
+            justify-content: flex-start;
+            gap: 2cqw;
+            padding-top: 2cqw;
+            border-color: rgba(0, 188, 212, 0.3); /* Teal hint */
+        }
+
+        /* Slots inside the item zone */
+        .item-slot-placeholder {
+            width: 80%;
+            aspect-ratio: 1;
+            border-radius: 1.5cqw;
+            background: rgba(255,255,255,0.1);
+            border: 1px dotted rgba(255,255,255,0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 4cqw;
+            color: rgba(255,255,255,0.3);
+            /* Counter-skew the content so emojis stand straight */
+            transform: skewX(12deg); 
+        }
+
+        /* ZONE 2: GARDEN (Mid Right) */
+        #zone-garden {
+            top: 25%;
+            right: 5%;
+            width: 25%;
+            height: 30%;
+            flex-direction: column;
+            justify-content: flex-end; /* Grow from bottom up */
+            gap: 1cqw;
+            border-color: rgba(139, 195, 74, 0.3); /* Green hint */
+        }
+
+        .garden-row {
+            display: flex;
+            width: 100%;
+            justify-content: space-evenly;
         }
         
-        .item-container .inner-emoji {
-            transform: skewX(12deg);
+        .garden-slot {
+            width: 30%;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+            border: 1px dotted rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3cqw;
+            color: rgba(255,255,255,0.2);
         }
 
-        .prop-number {
-            position: absolute;
-            bottom: -5%;
-            right: -5%;
-            font-size: 8cqw;
-            color: white;
-            font-weight: 900;
-            transform: skewX(12deg);
-            text-shadow: 0 0.5cqw 1cqw rgba(0,0,0,0.8);
-            z-index: 10;
-            line-height: 1;
+        /* ZONE 3: TREES (Bottom Left) */
+        #zone-trees {
+            bottom: 28%; /* Just above footer area */
+            left: 5%;
+            width: 40%;
+            height: 25%;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            border-color: rgba(121, 85, 72, 0.3); /* Brown hint */
+            /* Remove skew for trees usually, or keep consistent style? 
+               Let's keep trees straight/flat for organic feel */
+        }
+        
+        .tree-slot {
+            width: 30%;
+            height: 100%;
+            background: linear-gradient(to top, rgba(255,255,255,0.1) 0%, transparent 80%);
+            border-bottom: 2px solid rgba(255,255,255,0.2);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 1cqw;
+            font-size: 15cqw; /* Large placeholder size */
+            opacity: 0.5;
         }
 
-        /* ITEMS: CENTER COLUMN */
-        .prop-telescope {
-            top: 15%; 
-            left: 42%; 
-            background: #283593; 
-        }
-        .prop-telescope .inner-emoji { font-size: 10cqw; }
-
-        .prop-bathtub {
-            top: 29%; 
-            left: 42%; 
-            background: #00ACC1; 
-        }
-        .prop-bathtub .inner-emoji { font-size: 11cqw; }
-
-        .prop-scales {
-            top: 43%;
-            left: 42%;
-            background: #5D4037; 
-        }
-        .prop-scales .inner-emoji { font-size: 10cqw; }
-
-
-        /* --- TREES & HOUSE: BOTTOM LEFT QUADRANT --- */
-        .prop-tree {
-            bottom: 30%; 
-            font-size: 24cqw; 
-            filter: drop-shadow(0 1cqw 1cqw rgba(0,0,0,0.3));
-            pointer-events: none;
+        /* ZONE 4: FLOWERS (Bottom Right) */
+        #zone-flowers {
+            bottom: 28%;
+            right: 5%;
+            width: 45%;
+            height: 20%;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            align-items: end;
+            border-color: rgba(233, 30, 99, 0.3); /* Pink hint */
         }
 
-        .tree-1 { left: 8%; z-index: 5; } 
-        .tree-2 { left: 21%; z-index: 6; } 
-        .tree-3 { left: 34%; z-index: 5; }
-
-        .prop-house-tiny {
-            bottom: 39%; 
-            left: 20%; 
-            font-size: 9cqw; 
-            z-index: 7;
-            filter: drop-shadow(0 0.5cqw 1cqw rgba(0,0,0,0.5));
-            pointer-events: none;
-        }
-
-        /* Candle */
-        .prop-candle {
-            bottom: 30%;
-            left: 8%; 
-            font-size: 6cqw; 
-            filter: drop-shadow(0 0 1cqw rgba(255, 200, 0, 0.6));
-            z-index: 8;
-            pointer-events: none;
-        }
-
-        /* --- SPROUTS & WORM: RIGHT SIDE (MID-HEIGHT) --- */
-        .prop-sprout-layer {
-            position: absolute;
-            bottom: 45%; 
+        .flower-slot {
+            width: 100%;
+            height: 60%; /* Flowers are short */
+            border-bottom: 1px dotted rgba(255,255,255,0.3);
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
             font-size: 6cqw;
-            filter: drop-shadow(0 0.5cqw 0.5cqw rgba(0,0,0,0.3));
-            z-index: 4;
-        }
-        
-        .sprout-1 { left: 65%; }
-        .sprout-2 { left: 75%; }
-        .sprout-3 { left: 85%; }
-
-        .prop-worm {
-            bottom: 47%; 
-            left: 75%;   
-            font-size: 10cqw; 
-            filter: drop-shadow(0 0.5cqw 0.5cqw rgba(0,0,0,0.4));
-            z-index: 5;
-            transform: translateX(-20%); 
-            pointer-events: none;
+            opacity: 0.4;
         }
 
-        /* --- FLOWERS: BOTTOM RIGHT QUADRANT --- */
-        .prop-flower {
-            bottom: 30%; 
-            font-size: 11cqw; 
-            filter: drop-shadow(0 0.5cqw 0.5cqw rgba(0,0,0,0.3));
-            pointer-events: none;
-        }
-        
-        .flower-1 { left: 58%; } 
-        .flower-2 { left: 65%; } 
-        .flower-3 { left: 72%; } 
-        .flower-4 { left: 79%; }
-        .flower-5 { left: 86%; }
 
-
-        /* --- SHARED STYLES --- */
+        /* --- SHARED STYLES (Preserved from original) --- */
         .panel {
             box-shadow: 0 1cqw 1.5cqw rgba(0,0,0,0.6);
             color: white;
@@ -480,6 +492,11 @@
             flex-direction: column;
             box-shadow: none;
             overflow: visible; 
+            pointer-events: none; /* Let clicks pass through empty spaces */
+        }
+        
+        .ui-footer-container > * {
+            pointer-events: auto; /* Re-enable for children */
         }
 
         .ui-inventory-strip {
@@ -909,47 +926,54 @@
         
         <div id="game-background"></div>
 
-        <!-- CONTAINERS FOR PROPS -->
-        <div class="map-prop item-container prop-telescope">
-            <div class="inner-emoji">🔭</div>
-            <div class="prop-number">3</div>
+        <!-- === ZONES START === -->
+        
+        <!-- ZONE 1: ITEMS COLUMN (Center Stack) -->
+        <div id="zone-items" class="placement-zone">
+            <div class="zone-label">Items</div>
+            <!-- Theoretical Max: 4 items vertically -->
+            <div class="item-slot-placeholder">🔭</div>
+            <div class="item-slot-placeholder">🛁</div>
+            <div class="item-slot-placeholder">⚖️</div>
+            <div class="item-slot-placeholder"></div>
         </div>
-        
-        <div class="map-prop item-container prop-bathtub">
-            <div class="inner-emoji">🛁</div>
-            <div class="prop-number">7</div>
+
+        <!-- ZONE 2: GARDEN (Mid Right, Grid/Cluster) -->
+        <div id="zone-garden" class="placement-zone">
+            <div class="zone-label">Garden</div>
+            <div class="garden-row">
+                <div class="garden-slot"></div>
+                <div class="garden-slot">🌱</div>
+                <div class="garden-slot"></div>
+            </div>
+            <div class="garden-row">
+                <div class="garden-slot">🌱</div>
+                <div class="garden-slot">🪱</div>
+                <div class="garden-slot">🌱</div>
+            </div>
         </div>
-        
-        <div class="map-prop item-container prop-scales">
-            <div class="inner-emoji">⚖️</div>
-            <div class="prop-number">4</div>
+
+        <!-- ZONE 3: TREES (Bottom Left Row) -->
+        <div id="zone-trees" class="placement-zone">
+            <div class="zone-label">Forest</div>
+            <!-- Theoretical Max: 3 Trees -->
+            <div class="tree-slot">🌳</div>
+            <div class="tree-slot">🌲</div>
+            <div class="tree-slot">🎋</div>
         </div>
-        
-        <!-- House -->
-        <div class="map-prop prop-house-tiny">🏠</div>
 
-        <!-- Candle (Left) -->
-        <div class="map-prop prop-candle">🕯️</div>
+        <!-- ZONE 4: FLOWERS (Bottom Right Grid) -->
+        <div id="zone-flowers" class="placement-zone">
+            <div class="zone-label">Flowers</div>
+            <!-- Theoretical Max: 5 Flowers -->
+            <div class="flower-slot">🪻</div>
+            <div class="flower-slot">🌻</div>
+            <div class="flower-slot">🌹</div>
+            <div class="flower-slot">🌼</div>
+            <div class="flower-slot">🌷</div>
+        </div>
 
-        <!-- Trees (Left) -->
-        <div class="map-prop prop-tree tree-1">🌳</div>
-        <div class="map-prop prop-tree tree-2">🌲</div>
-        <div class="map-prop prop-tree tree-3">🎋</div>
-        
-        <!-- Sprouts -->
-        <div class="map-prop prop-sprout-layer sprout-1">🌱</div>
-        <div class="map-prop prop-sprout-layer sprout-2">🌱</div>
-        <div class="map-prop prop-sprout-layer sprout-3">🌱</div>
-
-        <!-- Giant Worm -->
-        <div class="map-prop prop-worm">🪱</div>
-
-        <!-- Flowers -->
-        <div class="map-prop prop-flower flower-1">🪻</div>
-        <div class="map-prop prop-flower flower-2">🌻</div>
-        <div class="map-prop prop-flower flower-3">🌹</div>
-        <div class="map-prop prop-flower flower-4">🌼</div> 
-        <div class="map-prop prop-flower flower-5">🌷</div> 
+        <!-- === ZONES END === -->
 
 
         <!-- MODALS -->
