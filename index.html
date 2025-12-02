@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#000000">
-    <title>Pro Game UI Update - Zones</title>
+    <title>Pro Game UI - Dev Zones</title>
     <style>
         /* --- RESET & VARIABLES --- */
         :root {
@@ -65,156 +65,100 @@
             height: 100%;
             z-index: 0; 
             background: linear-gradient(180deg, #b2ff59 0%, #0d380d 90%);
+            /* Simple grid pattern for dev alignment */
             background-image: 
-                linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px),
-                linear-gradient(180deg, #b2ff59 0%, #002b00 100%);
-            background-size: 30px 30px, 30px 30px, cover;
+                linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px);
+            background-size: 5cqw 5cqw;
         }
 
-        /* --- ZONES CONFIGURATION --- 
-           These are the 4 main areas. They are positioned absolutely,
-           but their contents are managed by flex/grid for stability.
-        */
-        .placement-zone {
+        /* --- DEV ZONES CONFIGURATION --- */
+        .dev-zone {
             position: absolute;
-            z-index: 5;
-            /* Debug styling for visualization */
-            border: 2px dashed rgba(255, 255, 255, 0.2);
-            background: rgba(0, 0, 0, 0.05);
+            z-index: 10;
+            border-width: 0.5cqw;
+            border-style: dashed;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             border-radius: 2cqw;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            /* No pointer events on the zone itself so you can click through if needed, 
+               but visible for planning */
+            pointer-events: none; 
         }
 
-        .zone-label {
+        .dev-zone-label {
             position: absolute;
-            top: -3cqw;
-            left: 50%;
-            transform: translateX(-50%);
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 2.5cqw;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            pointer-events: none;
-            white-space: nowrap;
-        }
-
-        /* ZONE 1: ITEMS COLUMN (Center) */
-        #zone-items {
-            top: 12%;
-            left: 50%;
-            transform: translateX(-50%) skewX(-12deg); /* Global skew for the column */
-            width: 25%;
-            height: 45%;
-            flex-direction: column;
-            justify-content: flex-start;
-            gap: 2cqw;
-            padding-top: 2cqw;
-            border-color: rgba(0, 188, 212, 0.3); /* Teal hint */
-        }
-
-        /* Slots inside the item zone */
-        .item-slot-placeholder {
-            width: 80%;
-            aspect-ratio: 1;
-            border-radius: 1.5cqw;
-            background: rgba(255,255,255,0.1);
-            border: 1px dotted rgba(255,255,255,0.3);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 4cqw;
-            color: rgba(255,255,255,0.3);
-            /* Counter-skew the content so emojis stand straight */
-            transform: skewX(12deg); 
-        }
-
-        /* ZONE 2: GARDEN (Mid Right) */
-        #zone-garden {
-            top: 25%;
-            right: 5%;
-            width: 25%;
-            height: 30%;
-            flex-direction: column;
-            justify-content: flex-end; /* Grow from bottom up */
-            gap: 1cqw;
-            border-color: rgba(139, 195, 74, 0.3); /* Green hint */
-        }
-
-        .garden-row {
-            display: flex;
-            width: 100%;
-            justify-content: space-evenly;
-        }
-        
-        .garden-slot {
-            width: 30%;
-            aspect-ratio: 1;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.05);
-            border: 1px dotted rgba(255,255,255,0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            top: 0;
+            left: 0;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 0.5cqw 1.5cqw;
             font-size: 3cqw;
-            color: rgba(255,255,255,0.2);
-        }
-
-        /* ZONE 3: TREES (Bottom Left) */
-        #zone-trees {
-            bottom: 28%; /* Just above footer area */
-            left: 5%;
-            width: 40%;
-            height: 25%;
-            display: flex;
-            align-items: flex-end;
-            justify-content: space-around;
-            border-color: rgba(121, 85, 72, 0.3); /* Brown hint */
-            /* Remove skew for trees usually, or keep consistent style? 
-               Let's keep trees straight/flat for organic feel */
+            border-bottom-right-radius: 1cqw;
+            font-family: monospace;
+            text-transform: uppercase;
         }
         
-        .tree-slot {
-            width: 30%;
-            height: 100%;
-            background: linear-gradient(to top, rgba(255,255,255,0.1) 0%, transparent 80%);
-            border-bottom: 2px solid rgba(255,255,255,0.2);
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
-            padding-bottom: 1cqw;
-            font-size: 15cqw; /* Large placeholder size */
-            opacity: 0.5;
+        .zone-dimensions {
+            font-size: 2.5cqw;
+            color: rgba(255,255,255,0.8);
+            text-align: center;
+            font-family: monospace;
         }
 
-        /* ZONE 4: FLOWERS (Bottom Right) */
-        #zone-flowers {
-            bottom: 28%;
+        /* POSITIONS 
+           Footer takes up bottom 28%. 
+           Left sidebar takes up left 15%.
+           Top stats take up top ~12%.
+        */
+
+        /* ZONE 1: ITEMS COLUMN */
+        /* Placed in the 'safe' area between sidebar and center */
+        #zone-items {
+            top: 15%;
+            left: 18%; /* Clear of Sidebar (15%) */
+            width: 22%;
+            height: 50%; /* Tall vertical strip */
+            border-color: #00BCD4; /* Cyan */
+            background: rgba(0, 188, 212, 0.1);
+        }
+
+        /* ZONE 2: GARDEN SECTION */
+        /* Upper Right quadrant */
+        #zone-garden {
+            top: 15%;
             right: 5%;
-            width: 45%;
-            height: 20%;
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            align-items: end;
-            border-color: rgba(233, 30, 99, 0.3); /* Pink hint */
+            width: 45%; /* Wide area */
+            height: 35%;
+            border-color: #4CAF50; /* Green */
+            background: rgba(76, 175, 80, 0.1);
         }
 
-        .flower-slot {
-            width: 100%;
-            height: 60%; /* Flowers are short */
-            border-bottom: 1px dotted rgba(255,255,255,0.3);
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-            font-size: 6cqw;
-            opacity: 0.4;
+        /* ZONE 3: LOWER FLOWER SECTION */
+        /* Bottom Right, below garden, above footer */
+        #zone-flowers {
+            bottom: 30%; /* Just above footer (28%) */
+            right: 5%;
+            width: 50%;
+            height: 18%;
+            border-color: #E91E63; /* Pink */
+            background: rgba(233, 30, 99, 0.1);
+        }
+
+        /* ZONE 4: LOWER TREE SECTION */
+        /* Bottom Left, below items, above footer */
+        #zone-trees {
+            bottom: 30%; /* Just above footer (28%) */
+            left: 18%; /* Clear of sidebar */
+            width: 25%;
+            height: 18%;
+            border-color: #795548; /* Brown */
+            background: rgba(121, 85, 72, 0.1);
         }
 
 
-        /* --- SHARED STYLES (Preserved from original) --- */
+        /* --- SHARED STYLES (Preserved) --- */
         .panel {
             box-shadow: 0 1cqw 1.5cqw rgba(0,0,0,0.6);
             color: white;
@@ -233,7 +177,9 @@
             filter: brightness(0.9);
         }
 
-        /* --- 1. TOP LEFT: PLAYER STATS --- */
+        /* --- UI ELEMENTS (Z-Index > 20 to sit above zones) --- */
+        
+        /* 1. TOP LEFT: PLAYER STATS */
         .ui-stats-bar {
             position: absolute;
             top: 0;
@@ -247,7 +193,7 @@
             align-items: center;
             padding-left: 4cqw;
             padding-right: 10cqw; 
-            z-index: 20;
+            z-index: 30;
             filter: drop-shadow(0 1cqw 1cqw rgba(0,0,0,0.5));
         }
 
@@ -274,7 +220,7 @@
         .stat-luck { color: #C2185B; } 
 
 
-        /* --- 2. TOP RIGHT: ENEMY PROGRESS --- */
+        /* 2. TOP RIGHT: ENEMY PROGRESS */
         .ui-event-panel {
             position: absolute;
             top: 0;
@@ -293,7 +239,7 @@
             padding-top: 2cqw; 
             padding-bottom: 3cqw;
             gap: 1.5cqw; 
-            z-index: 20;
+            z-index: 30;
             box-shadow: -1cqw 1cqw 2cqw rgba(0,0,0,0.6);
         }
 
@@ -302,7 +248,7 @@
             opacity: 0.9;
             color: white;
             text-transform: uppercase;
-            font-weight: 400; /* Thin/Regular weight */
+            font-weight: 400;
             margin-bottom: 0;
             letter-spacing: 0.05cqw;
             text-shadow: 0 0.2cqw 0.5cqw rgba(0,0,0,0.3);
@@ -390,7 +336,7 @@
             font-size: 7cqw; 
         }
 
-        /* --- 3. LEFT SIDEBAR --- */
+        /* 3. LEFT SIDEBAR */
         .ui-sidebar-container {
             position: absolute;
             top: 15%;
@@ -429,7 +375,7 @@
             z-index: 2;
         }
 
-        /* --- SLIDE OUT MENU --- */
+        /* SLIDE OUT MENU */
         .slide-menu {
             position: absolute;
             left: 90%; 
@@ -480,7 +426,7 @@
             transform: scale(0.8);
         }
 
-        /* --- 4. BOTTOM AREA --- */
+        /* 4. BOTTOM AREA */
         .ui-footer-container {
             position: absolute;
             bottom: 0;
@@ -500,7 +446,6 @@
         }
 
         .ui-inventory-strip {
-            /* Positioning: Inside footer now (top 2cqw), centered horizontally */
             position: absolute;
             top: 2cqw; 
             left: 50%;
@@ -511,22 +456,15 @@
             margin: 0;
             height: 18%; 
             border-radius: 10cqw;
-            
-            /* Styles matched to Dice Button (#btn-dice) */
             background: linear-gradient(to bottom, #D81B60, #880E4F); 
-            
-            /* Border will be animated in JS */
             border: 0.5cqw solid rgba(255,255,255,0.3);
-            
             box-shadow: 0 1cqw 2cqw rgba(0,0,0,0.6);
-            
             display: flex;
             align-items: center;
             padding: 0 2cqw;
             justify-content: space-evenly;
             gap: 0; 
             overflow: hidden; 
-            
             transition: transform 0.1s;
         }
         
@@ -549,7 +487,6 @@
             text-shadow: 0 0.2cqw 0.5cqw rgba(0,0,0,0.3);
         }
         
-        /* Active slot style logic - bright yellow on pink */
         .inv-slot.active { 
             color: #FFD700; 
             transform: scale(1.6); 
@@ -559,16 +496,12 @@
 
         .ui-controls-main {
             flex-grow: 1;
-            /* Lightened Midnight Blue Gradient */
             background: linear-gradient(180deg, #0d2b4d 0%, #000000 100%);
-            
             position: relative;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            
-            /* Padding pushed down to make room for the inventory strip at the top */
             padding-top: 10cqw;
         }
 
@@ -578,7 +511,7 @@
             gap: 3cqw; 
         }
 
-        /* --- BUTTONS --- */
+        /* BUTTONS */
         .secondary-action-btn {
             width: 25cqw; 
             aspect-ratio: 1.8 / 1; 
@@ -593,13 +526,8 @@
             padding-bottom: 0.5cqw;
         }
 
-        .btn-blue {
-            background: linear-gradient(to bottom, #1565C0, #0D47A1); 
-        }
-
-        .btn-pink-gradient {
-            background: linear-gradient(to bottom, #D81B60, #880E4F); 
-        }
+        .btn-blue { background: linear-gradient(to bottom, #1565C0, #0D47A1); }
+        .btn-pink-gradient { background: linear-gradient(to bottom, #D81B60, #880E4F); }
 
         .main-action-btn {
             width: 35cqw;
@@ -619,27 +547,22 @@
             padding-bottom: 2.5cqw; 
         }
 
-        /* --- SHARED MODAL STYLES --- */
+        /* MODALS */
         .modal-base {
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 90%; /* Widened for Shop Columns */
-            height: 75%; /* Taller for Shop Headers */
-            
+            width: 90%; 
+            height: 75%; 
             transform: translate(-50%, -50%) scale(0.9);
-            
             border: 0.5cqw solid rgba(255,255,255,0.3);
             border-radius: 4cqw;
             box-shadow: 0 2cqw 4cqw rgba(0,0,0,0.8);
-            
             z-index: 100;
             display: flex;
-            flex-direction: column; /* Changed to column for top/bottom split */
-            
+            flex-direction: column;
             color: white;
             font-size: 4cqw;
-            
             opacity: 0;
             pointer-events: none;
             transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -652,11 +575,8 @@
             transform: translate(-50%, -50%) scale(1);
         }
 
-        .shop-modal-style {
-            background: linear-gradient(135deg, #1565C0, #0D47A1); 
-        }
+        .shop-modal-style { background: linear-gradient(135deg, #1565C0, #0D47A1); }
         
-        /* SELF MODAL & SUMMARY MODAL SPECIFICS */
         .self-content {
             padding: 6cqw;
             display: flex;
@@ -696,16 +616,11 @@
             font-weight: bold;
             font-size: 4cqw;
             box-shadow: 0 1cqw 1cqw rgba(0,0,0,0.4);
-            margin-top: auto; /* Push to bottom */
+            margin-top: auto; 
             text-align: center;
         }
 
-        /* NEW SELF BUTTONS */
-        .self-btn-row {
-            display: flex;
-            gap: 2cqw;
-            width: 100%;
-        }
+        .self-btn-row { display: flex; gap: 2cqw; width: 100%; }
         .self-action-btn {
             flex: 1;
             background: rgba(255,255,255,0.1);
@@ -753,11 +668,11 @@
 
         .shop-top-half {
             width: 100%;
-            flex-grow: 1.5; /* Takes up more space */
+            flex-grow: 1.5;
             display: flex;
             flex-direction: row;
             background: rgba(0,0,0,0.1);
-            min-height: 0; /* allows flex scroll */
+            min-height: 0; 
         }
         
         .shop-column {
@@ -771,16 +686,14 @@
         .shop-column:last-child { border-right: none; }
         
         .shop-header {
-            /* Matches .enemy-header EXACTLY */
             font-size: 2.5cqw; 
             opacity: 0.9;
             color: white;
             text-transform: uppercase;
-            font-weight: 400; /* Thin/Regular weight */
+            font-weight: 400; 
             margin-bottom: 1cqw;
             letter-spacing: 0.05cqw;
             text-shadow: 0 0.2cqw 0.5cqw rgba(0,0,0,0.3);
-            
             height: 10%;
             display: flex;
             align-items: center;
@@ -794,13 +707,11 @@
             width: 100%;
             height: 90%;
             align-items: center;
-            justify-content: flex-start; /* Ensure items stack from top */
+            justify-content: flex-start;
             padding-top: 1cqw;
         }
         
-        /* Updated Shop Item Style */
         .shop-item-style {
-            /* 30% Smaller from 80% is approx 55% */
             width: 55%;
             aspect-ratio: 1;
             border-radius: 1.5cqw;
@@ -809,13 +720,11 @@
             justify-content: center;
             align-items: center;
             box-shadow: 0.5cqw 0.5cqw 1cqw rgba(0,0,0,0.5);
-            /* Skewed container */
             transform: skewX(-12deg);
-            position: relative; /* Needed for absolute positioning of price/ID */
+            position: relative;
         }
         
         .shop-item-style .inner-emoji {
-            /* Counter-skew emoji */
             transform: skewX(12deg);
             font-size: 7cqw; 
             line-height: 1;
@@ -838,7 +747,7 @@
             bottom: -5%;
             right: -8%;
             color: white;
-            font-size: 5cqw; /* INCREASED */
+            font-size: 5cqw;
             font-weight: 900;
             transform: skewX(12deg);
             z-index: 10;
@@ -846,9 +755,9 @@
             text-shadow: 0 1px 2px rgba(0,0,0,0.8);
         }
         
-        .item-col-1 { background: #283593; } /* Matches Telescope Blue */
-        .item-col-2 { background: #00ACC1; } /* Matches Bathtub Teal */
-        .item-col-3 { background: #5D4037; } /* Matches Scales Brown */
+        .item-col-1 { background: #283593; } 
+        .item-col-2 { background: #00ACC1; } 
+        .item-col-3 { background: #5D4037; } 
 
         .shop-bottom-half {
             width: 100%;
@@ -861,11 +770,8 @@
             min-height: 0;
         }
 
-        .book-modal-style {
-            background: linear-gradient(135deg, var(--ui-purple), var(--ui-purple-dark)); 
-        }
+        .book-modal-style { background: linear-gradient(135deg, var(--ui-purple), var(--ui-purple-dark)); }
 
-        /* PAGINATION FOR BOOK */
         .book-page {
             width: 100%;
             height: 100%;
@@ -926,54 +832,33 @@
         
         <div id="game-background"></div>
 
-        <!-- === ZONES START === -->
+        <!-- === DEV ZONES === -->
         
-        <!-- ZONE 1: ITEMS COLUMN (Center Stack) -->
-        <div id="zone-items" class="placement-zone">
-            <div class="zone-label">Items</div>
-            <!-- Theoretical Max: 4 items vertically -->
-            <div class="item-slot-placeholder">🔭</div>
-            <div class="item-slot-placeholder">🛁</div>
-            <div class="item-slot-placeholder">⚖️</div>
-            <div class="item-slot-placeholder"></div>
+        <!-- ZONE 1: ITEMS COLUMN (Vertical Stack) -->
+        <div id="zone-items" class="dev-zone">
+            <div class="dev-zone-label">Items</div>
+            <!-- Empty: Ready for Logic -->
         </div>
 
-        <!-- ZONE 2: GARDEN (Mid Right, Grid/Cluster) -->
-        <div id="zone-garden" class="placement-zone">
-            <div class="zone-label">Garden</div>
-            <div class="garden-row">
-                <div class="garden-slot"></div>
-                <div class="garden-slot">🌱</div>
-                <div class="garden-slot"></div>
-            </div>
-            <div class="garden-row">
-                <div class="garden-slot">🌱</div>
-                <div class="garden-slot">🪱</div>
-                <div class="garden-slot">🌱</div>
-            </div>
+        <!-- ZONE 2: GARDEN (Upper Right) -->
+        <div id="zone-garden" class="dev-zone">
+            <div class="dev-zone-label">Garden</div>
+            <!-- Empty: Ready for Logic -->
         </div>
 
-        <!-- ZONE 3: TREES (Bottom Left Row) -->
-        <div id="zone-trees" class="placement-zone">
-            <div class="zone-label">Forest</div>
-            <!-- Theoretical Max: 3 Trees -->
-            <div class="tree-slot">🌳</div>
-            <div class="tree-slot">🌲</div>
-            <div class="tree-slot">🎋</div>
+        <!-- ZONE 3: TREES (Bottom Left) -->
+        <div id="zone-trees" class="dev-zone">
+            <div class="dev-zone-label">Trees</div>
+            <!-- Empty: Ready for Logic -->
         </div>
 
-        <!-- ZONE 4: FLOWERS (Bottom Right Grid) -->
-        <div id="zone-flowers" class="placement-zone">
-            <div class="zone-label">Flowers</div>
-            <!-- Theoretical Max: 5 Flowers -->
-            <div class="flower-slot">🪻</div>
-            <div class="flower-slot">🌻</div>
-            <div class="flower-slot">🌹</div>
-            <div class="flower-slot">🌼</div>
-            <div class="flower-slot">🌷</div>
+        <!-- ZONE 4: FLOWERS (Bottom Right) -->
+        <div id="zone-flowers" class="dev-zone">
+            <div class="dev-zone-label">Flowers</div>
+            <!-- Empty: Ready for Logic -->
         </div>
 
-        <!-- === ZONES END === -->
+        <!-- === END ZONES === -->
 
 
         <!-- MODALS -->
@@ -1091,7 +976,7 @@
             <div class="modal-nav-btn" id="book-nav-btn">⭐</div>
         </div>
         
-        <!-- SELF MODAL (Updated) -->
+        <!-- SELF MODAL -->
         <div id="self-modal" class="modal-base book-modal-style">
             <div class="self-content">
                 <div class="self-stat-row">
@@ -1119,7 +1004,7 @@
                     <span class="self-value">(empty)</span>
                 </div>
 
-                <!-- NEW BUTTONS ROW -->
+                <!-- BUTTONS ROW -->
                 <div class="self-btn-row">
                     <div class="self-action-btn btn-pressable">🍺 Bar</div>
                     <div class="self-action-btn btn-pressable">🎰 Casino</div>
@@ -1159,7 +1044,6 @@
         </div>
 
         <div class="ui-event-panel panel">
-            <!-- Matching FUNDS style: thin, clean, white -->
             <div class="enemy-header">Neighbor</div>
             
             <div class="meter-group">
@@ -1180,11 +1064,9 @@
             </div>
 
             <div class="sabotage-section">
-                <!-- Matching FUNDS style: thin, clean, white -->
                 <div class="sabotage-label">Sabotage</div>
                 <div class="neighbor-slots-row">
                     <div class="neighbor-slot">🐈</div>
-                    <!-- ADDED MAILBOX HERE -->
                     <div class="neighbor-slot">📬</div>
                 </div>
             </div>
@@ -1272,7 +1154,6 @@
         window.addEventListener('resize', setAppHeight);
         setAppHeight();
 
-        // Generic Button Press Animation
         document.querySelectorAll('.btn-pressable').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const targetEl = e.currentTarget;
@@ -1343,7 +1224,6 @@
         const selfBtn = document.getElementById('btn-self');
         const selfModal = document.getElementById('self-modal');
         
-        // Summary Modal Logic
         const openSummaryBtn = document.getElementById('btn-open-summary');
         const summaryModal = document.getElementById('summary-modal');
 
@@ -1351,9 +1231,8 @@
             shopModal.classList.remove('open');
             bookModal.classList.remove('open');
             selfModal.classList.remove('open');
-            summaryModal.classList.remove('open'); // Close summary too
+            summaryModal.classList.remove('open'); 
             
-            // Reset book page on close
             setTimeout(() => {
                 bookPage = 1;
                 bookPage1.style.display = 'flex';
@@ -1376,7 +1255,6 @@
             if (!wasOpen) bookModal.classList.add('open');
         });
         
-        // Book Page Toggle Logic
         bookNavBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             if (bookPage === 1) {
@@ -1399,14 +1277,9 @@
             if (!wasOpen) selfModal.classList.add('open');
         });
 
-        // Open summary from self modal
         openSummaryBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            // Don't close self modal immediately if you want it to feel like a stack, 
-            // but for simplicity we usually close others to avoid z-index mess.
-            // Let's close self and open summary.
             closeModals(); 
-            // Small timeout to allow transition if needed, or just open immediately
             summaryModal.classList.add('open');
         });
 
@@ -1420,7 +1293,6 @@
                 closeModals();
             }
         });
-
 
         // --- DICE LOGIC ---
         const diceBtn = document.getElementById('btn-dice');
@@ -1438,7 +1310,6 @@
                 if (slot.classList.contains('active')) currentIndex = index;
             });
 
-            // Start fast border animation
             let borderHue = 0;
             const borderInterval = setInterval(() => {
                 borderHue = (borderHue + 25) % 360; 
@@ -1458,14 +1329,12 @@
                 slots[currentIndex].classList.add('active');
                 steps++;
                 
-                // Ensure no filter is messing with numbers
                 strip.style.filter = "none";
 
                 if (steps > minSteps && currentIndex === targetIndex) {
                     isRolling = false;
                     slots[currentIndex].style.transform = "scale(1.2)";
                     
-                    // --- FINISH ---
                     clearInterval(borderInterval);
 
                     strip.style.transition = "border-color 0.5s ease";
