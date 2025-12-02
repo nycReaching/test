@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#000000">
-    <title>Pro Game UI - Dev Zones</title>
+    <title>Pro Game UI - Safe Zones</title>
     <style>
         /* --- RESET & VARIABLES --- */
         :root {
@@ -65,7 +65,7 @@
             height: 100%;
             z-index: 0; 
             background: linear-gradient(180deg, #b2ff59 0%, #0d380d 90%);
-            /* Simple grid pattern for dev alignment */
+            /* Faint grid for alignment check */
             background-image: 
                 linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px);
@@ -76,89 +76,80 @@
         .dev-zone {
             position: absolute;
             z-index: 10;
-            border-width: 0.5cqw;
+            border-width: 2px;
             border-style: dashed;
             display: flex;
             justify-content: center;
             align-items: center;
             border-radius: 2cqw;
-            /* No pointer events on the zone itself so you can click through if needed, 
-               but visible for planning */
             pointer-events: none; 
+            background: rgba(0,0,0,0.1); /* Slight tint to see area */
         }
 
         .dev-zone-label {
             position: absolute;
             top: 0;
             left: 0;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0,0,0,0.6);
             color: white;
             padding: 0.5cqw 1.5cqw;
             font-size: 3cqw;
             border-bottom-right-radius: 1cqw;
             font-family: monospace;
             text-transform: uppercase;
-        }
-        
-        .zone-dimensions {
-            font-size: 2.5cqw;
-            color: rgba(255,255,255,0.8);
-            text-align: center;
-            font-family: monospace;
+            font-weight: bold;
         }
 
-        /* POSITIONS 
-           Footer takes up bottom 28%. 
-           Left sidebar takes up left 15%.
-           Top stats take up top ~12%.
+        /* COORDINATE STRATEGY:
+           - Header (Stats): Top 0-8%
+           - Header (Neighbor): Top 0-40% (Right Side)
+           - Sidebar: Left 0-16%
+           - Footer: Bottom 0-25%
         */
 
-        /* ZONE 1: ITEMS COLUMN */
-        /* Placed in the 'safe' area between sidebar and center */
+        /* ZONE 1: ITEMS (Left Column) */
+        /* Sits between Sidebar and Center. Stops before Trees. */
         #zone-items {
-            top: 15%;
-            left: 18%; /* Clear of Sidebar (15%) */
-            width: 22%;
-            height: 50%; /* Tall vertical strip */
-            border-color: #00BCD4; /* Cyan */
-            background: rgba(0, 188, 212, 0.1);
+            top: 10%;           /* Start high */
+            left: 18%;          /* Clear sidebar (16%) */
+            width: 20%;         /* Narrow column */
+            height: 48%;        /* Ends at ~58% height */
+            border-color: #00BCD4; 
         }
 
-        /* ZONE 2: GARDEN SECTION */
-        /* Upper Right quadrant */
+        /* ZONE 2: GARDEN (Right Mid) */
+        /* Must sit BELOW the neighbor panel */
         #zone-garden {
-            top: 15%;
-            right: 5%;
-            width: 45%; /* Wide area */
-            height: 35%;
-            border-color: #4CAF50; /* Green */
-            background: rgba(76, 175, 80, 0.1);
+            top: 40%;           /* Neighbor panel ends approx 38-40% */
+            right: 4%;          /* Padding from edge */
+            width: 35%;         /* Wide area */
+            height: 25%;        /* Ends at ~65% height */
+            border-color: #4CAF50; 
         }
 
-        /* ZONE 3: LOWER FLOWER SECTION */
-        /* Bottom Right, below garden, above footer */
-        #zone-flowers {
-            bottom: 30%; /* Just above footer (28%) */
-            right: 5%;
-            width: 50%;
-            height: 18%;
-            border-color: #E91E63; /* Pink */
-            background: rgba(233, 30, 99, 0.1);
-        }
-
-        /* ZONE 4: LOWER TREE SECTION */
-        /* Bottom Left, below items, above footer */
+        /* ZONE 3: TREES (Bottom Left) */
+        /* Sits below Items, above Footer */
         #zone-trees {
-            bottom: 30%; /* Just above footer (28%) */
-            left: 18%; /* Clear of sidebar */
-            width: 25%;
-            height: 18%;
-            border-color: #795548; /* Brown */
-            background: rgba(121, 85, 72, 0.1);
+            bottom: 26%;        /* Clear Footer (~25%) */
+            left: 18%;          /* Align with Items */
+            width: 25%;         /* Slightly wider */
+            height: 12%;        /* Short row */
+            border-color: #795548; 
+        }
+
+        /* ZONE 4: FLOWERS (Bottom Right) */
+        /* Sits below Garden, above Footer */
+        #zone-flowers {
+            bottom: 26%;        /* Clear Footer (~25%) */
+            right: 4%;          /* Align with Garden */
+            width: 40%;         /* Wide grid */
+            height: 15%;        /* Short grid */
+            border-color: #E91E63; 
         }
 
 
-        /* --- SHARED STYLES (Preserved) --- */
+        /* --- UI ELEMENTS --- */
+        
         .panel {
             box-shadow: 0 1cqw 1.5cqw rgba(0,0,0,0.6);
             color: white;
@@ -177,8 +168,6 @@
             filter: brightness(0.9);
         }
 
-        /* --- UI ELEMENTS (Z-Index > 20 to sit above zones) --- */
-        
         /* 1. TOP LEFT: PLAYER STATS */
         .ui-stats-bar {
             position: absolute;
@@ -221,13 +210,15 @@
 
 
         /* 2. TOP RIGHT: ENEMY PROGRESS */
+        /* OPTIMIZED: Made more compact vertically to allow room for Garden */
         .ui-event-panel {
             position: absolute;
             top: 0;
             right: 0;
             width: 30%;
             height: auto; 
-            min-height: 42%; 
+            /* Reduced min-height from 42% to 35% */
+            min-height: 35%; 
             background: linear-gradient(180deg, #d32f2f 0%, #5d0000 100%);
             border-bottom-left-radius: 4cqw;
             border-left: 0.5cqw solid rgba(255,255,255,0.2);
@@ -235,10 +226,11 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: space-evenly; 
+            /* Reduced padding/gaps */
+            justify-content: flex-start; 
             padding-top: 2cqw; 
-            padding-bottom: 3cqw;
-            gap: 1.5cqw; 
+            padding-bottom: 2cqw;
+            gap: 1cqw; 
             z-index: 30;
             box-shadow: -1cqw 1cqw 2cqw rgba(0,0,0,0.6);
         }
@@ -249,16 +241,16 @@
             color: white;
             text-transform: uppercase;
             font-weight: 400;
-            margin-bottom: 0;
             letter-spacing: 0.05cqw;
             text-shadow: 0 0.2cqw 0.5cqw rgba(0,0,0,0.3);
+            margin-bottom: 0.5cqw;
         }
 
         .meter-group {
             width: 85%;
             display: flex;
             flex-direction: column;
-            gap: 1.5cqw; 
+            gap: 1cqw; /* tighter gap */
             background: transparent; 
             padding: 0; 
             border-radius: 1.5cqw;
@@ -274,15 +266,15 @@
         }
 
         .meter-icon {
-            font-size: 7cqw; 
-            width: 7cqw;
+            font-size: 6cqw; /* Slightly smaller */
+            width: 6cqw;
             text-align: center;
             filter: drop-shadow(0 0.2cqw 0.2cqw rgba(0,0,0,0.6));
         }
 
         .meter-bar {
             flex-grow: 1;
-            height: 2.2cqw; 
+            height: 2cqw; /* Slightly thinner */
             background: rgba(0,0,0,0.4);
             border-radius: 1cqw;
             border: 1px solid rgba(255,255,255,0.1);
@@ -304,8 +296,8 @@
             flex-direction: column;
             align-items: center;
             width: 100%;
-            gap: 1cqw;
-            margin-top: 2cqw; 
+            gap: 0.5cqw; /* Tight gap */
+            margin-top: 1cqw; 
         }
 
         .sabotage-label {
@@ -324,7 +316,7 @@
         }
 
         .neighbor-slot {
-            width: 12cqw; 
+            width: 11cqw; /* Slightly smaller */
             aspect-ratio: 1;
             background: rgba(0,0,0,0.2);
             border: none; 
@@ -333,7 +325,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 7cqw; 
+            font-size: 6cqw; 
         }
 
         /* 3. LEFT SIDEBAR */
@@ -438,7 +430,7 @@
             flex-direction: column;
             box-shadow: none;
             overflow: visible; 
-            pointer-events: none; /* Let clicks pass through empty spaces */
+            pointer-events: none; 
         }
         
         .ui-footer-container > * {
@@ -834,28 +826,20 @@
 
         <!-- === DEV ZONES === -->
         
-        <!-- ZONE 1: ITEMS COLUMN (Vertical Stack) -->
         <div id="zone-items" class="dev-zone">
             <div class="dev-zone-label">Items</div>
-            <!-- Empty: Ready for Logic -->
         </div>
 
-        <!-- ZONE 2: GARDEN (Upper Right) -->
         <div id="zone-garden" class="dev-zone">
             <div class="dev-zone-label">Garden</div>
-            <!-- Empty: Ready for Logic -->
         </div>
 
-        <!-- ZONE 3: TREES (Bottom Left) -->
         <div id="zone-trees" class="dev-zone">
             <div class="dev-zone-label">Trees</div>
-            <!-- Empty: Ready for Logic -->
         </div>
 
-        <!-- ZONE 4: FLOWERS (Bottom Right) -->
         <div id="zone-flowers" class="dev-zone">
             <div class="dev-zone-label">Flowers</div>
-            <!-- Empty: Ready for Logic -->
         </div>
 
         <!-- === END ZONES === -->
@@ -1080,7 +1064,6 @@
                 <div class="side-btn btn-pressable" id="btn-self">👤</div>
             </div>
             
-            <!-- Farmer Button Wrapper with Slide Out Menu -->
             <div class="sidebar-item-wrapper">
                 <div class="side-btn btn-pressable" id="btn-farmer-toggle">🧑‍🌾</div>
                 
@@ -1091,7 +1074,6 @@
                 </div>
             </div>
 
-            <!-- Flower Button Wrapper with Slide Out Menu -->
             <div class="sidebar-item-wrapper">
                 <div class="side-btn btn-pressable" id="btn-flower-toggle">🌷</div>
                 
@@ -1104,7 +1086,6 @@
                 </div>
             </div>
             
-            <!-- Tree Button Wrapper with Slide Out Menu -->
             <div class="sidebar-item-wrapper">
                 <div class="side-btn btn-pressable" id="btn-tree-toggle">🌳</div>
                 
