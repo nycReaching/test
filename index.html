@@ -74,12 +74,8 @@
             width: 100%;
             height: 100%;
             z-index: 0; 
-            background: linear-gradient(180deg, #b2ff59 0%, #0d380d 90%);
-            background-image: 
-                linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px),
-                linear-gradient(180deg, #b2ff59 0%, #002b00 100%);
-            background-size: 8cqw 8cqw, 8cqw 8cqw, cover;
+            /* UPDATED: Removed grid lines, kept green gradient */
+            background: linear-gradient(180deg, #b2ff59 0%, #002b00 100%);
         }
 
         /* --- MAP PROPS --- */
@@ -281,9 +277,17 @@
             height: auto; 
             min-height: 42%; 
             background: linear-gradient(180deg, #d32f2f 0%, #5d0000 100%);
+            
+            /* UPDATED: Aggressive Highlight Border (Red) */
+            border-left: 0.8cqw solid #FF5252;
+            border-bottom: 0.8cqw solid #FF5252;
             border-bottom-left-radius: 4cqw;
-            border-left: 0.5cqw solid rgba(255,255,255,0.2);
-            border-bottom: 0.5cqw solid rgba(0,0,0,0.2);
+
+            /* UPDATED: Inset Shadow to match buttons */
+            box-shadow: 
+                -1cqw 1cqw 2cqw rgba(0,0,0,0.6),
+                inset 0 0.5cqw 1cqw rgba(255,255,255,0.4);
+
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -292,7 +296,6 @@
             padding-bottom: 3cqw;
             gap: 1.5cqw; 
             z-index: 20;
-            box-shadow: -1cqw 1cqw 2cqw rgba(0,0,0,0.6);
         }
 
         .enemy-header {
@@ -416,9 +419,15 @@
             aspect-ratio: 1; 
             background: linear-gradient(135deg, var(--ui-purple) 0%, var(--ui-purple-dark) 100%);
             border-radius: 2cqw;
-            border: 0.3cqw solid rgba(255,255,255,0.3);
-            border-left: none;
-            box-shadow: 1cqw 1cqw 1.5cqw rgba(0,0,0,0.5);
+            
+            /* UPDATED: Aggressive Highlight Border (Bright Purple) */
+            border: 0.8cqw solid #EA80FC; 
+            border-left: none; /* Keep attached to side */
+            
+            box-shadow: 
+                1cqw 1cqw 1.5cqw rgba(0,0,0,0.5),
+                inset 0 0.5cqw 1cqw rgba(255,255,255,0.4);
+
             display: flex;
             justify-content: center;
             align-items: center;
@@ -629,8 +638,7 @@
         /* --- NEW STATUS TEXT AREA --- */
         .ui-status-text {
             position: absolute;
-            /* LOWERED POSITION as requested (from 24% to 35%) */
-            top: 35%; 
+            top: 29%; 
             width: 100%;
             text-align: center;
             z-index: 40;
@@ -643,6 +651,21 @@
             font-weight: 400;
             letter-spacing: 0.05cqw;
             text-shadow: 0 0.2cqw 0.5cqw rgba(0,0,0,0.3);
+            transition: color 0.2s ease;
+        }
+
+        /* RAINBOW ANIMATION */
+        @keyframes rainbowText {
+            0% { color: #ff5252; }
+            20% { color: #FFD700; }
+            40% { color: #69F0AE; }
+            60% { color: #40C4FF; }
+            80% { color: #E040FB; }
+            100% { color: #ff5252; }
+        }
+        .rainbow-text {
+            animation: rainbowText 0.6s linear infinite;
+            /* UPDATED: Removed text-shadow and bold weight */
         }
 
         /* --- SHARED MODAL STYLES --- */
@@ -1262,7 +1285,7 @@
             <div class="ui-controls-main">
                 
                 <!-- New Text Area (Absolute positioned so it doesn't move buttons) -->
-                <div class="ui-status-text">Placeholder Text.</div>
+                <div class="ui-status-text" id="status-text">Placeholder Text.</div>
 
                 <div class="camera-row">
                     <!-- Shop Button -->
@@ -1438,23 +1461,36 @@
         const diceBtn = document.getElementById('btn-dice');
         const slots = document.querySelectorAll('.inv-slot');
         const strip = document.querySelector('.ui-inventory-strip'); 
+        const statusText = document.getElementById('status-text'); // Grab text ref
+
         let isRolling = false;
 
         diceBtn.addEventListener('click', () => {
             if (isRolling) return; 
             isRolling = true;
             
+            // --- RESET PREVIOUS STATE IMMEDIATELY ---
+            // Clear all custom transforms, colors, and shadows from potential previous wins
+            slots.forEach(slot => {
+                slot.classList.remove('active');
+                slot.style.transform = '';
+                slot.style.textShadow = '';
+                slot.style.color = '';
+                slot.style.transition = '';
+            });
+
             // Random target
             const targetIndex = Math.floor(Math.random() * slots.length);
             
-            // Find current active index
+            // Start Text Narration
+            statusText.textContent = "Rolling for lucky number...";
+            statusText.classList.add('rainbow-text');
+            statusText.style.color = ""; // Clear any manual color
+            
+            // Find start index (default to 0 if nothing active, though we cleared active above)
             let currentIndex = 0;
-            slots.forEach((slot, index) => {
-                if (slot.classList.contains('active')) currentIndex = index;
-            });
 
             // --- 1. RAINBOW BORDER ANIMATION ---
-            // We use a cleaner interval that explicitly sets the hue
             let borderHue = 0;
             const borderInterval = setInterval(() => {
                 borderHue = (borderHue + 40) % 360; 
@@ -1462,13 +1498,12 @@
             }, 50); 
 
             // --- 2. NUMBER SCROLLING ---
-            // Instead of slowing down, we go consistently FAST then SNAP
             let speed = 60; 
             let steps = 0;
-            const minSteps = 24; // Ensure it spins enough times
+            const minSteps = 24; 
             
             function step() {
-                // Clear active
+                // Clear active from prev (if any)
                 slots[currentIndex].classList.remove('active');
                 
                 // Move next
@@ -1496,6 +1531,12 @@
                 const winningSlot = slots[winningIndex];
 
                 // --- 3. THE "SNAP" REVEAL ---
+                
+                // Update Narration
+                statusText.classList.remove('rainbow-text');
+                statusText.textContent = `Lucky Number is ${winningIndex + 1}!`;
+                statusText.style.color = "#FFD700"; // Gold color for win text
+
                 // Reset border immediately to Gold for the win moment
                 strip.style.transition = "none"; 
                 strip.style.borderColor = "#FFD700"; 
