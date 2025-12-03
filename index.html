@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#000000">
-    <title>Backyard Birding - Fixed Ratio</title>
+    <title>Backyard Birding - Retro Edition</title>
     <style>
         /* --- RESET & VARIABLES --- */
         :root {
@@ -43,7 +43,7 @@
             align-items: center;
         }
 
-        /* --- MASTER CONTAINER (THE FIX) --- */
+        /* --- MASTER CONTAINER --- */
         #game-viewport {
             position: relative;
             
@@ -55,10 +55,6 @@
             max-height: 100dvh;
             width: auto;
             max-width: 100vw;
-            
-            /* If screen is wider than 9:16, height controls size. 
-               If screen is taller than 9:16, width controls size. 
-               The 'aspect-ratio' property handles the math automatically. */
 
             background: black;
             box-shadow: 0 0 0 100vmax black; /* Visual matte for letterboxing */
@@ -83,7 +79,33 @@
                 linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px),
                 linear-gradient(180deg, #b2ff59 0%, #002b00 100%);
-            background-size: 8cqw 8cqw, 8cqw 8cqw, cover; /* Adjusted grid to be relative to container width */
+            background-size: 8cqw 8cqw, 8cqw 8cqw, cover;
+        }
+
+        /* --- CRT FILTER OVERLAY --- */
+        .crt-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999; /* Sit on top of absolutely everything */
+            pointer-events: none; /* Let clicks pass through */
+            
+            /* Scanlines */
+            background: linear-gradient(
+                rgba(18, 16, 16, 0) 50%, 
+                rgba(0, 0, 0, 0.1) 50%
+            ), linear-gradient(
+                90deg, 
+                rgba(255, 0, 0, 0.03), 
+                rgba(0, 255, 0, 0.01), 
+                rgba(0, 0, 255, 0.03)
+            );
+            background-size: 100% 3px, 3px 100%;
+            
+            /* Vignette */
+            box-shadow: inset 0 0 15cqw rgba(0,0,0,0.4);
         }
 
         /* --- MAP PROPS --- */
@@ -124,24 +146,23 @@
             line-height: 1;
         }
 
-        /* ITEMS: CENTER COLUMN */
-        /* Note: With fixed aspect ratio, 'top: %' is now safe and consistent */
+        /* ITEMS: CENTER COLUMN (Lifted up by ~5%) */
         .prop-telescope {
-            top: 20%; 
+            top: 15%; /* Was 20% */
             left: 42%; 
             background: #283593; 
         }
         .prop-telescope .inner-emoji { font-size: 10cqw; }
 
         .prop-bathtub {
-            top: 35%; 
+            top: 30%; /* Was 35% */
             left: 42%; 
             background: #00ACC1; 
         }
         .prop-bathtub .inner-emoji { font-size: 11cqw; }
 
         .prop-scales {
-            top: 50%;
+            top: 45%; /* Was 50% */
             left: 42%;
             background: #5D4037; 
         }
@@ -263,13 +284,13 @@
         }
 
         .stat-label { 
-            font-size: 2.5cqw; 
+            font-size: 3cqw; /* INCREASED from 2.5cqw */
             opacity: 0.8; 
             color: #443300;
             text-transform: uppercase; 
         }
         .stat-value { 
-            font-size: 4cqw; 
+            font-size: 5cqw; /* INCREASED from 4cqw */
             font-weight: 800;
         }
         .stat-funds { color: #006400; } 
@@ -301,11 +322,11 @@
         }
 
         .enemy-header {
-            font-size: 2.5cqw; 
+            font-size: 3.2cqw; /* INCREASED from 2.5cqw */
             opacity: 0.9;
             color: white;
             text-transform: uppercase;
-            font-weight: 400; /* Thin/Regular weight */
+            font-weight: 400; 
             margin-bottom: 0;
             letter-spacing: 0.05cqw;
             text-shadow: 0 0.2cqw 0.5cqw rgba(0,0,0,0.3);
@@ -366,7 +387,7 @@
         }
 
         .sabotage-label {
-            font-size: 2.5cqw; 
+            font-size: 3.2cqw; /* INCREASED from 2.5cqw */
             opacity: 0.9;
             color: white;
             text-transform: uppercase;
@@ -393,10 +414,10 @@
             font-size: 7cqw; 
         }
 
-        /* --- 3. LEFT SIDEBAR --- */
+        /* --- 3. LEFT SIDEBAR (Lifted up) --- */
         .ui-sidebar-container {
             position: absolute;
-            top: 20%;
+            top: 15%; /* Was 20% */
             left: 0;
             width: 15%; 
             height: 60%; 
@@ -498,33 +519,24 @@
         }
 
         .ui-inventory-strip {
-            /* Positioning: Inside footer now (top 2cqw), centered horizontally */
             position: absolute;
             top: 2cqw; 
             left: 50%;
             transform: translateX(-50%);
             z-index: 50;
-
             width: 92%;
             margin: 0;
             height: 18%; 
             border-radius: 10cqw;
-            
-            /* Styles matched to Dice Button (#btn-dice) */
             background: linear-gradient(to bottom, #D81B60, #880E4F); 
-            
-            /* Border will be animated in JS */
             border: 0.5cqw solid rgba(255,255,255,0.3);
-            
             box-shadow: 0 1cqw 2cqw rgba(0,0,0,0.6);
-            
             display: flex;
             align-items: center;
             padding: 0 2cqw;
             justify-content: space-evenly;
             gap: 0; 
             overflow: hidden; 
-            
             transition: transform 0.1s;
         }
         
@@ -547,7 +559,6 @@
             text-shadow: 0 0.2cqw 0.5cqw rgba(0,0,0,0.3);
         }
         
-        /* Active slot style logic - bright yellow on pink */
         .inv-slot.active { 
             color: #FFD700; 
             transform: scale(1.6); 
@@ -557,16 +568,12 @@
 
         .ui-controls-main {
             flex-grow: 1;
-            /* Lightened Midnight Blue Gradient */
             background: linear-gradient(180deg, #0d2b4d 0%, #000000 100%);
-            
             position: relative;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            
-            /* Padding pushed down to make room for the inventory strip at the top */
             padding-top: 10cqw;
         }
 
@@ -624,20 +631,15 @@
             left: 50%;
             width: 90%; 
             height: 75%; 
-            
             transform: translate(-50%, -50%) scale(0.9);
-            
             border: 0.5cqw solid rgba(255,255,255,0.3);
             border-radius: 4cqw;
             box-shadow: 0 2cqw 4cqw rgba(0,0,0,0.8);
-            
             z-index: 100;
             display: flex;
-            flex-direction: column; /* Changed to column for top/bottom split */
-            
+            flex-direction: column; 
             color: white;
             font-size: 4cqw;
-            
             opacity: 0;
             pointer-events: none;
             transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -769,16 +771,14 @@
         .shop-column:last-child { border-right: none; }
         
         .shop-header {
-            /* Matches .enemy-header EXACTLY */
             font-size: 2.5cqw; 
             opacity: 0.9;
             color: white;
             text-transform: uppercase;
-            font-weight: 400; /* Thin/Regular weight */
+            font-weight: 400; 
             margin-bottom: 1cqw;
             letter-spacing: 0.05cqw;
             text-shadow: 0 0.2cqw 0.5cqw rgba(0,0,0,0.3);
-            
             height: 10%;
             display: flex;
             align-items: center;
@@ -792,13 +792,11 @@
             width: 100%;
             height: 90%;
             align-items: center;
-            justify-content: flex-start; /* Ensure items stack from top */
+            justify-content: flex-start; 
             padding-top: 1cqw;
         }
         
-        /* Updated Shop Item Style */
         .shop-item-style {
-            /* 30% Smaller from 80% is approx 55% */
             width: 55%;
             aspect-ratio: 1;
             border-radius: 1.5cqw;
@@ -807,13 +805,11 @@
             justify-content: center;
             align-items: center;
             box-shadow: 0.5cqw 0.5cqw 1cqw rgba(0,0,0,0.5);
-            /* Skewed container */
             transform: skewX(-12deg);
-            position: relative; /* Needed for absolute positioning of price/ID */
+            position: relative; 
         }
         
         .shop-item-style .inner-emoji {
-            /* Counter-skew emoji */
             transform: skewX(12deg);
             font-size: 7cqw; 
             line-height: 1;
@@ -836,7 +832,7 @@
             bottom: -5%;
             right: -8%;
             color: white;
-            font-size: 5cqw; /* INCREASED */
+            font-size: 5cqw; 
             font-weight: 900;
             transform: skewX(12deg);
             z-index: 10;
@@ -844,9 +840,9 @@
             text-shadow: 0 1px 2px rgba(0,0,0,0.8);
         }
         
-        .item-col-1 { background: #283593; } /* Matches Telescope Blue */
-        .item-col-2 { background: #00ACC1; } /* Matches Bathtub Teal */
-        .item-col-3 { background: #5D4037; } /* Matches Scales Brown */
+        .item-col-1 { background: #283593; } 
+        .item-col-2 { background: #00ACC1; } 
+        .item-col-3 { background: #5D4037; } 
 
         .shop-bottom-half {
             width: 100%;
@@ -1256,6 +1252,9 @@
                 </div>
             </div>
         </div>
+        
+        <!-- CRT Overlay added at the end so it covers everything -->
+        <div class="crt-overlay"></div>
 
     </div>
 
