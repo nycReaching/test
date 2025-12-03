@@ -82,9 +82,6 @@
             background-size: 8cqw 8cqw, 8cqw 8cqw, cover;
         }
 
-        /* --- REMOVED VINTAGE/CRT OVERLAYS --- */
-        /* The overlay classes have been fully removed to restore clear visuals */
-
         /* --- MAP PROPS --- */
         .map-prop {
             position: absolute;
@@ -261,13 +258,13 @@
         }
 
         .stat-label { 
-            font-size: 3cqw; /* INCREASED from 2.5cqw */
+            font-size: 3cqw; 
             opacity: 0.8; 
             color: #443300;
             text-transform: uppercase; 
         }
         .stat-value { 
-            font-size: 5cqw; /* INCREASED from 4cqw */
+            font-size: 5cqw; 
             font-weight: 800;
         }
         .stat-funds { color: #006400; } 
@@ -299,7 +296,7 @@
         }
 
         .enemy-header {
-            font-size: 3.2cqw; /* INCREASED from 2.5cqw */
+            font-size: 3.2cqw; 
             opacity: 0.9;
             color: white;
             text-transform: uppercase;
@@ -364,7 +361,7 @@
         }
 
         .sabotage-label {
-            font-size: 3.2cqw; /* INCREASED from 2.5cqw */
+            font-size: 3.2cqw; 
             opacity: 0.9;
             color: white;
             text-transform: uppercase;
@@ -394,7 +391,7 @@
         /* --- 3. LEFT SIDEBAR (Lifted up) --- */
         .ui-sidebar-container {
             position: absolute;
-            top: 15%; /* Was 20% */
+            top: 15%; 
             left: 0;
             width: 15%; 
             height: 60%; 
@@ -506,16 +503,16 @@
             width: 92%;
             margin: 0;
             height: 18%; 
-            border-radius: 3cqw; /* Reduced from 10cqw */
+            border-radius: 3cqw; 
             
             /* Styles matched to Dice Button (#btn-dice) */
             background: linear-gradient(to bottom, #D81B60, #880E4F); 
             
-            /* UPDATED: Stronger Highlight Border */
-            border: 0.6cqw solid rgba(255,255,255,0.9);
+            /* UPDATED: Aggressive Highlight Border (Pink) */
+            border: 0.8cqw solid #FF80AB; 
             box-shadow: 
                 0 1cqw 2cqw rgba(0,0,0,0.6),
-                inset 0 0.5cqw 1cqw rgba(255,255,255,0.4);
+                inset 0 0.5cqw 1cqw rgba(255,255,255,0.2);
             
             display: flex;
             align-items: center;
@@ -573,10 +570,12 @@
         .secondary-action-btn {
             width: 25cqw; 
             aspect-ratio: 1.8 / 1; 
-            border-radius: 3cqw; /* Reduced from 10cqw */
+            border-radius: 3cqw; 
             
-            /* UPDATED: Stronger Highlight Border */
-            border: 0.6cqw solid rgba(255,255,255,0.9);
+            /* Highlight border set by specific classes now */
+            border-width: 0.8cqw;
+            border-style: solid;
+
             box-shadow: 
                 0 1cqw 2cqw rgba(0,0,0,0.6),
                 inset 0 0.5cqw 1cqw rgba(255,255,255,0.4);
@@ -590,22 +589,28 @@
         }
 
         .btn-blue {
-            /* UPDATED: Matches the Darker Shop Modal Theme */
+            /* Blue Theme */
             background: linear-gradient(135deg, #0D47A1, #002171); 
+            /* Aggressive Highlight: Bright Blue */
+            border-color: #64B5F6;
         }
 
         .btn-pink-gradient {
+            /* Pink Theme */
             background: linear-gradient(to bottom, #D81B60, #880E4F); 
+            /* Aggressive Highlight: Bright Pink */
+            border-color: #FF80AB;
         }
 
         .main-action-btn {
             width: 35cqw;
             aspect-ratio: 2.2 / 1;
             background: linear-gradient(to bottom, var(--ui-teal), var(--ui-teal-dark));
-            border-radius: 4cqw; /* Reduced from 10cqw */
+            border-radius: 4cqw; 
             
-            /* UPDATED: Stronger Highlight Border */
-            border: 0.6cqw solid rgba(255,255,255,0.9);
+            /* Aggressive Highlight: Bright Teal */
+            border: 0.8cqw solid #4DD0E1;
+            
             box-shadow: 
                 0 1cqw 2cqw rgba(0,0,0,0.6),
                 inset 0 0.5cqw 1cqw rgba(255,255,255,0.4);
@@ -624,13 +629,13 @@
         /* --- NEW STATUS TEXT AREA --- */
         .ui-status-text {
             position: absolute;
-            top: 24%; /* Positioned below inventory (approx 20%) but above center buttons */
+            /* LOWERED POSITION as requested (from 24% to 35%) */
+            top: 35%; 
             width: 100%;
             text-align: center;
             z-index: 40;
             pointer-events: none;
 
-            /* Styles matched to .enemy-header */
             font-size: 3.2cqw;
             opacity: 0.9;
             color: white;
@@ -669,7 +674,6 @@
         }
 
         .shop-modal-style {
-            /* UPDATED: Much Darker Blue */
             background: linear-gradient(135deg, #0D47A1, #002171); 
         }
         
@@ -1430,7 +1434,7 @@
         });
 
 
-        // --- DICE LOGIC ---
+        // --- IMPROVED DICE LOGIC ---
         const diceBtn = document.getElementById('btn-dice');
         const slots = document.querySelectorAll('.inv-slot');
         const strip = document.querySelector('.ui-inventory-strip'); 
@@ -1440,79 +1444,84 @@
             if (isRolling) return; 
             isRolling = true;
             
+            // Random target
             const targetIndex = Math.floor(Math.random() * slots.length);
+            
+            // Find current active index
             let currentIndex = 0;
             slots.forEach((slot, index) => {
                 if (slot.classList.contains('active')) currentIndex = index;
             });
 
-            // Start fast border animation
+            // --- 1. RAINBOW BORDER ANIMATION ---
+            // We use a cleaner interval that explicitly sets the hue
             let borderHue = 0;
             const borderInterval = setInterval(() => {
-                borderHue = (borderHue + 25) % 360; 
-                if (borderHue > 80 && borderHue < 170) {
-                    borderHue = 170;
-                }
-                strip.style.borderColor = `hsl(${borderHue}, 100%, 50%)`;
-            }, 30); 
+                borderHue = (borderHue + 40) % 360; 
+                strip.style.borderColor = `hsl(${borderHue}, 100%, 60%)`;
+            }, 50); 
 
-            let speed = 50; 
+            // --- 2. NUMBER SCROLLING ---
+            // Instead of slowing down, we go consistently FAST then SNAP
+            let speed = 60; 
             let steps = 0;
-            const minSteps = 20;
+            const minSteps = 24; // Ensure it spins enough times
             
             function step() {
+                // Clear active
                 slots[currentIndex].classList.remove('active');
+                
+                // Move next
                 currentIndex = (currentIndex + 1) % slots.length;
                 slots[currentIndex].classList.add('active');
+                
                 steps++;
                 
-                // Ensure no filter is messing with numbers
-                strip.style.filter = "none";
-
+                // Stop condition
                 if (steps > minSteps && currentIndex === targetIndex) {
-                    isRolling = false;
-                    clearInterval(borderInterval);
-
-                    // --- VISUAL POP FOR WINNER ---
-                    const winningSlot = slots[currentIndex];
-
-                    // 1. Flash the border Gold & Glow
-                    strip.style.transition = "border-color 0.1s ease, box-shadow 0.1s ease";
-                    strip.style.borderColor = "#FFD700"; 
-                    strip.style.boxShadow = "0 0 2cqw #FFD700"; 
-
-                    // 2. Pop the winning number significantly
-                    winningSlot.style.transition = "transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
-                    winningSlot.style.transform = "scale(1.8)";
-                    winningSlot.style.textShadow = "0 0 2cqw #FFD700";
-
-                    // 3. Reset after delay
-                    setTimeout(() => {
-                        // Reset border
-                        strip.style.transition = "border-color 0.5s ease, box-shadow 0.5s ease";
-                        strip.style.borderColor = "rgba(255,255,255,0.9)";
-                        strip.style.boxShadow = "0 1cqw 2cqw rgba(0,0,0,0.6), inset 0 0.5cqw 1cqw rgba(255,255,255,0.4)";
-                        
-                        // Reset slot
-                        winningSlot.style.transform = "scale(1)";
-                        winningSlot.style.textShadow = "";
-                        
-                        // Small timeout to remove transition from slot so it doesn't lag later
-                        setTimeout(() => {
-                            winningSlot.style.transition = "";
-                        }, 300);
-                        
-                    }, 1000); // Hold the pop for 1 second
+                    finishRoll(currentIndex);
                     return;
-                }
-
-                if (steps > minSteps - 8) {
-                    speed += 30;
                 }
 
                 setTimeout(step, speed);
             }
+            
+            // Start the loop
             step();
+
+            function finishRoll(winningIndex) {
+                isRolling = false;
+                clearInterval(borderInterval);
+
+                const winningSlot = slots[winningIndex];
+
+                // --- 3. THE "SNAP" REVEAL ---
+                // Reset border immediately to Gold for the win moment
+                strip.style.transition = "none"; 
+                strip.style.borderColor = "#FFD700"; 
+                strip.style.boxShadow = "0 0 4cqw #FFD700, inset 0 0 2cqw #FFD700"; 
+
+                // Massive Scale Punch
+                winningSlot.style.transition = "transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
+                winningSlot.style.transform = "scale(2.5)"; // Big pop
+                winningSlot.style.textShadow = "0 0 3cqw #FFD700, 0 0 5cqw white";
+                winningSlot.style.color = "#FFFFFF";
+
+                // Return to normal state after a moment
+                setTimeout(() => {
+                    // Reset Strip Border to the new "Aggressive Pink" (#FF80AB) default
+                    strip.style.transition = "border-color 0.4s ease, box-shadow 0.4s ease";
+                    strip.style.borderColor = ""; // clear inline so CSS takes over (#FF80AB)
+                    strip.style.boxShadow = ""; // clear inline so CSS takes over
+                    
+                    // Reset Number
+                    winningSlot.style.transition = "transform 0.3s ease";
+                    winningSlot.style.transform = "scale(1.6)"; // Return to "Active" size (which is 1.6)
+                    winningSlot.style.textShadow = "";
+                    winningSlot.style.color = ""; // Returns to CSS defined color
+                    
+                }, 600);
+            }
         });
 
     </script>
