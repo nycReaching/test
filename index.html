@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#000000">
-    <title>Pro Game UI - Safe Zones</title>
+    <title>Backyard Birding - Fixed Ratio</title>
     <style>
         /* --- RESET & VARIABLES --- */
         :root {
@@ -20,7 +20,6 @@
             --ui-brown-dark: #3E2723;
             --ui-dark: #1a1a1a;
             --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            --app-height: 100vh;
         }
 
         * {
@@ -33,25 +32,40 @@
             margin: 0;
             padding: 0;
             width: 100vw;
-            height: 100dvh;
-            height: var(--app-height); 
+            height: 100dvh; /* Dynamic viewport height for mobile browsers */
             overflow: hidden;
             font-family: var(--font-main);
-            background-color: #111; 
+            background-color: #000; /* Letterbox color */
+            
+            /* CRITICAL: Center the game stage */
             display: flex;
             justify-content: center;
             align-items: center;
         }
 
-        /* --- MASTER CONTAINER --- */
+        /* --- MASTER CONTAINER (THE FIX) --- */
         #game-viewport {
             position: relative;
-            width: 100%;
+            
+            /* 1. Define the Aspect Ratio (9:16 is standard mobile portrait) */
+            aspect-ratio: 9 / 16;
+            
+            /* 2. Scale logic: Fill width or height, whichever is smaller, never exceeding screen */
             height: 100%;
-            max-width: 550px; 
+            max-height: 100dvh;
+            width: auto;
+            max-width: 100vw;
+            
+            /* If screen is wider than 9:16, height controls size. 
+               If screen is taller than 9:16, width controls size. 
+               The 'aspect-ratio' property handles the math automatically. */
+
             background: black;
-            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            box-shadow: 0 0 0 100vmax black; /* Visual matte for letterboxing */
+            
+            /* 3. Enable Container Queries for internal elements */
             container-type: size; 
+            
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -65,91 +79,145 @@
             height: 100%;
             z-index: 0; 
             background: linear-gradient(180deg, #b2ff59 0%, #0d380d 90%);
-            /* Faint grid for alignment check */
             background-image: 
-                linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px);
-            background-size: 5cqw 5cqw;
+                linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px),
+                linear-gradient(180deg, #b2ff59 0%, #002b00 100%);
+            background-size: 8cqw 8cqw, 8cqw 8cqw, cover; /* Adjusted grid to be relative to container width */
         }
 
-        /* --- DEV ZONES CONFIGURATION --- */
-        .dev-zone {
+        /* --- MAP PROPS --- */
+        .map-prop {
             position: absolute;
-            z-index: 10;
-            border-width: 2px;
-            border-style: dashed;
+            z-index: 5; 
+        }
+
+        /* --- ITEM CONTAINERS --- */
+        .item-container {
+            width: 18cqw;  
+            aspect-ratio: 1 / 1; 
+            height: auto;
+            border-radius: 1.5cqw; 
+            border: none;
             display: flex;
             justify-content: center;
             align-items: center;
-            border-radius: 2cqw;
-            pointer-events: none; 
-            background: rgba(0,0,0,0.1); /* Slight tint to see area */
+            box-shadow: 1cqw 1cqw 2cqw rgba(0,0,0,0.5);
+            transform: translate(-50%, -50%) skewX(-12deg);
+            position: absolute; 
         }
-
-        .dev-zone-label {
-            position: absolute;
-            top: 0;
-            left: 0;
-            background: rgba(0,0,0,0.6);
-            color: white;
-            padding: 0.5cqw 1.5cqw;
-            font-size: 3cqw;
-            border-bottom-right-radius: 1cqw;
-            font-family: monospace;
-            text-transform: uppercase;
-            font-weight: bold;
-        }
-
-        /* COORDINATE STRATEGY:
-           - Header (Stats): Top 0-8%
-           - Header (Neighbor): Top 0-40% (Right Side)
-           - Sidebar: Left 0-16%
-           - Footer: Bottom 0-25%
-        */
-
-        /* ZONE 1: ITEMS (Left Column) */
-        /* Sits between Sidebar and Center. Stops before Trees. */
-        #zone-items {
-            top: 10%;           /* Start high */
-            left: 18%;          /* Clear sidebar (16%) */
-            width: 20%;         /* Narrow column */
-            height: 48%;        /* Ends at ~58% height */
-            border-color: #00BCD4; 
-        }
-
-        /* ZONE 2: GARDEN (Right Mid) */
-        /* Must sit BELOW the neighbor panel */
-        #zone-garden {
-            top: 40%;           /* Neighbor panel ends approx 38-40% */
-            right: 4%;          /* Padding from edge */
-            width: 35%;         /* Wide area */
-            height: 25%;        /* Ends at ~65% height */
-            border-color: #4CAF50; 
-        }
-
-        /* ZONE 3: TREES (Bottom Left) */
-        /* Sits below Items, above Footer */
-        #zone-trees {
-            bottom: 26%;        /* Clear Footer (~25%) */
-            left: 18%;          /* Align with Items */
-            width: 25%;         /* Slightly wider */
-            height: 12%;        /* Short row */
-            border-color: #795548; 
-        }
-
-        /* ZONE 4: FLOWERS (Bottom Right) */
-        /* Sits below Garden, above Footer */
-        #zone-flowers {
-            bottom: 26%;        /* Clear Footer (~25%) */
-            right: 4%;          /* Align with Garden */
-            width: 40%;         /* Wide grid */
-            height: 15%;        /* Short grid */
-            border-color: #E91E63; 
-        }
-
-
-        /* --- UI ELEMENTS --- */
         
+        .item-container .inner-emoji {
+            transform: skewX(12deg);
+        }
+
+        .prop-number {
+            position: absolute;
+            bottom: -5%;
+            right: -5%;
+            font-size: 8cqw;
+            color: white;
+            font-weight: 900;
+            transform: skewX(12deg);
+            text-shadow: 0 0.5cqw 1cqw rgba(0,0,0,0.8);
+            z-index: 10;
+            line-height: 1;
+        }
+
+        /* ITEMS: CENTER COLUMN */
+        /* Note: With fixed aspect ratio, 'top: %' is now safe and consistent */
+        .prop-telescope {
+            top: 20%; 
+            left: 42%; 
+            background: #283593; 
+        }
+        .prop-telescope .inner-emoji { font-size: 10cqw; }
+
+        .prop-bathtub {
+            top: 35%; 
+            left: 42%; 
+            background: #00ACC1; 
+        }
+        .prop-bathtub .inner-emoji { font-size: 11cqw; }
+
+        .prop-scales {
+            top: 50%;
+            left: 42%;
+            background: #5D4037; 
+        }
+        .prop-scales .inner-emoji { font-size: 10cqw; }
+
+
+        /* --- TREES & HOUSE: BOTTOM LEFT QUADRANT --- */
+        .prop-tree {
+            bottom: 30%; 
+            font-size: 24cqw; 
+            filter: drop-shadow(0 1cqw 1cqw rgba(0,0,0,0.3));
+            pointer-events: none;
+        }
+
+        .tree-1 { left: 8%; z-index: 5; } 
+        .tree-2 { left: 21%; z-index: 6; } 
+        .tree-3 { left: 34%; z-index: 5; }
+
+        .prop-house-tiny {
+            bottom: 39%; 
+            left: 20%; 
+            font-size: 9cqw; 
+            z-index: 7;
+            filter: drop-shadow(0 0.5cqw 1cqw rgba(0,0,0,0.5));
+            pointer-events: none;
+        }
+
+        /* Candle */
+        .prop-candle {
+            bottom: 30%;
+            left: 8%; 
+            font-size: 6cqw; 
+            filter: drop-shadow(0 0 1cqw rgba(255, 200, 0, 0.6));
+            z-index: 8;
+            pointer-events: none;
+        }
+
+        /* --- SPROUTS & WORM: RIGHT SIDE (MID-HEIGHT) --- */
+        .prop-sprout-layer {
+            position: absolute;
+            bottom: 45%; 
+            font-size: 6cqw;
+            filter: drop-shadow(0 0.5cqw 0.5cqw rgba(0,0,0,0.3));
+            z-index: 4;
+        }
+        
+        .sprout-1 { left: 65%; }
+        .sprout-2 { left: 75%; }
+        .sprout-3 { left: 85%; }
+
+        .prop-worm {
+            bottom: 47%; 
+            left: 75%;   
+            font-size: 10cqw; 
+            filter: drop-shadow(0 0.5cqw 0.5cqw rgba(0,0,0,0.4));
+            z-index: 5;
+            transform: translateX(-20%); 
+            pointer-events: none;
+        }
+
+        /* --- FLOWERS: BOTTOM RIGHT QUADRANT --- */
+        .prop-flower {
+            bottom: 30%; 
+            font-size: 11cqw; 
+            filter: drop-shadow(0 0.5cqw 0.5cqw rgba(0,0,0,0.3));
+            pointer-events: none;
+        }
+        
+        .flower-1 { left: 58%; } 
+        .flower-2 { left: 65%; } 
+        .flower-3 { left: 72%; } 
+        .flower-4 { left: 79%; }
+        .flower-5 { left: 86%; }
+
+
+        /* --- SHARED STYLES --- */
         .panel {
             box-shadow: 0 1cqw 1.5cqw rgba(0,0,0,0.6);
             color: white;
@@ -168,7 +236,7 @@
             filter: brightness(0.9);
         }
 
-        /* 1. TOP LEFT: PLAYER STATS */
+        /* --- 1. TOP LEFT: PLAYER STATS --- */
         .ui-stats-bar {
             position: absolute;
             top: 0;
@@ -182,7 +250,7 @@
             align-items: center;
             padding-left: 4cqw;
             padding-right: 10cqw; 
-            z-index: 30;
+            z-index: 20;
             filter: drop-shadow(0 1cqw 1cqw rgba(0,0,0,0.5));
         }
 
@@ -209,16 +277,14 @@
         .stat-luck { color: #C2185B; } 
 
 
-        /* 2. TOP RIGHT: ENEMY PROGRESS */
-        /* OPTIMIZED: Made more compact vertically to allow room for Garden */
+        /* --- 2. TOP RIGHT: ENEMY PROGRESS --- */
         .ui-event-panel {
             position: absolute;
             top: 0;
             right: 0;
             width: 30%;
             height: auto; 
-            /* Reduced min-height from 42% to 35% */
-            min-height: 35%; 
+            min-height: 42%; 
             background: linear-gradient(180deg, #d32f2f 0%, #5d0000 100%);
             border-bottom-left-radius: 4cqw;
             border-left: 0.5cqw solid rgba(255,255,255,0.2);
@@ -226,12 +292,11 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            /* Reduced padding/gaps */
-            justify-content: flex-start; 
+            justify-content: space-evenly; 
             padding-top: 2cqw; 
-            padding-bottom: 2cqw;
-            gap: 1cqw; 
-            z-index: 30;
+            padding-bottom: 3cqw;
+            gap: 1.5cqw; 
+            z-index: 20;
             box-shadow: -1cqw 1cqw 2cqw rgba(0,0,0,0.6);
         }
 
@@ -240,17 +305,17 @@
             opacity: 0.9;
             color: white;
             text-transform: uppercase;
-            font-weight: 400;
+            font-weight: 400; /* Thin/Regular weight */
+            margin-bottom: 0;
             letter-spacing: 0.05cqw;
             text-shadow: 0 0.2cqw 0.5cqw rgba(0,0,0,0.3);
-            margin-bottom: 0.5cqw;
         }
 
         .meter-group {
             width: 85%;
             display: flex;
             flex-direction: column;
-            gap: 1cqw; /* tighter gap */
+            gap: 1.5cqw; 
             background: transparent; 
             padding: 0; 
             border-radius: 1.5cqw;
@@ -266,15 +331,15 @@
         }
 
         .meter-icon {
-            font-size: 6cqw; /* Slightly smaller */
-            width: 6cqw;
+            font-size: 7cqw; 
+            width: 7cqw;
             text-align: center;
             filter: drop-shadow(0 0.2cqw 0.2cqw rgba(0,0,0,0.6));
         }
 
         .meter-bar {
             flex-grow: 1;
-            height: 2cqw; /* Slightly thinner */
+            height: 2.2cqw; 
             background: rgba(0,0,0,0.4);
             border-radius: 1cqw;
             border: 1px solid rgba(255,255,255,0.1);
@@ -296,8 +361,8 @@
             flex-direction: column;
             align-items: center;
             width: 100%;
-            gap: 0.5cqw; /* Tight gap */
-            margin-top: 1cqw; 
+            gap: 1cqw;
+            margin-top: 2cqw; 
         }
 
         .sabotage-label {
@@ -316,7 +381,7 @@
         }
 
         .neighbor-slot {
-            width: 11cqw; /* Slightly smaller */
+            width: 12cqw; 
             aspect-ratio: 1;
             background: rgba(0,0,0,0.2);
             border: none; 
@@ -325,13 +390,13 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 6cqw; 
+            font-size: 7cqw; 
         }
 
-        /* 3. LEFT SIDEBAR */
+        /* --- 3. LEFT SIDEBAR --- */
         .ui-sidebar-container {
             position: absolute;
-            top: 15%;
+            top: 20%;
             left: 0;
             width: 15%; 
             height: 60%; 
@@ -367,7 +432,7 @@
             z-index: 2;
         }
 
-        /* SLIDE OUT MENU */
+        /* --- SLIDE OUT MENU --- */
         .slide-menu {
             position: absolute;
             left: 90%; 
@@ -418,7 +483,7 @@
             transform: scale(0.8);
         }
 
-        /* 4. BOTTOM AREA */
+        /* --- 4. BOTTOM AREA --- */
         .ui-footer-container {
             position: absolute;
             bottom: 0;
@@ -430,14 +495,10 @@
             flex-direction: column;
             box-shadow: none;
             overflow: visible; 
-            pointer-events: none; 
-        }
-        
-        .ui-footer-container > * {
-            pointer-events: auto; /* Re-enable for children */
         }
 
         .ui-inventory-strip {
+            /* Positioning: Inside footer now (top 2cqw), centered horizontally */
             position: absolute;
             top: 2cqw; 
             left: 50%;
@@ -448,15 +509,22 @@
             margin: 0;
             height: 18%; 
             border-radius: 10cqw;
+            
+            /* Styles matched to Dice Button (#btn-dice) */
             background: linear-gradient(to bottom, #D81B60, #880E4F); 
+            
+            /* Border will be animated in JS */
             border: 0.5cqw solid rgba(255,255,255,0.3);
+            
             box-shadow: 0 1cqw 2cqw rgba(0,0,0,0.6);
+            
             display: flex;
             align-items: center;
             padding: 0 2cqw;
             justify-content: space-evenly;
             gap: 0; 
             overflow: hidden; 
+            
             transition: transform 0.1s;
         }
         
@@ -479,6 +547,7 @@
             text-shadow: 0 0.2cqw 0.5cqw rgba(0,0,0,0.3);
         }
         
+        /* Active slot style logic - bright yellow on pink */
         .inv-slot.active { 
             color: #FFD700; 
             transform: scale(1.6); 
@@ -488,12 +557,16 @@
 
         .ui-controls-main {
             flex-grow: 1;
+            /* Lightened Midnight Blue Gradient */
             background: linear-gradient(180deg, #0d2b4d 0%, #000000 100%);
+            
             position: relative;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            
+            /* Padding pushed down to make room for the inventory strip at the top */
             padding-top: 10cqw;
         }
 
@@ -503,7 +576,7 @@
             gap: 3cqw; 
         }
 
-        /* BUTTONS */
+        /* --- BUTTONS --- */
         .secondary-action-btn {
             width: 25cqw; 
             aspect-ratio: 1.8 / 1; 
@@ -518,8 +591,13 @@
             padding-bottom: 0.5cqw;
         }
 
-        .btn-blue { background: linear-gradient(to bottom, #1565C0, #0D47A1); }
-        .btn-pink-gradient { background: linear-gradient(to bottom, #D81B60, #880E4F); }
+        .btn-blue {
+            background: linear-gradient(to bottom, #1565C0, #0D47A1); 
+        }
+
+        .btn-pink-gradient {
+            background: linear-gradient(to bottom, #D81B60, #880E4F); 
+        }
 
         .main-action-btn {
             width: 35cqw;
@@ -539,22 +617,27 @@
             padding-bottom: 2.5cqw; 
         }
 
-        /* MODALS */
+        /* --- SHARED MODAL STYLES --- */
         .modal-base {
             position: absolute;
             top: 50%;
             left: 50%;
             width: 90%; 
             height: 75%; 
+            
             transform: translate(-50%, -50%) scale(0.9);
+            
             border: 0.5cqw solid rgba(255,255,255,0.3);
             border-radius: 4cqw;
             box-shadow: 0 2cqw 4cqw rgba(0,0,0,0.8);
+            
             z-index: 100;
             display: flex;
-            flex-direction: column;
+            flex-direction: column; /* Changed to column for top/bottom split */
+            
             color: white;
             font-size: 4cqw;
+            
             opacity: 0;
             pointer-events: none;
             transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -567,8 +650,11 @@
             transform: translate(-50%, -50%) scale(1);
         }
 
-        .shop-modal-style { background: linear-gradient(135deg, #1565C0, #0D47A1); }
+        .shop-modal-style {
+            background: linear-gradient(135deg, #1565C0, #0D47A1); 
+        }
         
+        /* SELF MODAL & SUMMARY MODAL SPECIFICS */
         .self-content {
             padding: 6cqw;
             display: flex;
@@ -608,11 +694,16 @@
             font-weight: bold;
             font-size: 4cqw;
             box-shadow: 0 1cqw 1cqw rgba(0,0,0,0.4);
-            margin-top: auto; 
+            margin-top: auto; /* Push to bottom */
             text-align: center;
         }
 
-        .self-btn-row { display: flex; gap: 2cqw; width: 100%; }
+        /* NEW SELF BUTTONS */
+        .self-btn-row {
+            display: flex;
+            gap: 2cqw;
+            width: 100%;
+        }
         .self-action-btn {
             flex: 1;
             background: rgba(255,255,255,0.1);
@@ -660,11 +751,11 @@
 
         .shop-top-half {
             width: 100%;
-            flex-grow: 1.5;
+            flex-grow: 1.5; /* Takes up more space */
             display: flex;
             flex-direction: row;
             background: rgba(0,0,0,0.1);
-            min-height: 0; 
+            min-height: 0; /* allows flex scroll */
         }
         
         .shop-column {
@@ -678,14 +769,16 @@
         .shop-column:last-child { border-right: none; }
         
         .shop-header {
+            /* Matches .enemy-header EXACTLY */
             font-size: 2.5cqw; 
             opacity: 0.9;
             color: white;
             text-transform: uppercase;
-            font-weight: 400; 
+            font-weight: 400; /* Thin/Regular weight */
             margin-bottom: 1cqw;
             letter-spacing: 0.05cqw;
             text-shadow: 0 0.2cqw 0.5cqw rgba(0,0,0,0.3);
+            
             height: 10%;
             display: flex;
             align-items: center;
@@ -699,11 +792,13 @@
             width: 100%;
             height: 90%;
             align-items: center;
-            justify-content: flex-start;
+            justify-content: flex-start; /* Ensure items stack from top */
             padding-top: 1cqw;
         }
         
+        /* Updated Shop Item Style */
         .shop-item-style {
+            /* 30% Smaller from 80% is approx 55% */
             width: 55%;
             aspect-ratio: 1;
             border-radius: 1.5cqw;
@@ -712,11 +807,13 @@
             justify-content: center;
             align-items: center;
             box-shadow: 0.5cqw 0.5cqw 1cqw rgba(0,0,0,0.5);
+            /* Skewed container */
             transform: skewX(-12deg);
-            position: relative;
+            position: relative; /* Needed for absolute positioning of price/ID */
         }
         
         .shop-item-style .inner-emoji {
+            /* Counter-skew emoji */
             transform: skewX(12deg);
             font-size: 7cqw; 
             line-height: 1;
@@ -739,7 +836,7 @@
             bottom: -5%;
             right: -8%;
             color: white;
-            font-size: 5cqw;
+            font-size: 5cqw; /* INCREASED */
             font-weight: 900;
             transform: skewX(12deg);
             z-index: 10;
@@ -747,9 +844,9 @@
             text-shadow: 0 1px 2px rgba(0,0,0,0.8);
         }
         
-        .item-col-1 { background: #283593; } 
-        .item-col-2 { background: #00ACC1; } 
-        .item-col-3 { background: #5D4037; } 
+        .item-col-1 { background: #283593; } /* Matches Telescope Blue */
+        .item-col-2 { background: #00ACC1; } /* Matches Bathtub Teal */
+        .item-col-3 { background: #5D4037; } /* Matches Scales Brown */
 
         .shop-bottom-half {
             width: 100%;
@@ -762,8 +859,11 @@
             min-height: 0;
         }
 
-        .book-modal-style { background: linear-gradient(135deg, var(--ui-purple), var(--ui-purple-dark)); }
+        .book-modal-style {
+            background: linear-gradient(135deg, var(--ui-purple), var(--ui-purple-dark)); 
+        }
 
+        /* PAGINATION FOR BOOK */
         .book-page {
             width: 100%;
             height: 100%;
@@ -820,29 +920,56 @@
 </head>
 <body>
 
+    <!-- 
+        GAME VIEWPORT
+        Now locked to 9:16 Aspect Ratio. 
+        Everything inside uses % for position and cqw for size.
+    -->
     <div id="game-viewport">
         
         <div id="game-background"></div>
 
-        <!-- === DEV ZONES === -->
+        <!-- CONTAINERS FOR PROPS -->
+        <div class="map-prop item-container prop-telescope">
+            <div class="inner-emoji">🔭</div>
+            <div class="prop-number">3</div>
+        </div>
         
-        <div id="zone-items" class="dev-zone">
-            <div class="dev-zone-label">Items</div>
+        <div class="map-prop item-container prop-bathtub">
+            <div class="inner-emoji">🛁</div>
+            <div class="prop-number">7</div>
         </div>
-
-        <div id="zone-garden" class="dev-zone">
-            <div class="dev-zone-label">Garden</div>
+        
+        <div class="map-prop item-container prop-scales">
+            <div class="inner-emoji">⚖️</div>
+            <div class="prop-number">4</div>
         </div>
+        
+        <!-- House -->
+        <div class="map-prop prop-house-tiny">🏠</div>
 
-        <div id="zone-trees" class="dev-zone">
-            <div class="dev-zone-label">Trees</div>
-        </div>
+        <!-- Candle (Left) -->
+        <div class="map-prop prop-candle">🕯️</div>
 
-        <div id="zone-flowers" class="dev-zone">
-            <div class="dev-zone-label">Flowers</div>
-        </div>
+        <!-- Trees (Left) -->
+        <div class="map-prop prop-tree tree-1">🌳</div>
+        <div class="map-prop prop-tree tree-2">🌲</div>
+        <div class="map-prop prop-tree tree-3">🎋</div>
+        
+        <!-- Sprouts -->
+        <div class="map-prop prop-sprout-layer sprout-1">🌱</div>
+        <div class="map-prop prop-sprout-layer sprout-2">🌱</div>
+        <div class="map-prop prop-sprout-layer sprout-3">🌱</div>
 
-        <!-- === END ZONES === -->
+        <!-- Giant Worm -->
+        <div class="map-prop prop-worm">🪱</div>
+
+        <!-- Flowers -->
+        <div class="map-prop prop-flower flower-1">🪻</div>
+        <div class="map-prop prop-flower flower-2">🌻</div>
+        <div class="map-prop prop-flower flower-3">🌹</div>
+        <div class="map-prop prop-flower flower-4">🌼</div> 
+        <div class="map-prop prop-flower flower-5">🌷</div> 
 
 
         <!-- MODALS -->
@@ -960,7 +1087,7 @@
             <div class="modal-nav-btn" id="book-nav-btn">⭐</div>
         </div>
         
-        <!-- SELF MODAL -->
+        <!-- SELF MODAL (Updated) -->
         <div id="self-modal" class="modal-base book-modal-style">
             <div class="self-content">
                 <div class="self-stat-row">
@@ -988,7 +1115,7 @@
                     <span class="self-value">(empty)</span>
                 </div>
 
-                <!-- BUTTONS ROW -->
+                <!-- NEW BUTTONS ROW -->
                 <div class="self-btn-row">
                     <div class="self-action-btn btn-pressable">🍺 Bar</div>
                     <div class="self-action-btn btn-pressable">🎰 Casino</div>
@@ -1028,6 +1155,7 @@
         </div>
 
         <div class="ui-event-panel panel">
+            <!-- Matching FUNDS style: thin, clean, white -->
             <div class="enemy-header">Neighbor</div>
             
             <div class="meter-group">
@@ -1048,9 +1176,11 @@
             </div>
 
             <div class="sabotage-section">
+                <!-- Matching FUNDS style: thin, clean, white -->
                 <div class="sabotage-label">Sabotage</div>
                 <div class="neighbor-slots-row">
                     <div class="neighbor-slot">🐈</div>
+                    <!-- ADDED MAILBOX HERE -->
                     <div class="neighbor-slot">📬</div>
                 </div>
             </div>
@@ -1064,6 +1194,7 @@
                 <div class="side-btn btn-pressable" id="btn-self">👤</div>
             </div>
             
+            <!-- Farmer Button Wrapper with Slide Out Menu -->
             <div class="sidebar-item-wrapper">
                 <div class="side-btn btn-pressable" id="btn-farmer-toggle">🧑‍🌾</div>
                 
@@ -1074,6 +1205,7 @@
                 </div>
             </div>
 
+            <!-- Flower Button Wrapper with Slide Out Menu -->
             <div class="sidebar-item-wrapper">
                 <div class="side-btn btn-pressable" id="btn-flower-toggle">🌷</div>
                 
@@ -1086,6 +1218,7 @@
                 </div>
             </div>
             
+            <!-- Tree Button Wrapper with Slide Out Menu -->
             <div class="sidebar-item-wrapper">
                 <div class="side-btn btn-pressable" id="btn-tree-toggle">🌳</div>
                 
@@ -1127,14 +1260,9 @@
     </div>
 
     <script>
-        function setAppHeight() {
-            const vh = window.innerHeight;
-            document.documentElement.style.setProperty('--app-height', `${vh}px`);
-        }
+        // No longer need setAppHeight since CSS handles centering and aspect ratio
         
-        window.addEventListener('resize', setAppHeight);
-        setAppHeight();
-
+        // Generic Button Press Animation
         document.querySelectorAll('.btn-pressable').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const targetEl = e.currentTarget;
@@ -1205,6 +1333,7 @@
         const selfBtn = document.getElementById('btn-self');
         const selfModal = document.getElementById('self-modal');
         
+        // Summary Modal Logic
         const openSummaryBtn = document.getElementById('btn-open-summary');
         const summaryModal = document.getElementById('summary-modal');
 
@@ -1212,8 +1341,9 @@
             shopModal.classList.remove('open');
             bookModal.classList.remove('open');
             selfModal.classList.remove('open');
-            summaryModal.classList.remove('open'); 
+            summaryModal.classList.remove('open'); // Close summary too
             
+            // Reset book page on close
             setTimeout(() => {
                 bookPage = 1;
                 bookPage1.style.display = 'flex';
@@ -1236,6 +1366,7 @@
             if (!wasOpen) bookModal.classList.add('open');
         });
         
+        // Book Page Toggle Logic
         bookNavBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             if (bookPage === 1) {
@@ -1258,9 +1389,14 @@
             if (!wasOpen) selfModal.classList.add('open');
         });
 
+        // Open summary from self modal
         openSummaryBtn.addEventListener('click', (e) => {
             e.stopPropagation();
+            // Don't close self modal immediately if you want it to feel like a stack, 
+            // but for simplicity we usually close others to avoid z-index mess.
+            // Let's close self and open summary.
             closeModals(); 
+            // Small timeout to allow transition if needed, or just open immediately
             summaryModal.classList.add('open');
         });
 
@@ -1274,6 +1410,7 @@
                 closeModals();
             }
         });
+
 
         // --- DICE LOGIC ---
         const diceBtn = document.getElementById('btn-dice');
@@ -1291,6 +1428,7 @@
                 if (slot.classList.contains('active')) currentIndex = index;
             });
 
+            // Start fast border animation
             let borderHue = 0;
             const borderInterval = setInterval(() => {
                 borderHue = (borderHue + 25) % 360; 
@@ -1310,12 +1448,14 @@
                 slots[currentIndex].classList.add('active');
                 steps++;
                 
+                // Ensure no filter is messing with numbers
                 strip.style.filter = "none";
 
                 if (steps > minSteps && currentIndex === targetIndex) {
                     isRolling = false;
                     slots[currentIndex].style.transform = "scale(1.2)";
                     
+                    // --- FINISH ---
                     clearInterval(borderInterval);
 
                     strip.style.transition = "border-color 0.5s ease";
