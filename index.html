@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#000000">
-    <title>Backyard Birding - Retro Edition</title>
+    <title>Backyard Birding - Clean Edition</title>
     <style>
         /* --- RESET & VARIABLES --- */
         :root {
@@ -82,75 +82,8 @@
             background-size: 8cqw 8cqw, 8cqw 8cqw, cover;
         }
 
-        /* --- CRT FILTER OVERLAY --- */
-        .crt-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 9999; /* Sit on top of absolutely everything */
-            pointer-events: none; /* Let clicks pass through */
-            
-            /* Scanlines */
-            background: linear-gradient(
-                rgba(18, 16, 16, 0) 50%, 
-                rgba(0, 0, 0, 0.1) 50%
-            ), linear-gradient(
-                90deg, 
-                rgba(255, 0, 0, 0.03), 
-                rgba(0, 255, 0, 0.01), 
-                rgba(0, 0, 255, 0.03)
-            );
-            background-size: 100% 3px, 3px 100%;
-            
-            /* Vignette */
-            box-shadow: inset 0 0 15cqw rgba(0,0,0,0.4);
-        }
-
-        /* --- NEW VINTAGE OVERLAY (Replaces CRT) --- */
-        .vintage-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 9999; /* Sit on top of absolutely everything */
-            pointer-events: none; /* Let clicks pass through */
-            
-            /* 1. COHESION TINT: Darker warm wash for a richer tone */
-            background: rgba(80, 50, 20, 0.15); 
-
-            /* 2. SOFT VINTAGE VIGNETTE: Stronger, darker edges to focus the eye */
-            box-shadow: inset 0 0 30cqw rgba(20, 10, 5, 0.5);
-
-            /* 3. POST-PROCESSING: 
-               - Sepia: Warmth.
-               - Saturate(85%): Softens the harsh neon colors of emojis.
-               - Brightness(90%): Darkens the overall scene.
-            */
-            backdrop-filter: sepia(30%) saturate(85%) brightness(90%) contrast(105%);
-        }
-        
-        /* Optional: Very subtle texture (noise) to break up the flat vectors */
-        .vintage-overlay::after {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0.03; /* Very faint */
-            background-image: repeating-radial-gradient(
-                circle at 50% 50%, 
-                #000 0, 
-                #000 1px, 
-                transparent 1px, 
-                transparent 2px
-            );
-            background-size: 3px 3px;
-            pointer-events: none;
-        }
+        /* --- REMOVED VINTAGE/CRT OVERLAYS --- */
+        /* The overlay classes have been fully removed to restore clear visuals */
 
         /* --- MAP PROPS --- */
         .map-prop {
@@ -577,8 +510,13 @@
             
             /* Styles matched to Dice Button (#btn-dice) */
             background: linear-gradient(to bottom, #D81B60, #880E4F); 
-            border: 0.5cqw solid rgba(255,255,255,0.3);
-            box-shadow: 0 1cqw 2cqw rgba(0,0,0,0.6);
+            
+            /* UPDATED: Stronger Highlight Border */
+            border: 0.6cqw solid rgba(255,255,255,0.9);
+            box-shadow: 
+                0 1cqw 2cqw rgba(0,0,0,0.6),
+                inset 0 0.5cqw 1cqw rgba(255,255,255,0.4);
+            
             display: flex;
             align-items: center;
             padding: 0 2cqw;
@@ -636,8 +574,13 @@
             width: 25cqw; 
             aspect-ratio: 1.8 / 1; 
             border-radius: 3cqw; /* Reduced from 10cqw */
-            border: 0.5cqw solid rgba(255,255,255,0.3);
-            box-shadow: 0 1cqw 2cqw rgba(0,0,0,0.6);
+            
+            /* UPDATED: Stronger Highlight Border */
+            border: 0.6cqw solid rgba(255,255,255,0.9);
+            box-shadow: 
+                0 1cqw 2cqw rgba(0,0,0,0.6),
+                inset 0 0.5cqw 1cqw rgba(255,255,255,0.4);
+            
             color: white;
             font-size: 7cqw;
             display: flex;
@@ -647,7 +590,8 @@
         }
 
         .btn-blue {
-            background: linear-gradient(to bottom, #1565C0, #0D47A1); 
+            /* UPDATED: Matches the Darker Shop Modal Theme */
+            background: linear-gradient(135deg, #0D47A1, #002171); 
         }
 
         .btn-pink-gradient {
@@ -659,8 +603,13 @@
             aspect-ratio: 2.2 / 1;
             background: linear-gradient(to bottom, var(--ui-teal), var(--ui-teal-dark));
             border-radius: 4cqw; /* Reduced from 10cqw */
-            border: 0.5cqw solid rgba(255,255,255,0.3);
-            box-shadow: 0 1cqw 2cqw rgba(0,0,0,0.6);
+            
+            /* UPDATED: Stronger Highlight Border */
+            border: 0.6cqw solid rgba(255,255,255,0.9);
+            box-shadow: 
+                0 1cqw 2cqw rgba(0,0,0,0.6),
+                inset 0 0.5cqw 1cqw rgba(255,255,255,0.4);
+
             color: white;
             font-size: 9cqw;
             text-transform: uppercase;
@@ -670,6 +619,25 @@
             justify-content: center;
             align-items: center;
             padding-bottom: 2.5cqw; 
+        }
+
+        /* --- NEW STATUS TEXT AREA --- */
+        .ui-status-text {
+            position: absolute;
+            top: 24%; /* Positioned below inventory (approx 20%) but above center buttons */
+            width: 100%;
+            text-align: center;
+            z-index: 40;
+            pointer-events: none;
+
+            /* Styles matched to .enemy-header */
+            font-size: 3.2cqw;
+            opacity: 0.9;
+            color: white;
+            text-transform: uppercase;
+            font-weight: 400;
+            letter-spacing: 0.05cqw;
+            text-shadow: 0 0.2cqw 0.5cqw rgba(0,0,0,0.3);
         }
 
         /* --- SHARED MODAL STYLES --- */
@@ -701,7 +669,8 @@
         }
 
         .shop-modal-style {
-            background: linear-gradient(135deg, #1565C0, #0D47A1); 
+            /* UPDATED: Much Darker Blue */
+            background: linear-gradient(135deg, #0D47A1, #002171); 
         }
         
         /* SELF MODAL & SUMMARY MODAL SPECIFICS */
@@ -1288,6 +1257,9 @@
 
             <div class="ui-controls-main">
                 
+                <!-- New Text Area (Absolute positioned so it doesn't move buttons) -->
+                <div class="ui-status-text">Placeholder Text.</div>
+
                 <div class="camera-row">
                     <!-- Shop Button -->
                     <div class="secondary-action-btn btn-blue btn-pressable" id="btn-shop">🏪</div>
@@ -1301,8 +1273,7 @@
             </div>
         </div>
         
-        <!-- Updated Overlay Class -->
-        <div class="vintage-overlay"></div>
+        <!-- REMOVED: .vintage-overlay div -->
 
     </div>
 
@@ -1500,20 +1471,38 @@
 
                 if (steps > minSteps && currentIndex === targetIndex) {
                     isRolling = false;
-                    slots[currentIndex].style.transform = "scale(1.2)";
-                    
-                    // --- FINISH ---
                     clearInterval(borderInterval);
 
-                    strip.style.transition = "border-color 0.5s ease";
-                    strip.style.borderColor = "rgba(255,255,255,0.3)";
+                    // --- VISUAL POP FOR WINNER ---
+                    const winningSlot = slots[currentIndex];
 
+                    // 1. Flash the border Gold & Glow
+                    strip.style.transition = "border-color 0.1s ease, box-shadow 0.1s ease";
+                    strip.style.borderColor = "#FFD700"; 
+                    strip.style.boxShadow = "0 0 2cqw #FFD700"; 
+
+                    // 2. Pop the winning number significantly
+                    winningSlot.style.transition = "transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
+                    winningSlot.style.transform = "scale(1.8)";
+                    winningSlot.style.textShadow = "0 0 2cqw #FFD700";
+
+                    // 3. Reset after delay
                     setTimeout(() => {
-                        slots[currentIndex].style.transform = "";
+                        // Reset border
+                        strip.style.transition = "border-color 0.5s ease, box-shadow 0.5s ease";
+                        strip.style.borderColor = "rgba(255,255,255,0.9)";
+                        strip.style.boxShadow = "0 1cqw 2cqw rgba(0,0,0,0.6), inset 0 0.5cqw 1cqw rgba(255,255,255,0.4)";
+                        
+                        // Reset slot
+                        winningSlot.style.transform = "scale(1)";
+                        winningSlot.style.textShadow = "";
+                        
+                        // Small timeout to remove transition from slot so it doesn't lag later
                         setTimeout(() => {
-                            strip.style.transition = "";
-                        }, 500);
-                    }, 200);
+                            winningSlot.style.transition = "";
+                        }, 300);
+                        
+                    }, 1000); // Hold the pop for 1 second
                     return;
                 }
 
