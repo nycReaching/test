@@ -8,14 +8,35 @@
     <style>
         /* --- RESET & VARIABLES --- */
         :root {
+            /* GOLD */
             --ui-gold: #FFD700;
             --ui-gold-dark: #FFA000;
+            
+            /* PURPLE */
+            --ui-purple-light: #E1BEE7;
             --ui-purple: #9C27B0;
             --ui-purple-dark: #4A148C;
+            
+            /* RED */
+            --ui-red-light: #FF8A80; /* Bright accent */
             --ui-red: #D32F2F;
-            --ui-red-dark: #B71C1C;
+            --ui-red-dark: #8b0000;
+            
+            /* TEAL */
+            --ui-teal-light: #84FFFF;
             --ui-teal: #00BCD4;
             --ui-teal-dark: #006064;
+            
+            /* BLUE */
+            --ui-blue-light: #82B1FF;
+            --ui-blue: #0D47A1;
+            --ui-blue-dark: #002171;
+
+            /* PINK */
+            --ui-pink-light: #FF80AB;
+            --ui-pink: #D81B60;
+            --ui-pink-dark: #880E4F;
+
             --ui-brown: #5D4037;
             --ui-brown-dark: #3E2723;
             --ui-dark: #1a1a1a;
@@ -74,7 +95,6 @@
             width: 100%;
             height: 100%;
             z-index: 0; 
-            /* UPDATED: Removed grid lines, kept green gradient */
             background: linear-gradient(180deg, #b2ff59 0%, #002b00 100%);
         }
 
@@ -278,12 +298,12 @@
             min-height: 42%; 
             background: linear-gradient(180deg, #d32f2f 0%, #5d0000 100%);
             
-            /* UPDATED: Aggressive Highlight Border (Red) */
-            border-left: 0.8cqw solid #FF5252;
-            border-bottom: 0.8cqw solid #FF5252;
+            /* UPDATED: Lighting Borders (Accent Left, Shadow Bottom) */
+            border-left: 0.8cqw solid var(--ui-red-light);
+            border-bottom: 0.8cqw solid var(--ui-red-dark);
             border-bottom-left-radius: 4cqw;
 
-            /* UPDATED: Inset Shadow to match buttons */
+            /* Inset Shadow */
             box-shadow: 
                 -1cqw 1cqw 2cqw rgba(0,0,0,0.6),
                 inset 0 0.5cqw 1cqw rgba(255,255,255,0.4);
@@ -420,9 +440,11 @@
             background: linear-gradient(135deg, var(--ui-purple) 0%, var(--ui-purple-dark) 100%);
             border-radius: 2cqw;
             
-            /* UPDATED: Aggressive Highlight Border (Bright Purple) */
-            border: 0.8cqw solid #EA80FC; 
-            border-left: none; /* Keep attached to side */
+            /* UPDATED: Thinner borders, "Accent" sides */
+            border-style: solid;
+            border-width: 0.4cqw;
+            border-color: var(--ui-purple-light) var(--ui-purple-dark) var(--ui-purple-dark) var(--ui-purple-light);
+            /* Top & Left = Light, Bottom & Right = Dark */
             
             box-shadow: 
                 1cqw 1cqw 1.5cqw rgba(0,0,0,0.5),
@@ -517,8 +539,12 @@
             /* Styles matched to Dice Button (#btn-dice) */
             background: linear-gradient(to bottom, #D81B60, #880E4F); 
             
-            /* UPDATED: Aggressive Highlight Border (Pink) */
-            border: 0.8cqw solid #FF80AB; 
+            /* UPDATED: "Accent" sides */
+            border-style: solid;
+            border-width: 0.8cqw;
+            border-color: var(--ui-pink-light) var(--ui-pink-dark) var(--ui-pink-dark) var(--ui-pink-light);
+            /* Top & Left = Light, Bottom & Right = Dark */
+
             box-shadow: 
                 0 1cqw 2cqw rgba(0,0,0,0.6),
                 inset 0 0.5cqw 1cqw rgba(255,255,255,0.2);
@@ -581,9 +607,10 @@
             aspect-ratio: 1.8 / 1; 
             border-radius: 3cqw; 
             
-            /* Highlight border set by specific classes now */
-            border-width: 0.8cqw;
+            /* UPDATED: Generic "Accent" setup */
             border-style: solid;
+            border-width: 0.8cqw;
+            /* Colors defined in specific classes */
 
             box-shadow: 
                 0 1cqw 2cqw rgba(0,0,0,0.6),
@@ -600,15 +627,15 @@
         .btn-blue {
             /* Blue Theme */
             background: linear-gradient(135deg, #0D47A1, #002171); 
-            /* Aggressive Highlight: Bright Blue */
-            border-color: #64B5F6;
+            /* Light Top/Left, Dark Bottom/Right */
+            border-color: var(--ui-blue-light) var(--ui-blue-dark) var(--ui-blue-dark) var(--ui-blue-light);
         }
 
         .btn-pink-gradient {
             /* Pink Theme */
             background: linear-gradient(to bottom, #D81B60, #880E4F); 
-            /* Aggressive Highlight: Bright Pink */
-            border-color: #FF80AB;
+            /* Light Top/Left, Dark Bottom/Right */
+            border-color: var(--ui-pink-light) var(--ui-pink-dark) var(--ui-pink-dark) var(--ui-pink-light);
         }
 
         .main-action-btn {
@@ -617,8 +644,10 @@
             background: linear-gradient(to bottom, var(--ui-teal), var(--ui-teal-dark));
             border-radius: 4cqw; 
             
-            /* Aggressive Highlight: Bright Teal */
-            border: 0.8cqw solid #4DD0E1;
+            /* Teal Accent: Light Top/Left, Dark Bottom/Right */
+            border-style: solid;
+            border-width: 0.8cqw;
+            border-color: var(--ui-teal-light) var(--ui-teal-dark) var(--ui-teal-dark) var(--ui-teal-light);
             
             box-shadow: 
                 0 1cqw 2cqw rgba(0,0,0,0.6),
@@ -665,7 +694,6 @@
         }
         .rainbow-text {
             animation: rainbowText 0.6s linear infinite;
-            /* UPDATED: Removed text-shadow and bold weight */
         }
 
         /* --- SHARED MODAL STYLES --- */
