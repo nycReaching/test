@@ -53,14 +53,30 @@ const App = () => {
         <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-emerald-800/20 rounded-full blur-[80px] animate-blob animation-delay-2000"></div>
 
         {/* Central Content Placeholder (The "Game" View) */}
-        {/* Adjusted padding: pb-16 brings it down from the previous pb-32, creating a balanced space */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none pb-16">
           <div className={`transition-all duration-700 ease-out transform ${activePanel ? 'scale-90 opacity-50 blur-sm translate-y-[-5%]' : 'scale-100 opacity-100'}`}>
             <div className="relative group">
               {/* Gradient border glow */}
               <div className="absolute -inset-1 bg-gradient-to-r from-rose-500 to-emerald-600 rounded-2xl blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
               
-              <div className="relative w-64 h-[28rem] bg-stone-900/80 backdrop-blur-xl border border-white/10 rounded-2xl flex flex-col items-center justify-end pb-8 shadow-2xl">
+              <div className="relative w-64 h-[28rem] bg-stone-900/80 backdrop-blur-xl border border-white/10 rounded-2xl flex flex-col items-center justify-end pb-8 shadow-2xl overflow-hidden">
+                 
+                 {/* IMAGE INSERTED HERE */}
+                 {/* Using a placeholder styling if image fails to load, but src is set to fiend.jpg */}
+                 <div className="mb-6 rounded-lg overflow-hidden shadow-lg border border-white/10 relative w-48 h-48 bg-black/50">
+                    <img 
+                      src="fiend.jpg" 
+                      alt="Fiend" 
+                      className="w-full h-full object-cover opacity-90 hover:opacity-100 transition-opacity"
+                      onError={(e) => {
+                        e.target.onerror = null; 
+                        e.target.src = "https://placehold.co/400x400/290505/FFF?text=Fiend"; // Fallback just in case
+                      }}
+                    />
+                    {/* Inner shadow overlay for mood */}
+                    <div className="absolute inset-0 shadow-[inset_0_0_20px_rgba(0,0,0,0.8)] pointer-events-none"></div>
+                 </div>
+
                  <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-rose-400 to-emerald-400 tracking-widest text-center px-2">DRAGON BLADE</h2>
                  <p className="text-stone-500 text-xs mt-2 uppercase tracking-widest">Hope and Grace</p>
               </div>
@@ -112,7 +128,7 @@ const App = () => {
                 </div>
              </div>
              
-             {/* Energy Bar - SCALED DOWN */}
+             {/* Energy Bar */}
              <div className="flex items-center gap-2 bg-stone-900/40 backdrop-blur-sm rounded-full px-3 py-1 border border-emerald-500/30 shadow-lg shadow-emerald-900/20">
                 <Zap className="w-3 h-3 text-emerald-400 fill-current" />
                 <span className="text-[10px] font-mono font-bold text-emerald-100">{energy}/100</span>
@@ -202,25 +218,29 @@ const App = () => {
               />
             </div>
 
-            {/* Main Action Button (Floating above dock) */}
+            {/* Main Action Button - MODIFIED: Dark Blue/Red Swirl, Thinner Border */}
             <div className="relative -top-8 mx-4">
                <button 
-                 className="group relative w-20 h-20 rounded-full bg-gradient-to-b from-rose-500 to-emerald-700 shadow-[0_0_30px_rgba(225,29,72,0.4)] flex items-center justify-center transform transition-all duration-300 hover:scale-105 active:scale-95 border-4 border-stone-900"
+                 className="group relative w-20 h-20 rounded-full shadow-[0_0_30px_rgba(30,58,138,0.4)] flex items-center justify-center transform transition-all duration-300 hover:scale-105 active:scale-95 border-2 border-stone-600/50 overflow-hidden"
                  onClick={() => setEnergy(prev => Math.max(0, prev - 10))}
                >
-                 <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-white/30 to-transparent opacity-50"></div>
+                 {/* Conic Gradient for Swirl Effect */}
+                 <div className="absolute inset-0 bg-[conic-gradient(at_center,_var(--tw-gradient-stops))] from-blue-950 via-red-900 to-blue-950 animate-[spin_10s_linear_infinite]"></div>
+                 
+                 {/* Gloss Overlay */}
+                 <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-white/20 to-transparent opacity-50 pointer-events-none"></div>
+                 
                  {/* Ripple Effect Ring */}
-                 <div className="absolute -inset-1 rounded-full border border-rose-500/30 opacity-0 group-active:animate-ping"></div>
+                 <div className="absolute -inset-1 rounded-full border border-red-500/30 opacity-0 group-active:animate-ping pointer-events-none"></div>
                </button>
             </div>
 
-            {/* Right Group */}
+            {/* Right Group - MODIFIED: Orange/Purple Gradient, Thinner Border */}
             <div className="flex flex-1 justify-center items-center">
               <button 
-                className="group relative w-14 h-14 rounded-2xl bg-gradient-to-b from-rose-500 to-emerald-700 shadow-[0_0_20px_rgba(225,29,72,0.3)] flex items-center justify-center transform transition-all duration-300 hover:scale-105 active:scale-95 border-4 border-stone-900"
+                className="group relative w-14 h-14 rounded-2xl bg-gradient-to-tr from-orange-400/80 to-purple-600/80 shadow-[0_0_20px_rgba(168,85,247,0.3)] flex items-center justify-center transform transition-all duration-300 hover:scale-105 active:scale-95 border-2 border-stone-600/50"
               >
                  <div className="absolute inset-0 rounded-xl bg-gradient-to-tr from-white/30 to-transparent opacity-50"></div>
-                 {/* Empty Button */}
               </button>
             </div>
 
