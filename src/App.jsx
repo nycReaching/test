@@ -2,24 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { 
   Shield, 
   Zap, 
-  Menu, 
   X, 
   Backpack, 
   Map as MapIcon, 
-  Sword, 
   Settings, 
   Gem, 
   Coins, 
-  ChevronRight,
   Sparkles,
-  Layers
+  Layers,
+  LayoutGrid
 } from 'lucide-react';
 
 const App = () => {
   // State for active panels and interactions
   const [activePanel, setActivePanel] = useState(null);
-  const [activeTab, setActiveTab] = useState('overview');
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [energy, setEnergy] = useState(85);
 
   // Prevent default touch behaviors (like pull-to-refresh) for a native app feel
@@ -51,7 +47,8 @@ const App = () => {
       {/* --- BACKGROUND & AMBIANCE --- */}
       {/* This represents the "Game World" behind the UI */}
       <div className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-900 via-slate-900 to-black">
-        <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] animate-pulse"></div>
+        {/* Changed texture from cubes to black-scales for a curved feel */}
+        <div className="absolute inset-0 opacity-30 bg-[url('https://www.transparenttextures.com/patterns/black-scales.png')] animate-pulse"></div>
         
         {/* Animated Orbs for depth */}
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-[100px] animate-blob"></div>
@@ -193,49 +190,51 @@ const App = () => {
           {/* Glass Dock Background */}
           <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl"></div>
           
-          <div className="relative flex justify-between items-center px-2 py-2">
+          <div className="relative flex justify-between items-center px-4 py-2">
             
             {/* Left Group */}
-            <DockItem 
-              icon={Shield} 
-              label="Hero" 
-              isActive={activePanel === 'hero'}
-              onClick={() => togglePanel('hero')} 
-            />
-            <DockItem 
-              icon={Backpack} 
-              label="Bag" 
-              isActive={activePanel === 'inventory'}
-              onClick={() => togglePanel('inventory')} 
-            />
+            <div className="flex gap-1 flex-1">
+              <DockItem 
+                icon={Shield} 
+                label="Hero" 
+                isActive={activePanel === 'hero'}
+                onClick={() => togglePanel('hero')} 
+              />
+              <DockItem 
+                icon={Backpack} 
+                label="Bag" 
+                isActive={activePanel === 'inventory'}
+                onClick={() => togglePanel('inventory')} 
+              />
+            </div>
 
-            {/* Main Action Button (Floating above dock) */}
-            <div className="relative -top-8 mx-2">
+            {/* Main Action Button (Floating above dock) - Sword Removed */}
+            <div className="relative -top-8 mx-4">
                <button 
                  className="group relative w-20 h-20 rounded-full bg-gradient-to-b from-cyan-400 to-blue-600 shadow-[0_0_30px_rgba(34,211,238,0.4)] flex items-center justify-center transform transition-all duration-300 hover:scale-105 active:scale-95 border-4 border-slate-900"
                  onClick={() => setEnergy(prev => Math.max(0, prev - 10))}
                >
                  <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-white/40 to-transparent opacity-50"></div>
-                 <Sword className="w-8 h-8 text-white fill-current drop-shadow-md group-hover:rotate-12 transition-transform duration-300" />
+                 {/* Icon removed for clean energy look */}
+                 <div className="w-3 h-3 bg-white rounded-full shadow-[0_0_10px_white] animate-pulse"></div>
                  
                  {/* Ripple Effect Ring */}
                  <div className="absolute -inset-1 rounded-full border border-cyan-400/30 opacity-0 group-active:animate-ping"></div>
                </button>
             </div>
 
-            {/* Right Group */}
-            <DockItem 
-              icon={Sparkles} 
-              label="Craft" 
-              isActive={activePanel === 'craft'}
-              onClick={() => togglePanel('craft')} 
-            />
-            <DockItem 
-              icon={Menu} 
-              label="Menu" 
-              isActive={activePanel === 'settings'}
-              onClick={() => togglePanel('settings')} 
-            />
+            {/* Right Group - Modified: 1 Square Button */}
+            <div className="flex flex-1 justify-end items-center">
+              <button 
+                onClick={() => togglePanel('settings')}
+                className={`relative w-12 h-12 rounded-2xl border border-white/10 flex items-center justify-center transition-all duration-300 shadow-lg ${activePanel === 'settings' ? 'bg-cyan-500/20 border-cyan-400/50' : 'bg-slate-800/50 hover:bg-slate-700/50'}`}
+              >
+                <LayoutGrid className={`w-6 h-6 ${activePanel === 'settings' ? 'text-cyan-300' : 'text-slate-300'}`} />
+                {activePanel === 'settings' && (
+                  <div className="absolute -bottom-1 w-1 h-1 bg-cyan-400 rounded-full shadow-[0_0_5px_cyan]"></div>
+                )}
+              </button>
+            </div>
 
           </div>
         </div>
@@ -309,9 +308,5 @@ const SettingsToggle = ({ label, desc, active }) => {
     </div>
   );
 }
-
-// Add custom tailwind styles for animations if needed via style tag or config
-// For this snippet, we use standard classes and some arbitrary values.
-// The 'safe-top' and 'safe-bottom' classes assume an environment that supports env(safe-area-inset).
 
 export default App;
