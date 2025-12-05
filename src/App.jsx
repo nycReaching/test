@@ -1,25 +1,21 @@
+'use client';
+
 import React, { useState } from 'react';
 import { motion, AnimatePresence, useAnimation } from 'framer-motion';
-import { 
-  Sparkles,
-  X
-} from 'lucide-react';
+import { Sparkles, X } from 'lucide-react';
 
 /**
- * --- GAME THEME CONFIGURATION ---
- * We use a "Pop" palette: bold colors, thick borders.
+ * --- CONFIGURATION ---
  */
 const COLORS = {
   bg: "bg-indigo-950",
 };
 
 /**
- * --- COMPONENTS ---
+ * --- SUB-COMPONENTS ---
  */
 
-// A chunky, game-style button with a thick bottom border for 3D effect
 const ChunkyButton = ({ onClick, color = "indigo", emoji, label, disabled, size = "md", className = "" }) => {
-  // Map colors to specific tailwind classes for the "3D" look
   const themes = {
     indigo: "bg-indigo-500 border-indigo-800 hover:bg-indigo-400 text-white",
     rose:   "bg-rose-500 border-rose-800 hover:bg-rose-400 text-white",
@@ -53,13 +49,11 @@ const ChunkyButton = ({ onClick, color = "indigo", emoji, label, disabled, size 
         {emoji && <span className={size === 'lg' ? "text-3xl" : "text-xl"}>{emoji}</span>}
         <span className="drop-shadow-md">{label}</span>
       </div>
-      {/* Glossy highlight */}
       <div className="absolute top-2 left-2 right-2 h-1/3 bg-white/20 rounded-full pointer-events-none" />
     </motion.button>
   );
 };
 
-// A stat display that looks like a sticker or token
 const StatBadge = ({ emoji, value, label, shake }) => {
   return (
     <motion.div 
@@ -77,28 +71,24 @@ const StatBadge = ({ emoji, value, label, shake }) => {
   );
 };
 
-// Floating damage numbers / text
 const FloatingText = ({ x, y, text, color, scale = 1, onComplete }) => {
+  // Safe default colors to avoid runtime errors if color prop is missing
+  let gradient = 'linear-gradient(to bottom, #ffffff, #94a3b8)';
+  if (color === 'red') gradient = 'linear-gradient(to bottom, #fca5a5, #ef4444)';
+  if (color === 'gold') gradient = 'linear-gradient(to bottom, #fde047, #eab308)';
+
   return (
     <motion.div
       initial={{ opacity: 1, y: 0, scale: 0.5 * scale, rotate: Math.random() * 20 - 10 }}
       animate={{ opacity: 0, y: -100, scale: 1.5 * scale }}
       transition={{ duration: 0.8, ease: "easeOut" }}
       onAnimationComplete={onComplete}
-      className={`
-        absolute font-black whitespace-nowrap pointer-events-none z-50
-        text-transparent bg-clip-text bg-gradient-to-b
-        drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]
-      `}
+      className="absolute font-black whitespace-nowrap pointer-events-none z-50 text-transparent bg-clip-text drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]"
       style={{ 
         left: x, 
         top: y,
         fontSize: '2rem',
-        backgroundImage: color === 'red' 
-          ? 'linear-gradient(to bottom, #fca5a5, #ef4444)' 
-          : color === 'gold' 
-          ? 'linear-gradient(to bottom, #fde047, #eab308)'
-          : 'linear-gradient(to bottom, #ffffff, #94a3b8)'
+        backgroundImage: gradient
       }}
     >
       {text}
@@ -122,7 +112,6 @@ const InventoryModal = ({ isOpen, onClose, items, equipItem }) => {
             exit={{ scale: 0.8, opacity: 0, y: 50 }}
             className="fixed inset-x-4 top-20 bottom-20 bg-slate-800 rounded-3xl z-50 shadow-2xl border-[6px] border-slate-600 flex flex-col overflow-hidden"
           >
-            {/* Header looking like a wooden plank or metal bar */}
             <div className="bg-slate-700 p-4 border-b-4 border-slate-600 flex justify-between items-center shadow-md">
               <h2 className="text-2xl font-black text-white flex items-center gap-2 uppercase tracking-widest drop-shadow-md">
                 <span className="text-3xl">🎒</span> Backpack
@@ -132,11 +121,12 @@ const InventoryModal = ({ isOpen, onClose, items, equipItem }) => {
               </button>
             </div>
 
-            <div className="p-4 grid grid-cols-3 gap-4 overflow-y-auto content-start flex-1 bg-[radial-gradient(#334155_1px,transparent_1px)] [background-size:16px_16px]">
+            {/* Using standard Tailwind classes instead of JIT syntax to be safe */}
+            <div className="p-4 grid grid-cols-3 gap-4 overflow-y-auto content-start flex-1 bg-slate-800">
               {items.map((item) => (
                 <motion.button
                   key={item.id}
-                  layoutId={item.id}
+                  layoutId={`item-${item.id}`} // Ensure unique layoutId
                   onClick={() => equipItem(item)}
                   whileTap={{ scale: 0.9 }}
                   className={`
@@ -154,7 +144,6 @@ const InventoryModal = ({ isOpen, onClose, items, equipItem }) => {
                 </motion.button>
               ))}
               
-              {/* Empty slots */}
               {[...Array(5)].map((_, i) => (
                 <div key={`empty-${i}`} className="aspect-square bg-slate-900/40 rounded-2xl border-4 border-slate-700 border-dashed flex items-center justify-center opacity-50">
                    <div className="w-2 h-2 rounded-full bg-slate-700" />
@@ -169,17 +158,19 @@ const InventoryModal = ({ isOpen, onClose, items, equipItem }) => {
 };
 
 /**
- * --- MAIN APP ---
+ * --- MAIN APP COMPONENT ---
  */
 
-export default function RoguelikePrototype() {
+export default function App() {
+  // Game Constants
+  const maxHp = 100; // Static constants to satisfy linters
+  const enemyMaxHp = 50;
+
   // Game State
   const [hp] = useState(85);
-  // Removed unused maxHp
   const [gold] = useState(120);
   const [energy, setEnergy] = useState(3);
   const [enemyHp, setEnemyHp] = useState(50);
-  const [enemyMaxHp] = useState(50);
   const [level, setLevel] = useState(1);
   
   // UI State
@@ -276,7 +267,7 @@ export default function RoguelikePrototype() {
       {/* TOP HUD */}
       <header className="p-4 pt-6 flex justify-between items-start z-20 shrink-0">
         <div className="flex gap-4">
-          <StatBadge emoji="❤️" value={hp} label="Health" shake={hp < 30} />
+          <StatBadge emoji="❤️" value={`${hp}/${maxHp}`} label="Health" shake={hp < 30} />
           <StatBadge emoji="⚡" value={energy} label="Energy" shake={energy === 0} />
         </div>
         
