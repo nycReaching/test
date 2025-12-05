@@ -1,1598 +1,317 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#000000">
-    <title>Backyard Birding - Clean Edition</title>
-    <style>
-        /* --- RESET & VARIABLES --- */
-        :root {
-            /* GOLD */
-            --ui-gold: #FFD700;
-            --ui-gold-dark: #FFA000;
-            
-            /* PURPLE */
-            --ui-purple-light: #E1BEE7;
-            --ui-purple: #9C27B0;
-            --ui-purple-dark: #4A148C;
-            
-            /* RED */
-            --ui-red-light: #FF8A80; /* Bright accent */
-            --ui-red: #D32F2F;
-            --ui-red-dark: #8b0000;
-            
-            /* TEAL */
-            --ui-teal-light: #84FFFF;
-            --ui-teal: #00BCD4;
-            --ui-teal-dark: #006064;
-            
-            /* BLUE */
-            --ui-blue-light: #82B1FF;
-            --ui-blue: #0D47A1;
-            --ui-blue-dark: #002171;
+import React, { useState, useEffect } from 'react';
+import { 
+  Shield, 
+  Zap, 
+  Menu, 
+  X, 
+  Backpack, 
+  Map as MapIcon, 
+  Sword, 
+  Settings, 
+  Gem, 
+  Coins, 
+  ChevronRight,
+  Sparkles,
+  Layers
+} from 'lucide-react';
 
-            /* PINK */
-            --ui-pink-light: #FF80AB;
-            --ui-pink: #D81B60;
-            --ui-pink-dark: #880E4F;
+const App = () => {
+  // State for active panels and interactions
+  const [activePanel, setActivePanel] = useState(null);
+  const [activeTab, setActiveTab] = useState('overview');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [energy, setEnergy] = useState(85);
 
-            --ui-brown: #5D4037;
-            --ui-brown-dark: #3E2723;
-            --ui-dark: #1a1a1a;
-            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
+  // Prevent default touch behaviors (like pull-to-refresh) for a native app feel
+  useEffect(() => {
+    const preventDefault = (e) => e.preventDefault();
+    document.body.addEventListener('touchmove', preventDefault, { passive: false });
+    return () => document.body.removeEventListener('touchmove', preventDefault);
+  }, []);
 
-        * {
-            box-sizing: border-box;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
+  // Simulate energy regeneration
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setEnergy(e => (e < 100 ? e + 1 : 100));
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
-        body {
-            margin: 0;
-            padding: 0;
-            width: 100vw;
-            height: 100dvh; /* Dynamic viewport height for mobile browsers */
-            overflow: hidden;
-            font-family: var(--font-main);
-            background-color: #000; /* Letterbox color */
-            
-            /* CRITICAL: Center the game stage */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+  const togglePanel = (panelName) => {
+    if (activePanel === panelName) {
+      setActivePanel(null);
+    } else {
+      setActivePanel(panelName);
+    }
+  };
 
-        /* --- MASTER CONTAINER --- */
-        #game-viewport {
-            position: relative;
-            
-            /* 1. Define the Aspect Ratio (9:16 is standard mobile portrait) */
-            aspect-ratio: 9 / 16;
-            
-            /* 2. Scale logic: Fill width or height, whichever is smaller, never exceeding screen */
-            height: 100%;
-            max-height: 100dvh;
-            width: auto;
-            max-width: 100vw;
-
-            background: black;
-            box-shadow: 0 0 0 100vmax black; /* Visual matte for letterboxing */
-            
-            /* 3. Enable Container Queries for internal elements */
-            container-type: size; 
-            
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        #game-background {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0; 
-            background: linear-gradient(180deg, #b2ff59 0%, #002b00 100%);
-        }
-
-        /* --- MAP PROPS --- */
-        .map-prop {
-            position: absolute;
-            z-index: 5; 
-        }
-
-        /* --- ITEM CONTAINERS --- */
-        .item-container {
-            width: 18cqw;  
-            aspect-ratio: 1 / 1; 
-            height: auto;
-            border-radius: 1.5cqw; 
-            border: none;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 1cqw 1cqw 2cqw rgba(0,0,0,0.5);
-            transform: translate(-50%, -50%) skewX(-12deg);
-            position: absolute; 
-        }
+  return (
+    <div className="relative w-full h-[100dvh] bg-slate-900 overflow-hidden font-sans select-none text-slate-100">
+      
+      {/* --- BACKGROUND & AMBIANCE --- */}
+      {/* This represents the "Game World" behind the UI */}
+      <div className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-900 via-slate-900 to-black">
+        <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] animate-pulse"></div>
         
-        .item-container .inner-emoji {
-            transform: skewX(12deg);
-        }
-
-        .prop-number {
-            position: absolute;
-            bottom: -5%;
-            right: -5%;
-            font-size: 8cqw;
-            color: white;
-            font-weight: 900;
-            transform: skewX(12deg);
-            text-shadow: 0 0.5cqw 1cqw rgba(0,0,0,0.8);
-            z-index: 10;
-            line-height: 1;
-        }
-
-        /* ITEMS: CENTER COLUMN (Lifted up by ~5%) */
-        .prop-telescope {
-            top: 15%; /* Was 20% */
-            left: 42%; 
-            background: #283593; 
-        }
-        .prop-telescope .inner-emoji { font-size: 10cqw; }
-
-        .prop-bathtub {
-            top: 30%; /* Was 35% */
-            left: 42%; 
-            background: #00ACC1; 
-        }
-        .prop-bathtub .inner-emoji { font-size: 11cqw; }
-
-        .prop-scales {
-            top: 45%; /* Was 50% */
-            left: 42%;
-            background: #5D4037; 
-        }
-        .prop-scales .inner-emoji { font-size: 10cqw; }
-
-
-        /* --- TREES & HOUSE: BOTTOM LEFT QUADRANT --- */
-        .prop-tree {
-            bottom: 30%; 
-            font-size: 24cqw; 
-            filter: drop-shadow(0 1cqw 1cqw rgba(0,0,0,0.3));
-            pointer-events: none;
-        }
-
-        .tree-1 { left: 8%; z-index: 5; } 
-        .tree-2 { left: 21%; z-index: 6; } 
-        .tree-3 { left: 34%; z-index: 5; }
-
-        .prop-house-tiny {
-            bottom: 39%; 
-            left: 20%; 
-            font-size: 9cqw; 
-            z-index: 7;
-            filter: drop-shadow(0 0.5cqw 1cqw rgba(0,0,0,0.5));
-            pointer-events: none;
-        }
-
-        /* Candle */
-        .prop-candle {
-            bottom: 30%;
-            left: 8%; 
-            font-size: 6cqw; 
-            filter: drop-shadow(0 0 1cqw rgba(255, 200, 0, 0.6));
-            z-index: 8;
-            pointer-events: none;
-        }
-
-        /* --- SPROUTS & WORM: RIGHT SIDE (MID-HEIGHT) --- */
-        .prop-sprout-layer {
-            position: absolute;
-            bottom: 45%; 
-            font-size: 6cqw;
-            filter: drop-shadow(0 0.5cqw 0.5cqw rgba(0,0,0,0.3));
-            z-index: 4;
-        }
-        
-        .sprout-1 { left: 65%; }
-        .sprout-2 { left: 75%; }
-        .sprout-3 { left: 85%; }
-
-        .prop-worm {
-            bottom: 47%; 
-            left: 75%;   
-            font-size: 10cqw; 
-            filter: drop-shadow(0 0.5cqw 0.5cqw rgba(0,0,0,0.4));
-            z-index: 5;
-            transform: translateX(-20%); 
-            pointer-events: none;
-        }
-
-        /* --- FLOWERS: BOTTOM RIGHT QUADRANT --- */
-        .prop-flower {
-            bottom: 30%; 
-            font-size: 11cqw; 
-            filter: drop-shadow(0 0.5cqw 0.5cqw rgba(0,0,0,0.3));
-            pointer-events: none;
-        }
-        
-        .flower-1 { left: 58%; } 
-        .flower-2 { left: 65%; } 
-        .flower-3 { left: 72%; } 
-        .flower-4 { left: 79%; }
-        .flower-5 { left: 86%; }
-
-
-        /* --- SHARED STYLES --- */
-        .panel {
-            box-shadow: 0 1cqw 1.5cqw rgba(0,0,0,0.6);
-            color: white;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .btn-pressable {
-            transition: transform 0.1s, filter 0.1s;
-            cursor: pointer;
-        }
-        .btn-pressable:active {
-            transform: scale(0.95);
-            filter: brightness(0.9);
-        }
-
-        /* --- 1. TOP LEFT: PLAYER STATS --- */
-        .ui-stats-bar {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 65%;
-            height: 8%;
-            background: linear-gradient(135deg, var(--ui-gold) 0%, var(--ui-gold-dark) 100%);
-            clip-path: polygon(0 0, 100% 0, 95% 100%, 0% 100%);
-            display: flex;
-            justify-content: space-between; 
-            align-items: center;
-            padding-left: 4cqw;
-            padding-right: 10cqw; 
-            z-index: 20;
-            filter: drop-shadow(0 1cqw 1cqw rgba(0,0,0,0.5));
-        }
-
-        .stat-group {
-            display: flex;
-            flex-direction: column;
-            line-height: 1;
-            justify-content: center;
-            align-items: center; 
-        }
-
-        .stat-label { 
-            font-size: 3cqw; 
-            opacity: 0.8; 
-            color: #443300;
-            text-transform: uppercase; 
-        }
-        .stat-value { 
-            font-size: 5cqw; 
-            font-weight: 800;
-        }
-        .stat-funds { color: #006400; } 
-        .stat-day { color: #5D4037; }
-        .stat-luck { color: #C2185B; } 
-
-
-        /* --- 2. TOP RIGHT: ENEMY PROGRESS --- */
-        .ui-event-panel {
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 30%;
-            height: auto; 
-            min-height: 42%; 
-            background: linear-gradient(180deg, #d32f2f 0%, #5d0000 100%);
-            
-            /* UPDATED: Lighting Borders (Accent Left, Shadow Bottom) */
-            border-left: 0.8cqw solid var(--ui-red-light);
-            border-bottom: 0.8cqw solid var(--ui-red-dark);
-            border-bottom-left-radius: 4cqw;
-
-            /* Inset Shadow */
-            box-shadow: 
-                -1cqw 1cqw 2cqw rgba(0,0,0,0.6),
-                inset 0 0.5cqw 1cqw rgba(255,255,255,0.4);
-
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-evenly; 
-            padding-top: 2cqw; 
-            padding-bottom: 3cqw;
-            gap: 1.5cqw; 
-            z-index: 20;
-        }
-
-        .enemy-header {
-            font-size: 3.2cqw; 
-            opacity: 0.9;
-            color: white;
-            text-transform: uppercase;
-            font-weight: 400; 
-            margin-bottom: 0;
-            letter-spacing: 0.05cqw;
-            text-shadow: 0 0.2cqw 0.5cqw rgba(0,0,0,0.3);
-        }
-
-        .meter-group {
-            width: 85%;
-            display: flex;
-            flex-direction: column;
-            gap: 1.5cqw; 
-            background: transparent; 
-            padding: 0; 
-            border-radius: 1.5cqw;
-        }
-
-        .meter-container {
-            width: 100%;
-            display: flex;
-            flex-direction: row; 
-            gap: 2cqw;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .meter-icon {
-            font-size: 7cqw; 
-            width: 7cqw;
-            text-align: center;
-            filter: drop-shadow(0 0.2cqw 0.2cqw rgba(0,0,0,0.6));
-        }
-
-        .meter-bar {
-            flex-grow: 1;
-            height: 2.2cqw; 
-            background: rgba(0,0,0,0.4);
-            border-radius: 1cqw;
-            border: 1px solid rgba(255,255,255,0.1);
-            overflow: hidden;
-        }
-
-        .meter-fill {
-            height: 100%;
-            border-radius: 1cqw;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.3);
-        }
-
-        .fill-red { background: #ff5252; width: 85%; }
-        .fill-orange { background: #ff9800; width: 45%; }
-        .fill-grey { background: #90a4ae; width: 20%; }
-
-        .sabotage-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            gap: 1cqw;
-            margin-top: 2cqw; 
-        }
-
-        .sabotage-label {
-            font-size: 3.2cqw; 
-            opacity: 0.9;
-            color: white;
-            text-transform: uppercase;
-            font-weight: 400; 
-        }
-
-        .neighbor-slots-row {
-            display: flex;
-            gap: 2cqw;
-            margin-bottom: 0;
-            margin-top: 0.5cqw; 
-        }
-
-        .neighbor-slot {
-            width: 12cqw; 
-            aspect-ratio: 1;
-            background: rgba(0,0,0,0.2);
-            border: none; 
-            border-radius: 2cqw;
-            box-shadow: inset 0 0.5cqw 1cqw rgba(0,0,0,0.3);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 7cqw; 
-        }
-
-        /* --- 3. LEFT SIDEBAR (Lifted up) --- */
-        .ui-sidebar-container {
-            position: absolute;
-            top: 15%; 
-            left: 0;
-            width: 15%; 
-            height: 60%; 
-            display: flex;
-            flex-direction: column;
-            gap: 2cqw;
-            padding-left: 1cqw;
-            z-index: 30;
-            pointer-events: none; 
-        }
-
-        .sidebar-item-wrapper {
-            position: relative;
-            width: 100%;
-            pointer-events: auto;
-            display: flex;
-            align-items: center;
-        }
-
-        .side-btn {
-            width: 100%;
-            aspect-ratio: 1; 
-            background: linear-gradient(135deg, var(--ui-purple) 0%, var(--ui-purple-dark) 100%);
-            border-radius: 2cqw;
-            
-            /* UPDATED: Thinner borders, "Accent" sides */
-            border-style: solid;
-            border-width: 0.4cqw;
-            border-color: var(--ui-purple-light) var(--ui-purple-dark) var(--ui-purple-dark) var(--ui-purple-light);
-            /* Top & Left = Light, Bottom & Right = Dark */
-            
-            box-shadow: 
-                1cqw 1cqw 1.5cqw rgba(0,0,0,0.5),
-                inset 0 0.5cqw 1cqw rgba(255,255,255,0.4);
-
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 6cqw;
-            position: relative;
-            z-index: 2;
-        }
-
-        /* --- SLIDE OUT MENU --- */
-        .slide-menu {
-            position: absolute;
-            left: 90%; 
-            top: 0;
-            height: 100%;
-            background: rgba(40, 20, 60, 0.95);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 0 2cqw 2cqw 0;
-            display: flex;
-            align-items: center;
-            padding: 0;
-            gap: 0;
-            width: 0;
-            opacity: 0;
-            overflow: hidden;
-            pointer-events: none;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            z-index: 1; 
-            box-shadow: 1cqw 1cqw 2cqw rgba(0,0,0,0.4);
-            overflow-x: auto;
-            white-space: nowrap;
-        }
-        
-        .slide-menu::-webkit-scrollbar { display: none; }
-
-        .slide-menu.open {
-            opacity: 1;
-            padding: 0 2cqw 0 3cqw; 
-            pointer-events: auto;
-            left: 85%;
-        }
-
-        .menu-trees.open { width: 50cqw; }
-        .menu-flowers.open { width: 65cqw; } 
-        .menu-farmer.open { width: 40cqw; }
-
-        .menu-option {
-            font-size: 6cqw;
-            padding: 1cqw;
-            cursor: pointer;
-            transition: transform 0.2s;
-            flex: 1;
-            min-width: 8cqw;
-            text-align: center;
-            display: inline-block;
-        }
-        .menu-option:active {
-            transform: scale(0.8);
-        }
-
-        /* --- 4. BOTTOM AREA --- */
-        .ui-footer-container {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 28%; 
-            z-index: 30;
-            display: flex;
-            flex-direction: column;
-            box-shadow: none;
-            overflow: visible; 
-        }
-
-        .ui-inventory-strip {
-            /* Positioning: Inside footer now (top 2cqw), centered horizontally */
-            position: absolute;
-            top: 2cqw; 
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 50;
-
-            width: 92%;
-            margin: 0;
-            height: 18%; 
-            border-radius: 3cqw; 
-            
-            /* Styles matched to Dice Button (#btn-dice) */
-            background: linear-gradient(to bottom, #D81B60, #880E4F); 
-            
-            /* UPDATED: "Accent" sides */
-            border-style: solid;
-            border-width: 0.8cqw;
-            border-color: var(--ui-pink-light) var(--ui-pink-dark) var(--ui-pink-dark) var(--ui-pink-light);
-            /* Top & Left = Light, Bottom & Right = Dark */
-
-            box-shadow: 
-                0 1cqw 2cqw rgba(0,0,0,0.6),
-                inset 0 0.5cqw 1cqw rgba(255,255,255,0.2);
-            
-            display: flex;
-            align-items: center;
-            padding: 0 2cqw;
-            justify-content: space-evenly;
-            gap: 0; 
-            overflow: hidden; 
-            transition: transform 0.1s;
-        }
-        
-        .ui-inventory-strip::-webkit-scrollbar { display: none; }
-
-        .inv-slot {
-            height: 75%; 
-            aspect-ratio: 1;
-            background: transparent;
-            border: none;
-            box-shadow: none;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: rgba(255,255,255,0.5); 
-            font-weight: bold;
-            font-size: 6cqw; 
-            flex-shrink: 0;
-            transition: all 0.1s ease;
-            text-shadow: 0 0.2cqw 0.5cqw rgba(0,0,0,0.3);
-        }
-        
-        .inv-slot.active { 
-            color: #FFD700; 
-            transform: scale(1.6); 
-            text-shadow: 0 0 2cqw #FFD700, 0 0 4cqw rgba(255, 100, 0, 0.5);
-            opacity: 1;
-        }
-
-        .ui-controls-main {
-            flex-grow: 1;
-            background: linear-gradient(180deg, #0d2b4d 0%, #000000 100%);
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding-top: 10cqw;
-        }
-
-        .camera-row {
-            display: flex;
-            align-items: center;
-            gap: 3cqw; 
-        }
-
-        /* --- BUTTONS --- */
-        .secondary-action-btn {
-            width: 25cqw; 
-            aspect-ratio: 1.8 / 1; 
-            border-radius: 3cqw; 
-            
-            /* UPDATED: Generic "Accent" setup */
-            border-style: solid;
-            border-width: 0.8cqw;
-            /* Colors defined in specific classes */
-
-            box-shadow: 
-                0 1cqw 2cqw rgba(0,0,0,0.6),
-                inset 0 0.5cqw 1cqw rgba(255,255,255,0.4);
-            
-            color: white;
-            font-size: 7cqw;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding-bottom: 0.5cqw;
-        }
-
-        .btn-blue {
-            /* Blue Theme */
-            background: linear-gradient(135deg, #0D47A1, #002171); 
-            /* Light Top/Left, Dark Bottom/Right */
-            border-color: var(--ui-blue-light) var(--ui-blue-dark) var(--ui-blue-dark) var(--ui-blue-light);
-        }
-
-        .btn-pink-gradient {
-            /* Pink Theme */
-            background: linear-gradient(to bottom, #D81B60, #880E4F); 
-            /* Light Top/Left, Dark Bottom/Right */
-            border-color: var(--ui-pink-light) var(--ui-pink-dark) var(--ui-pink-dark) var(--ui-pink-light);
-        }
-
-        .main-action-btn {
-            width: 35cqw;
-            aspect-ratio: 2.2 / 1;
-            background: linear-gradient(to bottom, var(--ui-teal), var(--ui-teal-dark));
-            border-radius: 4cqw; 
-            
-            /* Teal Accent: Light Top/Left, Dark Bottom/Right */
-            border-style: solid;
-            border-width: 0.8cqw;
-            border-color: var(--ui-teal-light) var(--ui-teal-dark) var(--ui-teal-dark) var(--ui-teal-light);
-            
-            box-shadow: 
-                0 1cqw 2cqw rgba(0,0,0,0.6),
-                inset 0 0.5cqw 1cqw rgba(255,255,255,0.4);
-
-            color: white;
-            font-size: 9cqw;
-            text-transform: uppercase;
-            letter-spacing: 0.5cqw;
-            font-weight: bold;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding-bottom: 2.5cqw; 
-        }
-
-        /* --- NEW STATUS TEXT AREA --- */
-        .ui-status-text {
-            position: absolute;
-            top: 29%; 
-            width: 100%;
-            text-align: center;
-            z-index: 40;
-            pointer-events: none;
-
-            font-size: 3.2cqw;
-            opacity: 0.9;
-            color: white;
-            text-transform: uppercase;
-            font-weight: 400;
-            letter-spacing: 0.05cqw;
-            text-shadow: 0 0.2cqw 0.5cqw rgba(0,0,0,0.3);
-            transition: color 0.2s ease;
-        }
-
-        /* RAINBOW ANIMATION */
-        @keyframes rainbowText {
-            0% { color: #ff5252; }
-            20% { color: #FFD700; }
-            40% { color: #69F0AE; }
-            60% { color: #40C4FF; }
-            80% { color: #E040FB; }
-            100% { color: #ff5252; }
-        }
-        .rainbow-text {
-            animation: rainbowText 0.6s linear infinite;
-        }
-
-        /* --- SHARED MODAL STYLES --- */
-        .modal-base {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 90%; 
-            height: 75%; 
-            transform: translate(-50%, -50%) scale(0.9);
-            border: 0.5cqw solid rgba(255,255,255,0.3);
-            border-radius: 4cqw;
-            box-shadow: 0 2cqw 4cqw rgba(0,0,0,0.8);
-            z-index: 100;
-            display: flex;
-            flex-direction: column; 
-            color: white;
-            font-size: 4cqw;
-            opacity: 0;
-            pointer-events: none;
-            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            overflow: hidden;
-        }
-        
-        .modal-base.open {
-            opacity: 1;
-            pointer-events: auto;
-            transform: translate(-50%, -50%) scale(1);
-        }
-
-        .shop-modal-style {
-            background: linear-gradient(135deg, #0D47A1, #002171); 
-        }
-        
-        /* SELF MODAL & SUMMARY MODAL SPECIFICS */
-        .self-content {
-            padding: 6cqw;
-            display: flex;
-            flex-direction: column;
-            gap: 4cqw;
-            width: 100%;
-            height: 100%;
-            overflow-y: auto;
-        }
-
-        .self-stat-row {
-            display: flex;
-            justify-content: space-between;
-            background: rgba(0,0,0,0.2);
-            padding: 2cqw;
-            border-radius: 2cqw;
-        }
-        .stat-item { display: flex; flex-direction: column; align-items: center; }
-        .stat-item span:first-child { font-size: 3cqw; opacity: 0.8; margin-bottom: 1cqw; }
-        .stat-item span:last-child { font-size: 5cqw; font-weight: bold; }
-        
-        .self-section {
-            background: rgba(0,0,0,0.2);
-            padding: 3cqw;
-            border-radius: 2cqw;
-        }
-        .self-label { font-size: 3.5cqw; opacity: 0.9; margin-bottom: 1cqw; display: block; font-weight: bold; color: var(--ui-gold); }
-        .self-value { opacity: 0.6; font-style: italic; }
-
-        .summary-btn {
-            width: 100%;
-            padding: 3cqw;
-            background: linear-gradient(to right, #00BCD4, #006064);
-            border: none;
-            border-radius: 2cqw;
-            color: white;
-            font-weight: bold;
-            font-size: 4cqw;
-            box-shadow: 0 1cqw 1cqw rgba(0,0,0,0.4);
-            margin-top: auto; /* Push to bottom */
-            text-align: center;
-        }
-
-        /* NEW SELF BUTTONS */
-        .self-btn-row {
-            display: flex;
-            gap: 2cqw;
-            width: 100%;
-        }
-        .self-action-btn {
-            flex: 1;
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 2cqw;
-            padding: 2cqw 0.5cqw;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 3.5cqw;
-            font-weight: bold;
-            box-shadow: 0 0.5cqw 1cqw rgba(0,0,0,0.2);
-            text-align: center;
-            white-space: nowrap;
-        }
-
-
-        .summary-modal-style {
-            background: linear-gradient(160deg, #2E7D32, #1B5E20);
-            padding: 6cqw;
-            font-size: 3.5cqw;
-            line-height: 1.5;
-            overflow-y: auto;
-            text-align: left;
-        }
-        .summary-modal-style p { margin-bottom: 4cqw; }
-        .summary-modal-style strong { color: var(--ui-gold); }
-
-
-        /* SHOP LAYOUT */
-        .shop-section-header {
-            width: 100%;
-            background: rgba(0,0,0,0.3);
-            color: var(--ui-gold);
-            text-transform: uppercase;
-            font-size: 3cqw;
-            letter-spacing: 0.2cqw;
-            padding: 1.5cqw;
-            text-align: center;
-            font-weight: bold;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            flex-shrink: 0;
-        }
-
-        .shop-top-half {
-            width: 100%;
-            flex-grow: 1.5; /* Takes up more space */
-            display: flex;
-            flex-direction: row;
-            background: rgba(0,0,0,0.1);
-            min-height: 0; /* allows flex scroll */
-        }
-        
-        .shop-column {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            border-right: 1px solid rgba(255,255,255,0.1);
-            align-items: center;
-            padding: 1cqw;
-        }
-        .shop-column:last-child { border-right: none; }
-        
-        .shop-header {
-            font-size: 2.5cqw; 
-            opacity: 0.9;
-            color: white;
-            text-transform: uppercase;
-            font-weight: 400; 
-            margin-bottom: 1cqw;
-            letter-spacing: 0.05cqw;
-            text-shadow: 0 0.2cqw 0.5cqw rgba(0,0,0,0.3);
-            height: 10%;
-            display: flex;
-            align-items: center;
-            text-align: center;
-        }
-        
-        .shop-items-container {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5cqw;
-            width: 100%;
-            height: 90%;
-            align-items: center;
-            justify-content: flex-start; 
-            padding-top: 1cqw;
-        }
-        
-        .shop-item-style {
-            width: 55%;
-            aspect-ratio: 1;
-            border-radius: 1.5cqw;
-            border: none;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0.5cqw 0.5cqw 1cqw rgba(0,0,0,0.5);
-            transform: skewX(-12deg);
-            position: relative; 
-        }
-        
-        .shop-item-style .inner-emoji {
-            transform: skewX(12deg);
-            font-size: 7cqw; 
-            line-height: 1;
-        }
-
-        .shop-price {
-            position: absolute;
-            bottom: -8%;
-            left: -8%;
-            color: var(--ui-gold);
-            font-size: 3.5cqw;
-            font-weight: 900;
-            transform: skewX(12deg);
-            z-index: 10;
-            text-shadow: 0 2px 2px rgba(0,0,0,0.8);
-        }
-
-        .shop-id {
-            position: absolute;
-            bottom: -5%;
-            right: -8%;
-            color: white;
-            font-size: 5cqw; 
-            font-weight: 900;
-            transform: skewX(12deg);
-            z-index: 10;
-            opacity: 0.95;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
-        }
-        
-        .item-col-1 { background: #283593; } 
-        .item-col-2 { background: #00ACC1; } 
-        .item-col-3 { background: #5D4037; } 
-
-        .shop-bottom-half {
-            width: 100%;
-            flex-grow: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 0.5;
-            font-size: 3cqw;
-            min-height: 0;
-        }
-
-        .book-modal-style {
-            background: linear-gradient(135deg, var(--ui-purple), var(--ui-purple-dark)); 
-        }
-
-        /* PAGINATION FOR BOOK */
-        .book-page {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .bird-collection-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 1cqw;
-            width: 95%;
-            padding: 2cqw;
-            justify-items: center;
-            align-items: center;
-        }
-
-        .bird-unknown {
-            font-size: 11cqw;
-            filter: brightness(0); 
-            opacity: 0.6;
-            cursor: help;
-            transition: transform 0.2s;
-        }
-        
-        .bird-unknown:hover {
-            transform: scale(1.2);
-            opacity: 0.8;
-        }
-
-        .modal-nav-btn {
-            position: absolute;
-            bottom: 2cqw;
-            right: 3cqw;
-            font-size: 6cqw;
-            cursor: pointer;
-            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5));
-            transition: transform 0.1s;
-            z-index: 101;
-        }
-        .modal-nav-btn:active {
-            transform: scale(0.9);
-        }
-        
-        
-    </style>
-</head>
-<body>
-
-    <!-- 
-        GAME VIEWPORT
-        Now locked to 9:16 Aspect Ratio. 
-        Everything inside uses % for position and cqw for size.
-    -->
-    <div id="game-viewport">
-        
-        <div id="game-background"></div>
-
-        <!-- CONTAINERS FOR PROPS -->
-        <div class="map-prop item-container prop-telescope">
-            <div class="inner-emoji">🔭</div>
-            <div class="prop-number">3</div>
-        </div>
-        
-        <div class="map-prop item-container prop-bathtub">
-            <div class="inner-emoji">🛁</div>
-            <div class="prop-number">7</div>
-        </div>
-        
-        <div class="map-prop item-container prop-scales">
-            <div class="inner-emoji">⚖️</div>
-            <div class="prop-number">4</div>
-        </div>
-        
-        <!-- House -->
-        <div class="map-prop prop-house-tiny">🏠</div>
-
-        <!-- Candle (Left) -->
-        <div class="map-prop prop-candle">🕯️</div>
-
-        <!-- Trees (Left) -->
-        <div class="map-prop prop-tree tree-1">🌳</div>
-        <div class="map-prop prop-tree tree-2">🌲</div>
-        <div class="map-prop prop-tree tree-3">🎋</div>
-        
-        <!-- Sprouts -->
-        <div class="map-prop prop-sprout-layer sprout-1">🌱</div>
-        <div class="map-prop prop-sprout-layer sprout-2">🌱</div>
-        <div class="map-prop prop-sprout-layer sprout-3">🌱</div>
-
-        <!-- Giant Worm -->
-        <div class="map-prop prop-worm">🪱</div>
-
-        <!-- Flowers -->
-        <div class="map-prop prop-flower flower-1">🪻</div>
-        <div class="map-prop prop-flower flower-2">🌻</div>
-        <div class="map-prop prop-flower flower-3">🌹</div>
-        <div class="map-prop prop-flower flower-4">🌼</div> 
-        <div class="map-prop prop-flower flower-5">🌷</div> 
-
-
-        <!-- MODALS -->
-        <div id="shop-modal" class="modal-base shop-modal-style">
-            
-            <div class="shop-section-header">Bird Supplies</div>
-            
-            <div class="shop-top-half">
-                <!-- Column 1 -->
-                <div class="shop-column">
-                    <div class="shop-header">Bird<br>Houses</div>
-                    <div class="shop-items-container">
-                        <div class="shop-item-style item-col-1">
-                            <div class="inner-emoji">🏠</div>
-                            <div class="shop-price">$5</div>
-                            <div class="shop-id">2</div>
-                        </div>
-                        <div class="shop-item-style item-col-1">
-                            <div class="inner-emoji">🛖</div>
-                            <div class="shop-price">$5</div>
-                            <div class="shop-id">8</div>
-                        </div>
-                        <div class="shop-item-style item-col-1">
-                            <div class="inner-emoji">🏯</div>
-                            <div class="shop-price">$5</div>
-                            <div class="shop-id">5</div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Column 2 -->
-                <div class="shop-column">
-                    <div class="shop-header">Bird<br>Baths</div>
-                    <div class="shop-items-container">
-                        <div class="shop-item-style item-col-2">
-                            <div class="inner-emoji">⛲</div>
-                            <div class="shop-price">$5</div>
-                            <div class="shop-id">3</div>
-                        </div>
-                        <div class="shop-item-style item-col-2">
-                            <div class="inner-emoji">🛁</div>
-                            <div class="shop-price">$5</div>
-                            <div class="shop-id">1</div>
-                        </div>
-                        <div class="shop-item-style item-col-2">
-                            <div class="inner-emoji">🚿</div>
-                            <div class="shop-price">$5</div>
-                            <div class="shop-id">9</div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Column 3 -->
-                <div class="shop-column">
-                    <div class="shop-header">Bird<br>Feeders</div>
-                    <div class="shop-items-container">
-                        <div class="shop-item-style item-col-3">
-                            <div class="inner-emoji">🌽</div>
-                            <div class="shop-price">$5</div>
-                            <div class="shop-id">4</div>
-                        </div>
-                        <div class="shop-item-style item-col-3">
-                            <div class="inner-emoji">🥯</div>
-                            <div class="shop-price">$5</div>
-                            <div class="shop-id">7</div>
-                        </div>
-                        <div class="shop-item-style item-col-3">
-                            <div class="inner-emoji">🥖</div>
-                            <div class="shop-price">$5</div>
-                            <div class="shop-id">6</div>
-                        </div>
-                    </div>
-                </div>
+        {/* Animated Orbs for depth */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-[100px] animate-blob"></div>
+        <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-purple-500/20 rounded-full blur-[80px] animate-blob animation-delay-2000"></div>
+
+        {/* Central Content Placeholder (The "Game" View) */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className={`transition-all duration-700 ease-out transform ${activePanel ? 'scale-90 opacity-50 blur-sm translate-y-[-5%]' : 'scale-100 opacity-100'}`}>
+            <div className="relative group">
+              <div className="absolute -inset-1 bg-gradient-to-r from-cyan-400 to-purple-600 rounded-2xl blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
+              <div className="relative w-64 h-80 bg-slate-800/80 backdrop-blur-xl border border-white/10 rounded-2xl flex flex-col items-center justify-center shadow-2xl">
+                 <Sparkles className="w-16 h-16 text-cyan-400 mb-4 animate-spin-slow" />
+                 <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 to-purple-400 tracking-widest">AETHER</h2>
+                 <p className="text-slate-400 text-xs mt-2 uppercase tracking-widest">System Ready</p>
+              </div>
             </div>
+          </div>
+        </div>
+      </div>
 
-            <div class="shop-section-header">Variety Shop</div>
+      {/* --- HUD LAYER --- */}
 
-            <div class="shop-bottom-half">
-                (Empty Bottom Half)
+      {/* Top Bar: Resources & Status */}
+      <header className="absolute top-0 left-0 right-0 z-40 p-4 pt-safe-top">
+        <div className="flex justify-between items-start">
+          
+          {/* Player Profile / Level */}
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-600 p-[2px] shadow-lg shadow-cyan-500/20">
+                <div className="w-full h-full rounded-full bg-slate-800 flex items-center justify-center overflow-hidden">
+                   <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Avatar" className="w-10 h-10" />
+                </div>
+              </div>
+              <div className="absolute -bottom-1 -right-1 bg-slate-900 rounded-full p-0.5">
+                <div className="w-5 h-5 bg-yellow-500 rounded-full flex items-center justify-center text-[10px] font-bold text-slate-900 border border-slate-700">
+                  12
+                </div>
+              </div>
             </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-bold text-slate-100 tracking-wide drop-shadow-md">Player One</span>
+              <div className="w-24 h-1.5 bg-slate-700/50 rounded-full mt-1 overflow-hidden backdrop-blur-sm">
+                <div className="h-full bg-gradient-to-r from-green-400 to-emerald-500 w-[70%]"></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Resources Pill */}
+          <div className="flex flex-col gap-2 items-end">
+             <div className="flex items-center gap-3 bg-slate-900/60 backdrop-blur-md border border-white/5 rounded-full px-4 py-1.5 shadow-xl">
+                <div className="flex items-center gap-1.5">
+                  <Coins className="w-4 h-4 text-yellow-400" fill="currentColor" />
+                  <span className="text-xs font-bold text-yellow-100">4,250</span>
+                </div>
+                <div className="w-px h-4 bg-white/10"></div>
+                <div className="flex items-center gap-1.5">
+                  <Gem className="w-4 h-4 text-purple-400" />
+                  <span className="text-xs font-bold text-purple-100">128</span>
+                </div>
+             </div>
+             
+             {/* Energy Bar */}
+             <div className="flex items-center gap-2 bg-slate-900/40 backdrop-blur-sm rounded-full px-3 py-1 border border-white/5">
+                <Zap className="w-3 h-3 text-cyan-400 fill-current" />
+                <span className="text-[10px] font-mono text-cyan-200">{energy}/100</span>
+             </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Right Side Actions (Contextual) */}
+      <div className="absolute right-4 top-1/3 z-30 flex flex-col gap-4">
+        <SideActionButton icon={MapIcon} label="Quest" delay="0" />
+        <SideActionButton icon={Layers} label="Build" delay="100" />
+      </div>
+
+      {/* --- FLOATING PANELS (Modal / Windows) --- */}
+      {/* Backdrop for Panels */}
+      <div 
+        className={`absolute inset-0 z-40 bg-slate-950/60 backdrop-blur-sm transition-opacity duration-500 ${activePanel ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+        onClick={() => setActivePanel(null)}
+      ></div>
+
+      {/* The Panel Itself */}
+      <div 
+        className={`absolute bottom-0 left-0 right-0 z-50 bg-slate-900/90 backdrop-blur-2xl border-t border-white/10 rounded-t-[3rem] shadow-[0_-10px_40px_rgba(0,0,0,0.5)] transition-transform duration-500 cubic-bezier(0.32, 0.72, 0, 1) ${activePanel ? 'translate-y-0' : 'translate-y-[110%]'}`}
+        style={{ height: '75dvh', paddingBottom: 'env(safe-area-inset-bottom)' }}
+      >
+        {/* Panel Handle */}
+        <div className="w-full h-8 flex items-center justify-center cursor-grab active:cursor-grabbing" onClick={() => setActivePanel(null)}>
+          <div className="w-12 h-1.5 bg-white/20 rounded-full"></div>
         </div>
 
-        <div id="book-modal" class="modal-base book-modal-style">
-            <!-- PAGE 1 -->
-            <div id="book-page-1" class="book-page">
-                <div class="bird-collection-grid">
-                    <!-- Row 1 -->
-                    <div class="bird-unknown">🐓</div>
-                    <div class="bird-unknown">🦃</div>
-                    <div class="bird-unknown">🦆</div>
-                    <div class="bird-unknown">🦅</div>
-                    <div class="bird-unknown">🕊️</div>
-                    <div class="bird-unknown">🦢</div>
-                    <!-- Row 2 -->
-                    <div class="bird-unknown">🦜</div>
-                    <div class="bird-unknown">🐦‍⬛</div>
-                    <div class="bird-unknown">🪿</div>
-                    <div class="bird-unknown">🐦‍🔥</div>
-                    <div class="bird-unknown">🦩</div>
-                    <div class="bird-unknown">🦚</div>
-                    <!-- Row 3 -->
-                    <div class="bird-unknown">🦉</div>
-                    <div class="bird-unknown">🦤</div>
-                    <div class="bird-unknown">🐦</div>
-                    <div class="bird-unknown">🐧</div>
-                    <div class="bird-unknown">🐥</div>
-                    <div class="bird-unknown">🐣</div>
-                </div>
-            </div>
-
-            <!-- PAGE 2 (Empty) -->
-            <div id="book-page-2" class="book-page" style="display: none;">
-                <div class="shop-title">PAGE 2</div>
-            </div>
-
-            <!-- Navigation Button -->
-            <div class="modal-nav-btn" id="book-nav-btn">⭐</div>
-        </div>
-        
-        <!-- SELF MODAL (Updated) -->
-        <div id="self-modal" class="modal-base book-modal-style">
-            <div class="self-content">
-                <div class="self-stat-row">
-                    <div class="stat-item">
-                        <span>CONFIDENCE</span>
-                        <span style="color: #4CAF50;">4</span>
-                    </div>
-                    <div class="stat-item">
-                        <span>INSECURITY</span>
-                        <span style="color: #F44336;">3</span>
-                    </div>
-                    <div class="stat-item">
-                        <span>TOXICITY</span>
-                        <span style="color: #E91E63;">5</span>
-                    </div>
-                </div>
-
-                <div class="self-section">
-                    <span class="self-label">Run History</span>
-                    <span class="self-value">(empty)</span>
-                </div>
-
-                <div class="self-section">
-                    <span class="self-label">Settings</span>
-                    <span class="self-value">(empty)</span>
-                </div>
-
-                <!-- NEW BUTTONS ROW -->
-                <div class="self-btn-row">
-                    <div class="self-action-btn btn-pressable">🍺 Bar</div>
-                    <div class="self-action-btn btn-pressable">🎰 Casino</div>
-                    <div class="self-action-btn btn-pressable">Therapist 👔</div>
-                </div>
-
-                <div class="summary-btn btn-pressable" id="btn-open-summary">
-                    Game Summary
-                </div>
-            </div>
+        {/* Panel Header */}
+        <div className="px-8 pb-4 flex justify-between items-center border-b border-white/5">
+          <h2 className="text-2xl font-light tracking-tight text-white">
+            {activePanel === 'inventory' ? 'Inventory' : 'Settings'}
+          </h2>
+          <button 
+            onClick={() => setActivePanel(null)}
+            className="p-2 rounded-full bg-white/5 hover:bg-white/10 active:bg-white/20 transition-colors"
+          >
+            <X className="w-5 h-5 text-slate-400" />
+          </button>
         </div>
 
-        <!-- NEW GAME SUMMARY MODAL -->
-        <div id="summary-modal" class="modal-base summary-modal-style">
-            <p><strong>Backyard Birding</strong> is a roguelike creature collector where the player aims to outshine their bird-enthusiast neighbor by setting up the ultimate environment to snap pictures of unique and rare birds.</p>
-            <p><strong>Backyard Birding</strong> is designed to have a sandbox-like feel, rewarding experimentation and creative builds. There are 18 birds to discover and over 10 rare visitors. Players can shape their runs towards an aggressive pace to try and beat the neighbor, or safe builds to chip away at unlocks, or go for all-or-nothing runs aimed for finding specific, rare birds.</p>
-            <div style="text-align:center; margin-top: 6cqw; font-size: 3cqw; opacity: 0.6;">(Tap outside to close)</div>
-        </div>
-
-
-        <div class="ui-stats-bar">
-            <!-- Align Left: DAY -->
-            <div class="stat-group">
-                <span class="stat-label">DAY</span>
-                <span class="stat-value stat-day">1</span>
+        {/* Panel Content (Scrollable) */}
+        <div className="h-full overflow-y-auto px-6 py-6 pb-24 scrollbar-hide">
+          {activePanel === 'inventory' && (
+            <div className="grid grid-cols-4 gap-4">
+               {Array.from({ length: 16 }).map((_, i) => (
+                 <InventorySlot key={i} index={i} />
+               ))}
             </div>
-            <!-- Align Center: FUNDS -->
-            <div class="stat-group">
-                <span class="stat-label">FUNDS</span>
-                <span class="stat-value stat-funds">$1,000</span>
-            </div>
-            <!-- Align Right: LUCK -->
-            <div class="stat-group">
-                <span class="stat-label">LUCK</span>
-                <span class="stat-value stat-luck">3</span>
-            </div>
-        </div>
+          )}
 
-        <div class="ui-event-panel panel">
-            <!-- Matching FUNDS style: thin, clean, white -->
-            <div class="enemy-header">Neighbor</div>
-            
-            <div class="meter-group">
-                <div class="meter-container">
-                    <div class="meter-icon">📈</div>
-                    <div class="meter-bar"><div class="meter-fill fill-red"></div></div>
-                </div>
-
-                <div class="meter-container">
-                    <div class="meter-icon">👎</div>
-                    <div class="meter-bar"><div class="meter-fill fill-orange"></div></div>
-                </div>
-
-                <div class="meter-container">
-                    <div class="meter-icon">🚘</div>
-                    <div class="meter-bar"><div class="meter-fill fill-grey"></div></div>
-                </div>
-            </div>
-
-            <div class="sabotage-section">
-                <!-- Matching FUNDS style: thin, clean, white -->
-                <div class="sabotage-label">Sabotage</div>
-                <div class="neighbor-slots-row">
-                    <div class="neighbor-slot">🐈</div>
-                    <!-- ADDED MAILBOX HERE -->
-                    <div class="neighbor-slot">📬</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="ui-sidebar-container">
-            <div class="sidebar-item-wrapper">
-                <div class="side-btn btn-pressable" id="btn-book">📚</div>
-            </div>
-            <div class="sidebar-item-wrapper">
-                <div class="side-btn btn-pressable" id="btn-self">👤</div>
-            </div>
-            
-            <!-- Farmer Button Wrapper with Slide Out Menu -->
-            <div class="sidebar-item-wrapper">
-                <div class="side-btn btn-pressable" id="btn-farmer-toggle">🧑‍🌾</div>
+          {activePanel === 'settings' && (
+             <div className="space-y-6">
+                <SettingsToggle label="Music" desc="Background ambience" active={true} />
+                <SettingsToggle label="SFX" desc="Interaction sounds" active={true} />
+                <SettingsToggle label="Haptics" desc="Vibration feedback" active={false} />
+                <SettingsToggle label="High Performance" desc="Battery drain warning" active={true} />
                 
-                <div class="slide-menu menu-farmer" id="farmer-menu">
-                    <div class="menu-option">🌱</div>
-                    <div class="menu-option">🪴</div>
-                    <div class="menu-option">🪱</div>
+                <div className="pt-6">
+                   <button className="w-full py-4 rounded-xl bg-gradient-to-r from-red-500/20 to-orange-500/20 border border-red-500/30 text-red-200 font-bold tracking-wider hover:bg-red-500/30 active:scale-[0.98] transition-all">
+                     LOGOUT
+                   </button>
                 </div>
-            </div>
-
-            <!-- Flower Button Wrapper with Slide Out Menu -->
-            <div class="sidebar-item-wrapper">
-                <div class="side-btn btn-pressable" id="btn-flower-toggle">🌷</div>
-                
-                <div class="slide-menu menu-flowers" id="flower-menu">
-                    <div class="menu-option">🌹</div>
-                    <div class="menu-option">🌺</div>
-                    <div class="menu-option">🌻</div>
-                    <div class="menu-option">🌷</div>
-                    <div class="menu-option">🪻</div>
-                </div>
-            </div>
-            
-            <!-- Tree Button Wrapper with Slide Out Menu -->
-            <div class="sidebar-item-wrapper">
-                <div class="side-btn btn-pressable" id="btn-tree-toggle">🌳</div>
-                
-                <div class="slide-menu menu-trees" id="tree-menu">
-                    <div class="menu-option">🌳</div>
-                    <div class="menu-option">🌲</div>
-                    <div class="menu-option">🌴</div>
-                    <div class="menu-option">🎋</div>
-                </div>
-            </div>
+             </div>
+          )}
         </div>
+      </div>
 
-        <div class="ui-footer-container">
+
+      {/* --- BOTTOM DOCK --- */}
+      <nav className="absolute bottom-6 left-4 right-4 z-50 pb-safe-bottom">
+        <div className="relative">
+          {/* Glass Dock Background */}
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl"></div>
+          
+          <div className="relative flex justify-between items-center px-2 py-2">
             
-            <div class="ui-inventory-strip">
-                <div class="inv-slot active">1</div>
-                <div class="inv-slot">2</div>
-                <div class="inv-slot">3</div>
-                <div class="inv-slot">4</div>
-                <div class="inv-slot">5</div>
-                <div class="inv-slot">6</div>
+            {/* Left Group */}
+            <DockItem 
+              icon={Shield} 
+              label="Hero" 
+              isActive={activePanel === 'hero'}
+              onClick={() => togglePanel('hero')} 
+            />
+            <DockItem 
+              icon={Backpack} 
+              label="Bag" 
+              isActive={activePanel === 'inventory'}
+              onClick={() => togglePanel('inventory')} 
+            />
+
+            {/* Main Action Button (Floating above dock) */}
+            <div className="relative -top-8 mx-2">
+               <button 
+                 className="group relative w-20 h-20 rounded-full bg-gradient-to-b from-cyan-400 to-blue-600 shadow-[0_0_30px_rgba(34,211,238,0.4)] flex items-center justify-center transform transition-all duration-300 hover:scale-105 active:scale-95 border-4 border-slate-900"
+                 onClick={() => setEnergy(prev => Math.max(0, prev - 10))}
+               >
+                 <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-white/40 to-transparent opacity-50"></div>
+                 <Sword className="w-8 h-8 text-white fill-current drop-shadow-md group-hover:rotate-12 transition-transform duration-300" />
+                 
+                 {/* Ripple Effect Ring */}
+                 <div className="absolute -inset-1 rounded-full border border-cyan-400/30 opacity-0 group-active:animate-ping"></div>
+               </button>
             </div>
 
-            <div class="ui-controls-main">
-                
-                <!-- New Text Area (Absolute positioned so it doesn't move buttons) -->
-                <div class="ui-status-text" id="status-text">Placeholder Text.</div>
+            {/* Right Group */}
+            <DockItem 
+              icon={Sparkles} 
+              label="Craft" 
+              isActive={activePanel === 'craft'}
+              onClick={() => togglePanel('craft')} 
+            />
+            <DockItem 
+              icon={Menu} 
+              label="Menu" 
+              isActive={activePanel === 'settings'}
+              onClick={() => togglePanel('settings')} 
+            />
 
-                <div class="camera-row">
-                    <!-- Shop Button -->
-                    <div class="secondary-action-btn btn-blue btn-pressable" id="btn-shop">🏪</div>
-                    
-                    <div class="main-action-btn btn-pressable">
-                        📷
-                    </div>
-                    
-                    <div class="secondary-action-btn btn-pink-gradient btn-pressable" id="btn-dice">🎲</div>
-                </div>
-            </div>
+          </div>
         </div>
-        
-        <!-- REMOVED: .vintage-overlay div -->
+      </nav>
 
     </div>
+  );
+};
 
-    <script>
-        // No longer need setAppHeight since CSS handles centering and aspect ratio
-        
-        // Generic Button Press Animation
-        document.querySelectorAll('.btn-pressable').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const targetEl = e.currentTarget;
-                const originalTransform = targetEl.style.transform;
-                targetEl.style.transform = "scale(0.9)";
-                setTimeout(() => {
-                    targetEl.style.transform = originalTransform;
-                }, 100);
-            });
-        });
+/* --- SUB COMPONENTS --- */
 
-        // --- MENU LOGIC ---
-        const treeBtn = document.getElementById('btn-tree-toggle');
-        const treeMenu = document.getElementById('tree-menu');
-        const flowerBtn = document.getElementById('btn-flower-toggle');
-        const flowerMenu = document.getElementById('flower-menu');
-        const farmerBtn = document.getElementById('btn-farmer-toggle');
-        const farmerMenu = document.getElementById('farmer-menu');
+const DockItem = ({ icon: Icon, label, isActive, onClick }) => (
+  <button 
+    onClick={onClick}
+    className={`relative flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-xl transition-all duration-300 ${isActive ? 'bg-white/10' : 'hover:bg-white/5 active:bg-white/10'}`}
+  >
+    <Icon className={`w-6 h-6 mb-1 transition-colors ${isActive ? 'text-cyan-400' : 'text-slate-400'}`} />
+    <span className={`text-[10px] uppercase font-bold tracking-wider ${isActive ? 'text-cyan-200' : 'text-slate-500'}`}>
+      {label}
+    </span>
+    {isActive && (
+      <div className="absolute bottom-1 w-1 h-1 bg-cyan-400 rounded-full shadow-[0_0_8px_cyan]"></div>
+    )}
+  </button>
+);
 
-        function closeAllMenus() {
-            treeMenu.classList.remove('open');
-            flowerMenu.classList.remove('open');
-            farmerMenu.classList.remove('open');
-        }
+const SideActionButton = ({ icon: Icon, label, delay }) => (
+  <button 
+    className="group flex items-center justify-center w-12 h-12 bg-slate-800/40 backdrop-blur-md border border-white/10 rounded-xl shadow-lg hover:bg-slate-700/60 active:scale-90 transition-all duration-300"
+    style={{ transitionDelay: `${delay}ms` }}
+  >
+    <Icon className="w-5 h-5 text-slate-300 group-hover:text-white" />
+    <span className="absolute right-full mr-3 px-2 py-1 bg-black/80 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+      {label}
+    </span>
+  </button>
+);
 
-        treeBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); 
-            const wasOpen = treeMenu.classList.contains('open');
-            closeAllMenus(); 
-            if (!wasOpen) treeMenu.classList.add('open');
-        });
+const InventorySlot = ({ index }) => {
+  // Mock rare items
+  const isRare = index === 0 || index === 4;
+  const isEmpty = index > 6;
+  
+  return (
+    <div className={`aspect-square rounded-2xl border ${isRare ? 'border-amber-500/30 bg-amber-500/10' : 'border-white/5 bg-white/5'} flex items-center justify-center relative overflow-hidden group active:scale-95 transition-transform`}>
+      {!isEmpty && (
+        <>
+          <div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <div className={`w-8 h-8 rounded-full ${isRare ? 'bg-amber-400/20' : 'bg-slate-400/20'} animate-pulse`}></div>
+          <span className="absolute bottom-1 right-2 text-[10px] font-bold text-slate-400">x{isRare ? 1 : Math.floor(Math.random() * 10) + 1}</span>
+        </>
+      )}
+    </div>
+  );
+};
 
-        flowerBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const wasOpen = flowerMenu.classList.contains('open');
-            closeAllMenus(); 
-            if (!wasOpen) flowerMenu.classList.add('open');
-        });
-        
-        farmerBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const wasOpen = farmerMenu.classList.contains('open');
-            closeAllMenus(); 
-            if (!wasOpen) farmerMenu.classList.add('open');
-        });
+const SettingsToggle = ({ label, desc, active }) => {
+  const [isOn, setIsOn] = useState(active);
+  return (
+    <div 
+      className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 active:bg-white/10 transition-colors cursor-pointer"
+      onClick={() => setIsOn(!isOn)}
+    >
+      <div>
+        <h3 className="text-sm font-bold text-slate-200">{label}</h3>
+        <p className="text-xs text-slate-500">{desc}</p>
+      </div>
+      <div className={`w-12 h-6 rounded-full p-1 transition-colors duration-300 ${isOn ? 'bg-cyan-500/20 border border-cyan-500/50' : 'bg-slate-800 border border-slate-700'}`}>
+        <div className={`w-4 h-4 rounded-full bg-white shadow-sm transform transition-transform duration-300 ${isOn ? 'translate-x-6 bg-cyan-400' : 'translate-x-0 bg-slate-500'}`}></div>
+      </div>
+    </div>
+  );
+}
 
-        document.body.addEventListener('click', (e) => {
-            const clickInsideTree = treeMenu.contains(e.target) || treeBtn.contains(e.target);
-            const clickInsideFlower = flowerMenu.contains(e.target) || flowerBtn.contains(e.target);
-            const clickInsideFarmer = farmerMenu.contains(e.target) || farmerBtn.contains(e.target);
-            
-            if (!clickInsideTree && !clickInsideFlower && !clickInsideFarmer) {
-                closeAllMenus();
-            }
-        });
+// Add custom tailwind styles for animations if needed via style tag or config
+// For this snippet, we use standard classes and some arbitrary values.
+// The 'safe-top' and 'safe-bottom' classes assume an environment that supports env(safe-area-inset).
 
-        // --- MODAL LOGIC (Shop, Book, Self) ---
-        const shopBtn = document.getElementById('btn-shop');
-        const shopModal = document.getElementById('shop-modal');
-        
-        const bookBtn = document.getElementById('btn-book');
-        const bookModal = document.getElementById('book-modal');
-        const bookNavBtn = document.getElementById('book-nav-btn');
-        const bookPage1 = document.getElementById('book-page-1');
-        const bookPage2 = document.getElementById('book-page-2');
-        let bookPage = 1;
-
-        const selfBtn = document.getElementById('btn-self');
-        const selfModal = document.getElementById('self-modal');
-        
-        // Summary Modal Logic
-        const openSummaryBtn = document.getElementById('btn-open-summary');
-        const summaryModal = document.getElementById('summary-modal');
-
-        function closeModals() {
-            shopModal.classList.remove('open');
-            bookModal.classList.remove('open');
-            selfModal.classList.remove('open');
-            summaryModal.classList.remove('open'); // Close summary too
-            
-            // Reset book page on close
-            setTimeout(() => {
-                bookPage = 1;
-                bookPage1.style.display = 'flex';
-                bookPage2.style.display = 'none';
-                bookNavBtn.textContent = '⭐';
-            }, 200);
-        }
-
-        shopBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); 
-            const wasOpen = shopModal.classList.contains('open');
-            closeModals();
-            if (!wasOpen) shopModal.classList.add('open');
-        });
-
-        bookBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const wasOpen = bookModal.classList.contains('open');
-            closeModals();
-            if (!wasOpen) bookModal.classList.add('open');
-        });
-        
-        // Book Page Toggle Logic
-        bookNavBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (bookPage === 1) {
-                bookPage = 2;
-                bookPage1.style.display = 'none';
-                bookPage2.style.display = 'flex';
-                bookNavBtn.textContent = '🔙';
-            } else {
-                bookPage = 1;
-                bookPage1.style.display = 'flex';
-                bookPage2.style.display = 'none';
-                bookNavBtn.textContent = '⭐';
-            }
-        });
-        
-        selfBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const wasOpen = selfModal.classList.contains('open');
-            closeModals();
-            if (!wasOpen) selfModal.classList.add('open');
-        });
-
-        // Open summary from self modal
-        openSummaryBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            // Don't close self modal immediately if you want it to feel like a stack, 
-            // but for simplicity we usually close others to avoid z-index mess.
-            // Let's close self and open summary.
-            closeModals(); 
-            // Small timeout to allow transition if needed, or just open immediately
-            summaryModal.classList.add('open');
-        });
-
-        document.body.addEventListener('click', (e) => {
-            const clickedShop = shopModal.contains(e.target) || shopBtn.contains(e.target);
-            const clickedBook = bookModal.contains(e.target) || bookBtn.contains(e.target);
-            const clickedSelf = selfModal.contains(e.target) || selfBtn.contains(e.target);
-            const clickedSummary = summaryModal.contains(e.target) || openSummaryBtn.contains(e.target);
-
-            if (!clickedShop && !clickedBook && !clickedSelf && !clickedSummary) {
-                closeModals();
-            }
-        });
-
-
-        // --- IMPROVED DICE LOGIC ---
-        const diceBtn = document.getElementById('btn-dice');
-        const slots = document.querySelectorAll('.inv-slot');
-        const strip = document.querySelector('.ui-inventory-strip'); 
-        const statusText = document.getElementById('status-text'); // Grab text ref
-
-        let isRolling = false;
-
-        diceBtn.addEventListener('click', () => {
-            if (isRolling) return; 
-            isRolling = true;
-            
-            // --- RESET PREVIOUS STATE IMMEDIATELY ---
-            // Clear all custom transforms, colors, and shadows from potential previous wins
-            slots.forEach(slot => {
-                slot.classList.remove('active');
-                slot.style.transform = '';
-                slot.style.textShadow = '';
-                slot.style.color = '';
-                slot.style.transition = '';
-            });
-
-            // Random target
-            const targetIndex = Math.floor(Math.random() * slots.length);
-            
-            // Start Text Narration
-            statusText.textContent = "Rolling for lucky number...";
-            statusText.classList.add('rainbow-text');
-            statusText.style.color = ""; // Clear any manual color
-            
-            // Find start index (default to 0 if nothing active, though we cleared active above)
-            let currentIndex = 0;
-
-            // --- 1. RAINBOW BORDER ANIMATION ---
-            let borderHue = 0;
-            const borderInterval = setInterval(() => {
-                borderHue = (borderHue + 40) % 360; 
-                strip.style.borderColor = `hsl(${borderHue}, 100%, 60%)`;
-            }, 50); 
-
-            // --- 2. NUMBER SCROLLING ---
-            let speed = 60; 
-            let steps = 0;
-            const minSteps = 24; 
-            
-            function step() {
-                // Clear active from prev (if any)
-                slots[currentIndex].classList.remove('active');
-                
-                // Move next
-                currentIndex = (currentIndex + 1) % slots.length;
-                slots[currentIndex].classList.add('active');
-                
-                steps++;
-                
-                // Stop condition
-                if (steps > minSteps && currentIndex === targetIndex) {
-                    finishRoll(currentIndex);
-                    return;
-                }
-
-                setTimeout(step, speed);
-            }
-            
-            // Start the loop
-            step();
-
-            function finishRoll(winningIndex) {
-                isRolling = false;
-                clearInterval(borderInterval);
-
-                const winningSlot = slots[winningIndex];
-
-                // --- 3. THE "SNAP" REVEAL ---
-                
-                // Update Narration
-                statusText.classList.remove('rainbow-text');
-                statusText.textContent = `Lucky Number is ${winningIndex + 1}!`;
-                statusText.style.color = "#FFD700"; // Gold color for win text
-
-                // Reset border immediately to Gold for the win moment
-                strip.style.transition = "none"; 
-                strip.style.borderColor = "#FFD700"; 
-                strip.style.boxShadow = "0 0 4cqw #FFD700, inset 0 0 2cqw #FFD700"; 
-
-                // Massive Scale Punch
-                winningSlot.style.transition = "transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
-                winningSlot.style.transform = "scale(2.5)"; // Big pop
-                winningSlot.style.textShadow = "0 0 3cqw #FFD700, 0 0 5cqw white";
-                winningSlot.style.color = "#FFFFFF";
-
-                // Return to normal state after a moment
-                setTimeout(() => {
-                    // Reset Strip Border to the new "Aggressive Pink" (#FF80AB) default
-                    strip.style.transition = "border-color 0.4s ease, box-shadow 0.4s ease";
-                    strip.style.borderColor = ""; // clear inline so CSS takes over (#FF80AB)
-                    strip.style.boxShadow = ""; // clear inline so CSS takes over
-                    
-                    // Reset Number
-                    winningSlot.style.transition = "transform 0.3s ease";
-                    winningSlot.style.transform = "scale(1.6)"; // Return to "Active" size (which is 1.6)
-                    winningSlot.style.textShadow = "";
-                    winningSlot.style.color = ""; // Returns to CSS defined color
-                    
-                }, 600);
-            }
-        });
-
-    </script>
-</body>
-</html>
+export default App;
