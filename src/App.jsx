@@ -7,9 +7,9 @@ import {
   Map as MapIcon, 
   Gem, 
   Coins, 
-  Sparkles,
   Layers,
-  Box
+  Box,
+  User
 } from 'lucide-react';
 
 const App = () => {
@@ -46,10 +46,10 @@ const App = () => {
       {/* --- BACKGROUND & AMBIANCE --- */}
       {/* This represents the "Game World" behind the UI */}
       <div className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-950 via-slate-950 to-black">
-        {/* Changed texture to black-scales, increased opacity, and added custom background size for 'larger' scales */}
+        {/* Scales texture */}
         <div className="absolute inset-0 opacity-40 bg-[url('https://www.transparenttextures.com/patterns/black-scales.png')] bg-[length:64px_64px] animate-pulse"></div>
         
-        {/* Animated Orbs for depth - Adjusted to Pink/Blue theme */}
+        {/* Animated Orbs for depth */}
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-pink-600/20 rounded-full blur-[100px] animate-blob"></div>
         <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-blue-600/20 rounded-full blur-[80px] animate-blob animation-delay-2000"></div>
 
@@ -58,8 +58,8 @@ const App = () => {
           <div className={`transition-all duration-700 ease-out transform ${activePanel ? 'scale-90 opacity-50 blur-sm translate-y-[-5%]' : 'scale-100 opacity-100'}`}>
             <div className="relative group">
               <div className="absolute -inset-1 bg-gradient-to-r from-pink-500 to-blue-600 rounded-2xl blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
-              <div className="relative w-64 h-80 bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-2xl flex flex-col items-center justify-center shadow-2xl">
-                 <Sparkles className="w-16 h-16 text-pink-500 mb-4 animate-spin-slow" />
+              {/* Taller card (h-96), justify-end to push text down */}
+              <div className="relative w-64 h-[28rem] bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-2xl flex flex-col items-center justify-end pb-8 shadow-2xl">
                  <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-400 to-blue-400 tracking-widest">AETHER</h2>
                  <p className="text-slate-500 text-xs mt-2 uppercase tracking-widest">System Ready</p>
               </div>
@@ -75,22 +75,24 @@ const App = () => {
         <div className="flex justify-between items-start">
           
           {/* Player Profile / Level */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <div className="relative">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-pink-500 to-blue-600 p-[2px] shadow-lg shadow-pink-500/20">
+              {/* Enlarged Avatar Container (w-16 h-16) */}
+              <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-pink-500 to-blue-600 p-[2px] shadow-lg shadow-pink-500/20">
                 <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center overflow-hidden">
-                   <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Avatar" className="w-10 h-10" />
+                   {/* Neutral User Icon */}
+                   <User className="w-8 h-8 text-slate-400" />
                 </div>
               </div>
               <div className="absolute -bottom-1 -right-1 bg-slate-950 rounded-full p-0.5">
-                <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-[10px] font-bold text-white border border-slate-700">
+                <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-xs font-bold text-white border-2 border-slate-900">
                   12
                 </div>
               </div>
             </div>
             <div className="flex flex-col">
-              <span className="text-sm font-bold text-slate-100 tracking-wide drop-shadow-md">Player One</span>
-              <div className="w-24 h-1.5 bg-slate-800/50 rounded-full mt-1 overflow-hidden backdrop-blur-sm">
+              <span className="text-lg font-bold text-slate-100 tracking-wide drop-shadow-md">Player One</span>
+              <div className="w-28 h-2 bg-slate-800/50 rounded-full mt-1 overflow-hidden backdrop-blur-sm">
                 <div className="h-full bg-gradient-to-r from-pink-500 to-pink-400 w-[70%]"></div>
               </div>
             </div>
@@ -207,20 +209,19 @@ const App = () => {
                  onClick={() => setEnergy(prev => Math.max(0, prev - 10))}
                >
                  <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-white/30 to-transparent opacity-50"></div>
-                 {/* Empty Center as requested */}
-                 
                  {/* Ripple Effect Ring */}
                  <div className="absolute -inset-1 rounded-full border border-pink-500/30 opacity-0 group-active:animate-ping"></div>
                </button>
             </div>
 
-            {/* Right Group - Modified: Generic Square Button Centered */}
+            {/* Right Group - Modified: Styled square button to match round button */}
             <div className="flex flex-1 justify-center items-center">
               <button 
-                className="relative w-12 h-12 rounded-xl border border-white/10 flex items-center justify-center transition-all duration-300 shadow-lg bg-slate-800/50 hover:bg-slate-700/50 active:bg-slate-700 active:scale-95"
+                className="group relative w-14 h-14 rounded-2xl bg-gradient-to-b from-pink-500 to-blue-700 shadow-[0_0_20px_rgba(236,72,153,0.3)] flex items-center justify-center transform transition-all duration-300 hover:scale-105 active:scale-95 border-4 border-slate-900"
               >
-                {/* Generic Box Icon (or could be empty) */}
-                <Box className="w-5 h-5 text-slate-500 opacity-50" />
+                 <div className="absolute inset-0 rounded-xl bg-gradient-to-tr from-white/30 to-transparent opacity-50"></div>
+                 {/* Generic Box Icon */}
+                 <Box className="relative w-6 h-6 text-white drop-shadow-md" />
               </button>
             </div>
 
