@@ -1,306 +1,367 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 import { 
-  Shield, 
+  Heart, 
   Zap, 
-  X, 
+  Shield, 
+  Sword, 
   Backpack, 
-  Map as MapIcon, 
-  Gem, 
+  Skull, 
   Coins, 
-  Layers,
-  User
+  Sparkles,
+  X,
+  Menu,
+  ChevronRight
 } from 'lucide-react';
 
-const App = () => {
-  // State for active panels and interactions
-  const [activePanel, setActivePanel] = useState(null);
-  const [energy, setEnergy] = useState(85);
+/**
+ * --- GAME CONFIGURATION & THEME ---
+ * This section defines the "look" without needing image assets.
+ * We use Tailwind utility classes to define color palettes for game concepts.
+ */
 
-  // Prevent default touch behaviors (like pull-to-refresh) for a native app feel
-  useEffect(() => {
-    const preventDefault = (e) => e.preventDefault();
-    document.body.addEventListener('touchmove', preventDefault, { passive: false });
-    return () => document.body.removeEventListener('touchmove', preventDefault);
-  }, []);
+const THEME = {
+  bg: "bg-slate-900",
+  text: "text-slate-100",
+  primary: "indigo", // Magic/UI
+  danger: "rose",    // Health/Enemies
+  warning: "amber",  // Gold/Loot
+  success: "emerald" // Stamina/Buffs
+};
 
-  // Simulate energy regeneration
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setEnergy(e => (e < 100 ? e + 1 : 100));
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
+/**
+ * --- COMPONENTS ---
+ */
 
-  const togglePanel = (panelName) => {
-    if (activePanel === panelName) {
-      setActivePanel(null);
-    } else {
-      setActivePanel(panelName);
-    }
-  };
-
+// 1. The "Juicy" Button
+// A reusable button component that has depth (shadow-b) and bounce on click.
+const GameButton = ({ onClick, color = "indigo", icon: Icon, label, disabled, size = "md" }) => {
   return (
-    <div className="relative w-full h-[100dvh] bg-stone-900 overflow-hidden font-sans select-none text-stone-100">
+    <motion.button
+      whileTap={{ scale: 0.95, y: 4 }} // The "press" effect
+      onClick={onClick}
+      disabled={disabled}
+      className={`
+        relative group w-full flex flex-col items-center justify-center 
+        ${size === 'lg' ? 'h-24' : 'h-16'}
+        rounded-2xl transition-all
+        bg-${color}-500 border-b-4 border-${color}-700
+        active:border-b-0 active:translate-y-1
+        disabled:opacity-50 disabled:grayscale
+        shadow-lg
+      `}
+    >
+      {/* Gloss effect overlay */}
+      <div className="absolute inset-x-0 top-0 h-1/3 bg-white/20 rounded-t-2xl pointer-events-none" />
       
-      {/* --- BACKGROUND & AMBIANCE --- */}
-      {/* Dark Cherry & Forest Theme Background */}
-      <div className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-rose-950 via-stone-950 to-emerald-950">
-        {/* Scales texture - Made LARGER and MORE PROMINENT */}
-        <div className="absolute inset-0 opacity-60 bg-[url('https://www.transparenttextures.com/patterns/black-scales.png')] bg-[length:100px_100px] animate-pulse"></div>
-        
-        {/* Animated Orbs for depth */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-rose-800/20 rounded-full blur-[100px] animate-blob"></div>
-        <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-emerald-800/20 rounded-full blur-[80px] animate-blob animation-delay-2000"></div>
+      {Icon && <Icon className={`mb-1 ${size === 'lg' ? 'w-8 h-8' : 'w-5 h-5'} text-white drop-shadow-md`} />}
+      <span className="font-bold uppercase tracking-wider text-xs text-white drop-shadow-md">
+        {label}
+      </span>
+    </motion.button>
+  );
+};
 
-        {/* Central Content Placeholder (The "Game" View) */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none pb-16">
-          <div className={`transition-all duration-700 ease-out transform ${activePanel ? 'scale-90 opacity-50 blur-sm translate-y-[-5%]' : 'scale-100 opacity-100'}`}>
-            <div className="relative group">
-              {/* Gradient border glow */}
-              <div className="absolute -inset-1 bg-gradient-to-r from-rose-500 to-emerald-600 rounded-2xl blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
-              
-              <div className="relative w-64 h-[28rem] bg-stone-900/80 backdrop-blur-xl border border-white/10 rounded-2xl flex flex-col items-center justify-end pb-8 shadow-2xl overflow-hidden">
-                 
-                 {/* IMAGE DISPLAY LOGIC */}
-                 <div className="mb-6 rounded-lg overflow-hidden shadow-lg border border-white/10 relative w-48 h-48 bg-black/50">
-                    <img 
-                      /* Using root-relative path. 
-                         If fiend.jpg is in the same folder as index.html, "fiend.jpg" or "/fiend.jpg" should work.
-                         If using Vite/React, it's often best to put static assets in the "public" folder.
-                      */
-                      src="fiend.jpg" 
-                      alt="Fiend" 
-                      className="w-full h-full object-cover opacity-90 hover:opacity-100 transition-opacity"
-                      onError={(e) => {
-                        e.target.onerror = null; 
-                        // Fallback only if the file is missing
-                        e.target.src = "https://placehold.co/400x400/290505/FFF?text=Image+Missing"; 
-                      }}
-                    />
-                    {/* Inner shadow overlay for mood */}
-                    <div className="absolute inset-0 shadow-[inset_0_0_20px_rgba(0,0,0,0.8)] pointer-events-none"></div>
-                 </div>
-
-                 <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-rose-400 to-emerald-400 tracking-widest text-center px-2">DRAGON BLADE</h2>
-                 <p className="text-stone-500 text-xs mt-2 uppercase tracking-widest">Hope and Grace</p>
-              </div>
-            </div>
-          </div>
-        </div>
+// 2. Resource Badge (Top Bar)
+// Displays HP, Gold, Energy with a popping animation when values change.
+const ResourceBadge = ({ icon: Icon, value, color, label }) => {
+  return (
+    <div className={`flex flex-col items-center justify-center p-2 rounded-xl bg-slate-800/80 border border-slate-700 min-w-[70px]`}>
+      <div className={`text-${color}-400 mb-1`}>
+        <Icon size={18} fill="currentColor" fillOpacity={0.2} />
       </div>
-
-      {/* --- HUD LAYER --- */}
-
-      {/* Top Bar: Resources & Status */}
-      <header className="absolute top-0 left-0 right-0 z-40 p-4 pt-safe-top">
-        <div className="flex justify-between items-start">
-          
-          {/* Player Profile / Level */}
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              {/* Avatar Ring */}
-              <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-rose-500 to-emerald-600 p-[2px] shadow-lg shadow-rose-900/50">
-                <div className="w-full h-full rounded-full bg-stone-900 flex items-center justify-center overflow-hidden">
-                   <User className="w-8 h-8 text-stone-400" />
-                </div>
-              </div>
-              <div className="absolute -bottom-1 -right-1 bg-stone-950 rounded-full p-0.5">
-                <div className="w-6 h-6 bg-emerald-600 rounded-full flex items-center justify-center text-xs font-bold text-white border-2 border-stone-900">
-                  12
-                </div>
-              </div>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-lg font-bold text-stone-100 tracking-wide drop-shadow-md">Player One</span>
-              <div className="w-28 h-2 bg-stone-800/50 rounded-full mt-1 overflow-hidden backdrop-blur-sm">
-                <div className="h-full bg-gradient-to-r from-rose-500 to-rose-400 w-[70%]"></div>
-              </div>
-            </div>
-          </div>
-
-          {/* Resources Pill */}
-          <div className="flex flex-col gap-2 items-end">
-             <div className="flex items-center gap-3 bg-stone-900/60 backdrop-blur-md border border-white/5 rounded-full px-4 py-1.5 shadow-xl">
-                <div className="flex items-center gap-1.5">
-                  <Coins className="w-4 h-4 text-amber-500" fill="currentColor" />
-                  <span className="text-xs font-bold text-amber-100">4,250</span>
-                </div>
-                <div className="w-px h-4 bg-white/10"></div>
-                <div className="flex items-center gap-1.5">
-                  <Gem className="w-4 h-4 text-rose-500" />
-                  <span className="text-xs font-bold text-rose-100">128</span>
-                </div>
-             </div>
-             
-             {/* Energy Bar */}
-             <div className="flex items-center gap-2 bg-stone-900/40 backdrop-blur-sm rounded-full px-3 py-1 border border-emerald-500/30 shadow-lg shadow-emerald-900/20">
-                <Zap className="w-3 h-3 text-emerald-400 fill-current" />
-                <span className="text-[10px] font-mono font-bold text-emerald-100">{energy}/100</span>
-             </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Right Side Actions (Contextual) */}
-      <div className="absolute right-4 top-1/3 z-30 flex flex-col gap-4">
-        <SideActionButton icon={MapIcon} label="Quest" delay="0" />
-        <SideActionButton icon={Layers} label="Build" delay="100" />
-      </div>
-
-      {/* --- FLOATING PANELS (Modal / Windows) --- */}
-      {/* Backdrop for Panels */}
-      <div 
-        className={`absolute inset-0 z-40 bg-stone-950/60 backdrop-blur-sm transition-opacity duration-500 ${activePanel ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
-        onClick={() => setActivePanel(null)}
-      ></div>
-
-      {/* The Panel Itself */}
-      <div 
-        className={`absolute bottom-0 left-0 right-0 z-50 bg-stone-900/95 backdrop-blur-2xl border-t border-white/10 rounded-t-[3rem] shadow-[0_-10px_40px_rgba(0,0,0,0.5)] transition-transform duration-500 cubic-bezier(0.32, 0.72, 0, 1) ${activePanel ? 'translate-y-0' : 'translate-y-[110%]'}`}
-        style={{ height: '75dvh', paddingBottom: 'env(safe-area-inset-bottom)' }}
+      {/* We key the value so framer-motion re-renders the animation when numbers change */}
+      <motion.span 
+        key={value}
+        initial={{ scale: 1.5, color: '#fff' }}
+        animate={{ scale: 1, color: '#e2e8f0' }}
+        className="font-mono font-bold text-sm"
       >
-        {/* Panel Handle */}
-        <div className="w-full h-8 flex items-center justify-center cursor-grab active:cursor-grabbing" onClick={() => setActivePanel(null)}>
-          <div className="w-12 h-1.5 bg-white/20 rounded-full"></div>
-        </div>
+        {value}
+      </motion.span>
+    </div>
+  );
+};
 
-        {/* Panel Header */}
-        <div className="px-8 pb-4 flex justify-between items-center border-b border-white/5">
-          <h2 className="text-2xl font-light tracking-tight text-white">
-            {activePanel === 'inventory' ? 'Inventory' : 'Hero'}
-          </h2>
-          <button 
-            onClick={() => setActivePanel(null)}
-            className="p-2 rounded-full bg-white/5 hover:bg-white/10 active:bg-white/20 transition-colors"
+// 3. Floating Combat Text
+// Spawns when damage happens
+const FloatingText = ({ x, y, text, color, onComplete }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 1, y: 0, scale: 0.5 }}
+      animate={{ opacity: 0, y: -50, scale: 1.2 }}
+      transition={{ duration: 0.8 }}
+      onAnimationComplete={onComplete}
+      className={`absolute font-black text-2xl text-${color}-400 drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] pointer-events-none z-50`}
+      style={{ left: x, top: y }}
+    >
+      {text}
+    </motion.div>
+  );
+};
+
+// 4. The Inventory "Modal"
+// Sliding sheet from bottom, typical in modern mobile UIs
+const InventorySheet = ({ isOpen, onClose, items, equipItem }) => {
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop */}
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+          />
+          {/* Sheet */}
+          <motion.div
+            initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="fixed bottom-0 left-0 right-0 h-[70vh] bg-slate-800 rounded-t-3xl z-50 p-6 shadow-2xl border-t border-slate-600 flex flex-col"
           >
-            <X className="w-5 h-5 text-stone-400" />
-          </button>
-        </div>
-
-        {/* Panel Content (Scrollable) */}
-        <div className="h-full overflow-y-auto px-6 py-6 pb-24 scrollbar-hide">
-          {activePanel === 'inventory' && (
-            <div className="grid grid-cols-4 gap-4">
-               {Array.from({ length: 16 }).map((_, i) => (
-                 <InventorySlot key={i} index={i} />
-               ))}
-            </div>
-          )}
-          
-          {/* Simplified Content for Hero Panel */}
-          {activePanel === 'hero' && (
-             <div className="flex flex-col items-center justify-center h-64 text-stone-500">
-                <Shield className="w-12 h-12 mb-4 opacity-20" />
-                <p>Hero Details Panel</p>
-             </div>
-          )}
-        </div>
-      </div>
-
-
-      {/* --- BOTTOM DOCK --- */}
-      <nav className="absolute bottom-6 left-4 right-4 z-50 pb-safe-bottom">
-        <div className="relative">
-          {/* Glass Dock Background */}
-          <div className="absolute inset-0 bg-stone-900/80 backdrop-blur-xl border border-white/5 rounded-2xl shadow-2xl"></div>
-          
-          <div className="relative flex justify-between items-center px-4 py-2">
-            
-            {/* Left Group */}
-            <div className="flex gap-1 flex-1">
-              <DockItem 
-                icon={Shield} 
-                label="Hero" 
-                isActive={activePanel === 'hero'}
-                onClick={() => togglePanel('hero')} 
-              />
-              <DockItem 
-                icon={Backpack} 
-                label="Bag" 
-                isActive={activePanel === 'inventory'}
-                onClick={() => togglePanel('inventory')} 
-              />
-            </div>
-
-            {/* Main Action Button - MODIFIED: Dark Blue/Red Swirl, Thinner Border */}
-            <div className="relative -top-8 mx-4">
-               <button 
-                 className="group relative w-20 h-20 rounded-full shadow-[0_0_30px_rgba(30,58,138,0.4)] flex items-center justify-center transform transition-all duration-300 hover:scale-105 active:scale-95 border-2 border-stone-600/50 overflow-hidden"
-                 onClick={() => setEnergy(prev => Math.max(0, prev - 10))}
-               >
-                 {/* Conic Gradient for Swirl Effect */}
-                 <div className="absolute inset-0 bg-[conic-gradient(at_center,_var(--tw-gradient-stops))] from-blue-950 via-red-900 to-blue-950 animate-[spin_10s_linear_infinite]"></div>
-                 
-                 {/* Gloss Overlay */}
-                 <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-white/20 to-transparent opacity-50 pointer-events-none"></div>
-                 
-                 {/* Ripple Effect Ring */}
-                 <div className="absolute -inset-1 rounded-full border border-red-500/30 opacity-0 group-active:animate-ping pointer-events-none"></div>
-               </button>
-            </div>
-
-            {/* Right Group - MODIFIED: Orange/Purple Gradient, Thinner Border */}
-            <div className="flex flex-1 justify-center items-center">
-              <button 
-                className="group relative w-14 h-14 rounded-2xl bg-gradient-to-tr from-orange-400/80 to-purple-600/80 shadow-[0_0_20px_rgba(168,85,247,0.3)] flex items-center justify-center transform transition-all duration-300 hover:scale-105 active:scale-95 border-2 border-stone-600/50"
-              >
-                 <div className="absolute inset-0 rounded-xl bg-gradient-to-tr from-white/30 to-transparent opacity-50"></div>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-black text-white flex items-center gap-2">
+                <Backpack className="text-indigo-400" /> Inventory
+              </h2>
+              <button onClick={onClose} className="p-2 bg-slate-700 rounded-full text-white">
+                <X size={20} />
               </button>
             </div>
 
-          </div>
-        </div>
-      </nav>
-
-    </div>
-  );
-};
-
-/* --- SUB COMPONENTS --- */
-
-const DockItem = ({ icon: Icon, label, isActive, onClick }) => (
-  <button 
-    onClick={onClick}
-    className={`relative flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-xl transition-all duration-300 ${isActive ? 'bg-white/10' : 'hover:bg-white/5 active:bg-white/10'}`}
-  >
-    <Icon className={`w-6 h-6 mb-1 transition-colors ${isActive ? 'text-rose-400' : 'text-stone-400'}`} />
-    <span className={`text-[10px] uppercase font-bold tracking-wider ${isActive ? 'text-rose-200' : 'text-stone-500'}`}>
-      {label}
-    </span>
-    {isActive && (
-      <div className="absolute bottom-1 w-1 h-1 bg-rose-400 rounded-full shadow-[0_0_8px_rgb(251,113,133)]"></div>
-    )}
-  </button>
-);
-
-const SideActionButton = ({ icon: Icon, label, delay }) => (
-  <button 
-    className="group flex items-center justify-center w-12 h-12 bg-stone-800/40 backdrop-blur-md border border-white/10 rounded-xl shadow-lg hover:bg-stone-700/60 active:scale-90 transition-all duration-300"
-    style={{ transitionDelay: `${delay}ms` }}
-  >
-    <Icon className="w-5 h-5 text-stone-300 group-hover:text-white" />
-    <span className="absolute right-full mr-3 px-2 py-1 bg-black/80 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-      {label}
-    </span>
-  </button>
-);
-
-const InventorySlot = ({ index }) => {
-  // Mock rare items
-  const isRare = index === 0 || index === 4;
-  const isEmpty = index > 6;
-  
-  return (
-    <div className={`aspect-square rounded-2xl border ${isRare ? 'border-rose-500/30 bg-rose-500/10' : 'border-white/5 bg-white/5'} flex items-center justify-center relative overflow-hidden group active:scale-95 transition-transform`}>
-      {!isEmpty && (
-        <>
-          <div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-          <div className={`w-8 h-8 rounded-full ${isRare ? 'bg-rose-400/20' : 'bg-stone-400/20'} animate-pulse`}></div>
-          <span className="absolute bottom-1 right-2 text-[10px] font-bold text-stone-400">x{isRare ? 1 : Math.floor(Math.random() * 10) + 1}</span>
+            <div className="grid grid-cols-4 gap-4 overflow-y-auto pb-20">
+              {items.map((item, idx) => (
+                <motion.button
+                  key={item.id}
+                  layoutId={item.id}
+                  onClick={() => equipItem(item)}
+                  className="aspect-square bg-slate-700 rounded-xl border-2 border-slate-600 flex items-center justify-center text-3xl relative overflow-hidden"
+                >
+                  {item.emoji}
+                  {item.equipped && (
+                    <div className="absolute top-1 right-1 w-3 h-3 bg-emerald-400 rounded-full border border-white" />
+                  )}
+                </motion.button>
+              ))}
+              {/* Empty slots for visual consistency */}
+              {[...Array(4)].map((_, i) => (
+                <div key={`empty-${i}`} className="aspect-square bg-slate-900/50 rounded-xl border border-slate-800 border-dashed" />
+              ))}
+            </div>
+          </motion.div>
         </>
       )}
-    </div>
+    </AnimatePresence>
   );
 };
 
-export default App;
+/**
+ * --- MAIN APP LOGIC ---
+ */
+
+export default function RoguelikePrototype() {
+  // Game State
+  const [hp, setHp] = useState(85);
+  const [maxHp] = useState(100);
+  const [gold, setGold] = useState(120);
+  const [energy, setEnergy] = useState(3);
+  const [enemyHp, setEnemyHp] = useState(50);
+  
+  // UI State
+  const [showInventory, setShowInventory] = useState(false);
+  const [activeEffects, setActiveEffects] = useState([]); // For floating text
+  const [shake, setShake] = useState(false);
+  
+  // Mock Data
+  const [inventory, setInventory] = useState([
+    { id: 1, name: 'Rusty Sword', emoji: '🗡️', type: 'weapon', equipped: true },
+    { id: 2, name: 'Health Potion', emoji: '🧪', type: 'consumable', equipped: false },
+    { id: 3, name: 'Lucky Coin', emoji: '🪙', type: 'trinket', equipped: false },
+    { id: 4, name: 'Old Map', emoji: '📜', type: 'quest', equipped: false },
+  ]);
+
+  const enemyControls = useAnimation();
+
+  // Helper to spawn floating text
+  const spawnText = (text, color = "white", x = "50%", y = "40%") => {
+    const id = Date.now();
+    setActiveEffects(prev => [...prev, { id, text, color, x, y }]);
+  };
+
+  // Actions
+  const handleAttack = async () => {
+    if (energy < 1) {
+      spawnText("No Energy!", "slate", "50%", "70%");
+      return;
+    }
+
+    // 1. Deduct Energy
+    setEnergy(e => e - 1);
+
+    // 2. Animate Player Strike (Camera shake effect)
+    setShake(true);
+    setTimeout(() => setShake(false), 200);
+
+    // 3. Animate Enemy Hit
+    await enemyControls.start({ x: [0, 10, -10, 5, -5, 0], color: "#ef4444", transition: { duration: 0.3 } });
+    
+    // 4. Calculate Damage
+    const dmg = Math.floor(Math.random() * 10) + 5;
+    const isCrit = Math.random() > 0.8;
+    const finalDmg = isCrit ? dmg * 2 : dmg;
+
+    setEnemyHp(h => Math.max(0, h - finalDmg));
+    spawnText(finalDmg, isCrit ? "orange" : "white", "50%", "30%");
+
+    if (isCrit) spawnText("CRITICAL!", "orange", "50%", "25%");
+  };
+
+  const handleDefend = () => {
+    if (energy < 1) return;
+    setEnergy(e => e - 1);
+    spawnText("SHIELD UP", "cyan", "50%", "50%");
+  };
+
+  const handleLoot = () => {
+    // Simulating a turn or refresh
+    setEnergy(3);
+    spawnText("Energy Restored", "emerald", "50%", "60%");
+  };
+
+  // Render
+  return (
+    <div className={`h-screen w-full ${THEME.bg} ${THEME.text} font-sans overflow-hidden flex flex-col select-none touch-manipulation`}>
+      
+      {/* 1. TOP HUD - Sticky */}
+      <header className="p-4 flex justify-between items-start z-10 shrink-0">
+        <div className="flex gap-3">
+          <ResourceBadge icon={Heart} value={`${hp}/${maxHp}`} color="rose" label="HP" />
+          <ResourceBadge icon={Zap} value={energy} color="emerald" label="AP" />
+        </div>
+        <div className="flex gap-3">
+          <ResourceBadge icon={Coins} value={gold} color="amber" label="Gold" />
+          <button 
+            onClick={() => setShowInventory(true)}
+            className="p-3 bg-indigo-600 rounded-xl shadow-lg active:scale-95 transition-transform"
+          >
+            <Backpack className="text-white" />
+          </button>
+        </div>
+      </header>
+
+      {/* 2. MAIN GAME VIEWPORT - Flexible Area */}
+      {/* This area scales to fill available space. We use flex-col to center the content. */}
+      <motion.main 
+        className="flex-1 relative flex flex-col items-center justify-center p-6"
+        animate={{ x: shake ? [0, -5, 5, -5, 5, 0] : 0 }}
+        transition={{ duration: 0.2 }}
+      >
+        {/* Floating Texts Layer */}
+        {activeEffects.map(effect => (
+          <FloatingText 
+            key={effect.id} 
+            {...effect} 
+            onComplete={() => setActiveEffects(prev => prev.filter(e => e.id !== effect.id))} 
+          />
+        ))}
+
+        {/* The "Card" - Can be an Enemy, Event, or NPC */}
+        <div className="w-full max-w-xs aspect-[3/4] bg-slate-800 rounded-3xl shadow-2xl border-4 border-slate-700 relative overflow-hidden flex flex-col">
+          
+          {/* Card Header (Name/Level) */}
+          <div className="bg-slate-900/50 p-4 text-center border-b border-white/5">
+            <h2 className="text-xl font-black tracking-widest text-rose-400 uppercase">
+              Slime King
+            </h2>
+            <div className="text-xs text-slate-400 font-mono mt-1">Lvl 5 • Boss</div>
+          </div>
+
+          {/* Visual Stage */}
+          <div className="flex-1 relative flex items-center justify-center bg-gradient-to-b from-slate-800 to-slate-900">
+            {/* Background Decor (Grid/Glow) */}
+            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-rose-500 via-slate-900 to-transparent" />
+            
+            {/* The Entity */}
+            <motion.div 
+              animate={enemyControls}
+              className="text-9xl drop-shadow-2xl filter brightness-110"
+            >
+              👾
+            </motion.div>
+
+            {/* Entity HP Bar */}
+            <div className="absolute bottom-8 w-3/4 h-3 bg-slate-900 rounded-full overflow-hidden border border-slate-600">
+              <motion.div 
+                className="h-full bg-rose-500"
+                initial={{ width: "100%" }}
+                animate={{ width: `${(enemyHp / 50) * 100}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Card Footer (Intent/Status) */}
+          <div className="p-3 bg-slate-900/80 flex justify-between items-center text-sm px-6">
+            <span className="flex items-center gap-2 text-yellow-400">
+              <Sparkles size={14} /> Preparing Attack
+            </span>
+            <span className="font-mono text-slate-500">12 DMG</span>
+          </div>
+        </div>
+      </motion.main>
+
+      {/* 3. CONTROL DECK - Bottom Anchored */}
+      {/* Designed for thumbs. Grid layout keeps it tidy. */}
+      <footer className="p-4 bg-slate-800/50 backdrop-blur-md rounded-t-3xl border-t border-white/5 shrink-0 z-20 pb-8">
+        <div className="grid grid-cols-4 gap-3 max-w-md mx-auto">
+          
+          {/* Main Action (Attack) - Takes up 2 slots */}
+          <div className="col-span-2">
+            <GameButton 
+              label="Attack" 
+              icon={Sword} 
+              color="rose" 
+              size="lg" 
+              onClick={handleAttack} 
+            />
+          </div>
+
+          {/* Secondary Actions */}
+          <div className="col-span-1">
+            <GameButton 
+              label="Defend" 
+              icon={Shield} 
+              color="indigo" 
+              size="lg" 
+              onClick={handleDefend} 
+            />
+          </div>
+
+           {/* Utility/Pass Turn */}
+           <div className="col-span-1">
+            <GameButton 
+              label="Rest" 
+              icon={Zap} 
+              color="emerald" 
+              size="lg" 
+              onClick={handleLoot} 
+            />
+          </div>
+
+        </div>
+        
+        {/* Helper/Meta Text */}
+        <div className="text-center mt-4 text-xs text-slate-500 font-mono uppercase tracking-widest opacity-50">
+          Turn 4 • Floor 1
+        </div>
+      </footer>
+
+      {/* 4. OVERLAYS */}
+      <InventorySheet 
+        isOpen={showInventory} 
+        onClose={() => setShowInventory(false)} 
+        items={inventory}
+        equipItem={(item) => console.log("Equipping", item)}
+      />
+
+    </div>
+  );
+}
