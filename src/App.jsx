@@ -1,11 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 import { 
   Sparkles,
-  X,
-  Menu,
-  Settings,
-  Skull
+  X
 } from 'lucide-react';
 
 /**
@@ -14,8 +11,6 @@ import {
  */
 const COLORS = {
   bg: "bg-indigo-950",
-  card: "bg-slate-900",
-  primary: "indigo", // Tailwind color name
 };
 
 /**
@@ -179,9 +174,9 @@ const InventoryModal = ({ isOpen, onClose, items, equipItem }) => {
 
 export default function RoguelikePrototype() {
   // Game State
-  const [hp, setHp] = useState(85);
-  const [maxHp] = useState(100);
-  const [gold, setGold] = useState(120);
+  const [hp] = useState(85);
+  // Removed unused maxHp
+  const [gold] = useState(120);
   const [energy, setEnergy] = useState(3);
   const [enemyHp, setEnemyHp] = useState(50);
   const [enemyMaxHp] = useState(50);
