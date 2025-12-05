@@ -61,16 +61,20 @@ const App = () => {
               
               <div className="relative w-64 h-[28rem] bg-stone-900/80 backdrop-blur-xl border border-white/10 rounded-2xl flex flex-col items-center justify-end pb-8 shadow-2xl overflow-hidden">
                  
-                 {/* IMAGE INSERTED HERE */}
-                 {/* Using a placeholder styling if image fails to load, but src is set to fiend.jpg */}
+                 {/* IMAGE DISPLAY LOGIC */}
                  <div className="mb-6 rounded-lg overflow-hidden shadow-lg border border-white/10 relative w-48 h-48 bg-black/50">
                     <img 
+                      /* Using root-relative path. 
+                         If fiend.jpg is in the same folder as index.html, "fiend.jpg" or "/fiend.jpg" should work.
+                         If using Vite/React, it's often best to put static assets in the "public" folder.
+                      */
                       src="fiend.jpg" 
                       alt="Fiend" 
                       className="w-full h-full object-cover opacity-90 hover:opacity-100 transition-opacity"
                       onError={(e) => {
                         e.target.onerror = null; 
-                        e.target.src = "https://placehold.co/400x400/290505/FFF?text=Fiend"; // Fallback just in case
+                        // Fallback only if the file is missing
+                        e.target.src = "https://placehold.co/400x400/290505/FFF?text=Image+Missing"; 
                       }}
                     />
                     {/* Inner shadow overlay for mood */}
