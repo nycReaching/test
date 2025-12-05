@@ -45,24 +45,24 @@ const App = () => {
       {/* --- BACKGROUND & AMBIANCE --- */}
       {/* Dark Cherry & Forest Theme Background */}
       <div className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-rose-950 via-stone-950 to-emerald-950">
-        {/* Scales texture */}
-        <div className="absolute inset-0 opacity-30 bg-[url('https://www.transparenttextures.com/patterns/black-scales.png')] bg-[length:64px_64px] animate-pulse"></div>
+        {/* Scales texture - Made LARGER and MORE PROMINENT */}
+        <div className="absolute inset-0 opacity-60 bg-[url('https://www.transparenttextures.com/patterns/black-scales.png')] bg-[length:100px_100px] animate-pulse"></div>
         
-        {/* Animated Orbs for depth - Adjusted to Cherry/Forest colors */}
+        {/* Animated Orbs for depth */}
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-rose-800/20 rounded-full blur-[100px] animate-blob"></div>
         <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-emerald-800/20 rounded-full blur-[80px] animate-blob animation-delay-2000"></div>
 
         {/* Central Content Placeholder (The "Game" View) */}
-        {/* ADDED pb-32 to lift the middle square up away from bottom panel */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none pb-32">
+        {/* Adjusted padding: pb-16 brings it down from the previous pb-32, creating a balanced space */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none pb-16">
           <div className={`transition-all duration-700 ease-out transform ${activePanel ? 'scale-90 opacity-50 blur-sm translate-y-[-5%]' : 'scale-100 opacity-100'}`}>
             <div className="relative group">
-              {/* Gradient border glow - Rose to Emerald */}
+              {/* Gradient border glow */}
               <div className="absolute -inset-1 bg-gradient-to-r from-rose-500 to-emerald-600 rounded-2xl blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
               
               <div className="relative w-64 h-[28rem] bg-stone-900/80 backdrop-blur-xl border border-white/10 rounded-2xl flex flex-col items-center justify-end pb-8 shadow-2xl">
-                 <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-rose-400 to-emerald-400 tracking-widest">AETHER</h2>
-                 <p className="text-stone-500 text-xs mt-2 uppercase tracking-widest">System Ready</p>
+                 <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-rose-400 to-emerald-400 tracking-widest text-center px-2">DRAGON BLADE</h2>
+                 <p className="text-stone-500 text-xs mt-2 uppercase tracking-widest">Hope and Grace</p>
               </div>
             </div>
           </div>
@@ -78,7 +78,7 @@ const App = () => {
           {/* Player Profile / Level */}
           <div className="flex items-center gap-4">
             <div className="relative">
-              {/* Avatar Ring - Rose to Emerald */}
+              {/* Avatar Ring */}
               <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-rose-500 to-emerald-600 p-[2px] shadow-lg shadow-rose-900/50">
                 <div className="w-full h-full rounded-full bg-stone-900 flex items-center justify-center overflow-hidden">
                    <User className="w-8 h-8 text-stone-400" />
@@ -99,7 +99,7 @@ const App = () => {
           </div>
 
           {/* Resources Pill */}
-          <div className="flex flex-col gap-3 items-end">
+          <div className="flex flex-col gap-2 items-end">
              <div className="flex items-center gap-3 bg-stone-900/60 backdrop-blur-md border border-white/5 rounded-full px-4 py-1.5 shadow-xl">
                 <div className="flex items-center gap-1.5">
                   <Coins className="w-4 h-4 text-amber-500" fill="currentColor" />
@@ -112,10 +112,10 @@ const App = () => {
                 </div>
              </div>
              
-             {/* Energy Bar - ENLARGED */}
-             <div className="flex items-center gap-3 bg-stone-900/40 backdrop-blur-sm rounded-full px-5 py-2 border border-emerald-500/30 shadow-lg shadow-emerald-900/20">
-                <Zap className="w-5 h-5 text-emerald-400 fill-current" />
-                <span className="text-sm font-mono font-bold text-emerald-100">{energy}/100</span>
+             {/* Energy Bar - SCALED DOWN */}
+             <div className="flex items-center gap-2 bg-stone-900/40 backdrop-blur-sm rounded-full px-3 py-1 border border-emerald-500/30 shadow-lg shadow-emerald-900/20">
+                <Zap className="w-3 h-3 text-emerald-400 fill-current" />
+                <span className="text-[10px] font-mono font-bold text-emerald-100">{energy}/100</span>
              </div>
           </div>
         </div>
@@ -202,7 +202,7 @@ const App = () => {
               />
             </div>
 
-            {/* Main Action Button (Floating above dock) - Modified Gradient to Rose/Emerald */}
+            {/* Main Action Button (Floating above dock) */}
             <div className="relative -top-8 mx-4">
                <button 
                  className="group relative w-20 h-20 rounded-full bg-gradient-to-b from-rose-500 to-emerald-700 shadow-[0_0_30px_rgba(225,29,72,0.4)] flex items-center justify-center transform transition-all duration-300 hover:scale-105 active:scale-95 border-4 border-stone-900"
@@ -214,13 +214,13 @@ const App = () => {
                </button>
             </div>
 
-            {/* Right Group - Modified: Removed Icon */}
+            {/* Right Group */}
             <div className="flex flex-1 justify-center items-center">
               <button 
                 className="group relative w-14 h-14 rounded-2xl bg-gradient-to-b from-rose-500 to-emerald-700 shadow-[0_0_20px_rgba(225,29,72,0.3)] flex items-center justify-center transform transition-all duration-300 hover:scale-105 active:scale-95 border-4 border-stone-900"
               >
                  <div className="absolute inset-0 rounded-xl bg-gradient-to-tr from-white/30 to-transparent opacity-50"></div>
-                 {/* REMOVED BOX ICON - Now empty */}
+                 {/* Empty Button */}
               </button>
             </div>
 
