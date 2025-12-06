@@ -1,428 +1,953 @@
-'use client';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Camera,
+  ShoppingBag,
+  BookOpen,
+  Carrot,
+  Flower,
+  Trees,
+  Sun,
+  Feather, 
+  Wheat,   
+  X,
+  Droplets,
+  Zap,
+  Aperture,
+  CarFront,
+  ArrowUp,
+  Flower2,
+  Sprout,
+  ThumbsDown,
+  Box,        
+  Ghost,
+  Key,
+  Sparkles,
+  Footprints,
+  HelpCircle,
+  Gem,
+  TreeDeciduous,
+  TreePine,
+  TreePalm, 
+  Clover,
+  Cat,
+  Utensils,
+  Home,
+  Waves,
+  Castle,
+  Dices,      
+  TrendingUp,
+  Cylinder,
+  Check,
+  CircleDollarSign,
+  Bug,
+  CloudRain,
+  User,   // NEW
+  Trophy, // NEW
+  Info    // NEW
+} from 'lucide-react';
 
-import React, { useState } from 'react';
-import { motion, AnimatePresence, useAnimation } from 'framer-motion';
-import { Sparkles, X } from 'lucide-react';
+export default function App() {
+  const [isShopOpen, setIsShopOpen] = useState(false);
+  const [isInfoOpen, setIsInfoOpen] = useState(false); 
+  const [shopCategory, setShopCategory] = useState('feeders'); 
+  const [day, setDay] = useState(1);
+  const [weather, setWeather] = useState('Sunny');
+  
+  // Sidebar Menus State
+  const [activeMenu, setActiveMenu] = useState(null); 
+  const [selectedVeggie, setSelectedVeggie] = useState(null);
+  const [selectedFlower, setSelectedFlower] = useState(null);
+  const [selectedTree, setSelectedTree] = useState(null);
 
-/**
- * --- CONFIGURATION ---
- */
-const COLORS = {
-  bg: "bg-indigo-950",
-};
+  // Stats
+  const [stats, setStats] = useState({
+    money: 150, 
+    progress: 12   
+  });
 
-/**
- * --- SUB-COMPONENTS ---
- */
+  const [flash, setFlash] = useState(false);
 
-const ChunkyButton = ({ onClick, color = "indigo", emoji, label, disabled, size = "md", className = "" }) => {
-  const themes = {
-    indigo: "bg-indigo-500 border-indigo-800 hover:bg-indigo-400 text-white",
-    rose:   "bg-rose-500 border-rose-800 hover:bg-rose-400 text-white",
-    emerald:"bg-emerald-500 border-emerald-800 hover:bg-emerald-400 text-white",
-    amber:  "bg-amber-500 border-amber-800 hover:bg-amber-400 text-white",
-    violet: "bg-violet-600 border-violet-900 hover:bg-violet-500 text-white",
-    slate:  "bg-slate-600 border-slate-800 hover:bg-slate-500 text-slate-100",
+  // Luck / Dice State
+  const [luckyNumber, setLuckyNumber] = useState(null); 
+  const [popupNumber, setPopupNumber] = useState(1);    
+  const [isRolling, setIsRolling] = useState(false);    
+  const [isLuckLocked, setIsLuckLocked] = useState(false); 
+  const [showLuckyPopup, setShowLuckyPopup] = useState(false);
+  
+  // --- Car Meter starts at 0 ---
+  const [carProgress, setCarProgress] = useState(0); 
+  const isNeighborHere = carProgress >= 100;
+
+  // Timer to fill car meter
+  // 3 minutes to fill (180 seconds)
+  useEffect(() => {
+    if (carProgress >= 100) return;
+
+    const interval = setInterval(() => {
+      setCarProgress(prev => {
+        // Calculation: 100% / (180 seconds * 10 ticks/sec) = 0.0556
+        const next = prev + 0.0556; 
+        return next > 100 ? 100 : next;
+      });
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [carProgress]);
+
+  const handleCameraSnap = () => {
+    setFlash(true);
+    setTimeout(() => setFlash(false), 200);
+    setStats(prev => ({ ...prev, money: prev.money + 10 }));
   };
 
-  const themeClass = themes[color] || themes.indigo;
-  const sizeClass = size === 'lg' ? 'h-24 text-lg' : 'h-14 text-sm';
+  const toggleMenu = (menuName) => {
+    setActiveMenu(activeMenu === menuName ? null : menuName);
+  };
+
+  // --- NEW: Weather Toggle Logic ---
+  const toggleWeather = () => {
+    setWeather(prev => prev === 'Sunny' ? 'Rainy' : 'Sunny');
+  };
+
+  // --- Lucky Number Logic ---
+  const rollDice = () => {
+    if (isLuckLocked) return;
+    
+    setIsLuckLocked(true);
+    setIsRolling(true);
+    setShowLuckyPopup(true);
+    
+    let currentDelay = 50; 
+    const delayIncrement = 30; 
+    const maxDelay = 600;      
+    
+    const runNumberCycle = () => {
+      const num = Math.floor(Math.random() * 99) + 1;
+      setPopupNumber(num);
+      
+      currentDelay += delayIncrement; 
+
+      if (currentDelay < maxDelay) {
+        setTimeout(runNumberCycle, currentDelay);
+      } else {
+        const finalNum = Math.floor(Math.random() * 99) + 1;
+        setLuckyNumber(finalNum); 
+        setPopupNumber(finalNum);
+        setIsRolling(false); 
+
+        setTimeout(() => {
+          setShowLuckyPopup(false);
+          setIsLuckLocked(false);
+        }, 800);
+      }
+    };
+
+    runNumberCycle();
+  };
+
+  // --- Data Arrays with Costs ---
+  const veggies = [
+    { id: 'veg1', icon: Carrot, name: "Carrot", cost: 20, color: 'text-orange-500 bg-orange-100' },
+    { id: 'veg2', icon: Sprout, name: "Sprout", cost: 25, color: 'text-green-500 bg-green-100' }, 
+    { id: 'veg3', icon: Flower2, name: "Turnip", cost: 30, color: 'text-purple-500 bg-purple-100' },
+    { id: 'veg4', icon: Wheat, name: "Wheat", cost: 15, color: 'text-yellow-600 bg-yellow-100' },
+  ];
+
+  const flowers = [
+    { id: 'fl1', icon: Flower2, name: "Rose", cost: 45, color: 'text-rose-500 bg-rose-100' },
+    { id: 'fl2', icon: Sun, name: "Sunflower", cost: 40, color: 'text-amber-500 bg-amber-100' },
+    { id: 'fl3', icon: Flower, name: "Violet", cost: 35, color: 'text-violet-500 bg-violet-100' },
+    { id: 'fl4', icon: Sprout, name: "Fern", cost: 50, color: 'text-teal-500 bg-teal-100' },
+  ];
+
+  const treeOptions = [
+    { id: 't1', icon: TreeDeciduous, name: "Oak", cost: 150, color: 'text-emerald-700 bg-emerald-100' },
+    { id: 't2', icon: TreePine, name: "Pine", cost: 120, color: 'text-green-800 bg-green-100' },
+    { id: 't3', icon: Trees, name: "Copse", cost: 200, color: 'text-teal-700 bg-teal-100' },
+    { id: 't4', icon: TreePalm, name: "Palm", cost: 180, color: 'text-lime-600 bg-lime-100' },
+  ];
+
+  // --- Helper to get currently selected buy item ---
+  const getBuyItem = () => {
+    if (activeMenu === 'veggie' && selectedVeggie) {
+      return veggies.find(v => v.id === selectedVeggie);
+    }
+    if (activeMenu === 'flower' && selectedFlower) {
+      return flowers.find(f => f.id === selectedFlower);
+    }
+    if (activeMenu === 'tree' && selectedTree) {
+      return treeOptions.find(t => t.id === selectedTree);
+    }
+    return null;
+  };
+
+  const buyItem = getBuyItem();
+
+  // --- Shop Data ---
+  const shopItems = {
+    houses: [
+      { id: 'h1', name: "Basic Box", cost: 120, icon: Box, color: "bg-amber-100 text-amber-800" },
+      { id: 'h2', name: "Cozy Hut", cost: 350, icon: Home, color: "bg-orange-100 text-orange-800" },
+      { id: 'h3', name: "Estate", cost: 900, icon: Castle, color: "bg-purple-100 text-purple-800" },
+    ],
+    feeders: [
+      { id: 'f1', name: "Seed Tray", cost: 45, icon: Utensils, color: "bg-emerald-100 text-emerald-800" },
+      { id: 'f2', name: "Suet Cage", cost: 85, icon: Box, color: "bg-stone-200 text-stone-800" }, 
+      { id: 'f3', name: "Nectar", cost: 150, icon: Flower, color: "bg-rose-100 text-rose-800" },
+    ],
+    baths: [
+      { id: 'b1', name: "Puddle", cost: 0, icon: Droplets, color: "bg-blue-100 text-blue-800" },
+      { id: 'b2', name: "Stone Bowl", cost: 200, icon: Waves, color: "bg-stone-300 text-stone-800" },
+      { id: 'b3', name: "Fountain", cost: 600, icon: Zap, color: "bg-cyan-100 text-cyan-800" },
+    ]
+  };
+
+  const varietyItems = [
+    { id: 'v1', name: "Old Boot", cost: 15, icon: Footprints, color: "bg-stone-400 text-stone-900" },
+    { id: 'v2', name: "Shiny Rock", cost: 50, icon: Gem, color: "bg-indigo-200 text-indigo-800" },
+    { id: 'v3', name: "Gnome", cost: 120, icon: Ghost, color: "bg-red-200 text-red-800" },
+    { id: 'v4', name: "Mystic Key", cost: 300, icon: Key, color: "bg-amber-200 text-amber-800" },
+    { id: 'v5', name: "Stardust", cost: 500, icon: Sparkles, color: "bg-yellow-100 text-yellow-600" },
+    { id: 'v6', name: "???", cost: 999, icon: HelpCircle, color: "bg-slate-800 text-slate-200" },
+  ];
 
   return (
-    <motion.button
-      whileHover={{ scale: 1.02, y: -2 }}
-      whileTap={{ scale: 0.95, y: 4, borderBottomWidth: "0px", marginTop: "4px" }}
-      onClick={onClick}
-      disabled={disabled}
-      className={`
-        relative w-full flex flex-col items-center justify-center 
-        ${sizeClass}
-        rounded-2xl transition-colors
-        border-b-[6px] border-x-2 border-t-2
-        ${themeClass}
-        disabled:opacity-50 disabled:grayscale disabled:pointer-events-none
-        shadow-xl font-black uppercase tracking-wider
-        ${className}
-      `}
-    >
-      <div className="flex items-center gap-2 z-10">
-        {emoji && <span className={size === 'lg' ? "text-3xl" : "text-xl"}>{emoji}</span>}
-        <span className="drop-shadow-md">{label}</span>
-      </div>
-      <div className="absolute top-2 left-2 right-2 h-1/3 bg-white/20 rounded-full pointer-events-none" />
-    </motion.button>
-  );
-};
+    // Outer Desktop Wrapper
+    <div className="fixed inset-0 bg-stone-950 flex items-center justify-center p-4 font-sans select-none">
+      
+      {/* Mobile Device Frame */}
+      <div className="relative w-full max-w-[400px] h-full max-h-[850px] bg-[#D4C5B0] overflow-hidden flex flex-col rounded-[3rem] shadow-2xl border-[8px] border-stone-800 ring-4 ring-stone-900">
+        
+        {/* --- Neighbor Arrival Red Pulse Effect --- */}
+        <AnimatePresence>
+          {isNeighborHere && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 z-40 pointer-events-none flex flex-col justify-between"
+            >
+              {/* Top Red Gradient */}
+              <motion.div 
+                animate={{ opacity: [0.3, 0.7, 0.3] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                className="h-32 bg-gradient-to-b from-red-600/60 to-transparent" 
+              />
+              {/* Bottom Red Gradient */}
+              <motion.div 
+                animate={{ opacity: [0.3, 0.7, 0.3] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                className="h-40 bg-gradient-to-t from-red-600/60 to-transparent" 
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-const StatBadge = ({ emoji, value, label, shake }) => {
+        {/* --- 1. Top Bar (Stats & Time) --- */}
+        <div className="h-24 bg-gradient-to-b from-[#BCAAA4] via-[#C9Bcab] to-[#D4C5B0] flex items-end pb-4 justify-between px-6 border-b border-[#A1887F] z-30 shadow-md relative">
+          <div className="absolute inset-0 opacity-[0.05] bg-[url('https://www.transparenttextures.com/patterns/cardboard.png')] pointer-events-none" />
+
+          {/* Left: Money & Progress & Luck */}
+          <div className="flex gap-2 relative z-10">
+            {/* Money - Green (Using CircleDollarSign) */}
+            <ResourcePill icon={CircleDollarSign} value={stats.money} color="green" />
+            
+            {/* Progress - Purple */}
+            <ResourcePill icon={TrendingUp} value={`${stats.progress}%`} color="purple" />
+
+            {/* Lucky Number - Indigo */}
+            <ResourcePill icon={Dices} value={luckyNumber || "-"} color="indigo" />
+          </div>
+
+          {/* Right: Day & Weather (UPDATED) */}
+          <div className="flex flex-col items-end relative z-10">
+            <div className="flex items-center gap-1 mb-1">
+               <span className="text-[11px] font-black text-[#5D4037] uppercase tracking-widest">Day {day}</span>
+            </div>
+            
+            {/* Weather Toggle Button */}
+            <motion.button 
+              whileTap={{ scale: 0.95 }}
+              onClick={toggleWeather}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border shadow-sm transition-colors ${
+                weather === 'Sunny' 
+                  ? 'text-amber-800 bg-amber-100 border-amber-300' 
+                  : 'text-blue-900 bg-blue-200 border-blue-300'
+              }`}
+            >
+              {weather === 'Sunny' ? (
+                 <Sun size={14} className="fill-amber-500 text-amber-600" />
+              ) : (
+                 <CloudRain size={14} className="fill-blue-400 text-blue-600" />
+              )}
+              <span className="text-xs font-bold">{weather}</span>
+            </motion.button>
+          </div>
+        </div>
+
+        {/* --- Main Game Area --- */}
+        <div className="flex-1 relative overflow-hidden group">
+          
+          {/* Background */}
+          <div className="absolute inset-0 bg-[#4ade80] z-0">
+             <div className="absolute inset-0 opacity-20" 
+                  style={{ backgroundImage: 'radial-gradient(#15803d 1.5px, transparent 1.5px)', backgroundSize: '24px 24px' }}>
+             </div>
+             <div className="absolute inset-0 bg-gradient-to-b from-sky-300/30 via-transparent to-emerald-900/50 pointer-events-none" />
+             
+             {/* --- NEW: Minimal Rain Effect --- */}
+             {weather === 'Rainy' && (
+               <div className="absolute inset-0 z-20 pointer-events-none overflow-hidden opacity-50">
+                  {/* Generate 20 random drops */}
+                  {Array.from({ length: 20 }).map((_, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ y: -20, x: Math.random() * 400 }} // Random X start
+                      animate={{ y: 800 }}
+                      transition={{ 
+                        duration: 0.8 + Math.random(), 
+                        repeat: Infinity, 
+                        ease: "linear",
+                        delay: Math.random() * 2 
+                      }}
+                      style={{ left: `${Math.random() * 100}%` }}
+                      className="absolute top-0 w-[1px] h-6 bg-blue-600/60 rotate-12"
+                    />
+                  ))}
+               </div>
+             )}
+          </div>
+
+          {/* --- Floating Buy Button --- */}
+          <AnimatePresence>
+            {buyItem && (
+               <motion.div 
+                 initial={{ opacity: 0, y: -20, x: "-50%" }}
+                 animate={{ opacity: 1, y: 0, x: "-50%" }}
+                 exit={{ opacity: 0, y: -10, x: "-50%" }}
+                 className="absolute top-4 left-1/2 z-50 cursor-pointer pointer-events-auto"
+                 onClick={() => {
+                   setStats(p => ({...p, money: p.money - buyItem.cost}))
+                   toggleMenu(activeMenu) // Close menu on buy for effect
+                 }}
+               >
+                 <div className="bg-emerald-500 hover:bg-emerald-600 text-white pl-4 pr-5 py-2 rounded-full shadow-lg border-2 border-emerald-400 flex items-center gap-3 transition-colors">
+                    <div className="flex flex-col items-start leading-none">
+                       <span className="text-[9px] font-bold uppercase opacity-80">Purchase</span>
+                       <span className="text-sm font-black">{buyItem.name}</span>
+                    </div>
+                    <div className="h-6 w-[1px] bg-emerald-400" />
+                    <div className="flex items-center gap-1 font-bold">
+                       <CircleDollarSign size={14} className="fill-emerald-200" />
+                       <span>{buyItem.cost}</span>
+                    </div>
+                 </div>
+               </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* --- UPDATED: Placement Items --- */}
+          <div className="absolute top-24 left-1/2 -translate-x-1/2 flex items-end gap-6 z-10 opacity-90">
+             
+             {/* Bird Feeder (Cylinder) */}
+             <div className="flex flex-col items-center gap-0.5 group">
+                <div className="relative cursor-pointer hover:scale-105 transition-transform">
+                  <div className="absolute inset-0 bg-gradient-to-br from-amber-100 to-amber-300 -skew-x-12 rounded-xl shadow-[6px_6px_0px_rgba(0,0,0,0.3)]" />
+                  <div className="relative w-16 h-16 flex items-center justify-center text-amber-700 z-10">
+                     <Cylinder size={24} />
+                  </div>
+                </div>
+             </div>
+
+             {/* Bird Bath (Waves) */}
+             <div className="flex flex-col items-center gap-0.5 group">
+                 <div className="relative cursor-pointer hover:scale-105 transition-transform">
+                    <div className="absolute inset-0 bg-gradient-to-br from-cyan-100 to-cyan-300 -skew-x-12 rounded-xl shadow-[6px_6px_0px_rgba(0,0,0,0.3)]" />
+                    <div className="relative w-16 h-16 flex items-center justify-center text-cyan-600 z-10">
+                       <Waves size={24} />
+                    </div>
+                 </div>
+             </div>
+          </div>
+
+          {/* 2. Left Sidebar (Actions) */}
+          <div className="absolute left-4 top-6 flex flex-col gap-3 z-30">
+            {/* Info Book Button */}
+            <SidebarButton 
+              icon={BookOpen} 
+              color="bg-[#FFF3E0] text-orange-800 border-orange-300" 
+              onClick={() => setIsInfoOpen(true)}
+            />
+            
+            {/* Carrot / Veggie Button Wrapper */}
+            <div className="relative flex items-center">
+              <SidebarButton 
+                icon={Carrot} 
+                color="bg-[#FFF3E0] text-orange-700 border-orange-300" 
+                onClick={() => toggleMenu('veggie')}
+                isActive={activeMenu === 'veggie'}
+              />
+              <SliderMenu 
+                isOpen={activeMenu === 'veggie'} 
+                items={veggies} 
+                selectedId={selectedVeggie} 
+                onSelect={setSelectedVeggie} 
+                colorBase="orange"
+              />
+            </div>
+
+            {/* Flower Button Wrapper */}
+            <div className="relative flex items-center">
+              <SidebarButton 
+                icon={Flower} 
+                color="bg-[#FCE4EC] text-pink-700 border-pink-300"
+                onClick={() => toggleMenu('flower')}
+                isActive={activeMenu === 'flower'}
+              />
+              <SliderMenu 
+                isOpen={activeMenu === 'flower'} 
+                items={flowers} 
+                selectedId={selectedFlower} 
+                onSelect={setSelectedFlower} 
+                colorBase="pink"
+              />
+            </div>
+
+            {/* Tree Button Wrapper */}
+            <div className="relative flex items-center">
+              <SidebarButton 
+                icon={Trees} 
+                color="bg-[#E8F5E9] text-emerald-800 border-emerald-300" 
+                onClick={() => toggleMenu('tree')}
+                isActive={activeMenu === 'tree'}
+              />
+              <SliderMenu 
+                isOpen={activeMenu === 'tree'} 
+                items={treeOptions} 
+                selectedId={selectedTree} 
+                onSelect={setSelectedTree} 
+                colorBase="emerald"
+              />
+            </div>
+          </div>
+
+          {/* 3. Right Slim Panel */}
+          <div className="absolute right-4 top-6 flex flex-col gap-3 z-20">
+            {/* Dynamic Car Meter */}
+            <MeterBar 
+              icon={CarFront} 
+              color={isNeighborHere ? "bg-red-600" : "bg-red-500"} 
+              bg="bg-red-100" 
+              iconColor="text-red-700" 
+              fill={`${carProgress}%`} 
+            />
+            
+            <MeterBar icon={ArrowUp} color="bg-blue-600" bg="bg-blue-100" iconColor="text-blue-700" fill="85%" />
+            
+            <motion.div 
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="w-12 h-20 bg-[#FFF8E1]/90 backdrop-blur-md rounded-2xl border-2 border-white/70 flex flex-col items-center justify-start py-2 shadow-sm gap-2"
+            >
+              <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 shadow-inner border border-white/20 shrink-0">
+                <ThumbsDown size={16} />
+              </div>
+              <div className="flex items-center justify-center flex-1">
+                <Cat size={22} className="text-stone-800" />
+              </div>
+            </motion.div>
+          </div>
+
+          {/* 4. The New Pure-Icon Backyard */}
+          <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden">
+            
+            {/* Hills */}
+            <div className="absolute bottom-0 w-full h-2/3 bg-[#15803d] rounded-t-[100%] scale-x-[1.8] translate-y-24 blur-2xl opacity-80" />
+
+            {/* --- TREES (Left Side) --- */}
+            <div className="absolute left-[-20px] bottom-16 flex flex-col items-start opacity-90">
+                {/* 1. Top Tree (Smallest) */}
+                <div className="relative z-10 translate-x-12 translate-y-4">
+                    <TreeDeciduous size={80} className="text-[#166534] fill-[#166534] drop-shadow-lg" strokeWidth={1.5} />
+                </div>
+                
+                {/* 2. Middle Tree (Large - Holds Birdhouse) */}
+                <div className="relative z-20 -mb-12">
+                    <TreeDeciduous size={180} className="text-[#14532d] fill-[#14532d] drop-shadow-2xl" strokeWidth={1.5} />
+                    
+                    {/* The Birdhouse Nestled Inside */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30">
+                       <div className="relative group cursor-pointer pointer-events-auto hover:scale-105 transition-transform">
+                          {/* Slanted Background + Angled Drop Shadow */}
+                          <div className="absolute inset-0 bg-gradient-to-br from-[#5D4037] to-[#3E2723] -skew-x-12 rounded-xl shadow-[6px_6px_0px_rgba(0,0,0,0.3)]" />
+                          
+                          {/* Icon (Unskewed via container) */}
+                          <div className="relative w-16 h-16 flex items-center justify-center z-10">
+                             <Home size={28} className="text-[#FFF8E1] fill-[#FFF8E1]" strokeWidth={2} />
+                          </div>
+                       </div>
+                    </div>
+                </div>
+
+                {/* 3. Bottom Tree (Medium) - Darkened significantly */}
+                <div className="relative z-30 ml-8 translate-y-4">
+                    <TreeDeciduous size={120} className="text-[#064e3b] fill-[#064e3b] drop-shadow-xl" strokeWidth={1.5} />
+                </div>
+            </div>
+
+             {/* --- UPDATED: STARTING GARDEN (Solid Colors) --- */}
+             <div className="absolute left-36 bottom-32 flex items-end gap-1 opacity-90 z-20 pointer-events-none">
+                 <div className="relative hover:scale-110 transition-transform">
+                    {/* Orange Solid Sprout */}
+                    <Sprout size={24} className="text-orange-500 fill-orange-500" />
+                 </div>
+                 <div className="relative -mb-1 hover:scale-110 transition-transform">
+                    {/* Yellow Solid Sprout */}
+                    <Sprout size={32} className="text-yellow-500 fill-yellow-500" />
+                 </div>
+                 <div className="relative mb-2 hover:scale-110 transition-transform animate-pulse">
+                     <Bug size={20} className="text-stone-700 fill-stone-400" />
+                 </div>
+             </div>
+
+            {/* --- FLOWERS (Bottom Right) --- */}
+            <div className="absolute right-4 bottom-10 flex items-end gap-[-5px] z-40">
+                
+                {/* Allure Stat +17 */}
+                <motion.div 
+                   animate={{ y: [0, -4, 0] }}
+                   transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                   className="absolute -top-5 -left-12 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg border border-rose-200 shadow-sm flex items-center gap-1 min-w-max z-50 pointer-events-none"
+                >
+                   <Sparkles size={12} className="text-rose-500 fill-rose-200" />
+                   <span className="text-[10px] font-black text-rose-800 uppercase tracking-wide">+17 Allure</span>
+                </motion.div>
+
+                {/* Flower 1 */}
+                <div className="relative z-20 hover:scale-110 transition-transform cursor-pointer pointer-events-auto">
+                  <Flower size={48} className="text-rose-700 fill-rose-500 drop-shadow-md" strokeWidth={1.5} />
+                </div>
+                
+                {/* Flower 2 */}
+                <div className="relative z-10 -ml-4 mb-2 hover:scale-110 transition-transform cursor-pointer pointer-events-auto">
+                   <Flower2 size={36} className="text-yellow-400 fill-yellow-200 drop-shadow-sm" />
+                </div>
+
+                {/* Clover */}
+                <div className="relative z-30 -ml-3 hover:scale-110 transition-transform cursor-pointer pointer-events-auto">
+                   <Clover size={32} className="text-emerald-300 fill-emerald-200/50" />
+                </div>
+                
+                {/* Flower 3 */}
+                <div className="relative z-0 -ml-2 mb-4 hover:scale-110 transition-transform cursor-pointer pointer-events-auto">
+                   <Flower size={34} className="text-purple-400 fill-purple-300 drop-shadow-sm" />
+                </div>
+            </div>
+
+          </div>
+
+          {/* Camera Flash */}
+          <AnimatePresence>
+            {flash && (
+              <motion.div
+                initial={{ opacity: 0.6 }}
+                animate={{ opacity: 0 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-white z-50 pointer-events-none"
+              />
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* --- 5. Bottom Panel (Actions) --- */}
+        <div className="h-32 bg-gradient-to-t from-[#A1887F] via-[#BCAAA4] to-[#D4C5B0] shadow-[0_-5px_30px_rgba(0,0,0,0.15)] flex items-start pt-6 justify-between px-8 z-30 relative border-t border-[#8D6E63]">
+           <div className="absolute inset-0 opacity-[0.05] bg-[url('https://www.transparenttextures.com/patterns/cardboard.png')] pointer-events-none" />
+          
+          <motion.button 
+            whileTap={{ scale: 0.9 }}
+            onClick={() => setIsShopOpen(true)}
+            className="flex flex-col items-center gap-1.5 text-[#3E2723] transition-colors group relative z-10"
+          >
+            <div className="w-14 h-14 rounded-2xl bg-[#FFF8E1] flex items-center justify-center border-2 border-[#8D6E63] shadow-[0_4px_0px_#5D4037] transition-all active:translate-y-1 active:shadow-none">
+              <ShoppingBag size={24} />
+            </div>
+            <span className="text-[11px] font-black uppercase tracking-wider opacity-90 drop-shadow-sm">Shop</span>
+          </motion.button>
+
+          {/* CAMERA Button */}
+          <div className="relative -top-12 z-20">
+             <motion.button 
+               whileTap={{ scale: 0.95 }}
+               onClick={handleCameraSnap}
+               className="group relative"
+             >
+               <div className="w-24 h-24 rounded-full bg-gradient-to-b from-[#3E2723] to-[#261612] shadow-2xl flex items-center justify-center border border-[#5D4037]">
+                  <div className="w-[86px] h-[86px] rounded-full bg-gradient-to-br from-stone-400 via-stone-200 to-stone-500 flex items-center justify-center shadow-inner">
+                    <div className="w-[74px] h-[74px] rounded-full bg-[#000] flex items-center justify-center relative shadow-[inset_0_4px_10px_rgba(0,0,0,0.8)] border border-stone-900">
+                       <div className="w-[58px] h-[58px] rounded-full bg-gradient-to-tr from-indigo-950 via-blue-900 to-indigo-900 relative overflow-hidden shadow-inner ring-1 ring-black/50">
+                          <div className="absolute top-3 right-4 w-5 h-8 bg-white/30 -rotate-[30deg] blur-md rounded-full" />
+                          <div className="absolute bottom-2 left-3 w-2 h-2 bg-sky-400/60 blur-sm rounded-full" />
+                          <div className="absolute inset-0 flex items-center justify-center opacity-80 transition-transform duration-300">
+                             <Aperture size={32} className="text-white drop-shadow-md" />
+                          </div>
+                       </div>
+                       <div className="absolute top-1.5 w-1.5 h-1.5 bg-red-600 rounded-full shadow-[0_0_5px_rgba(220,38,38,0.9)]" />
+                    </div>
+                  </div>
+               </div>
+             </motion.button>
+          </div>
+
+          <div className="relative z-10 flex flex-col items-center">
+            {/* Pop-up Number Bubble */}
+            <AnimatePresence>
+              {showLuckyPopup && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10, scale: 0.5 }}
+                  animate={{ 
+                    opacity: 1, 
+                    y: -20, 
+                    scale: 1,
+                    // Smooth linear cycle through deep colors
+                    backgroundColor: ["#dc2626", "#9333ea", "#2563eb", "#059669", "#d97706", "#dc2626"] 
+                  }}
+                  transition={{ 
+                    backgroundColor: { duration: 3, repeat: Infinity, ease: "linear" },
+                    default: { duration: 0.3 }
+                  }}
+                  exit={{ opacity: 0, scale: 0.5 }}
+                  className="absolute bottom-full mb-3 w-16 h-16 rounded-full flex items-center justify-center shadow-lg z-50 overflow-hidden"
+                >
+                   <span className="text-2xl font-black text-yellow-100 drop-shadow-md">
+                     {popupNumber}
+                   </span>
+                   {/* Celebration Ring - only shows when finished */}
+                   {!isRolling && (
+                     <motion.div 
+                       initial={{ scale: 1.2, opacity: 0 }}
+                       animate={{ scale: 1.5, opacity: 0 }}
+                       className="absolute inset-0 rounded-full border-2 border-white/50"
+                     />
+                   )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <motion.button 
+              whileTap={!isLuckLocked ? { scale: 0.9 } : {}}
+              onClick={rollDice}
+              disabled={isLuckLocked} // Completely disables interactions
+              className={`flex flex-col items-center gap-1.5 text-[#3E2723] transition-all group relative ${isLuckLocked ? 'opacity-50 grayscale-[0.5] cursor-not-allowed' : ''}`}
+            >
+              <div className={`w-14 h-14 rounded-2xl bg-[#FFF8E1] flex items-center justify-center border-2 border-[#8D6E63] shadow-[0_4px_0px_#5D4037] transition-all ${isLuckLocked ? 'translate-y-1 shadow-none' : 'active:translate-y-1 active:shadow-none'}`}>
+                {/* REMOVED animate-bounce */}
+                <Dices size={24} className={isRolling ? 'text-indigo-500' : ''} />
+              </div>
+              <span className="text-[11px] font-black uppercase tracking-wider opacity-90 drop-shadow-sm">Luck</span>
+            </motion.button>
+          </div>
+        </div>
+
+        {/* --- Shop Modal (Split Layout) --- */}
+        <AnimatePresence>
+          {isShopOpen && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 z-50 bg-stone-950/50 backdrop-blur-[3px] flex items-end"
+            >
+              <motion.div 
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="w-full h-[90%] bg-[#F5F5F4] rounded-t-[2.5rem] shadow-2xl flex flex-col border-t border-white/50 overflow-hidden"
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between p-6 pb-2 shrink-0 bg-[#F5F5F4] z-10">
+                  <div>
+                    <h2 className="text-xl font-black text-stone-800 tracking-tight">Garden Supply</h2>
+                    <p className="text-stone-500 text-[10px] font-bold uppercase tracking-wider mt-0.5">Everything you need</p>
+                  </div>
+                  <button onClick={() => setIsShopOpen(false)} className="p-2 bg-stone-200 rounded-full active:bg-stone-300 text-stone-500 transition-colors">
+                    <X size={20} />
+                  </button>
+                </div>
+
+                {/* SCROLLABLE CONTENT AREA */}
+                <div className="flex-1 overflow-y-auto px-6 pb-6">
+                  
+                  {/* --- TOP HALF: Garden Essentials --- */}
+                  <div className="mb-8">
+                    {/* Tabs */}
+                    <div className="flex bg-stone-200/50 p-1 rounded-2xl mb-4">
+                      {['houses', 'feeders', 'baths'].map((cat) => (
+                        <button
+                          key={cat}
+                          onClick={() => setShopCategory(cat)}
+                          className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-wide transition-all ${
+                            shopCategory === cat 
+                              ? 'bg-white shadow-sm text-stone-800' 
+                              : 'text-stone-400 hover:text-stone-600'
+                          }`}
+                        >
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Grid */}
+                    <div className="grid grid-cols-3 gap-2">
+                      <AnimatePresence mode="popLayout">
+                        {shopItems[shopCategory].map((item) => (
+                          <ShopItem 
+                            key={item.id}
+                            name={item.name} 
+                            cost={item.cost} 
+                            icon={item.icon} 
+                            color={item.color} 
+                          />
+                        ))}
+                      </AnimatePresence>
+                    </div>
+                  </div>
+
+                  {/* --- DIVIDER --- */}
+                  <div className="flex items-center gap-4 mb-6 opacity-60">
+                    <div className="h-[2px] flex-1 bg-stone-300 rounded-full" />
+                    <StarIcon />
+                    <div className="h-[2px] flex-1 bg-stone-300 rounded-full" />
+                  </div>
+
+                  {/* --- BOTTOM HALF: Variety Shop --- */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
+                        <Sparkles size={16} />
+                      </div>
+                      <div>
+                         <h3 className="font-black text-stone-800 text-sm">Curiosities</h3>
+                         <p className="text-[10px] text-stone-400 font-bold uppercase">Strange finds</p>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-3 gap-2">
+                      {varietyItems.map((item) => (
+                         <ShopItem 
+                            key={item.id}
+                            name={item.name} 
+                            cost={item.cost} 
+                            icon={item.icon} 
+                            color={item.color} 
+                          />
+                      ))}
+                    </div>
+                  </div>
+
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* --- Info Book Modal (UPDATED) --- */}
+        <AnimatePresence>
+          {isInfoOpen && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 z-50 bg-stone-950/50 backdrop-blur-[3px] flex items-center justify-center p-6"
+            >
+              <motion.div 
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="w-full max-w-sm bg-[#FFFBF0] rounded-[2rem] shadow-2xl overflow-hidden border-4 border-[#8D6E63] relative flex flex-col h-[500px]"
+              >
+                 {/* Close Button - positioned absolute to overlay top section */}
+                 <button 
+                   onClick={() => setIsInfoOpen(false)} 
+                   className="absolute top-4 right-4 p-2 bg-stone-200/50 rounded-full hover:bg-stone-300/50 text-stone-600 transition-colors z-20"
+                 >
+                    <X size={20} />
+                 </button>
+
+                 {/* Top Section - 66% */}
+                 <div className="h-[66%] p-6 flex flex-col">
+                    <h2 className="text-2xl font-black text-[#5D4037] tracking-tight">Bird Album</h2>
+                    <div className="flex-1 mt-4 border-2 border-dashed border-[#D7CCC8] rounded-xl flex items-center justify-center bg-[#F9F5F0]">
+                       <span className="text-[#A1887F] font-bold text-sm uppercase tracking-wider">No Birds Yet</span>
+                    </div>
+                 </div>
+
+                 {/* Bottom Section - remaining height */}
+                 <div className="flex-1 bg-[#EFEBE9] border-t-2 border-[#D7CCC8] flex items-center justify-around px-6">
+                    {/* User Profile Button */}
+                    <button className="flex flex-col items-center gap-1 group">
+                       <div className="w-12 h-12 rounded-xl bg-white border-2 border-[#BCAAA4] flex items-center justify-center text-[#5D4037] shadow-sm group-active:scale-95 transition-transform">
+                          <User size={20} />
+                       </div>
+                       <span className="text-[10px] font-bold text-[#8D6E63] uppercase tracking-wide">Profile</span>
+                    </button>
+
+                    {/* Awards Button */}
+                    <button className="flex flex-col items-center gap-1 group">
+                       <div className="w-12 h-12 rounded-xl bg-white border-2 border-[#BCAAA4] flex items-center justify-center text-[#5D4037] shadow-sm group-active:scale-95 transition-transform">
+                          <Trophy size={20} />
+                       </div>
+                       <span className="text-[10px] font-bold text-[#8D6E63] uppercase tracking-wide">Awards</span>
+                    </button>
+
+                    {/* Info/About Button */}
+                    <button className="flex flex-col items-center gap-1 group">
+                       <div className="w-12 h-12 rounded-xl bg-white border-2 border-[#BCAAA4] flex items-center justify-center text-[#5D4037] shadow-sm group-active:scale-95 transition-transform">
+                          <Info size={20} />
+                       </div>
+                       <span className="text-[10px] font-bold text-[#8D6E63] uppercase tracking-wide">About</span>
+                    </button>
+                 </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+      </div>
+    </div>
+  );
+}
+
+// --- Sub-components ---
+
+function SidebarButton({ icon: Icon, color, onClick, isActive }) {
   return (
-    <motion.div 
-      animate={shake ? { x: [0, -5, 5, -5, 5, 0] } : {}}
-      className="flex flex-col items-center"
-    >
-      <div className="relative z-10 bg-slate-800 border-4 border-slate-700 rounded-full w-14 h-14 flex items-center justify-center shadow-lg -mb-4">
-        <span className="text-2xl filter drop-shadow-md">{emoji}</span>
-      </div>
-      <div className="bg-slate-900 border-2 border-slate-700 rounded-xl px-3 pt-5 pb-1 min-w-[70px] text-center shadow-md">
-        <div className="font-mono font-black text-white text-lg leading-none">{value}</div>
-        <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{label}</div>
-      </div>
-    </motion.div>
+    <div className="flex flex-col items-center gap-1 group relative z-30">
+      <motion.button
+        whileTap={{ scale: 0.95 }}
+        onClick={onClick}
+        className={`w-11 h-11 rounded-xl flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.1)] border-2 ${color} ${isActive ? 'ring-2 ring-offset-1 ring-orange-300' : ''} bg-opacity-95 backdrop-blur-sm transition-all relative z-20`}
+      >
+        <Icon size={22} />
+      </motion.button>
+    </div>
   );
-};
+}
 
-const FloatingText = ({ x, y, text, color, scale = 1, onComplete }) => {
-  // Safe default colors to avoid runtime errors if color prop is missing
-  let gradient = 'linear-gradient(to bottom, #ffffff, #94a3b8)';
-  if (color === 'red') gradient = 'linear-gradient(to bottom, #fca5a5, #ef4444)';
-  if (color === 'gold') gradient = 'linear-gradient(to bottom, #fde047, #eab308)';
+function SliderMenu({ isOpen, items, selectedId, onSelect, colorBase }) {
+  // Map simple color base names to tailwind border/bg classes for the container
+  const borderColors = {
+    orange: "border-orange-200",
+    pink: "border-pink-200",
+    emerald: "border-emerald-200"
+  };
 
-  return (
-    <motion.div
-      initial={{ opacity: 1, y: 0, scale: 0.5 * scale, rotate: Math.random() * 20 - 10 }}
-      animate={{ opacity: 0, y: -100, scale: 1.5 * scale }}
-      transition={{ duration: 0.8, ease: "easeOut" }}
-      onAnimationComplete={onComplete}
-      className="absolute font-black whitespace-nowrap pointer-events-none z-50 text-transparent bg-clip-text drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]"
-      style={{ 
-        left: x, 
-        top: y,
-        fontSize: '2rem',
-        backgroundImage: gradient
-      }}
-    >
-      {text}
-    </motion.div>
-  );
-};
+  const activeClasses = {
+    orange: "bg-orange-200 ring-2 ring-orange-400",
+    pink: "bg-pink-200 ring-2 ring-pink-400",
+    emerald: "bg-emerald-200 ring-2 ring-emerald-400"
+  }
+  const hoverClasses = {
+    orange: "hover:bg-orange-50",
+    pink: "hover:bg-pink-50",
+    emerald: "hover:bg-emerald-50"
+  }
 
-const InventoryModal = ({ isOpen, onClose, items, equipItem }) => {
   return (
     <AnimatePresence>
       {isOpen && (
-        <>
-          <motion.div 
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-indigo-950/80 backdrop-blur-sm z-40"
-          />
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0, y: 50 }} 
-            animate={{ scale: 1, opacity: 1, y: 0 }} 
-            exit={{ scale: 0.8, opacity: 0, y: 50 }}
-            className="fixed inset-x-4 top-20 bottom-20 bg-slate-800 rounded-3xl z-50 shadow-2xl border-[6px] border-slate-600 flex flex-col overflow-hidden"
-          >
-            <div className="bg-slate-700 p-4 border-b-4 border-slate-600 flex justify-between items-center shadow-md">
-              <h2 className="text-2xl font-black text-white flex items-center gap-2 uppercase tracking-widest drop-shadow-md">
-                <span className="text-3xl">🎒</span> Backpack
-              </h2>
-              <button onClick={onClose} className="bg-rose-500 hover:bg-rose-400 text-white p-2 rounded-xl border-b-4 border-rose-800 active:border-b-0 active:translate-y-1 transition-all">
-                <X size={24} strokeWidth={3} />
+        <motion.div 
+          initial={{ width: 0, opacity: 0 }}
+          animate={{ width: 'auto', opacity: 1 }}
+          exit={{ width: 0, opacity: 0 }}
+          className={`absolute left-14 top-0 h-11 bg-white/90 backdrop-blur-md rounded-xl border-2 ${borderColors[colorBase]} flex items-center overflow-hidden shadow-lg pl-1`}
+        >
+          <div className="flex gap-1 px-1 min-w-max">
+            {items.map((item) => (
+              <button 
+                key={item.id}
+                onClick={() => onSelect(item.id)}
+                className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all active:scale-90 ${
+                  selectedId === item.id ? activeClasses[colorBase] : hoverClasses[colorBase]
+                }`}
+              >
+                <item.icon size={16} className={item.color.split(' ')[0]} />
               </button>
-            </div>
-
-            {/* Using standard Tailwind classes instead of JIT syntax to be safe */}
-            <div className="p-4 grid grid-cols-3 gap-4 overflow-y-auto content-start flex-1 bg-slate-800">
-              {items.map((item) => (
-                <motion.button
-                  key={item.id}
-                  layoutId={`item-${item.id}`} // Ensure unique layoutId
-                  onClick={() => equipItem(item)}
-                  whileTap={{ scale: 0.9 }}
-                  className={`
-                    aspect-square rounded-2xl border-4 flex flex-col items-center justify-center relative overflow-hidden shadow-sm
-                    ${item.equipped ? 'bg-indigo-600 border-indigo-400' : 'bg-slate-700 border-slate-600'}
-                  `}
-                >
-                  <span className="text-4xl drop-shadow-lg filter">{item.emoji}</span>
-                  {item.equipped && (
-                    <div className="absolute top-2 right-2 w-3 h-3 bg-green-400 rounded-full shadow-[0_0_10px_#4ade80]" />
-                  )}
-                  <span className="absolute bottom-1 text-[10px] font-bold text-slate-300 uppercase truncate w-full px-2 text-center bg-black/20">
-                    {item.name}
-                  </span>
-                </motion.button>
-              ))}
-              
-              {[...Array(5)].map((_, i) => (
-                <div key={`empty-${i}`} className="aspect-square bg-slate-900/40 rounded-2xl border-4 border-slate-700 border-dashed flex items-center justify-center opacity-50">
-                   <div className="w-2 h-2 rounded-full bg-slate-700" />
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        </>
+            ))}
+          </div>
+        </motion.div>
       )}
     </AnimatePresence>
+  )
+}
+
+
+function MeterBar({ icon: Icon, color, bg, iconColor, fill, children }) {
+  return (
+    <div className="w-12 h-28 bg-[#FFF8E1]/80 backdrop-blur-md rounded-2xl border-2 border-white/70 flex flex-col items-center justify-start py-2 gap-2 shadow-sm">
+      <div className={`w-8 h-8 rounded-full ${bg} flex items-center justify-center ${iconColor} shadow-inner border border-white/20`}>
+        <Icon size={18} />
+      </div>
+      <div className="w-2 h-12 bg-stone-300/50 rounded-full overflow-hidden flex items-end ring-1 ring-black/5">
+        <motion.div 
+          className={`w-full ${color}`}
+          initial={{ height: 0 }}
+          animate={{ height: fill }}
+          transition={{ duration: 1, ease: "linear" }} // Smooth linear fill
+        />
+      </div>
+      {children}
+    </div>
   );
-};
+}
 
-/**
- * --- MAIN APP COMPONENT ---
- */
-
-export default function App() {
-  // Game Constants
-  const maxHp = 100; // Static constants to satisfy linters
-  const enemyMaxHp = 50;
-
-  // Game State
-  const [hp] = useState(85);
-  const [gold] = useState(120);
-  const [energy, setEnergy] = useState(3);
-  const [enemyHp, setEnemyHp] = useState(50);
-  const [level, setLevel] = useState(1);
-  
-  // UI State
-  const [showInventory, setShowInventory] = useState(false);
-  const [activeEffects, setActiveEffects] = useState([]);
-  const [shakeScreen, setShakeScreen] = useState(false);
-  
-  const [inventory, setInventory] = useState([
-    { id: 1, name: 'Rusty Sword', emoji: '🗡️', type: 'weapon', equipped: true },
-    { id: 2, name: 'Red Potion', emoji: '🍷', type: 'consumable', equipped: false },
-    { id: 3, name: 'Gold Coin', emoji: '🪙', type: 'trinket', equipped: false },
-    { id: 4, name: 'Map', emoji: '📜', type: 'quest', equipped: false },
-  ]);
-
-  const enemyControls = useAnimation();
-
-  // Helper to spawn floating text
-  const spawnText = (text, color = "white", x = "50%", y = "30%", scale = 1) => {
-    const id = Date.now() + Math.random();
-    setActiveEffects(prev => [...prev, { id, text, color, x, y, scale }]);
-  };
-
-  // Actions
-  const handleAttack = async () => {
-    if (energy < 1) {
-      spawnText("NO ENERGY!", "white", "50%", "60%");
-      return;
-    }
-
-    setEnergy(e => e - 1);
-    
-    // Screen shake logic
-    setShakeScreen(true);
-    setTimeout(() => setShakeScreen(false), 200);
-
-    // Enemy hit animation
-    await enemyControls.start({ 
-      scale: [1, 0.8, 1.1, 1],
-      rotate: [0, -10, 10, 0],
-      filter: ["brightness(1)", "brightness(2) hue-rotate(90deg)", "brightness(1)"],
-      transition: { duration: 0.3 } 
-    });
-    
-    // Damage Calc
-    const dmg = Math.floor(Math.random() * 8) + 4;
-    const isCrit = Math.random() > 0.7;
-    const finalDmg = isCrit ? dmg * 2 : dmg;
-
-    setEnemyHp(h => Math.max(0, h - finalDmg));
-    
-    // Spawn damage numbers with slight random offset
-    const randomX = 40 + Math.random() * 20;
-    spawnText(finalDmg, "red", `${randomX}%`, "25%", isCrit ? 1.5 : 1);
-
-    if (isCrit) {
-      spawnText("CRIT!", "gold", `${randomX}%`, "15%", 0.8);
-    }
-
-    if (enemyHp - finalDmg <= 0) {
-      spawnText("VICTORY!", "gold", "50%", "40%", 1.5);
-      setTimeout(() => {
-        setEnemyHp(50 + level * 10);
-        setLevel(l => l + 1);
-        spawnText("NEW FOE!", "white", "50%", "40%");
-      }, 1500);
-    }
-  };
-
-  const handleDefend = () => {
-    if (energy < 1) return;
-    setEnergy(e => e - 1);
-    spawnText("BLOCK!", "white", "50%", "50%");
-  };
-
-  const handleRest = () => {
-    setEnergy(3);
-    spawnText("MAX POWER", "gold", "50%", "60%");
+function ResourcePill({ icon: Icon, value, color }) {
+  const colors = {
+    amber: "bg-[#FFECB3] text-[#5D4037] border-[#FFC107]",
+    emerald: "bg-[#C8E6C9] text-[#1B5E20] border-[#81C784]",
+    green: "bg-green-100 text-green-800 border-green-300",
+    purple: "bg-purple-100 text-purple-800 border-purple-300",
+    indigo: "bg-indigo-100 text-indigo-800 border-indigo-300"
   };
 
   return (
-    <div className={`h-screen w-full ${COLORS.bg} font-sans overflow-hidden flex flex-col select-none touch-manipulation relative`}>
-      
-      {/* BACKGROUND PATTERN */}
-      <div className="absolute inset-0 opacity-20 pointer-events-none" 
-           style={{ 
-             backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0)',
-             backgroundSize: '24px 24px' 
-           }} 
-      />
-      
-      {/* VIGNETTE */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.6)_100%)] pointer-events-none" />
-
-      {/* TOP HUD */}
-      <header className="p-4 pt-6 flex justify-between items-start z-20 shrink-0">
-        <div className="flex gap-4">
-          <StatBadge emoji="❤️" value={`${hp}/${maxHp}`} label="Health" shake={hp < 30} />
-          <StatBadge emoji="⚡" value={energy} label="Energy" shake={energy === 0} />
-        </div>
-        
-        <div className="flex gap-3 items-start">
-          <div className="bg-amber-500 text-amber-900 font-black px-4 py-2 rounded-full border-b-4 border-amber-700 shadow-lg flex items-center gap-2 transform rotate-2">
-            <span>🪙</span>
-            <span>{gold}</span>
-          </div>
-          <button 
-            onClick={() => setShowInventory(true)}
-            className="bg-slate-700 p-3 rounded-xl border-b-4 border-slate-900 active:border-b-0 active:translate-y-1 transition-all text-white shadow-xl hover:bg-slate-600"
-          >
-            <span className="text-xl">🎒</span>
-          </button>
-        </div>
-      </header>
-
-      {/* MAIN GAME VIEWPORT */}
-      <motion.main 
-        className="flex-1 relative flex flex-col items-center justify-center p-6 z-10"
-        animate={{ x: shakeScreen ? [0, -10, 10, -10, 10, 0] : 0 }}
-        transition={{ duration: 0.1 }}
-      >
-        {/* Floating Effects Layer */}
-        {activeEffects.map(effect => (
-          <FloatingText 
-            key={effect.id} 
-            {...effect} 
-            onComplete={() => setActiveEffects(prev => prev.filter(e => e.id !== effect.id))} 
-          />
-        ))}
-
-        {/* ENEMY STAGE */}
-        <div className="w-full max-w-xs relative group">
-          
-          {/* Floor platform effect */}
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-48 h-12 bg-black/40 blur-xl rounded-[100%]" />
-          
-          {/* Enemy Card / Sprite Container */}
-          <motion.div 
-            className="bg-slate-800 rounded-[2rem] border-[6px] border-slate-700 p-1 relative overflow-hidden shadow-2xl"
-            initial={{ rotate: -2 }}
-            animate={{ rotate: [-2, 2, -2] }}
-            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          >
-            {/* Card Background */}
-            <div className="absolute inset-0 bg-slate-900">
-               <div className="absolute inset-0 opacity-30 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,#000_10px,#000_20px)]" />
-            </div>
-
-            {/* Content */}
-            <div className="relative z-10 flex flex-col items-center pt-8 pb-4">
-              
-              {/* Level Tag */}
-              <div className="absolute top-4 left-4 bg-slate-700 text-slate-300 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-md border border-slate-600">
-                Floor {level}
-              </div>
-
-              {/* Enemy Sprite */}
-              <motion.div 
-                animate={enemyControls}
-                className="text-[9rem] leading-none filter drop-shadow-2xl hover:scale-110 transition-transform cursor-pointer select-none"
-                onClick={handleAttack} // Click enemy to attack!
-              >
-                👾
-              </motion.div>
-
-              {/* Enemy Name Plate */}
-              <div className="mt-4 bg-slate-900/80 px-4 py-2 rounded-xl border-2 border-slate-700 backdrop-blur-md text-center w-[90%]">
-                <h2 className="text-rose-400 font-black uppercase tracking-wider text-lg">Slime King</h2>
-                
-                {/* Enemy HP Bar */}
-                <div className="w-full h-4 bg-slate-950 rounded-full mt-2 overflow-hidden border border-slate-700 relative">
-                  <motion.div 
-                    className="h-full bg-gradient-to-r from-rose-500 to-rose-400"
-                    initial={{ width: "100%" }}
-                    animate={{ width: `${(enemyHp / enemyMaxHp) * 100}%` }}
-                  />
-                </div>
-                <div className="flex justify-between text-[10px] font-mono text-slate-400 mt-1">
-                  <span>HP {enemyHp}/{enemyMaxHp}</span>
-                  <span className="text-yellow-400 flex items-center gap-1">
-                    <Sparkles size={10} /> ATK IMPENDING
-                  </span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Decorative elements around the card */}
-          <div className="absolute -top-4 -right-4 text-4xl animate-bounce delay-700 pointer-events-none">✨</div>
-          <div className="absolute bottom-10 -left-6 text-2xl animate-pulse pointer-events-none text-slate-700 opacity-50">☠️</div>
-        </div>
-
-      </motion.main>
-
-      {/* CONTROLS AREA */}
-      <footer className="p-4 pb-8 shrink-0 z-20">
-        <div className="max-w-md mx-auto relative">
-          
-          {/* Controls Container background */}
-          <div className="absolute -inset-4 bg-slate-900/90 backdrop-blur-xl rounded-t-[3rem] border-t-4 border-slate-700 -z-10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)]" />
-
-          <div className="grid grid-cols-4 gap-4 items-end">
-            <div className="col-span-2">
-              <ChunkyButton 
-                label="Attack" 
-                emoji="⚔️" 
-                color="rose" 
-                size="lg" 
-                onClick={handleAttack}
-                className="rotate-1" 
-              />
-            </div>
-            <div className="col-span-1">
-              <ChunkyButton 
-                label="Block" 
-                emoji="🛡️" 
-                color="indigo" 
-                onClick={handleDefend}
-                className="-rotate-2" 
-              />
-            </div>
-            <div className="col-span-1">
-              <ChunkyButton 
-                label="Rest" 
-                emoji="💤" 
-                color="emerald" 
-                onClick={handleRest}
-                className="rotate-2" 
-              />
-            </div>
-          </div>
-          
-          <div className="text-center mt-6">
-            <div className="inline-block px-3 py-1 bg-black/40 rounded-full text-[10px] text-slate-500 font-mono uppercase tracking-[0.2em] border border-white/5">
-              Turn 4 • Prototype v0.2
-            </div>
-          </div>
-        </div>
-      </footer>
-
-      {/* MODALS */}
-      <InventoryModal 
-        isOpen={showInventory} 
-        onClose={() => setShowInventory(false)} 
-        items={inventory}
-        equipItem={(item) => {
-          setInventory(prev => prev.map(i => ({
-            ...i,
-            equipped: i.id === item.id ? !i.equipped : i.equipped
-          })));
-        }}
-      />
-
+    <div className={`flex items-center gap-1.5 ${colors[color]} px-3 py-1.5 rounded-xl border font-black text-xs shadow-sm`}>
+      <Icon size={14} />
+      <span>{value}</span>
     </div>
   );
+}
+
+const ShopItem = React.forwardRef(({ name, cost, icon: Icon, color }, ref) => {
+  return (
+    <motion.button 
+      ref={ref}
+      layout
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      whileTap={{ scale: 0.95 }}
+      className="bg-white p-2 rounded-2xl shadow-[0_2px_5px_rgba(0,0,0,0.03)] border border-stone-200 flex flex-col gap-2 items-center text-center transition-colors group pb-3"
+    >
+      <div className={`w-12 h-10 w-full rounded-xl flex items-center justify-center ${color} transition-transform`}>
+        <Icon size={20} />
+      </div>
+      <div className="w-full">
+        <h4 className="font-bold text-stone-800 text-[10px] leading-tight truncate px-1">{name}</h4>
+        <div className="flex items-center justify-center gap-1 text-stone-500 text-[10px] mt-1 font-bold">
+          {/* UPDATED: CircleDollarSign instead of Feather */}
+          <CircleDollarSign size={10} />
+          <span>{cost}</span>
+        </div>
+      </div>
+    </motion.button>
+  );
+});
+
+function StarIcon() {
+  return (
+    <div className="text-stone-300">
+       <div className="w-2 h-2 rotate-45 bg-current" />
+    </div>
+  )
 }
